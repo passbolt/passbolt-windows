@@ -2,3 +2,9 @@
 passbolt/Webviews/.DS_Store
 
 .DS_Store
+/passbolt/bin/x64/Debug
+/passbolt/obj
+/.vs
+/passbolt/Webviews/Background/node_modules
+/passbolt/Webviews/Rendered/node_modules/.bin
+/passbolt/Webviews/Rendered/node_modules
