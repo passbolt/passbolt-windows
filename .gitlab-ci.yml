@@ -1,4 +1,8 @@
-image: mcr.microsoft.com/windows:1809
+.shared_windows_runners:
+  tags:
+  - shared-windows
+  - windows
+  - windows-1809
 
 stages:
   - build
@@ -8,12 +12,14 @@ before_script:
   - powershell Install-WindowsFeature Net-Framework-Core
 
 build:
+  extends: .shared_windows_runners
   stage: build
   script:
     - cd uwp-application
     - msbuild /t:Build /p:Configuration=Release
 
 test:
+  extends: .shared_windows_runners
   stage: test
   script:
     - cd uwp-application-tests
