@@ -16,7 +16,7 @@ build:
   stage: build
   script:
     - cd passbolt
-    - '"C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" "passbolt-windows.sln" /t:Build /p:Configuration=Release /m'
+    - '"C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe" /t:Build /p:Configuration=Release /m'
 
 test:
   extends: .shared_windows_runners
