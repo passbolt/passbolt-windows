@@ -1,0 +1,20 @@
+image: mcr.microsoft.com/dotnet/framework/sdk:4.8
+
+variables:
+  solution: 'passbolt-windows-tests.sln'
+
+stages:
+  - test
+
+test:
+  stage: test
+  script:
+    - 'nuget restore $solution'
+    - 'msbuild $solution /p:Configuration=Debug /t:Rebuild'
+    - 'vstest.console.exe passbolt-windows-tests\bin\Debug\passbolt-windows-tests.dll /Logger:trx'
+  artifacts:
+    paths:
+      - 'passbolt-windows-tests\TestResults'
+    reports:
+      junit:
+        - 'passbolt-windows-tests\TestResults\*.trx'

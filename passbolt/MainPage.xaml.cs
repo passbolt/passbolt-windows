@@ -1,4 +1,18 @@
-﻿using System;
+﻿/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         0.0.1
+ */
+ 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
@@ -16,6 +30,12 @@ namespace passbolt
     public sealed partial class MainPage : Page
     {
         private string blankPage = "about:blank";
+        public WebView2 webviewRendered { get { return Rendered; } }
+        public WebView2 webviewBackground { get { return Background; } }
+        private StorageFolder backgroundFolder;
+        private StorageFolder renderedFolder;
+
+
         /// <summary>
         /// Constructor for the main page
         /// </summary>
@@ -74,16 +94,16 @@ namespace passbolt
         /// <summary>
         /// load the rendered web view
         /// </summary>
-        private async void LoadRenderedWebview() {
+        public async void LoadRenderedWebview() {
             await Rendered.EnsureCoreWebView2Async();
             string desktopUrl = "desktop.passbolt.com";
 
             // Load rendered folder to insert into the virtual host
-            StorageFolder renderedFolder = await this.FindInWebviewFolder("Rendered");
+            if (renderedFolder == null)
+                renderedFolder = await this.FindInWebviewFolder("Rendered");
 
             // Set virtual host to folder mapping, restrict host access to the desktopUrl
             Rendered.CoreWebView2.SetVirtualHostNameToFolderMapping(desktopUrl, renderedFolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
-
             // Set the source for rendered webview
             Rendered.Source = new Uri(this.BuildHostUri(desktopUrl, "index.html"));
         }
@@ -91,13 +111,14 @@ namespace passbolt
         /// <summary>
         /// load the background web view
         /// </summary>
-        private async void LoadBackgroundWebview()
+        public async Task LoadBackgroundWebview()
         {
             await Background.EnsureCoreWebView2Async();
             string randomUrl = Guid.NewGuid().ToString();
 
-            // Load rendered folder to insert into the virtual host
-            StorageFolder backgroundFolder = await this.FindInWebviewFolder("Background");
+            // Load background folder to insert into the virtual host
+            if (backgroundFolder == null)
+                backgroundFolder = await this.FindInWebviewFolder("Background");
 
             // Set virtual host to folder mapping, restrict host access to the randomUrl
             Background.CoreWebView2.SetVirtualHostNameToFolderMapping(randomUrl, backgroundFolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
