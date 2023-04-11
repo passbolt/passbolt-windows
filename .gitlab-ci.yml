@@ -1,4 +1,4 @@
-image: mcr.microsoft.com/dotnet/framework/sdk:4.8
+image: mcr.microsoft.com/dotnet/sdk:5.0
 
 variables:
   solution: 'passbolt-windows-tests.sln'
