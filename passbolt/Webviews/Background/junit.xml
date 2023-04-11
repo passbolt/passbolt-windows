@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="1" failures="0" errors="0" time="6.657">
+  <testsuite name="Main class" errors="0" failures="0" skipped="0" timestamp="2023-04-11T06:17:04" time="3.81" tests="1">
+    <testcase classname="Main class should receive IPC Message from webview" name="Main class should receive IPC Message from webview" time="0.096">
+    </testcase>
+  </testsuite>
+</testsuites>

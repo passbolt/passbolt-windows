@@ -48,23 +48,33 @@ namespace passbolt
         /// <summary>
         /// This method is called when the rendered web view completes navigation.
         /// </summary>
-        private void Rendered_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+        private async void Rendered_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
             if (Rendered != null && args.Uri == this.blankPage)
             {
-                this.LoadRenderedWebview();
+                await this.LoadRenderedWebview();
+                this.SetWebviewSettings(Rendered);
             }
         }
 
         /// <summary>
         /// This method is called when the background web view completes navigation.
         /// </summary>
-        private void Background_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+        private async void Background_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
             if (Rendered != null && args.Uri == this.blankPage)
             {
-                this.LoadBackgroundWebview();
+                await this.LoadBackgroundWebview();
+                this.SetWebviewSettings(Background);
             }
+        }
+
+        /// <summary>
+        /// This method is called when webviews request a new windows to be opened.
+        /// </summary>
+        public void NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs args)
+        {
+            args.Handled = true;
         }
 
         /// <summary>
@@ -94,7 +104,7 @@ namespace passbolt
         /// <summary>
         /// load the rendered web view
         /// </summary>
-        public async void LoadRenderedWebview() {
+        public async Task LoadRenderedWebview() {
             await Rendered.EnsureCoreWebView2Async();
             string desktopUrl = "desktop.passbolt.com";
 
@@ -155,5 +165,17 @@ namespace passbolt
             return builder.Uri.ToString();
         }
 
+        /// <summary>
+        /// Set the webview settings including minimal security requirements
+        /// </summary>
+        /// <param name="webView"></param>
+        private void SetWebviewSettings(WebView2 webView)
+        {
+            // Disable context menu
+            webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            // Disable devtools
+            webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            webView.CoreWebView2.NewWindowRequested += NewWindowRequested;
+        }
     }
 }

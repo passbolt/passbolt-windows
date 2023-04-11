@@ -18,6 +18,11 @@ using Windows.UI.Xaml.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
 using Windows.UI.Xaml;
 using System.Text.RegularExpressions;
+using Microsoft.Web.WebView2.Core;
+using Moq;
+using System;
+using System.Threading.Tasks;
+using passbolt_windows_tests.UnitTests;
 
 namespace passbolt_windows_tests
 {
@@ -58,6 +63,33 @@ namespace passbolt_windows_tests
             // Check that the url has changed
             Assert.IsTrue(url != page.webviewBackground.Source.ToString());
 
+        }
+
+        [UITestMethod]
+        public void ShouldApplySecurityOnSettings()
+        {
+            // Should disable devtools
+            Assert.IsFalse(page.webviewBackground.CoreWebView2.Settings.AreDevToolsEnabled);
+            // Should disable contextual menu
+            Assert.IsFalse(page.webviewBackground.CoreWebView2.Settings.AreDefaultContextMenusEnabled);
+        }
+
+        [UITestMethod]
+        public void ShouldBlockNewWindowRequested()
+        {
+            var task = page.webviewBackground.ExecuteScriptAsync("window.open(\"facebook.com\")");
+
+            // Arrange
+            var mockArgs = new Mock<CoreWebView2NewWindowRequestedEventArgs>();
+            mockArgs.SetupProperty(args => args.Handled);
+
+            var sender = new object();
+
+            // Act
+            page.NewWindowRequested(sender, null);
+
+            // Assert
+            Assert.IsTrue(mockArgs.Object.Handled);
         }
     }
 
