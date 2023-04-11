@@ -9,10 +9,12 @@ stages:
 test:
   stage: test
   script:
-    - apt-get update && apt-get install -y nuget
+    -  cd passbolt-windows-tests
+    -  ls -la passbolt-windows-tests.sln
     - 'nuget restore $solution'
     - 'msbuild $solution /p:Configuration=Debug /t:Rebuild'
     - 'vstest.console.exe passbolt-windows-tests\bin\Debug\passbolt-windows-tests.dll /Logger:trx'
+    -  ls
   artifacts:
     paths:
       - 'passbolt-windows-tests\TestResults'
