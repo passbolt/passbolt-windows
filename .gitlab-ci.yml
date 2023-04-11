@@ -15,14 +15,14 @@ build:
   extends: .shared_windows_runners
   stage: build
   script:
-    - cd uwp-application
+    - cd passbolt
     - msbuild /t:Build /p:Configuration=Release
 
 test:
   extends: .shared_windows_runners
   stage: test
   script:
-    - cd uwp-application-tests
+    - cd passbolt-windows-tests
     - msbuild /t:Build /p:Configuration=Release
     - cd bin/Release
     - vstest.console.exe uwp-application-tests.dll
