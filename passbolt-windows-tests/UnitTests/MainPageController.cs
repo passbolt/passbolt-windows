@@ -23,6 +23,7 @@ using Windows.Storage;
 using passbolt_windows_tests.Utils;
 using passbolt.Controllers;
 using passbolt_windows_tests.UnitTests;
+using Windows.System;
 
 namespace passbolt_windows_tests
 {
@@ -76,7 +77,6 @@ namespace passbolt_windows_tests
             // Call LoadBackgroundWebview asynchronously and wait for it to complete
             var task = this.mainController.LoadBackgroundWebview();
             task.Wait();
-
             //Should initialized the folderStorage
             Assert.IsNotNull(backgroundFolder);
             // Check that the url has changed
@@ -100,6 +100,32 @@ namespace passbolt_windows_tests
             };
         }
 
+
+        [UITestMethod]
+        [Description("As a desktop app user I want to remove unsecured settings")]
+        public void ShouldRemoveUnsecredSettings()
+        {
+            // Attach events for testing
+            webviewBackground.CoreWebView2.ScriptDialogOpening += this.mainController.DomDialogRequested;
+            // Should disable devtools 
+            Assert.IsFalse(webviewBackground.CoreWebView2.Settings.AreDevToolsEnabled);
+            // Should disable contextual menu 
+            Assert.IsFalse(webviewBackground.CoreWebView2.Settings.AreDefaultContextMenusEnabled);
+            // Should disable autosaved password
+            Assert.IsFalse(webviewBackground.CoreWebView2.Settings.IsPasswordAutosaveEnabled);
+            // Should disable new host
+            Assert.IsFalse(webviewBackground.CoreWebView2.Settings.AreHostObjectsAllowed);
+            // Should disable new dialog
+            Assert.IsFalse(webviewBackground.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled);
+            // Remove swipe navigation
+            Assert.IsFalse(webviewBackground.CoreWebView2.Settings.IsSwipeNavigationEnabled);
+
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("window.alert(\"facebook.com\")");
+            operation.Completed += (info, status) =>
+            {
+                Assert.IsFalse(mainController.hasOpenedDialog);
+            };
+        }
     }
 
 }
