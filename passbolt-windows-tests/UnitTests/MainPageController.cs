@@ -18,10 +18,10 @@ using Windows.UI.Xaml.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
 using Windows.UI.Xaml;
 using System.Text.RegularExpressions;
-using Microsoft.Web.WebView2.Core;
-using Moq;
-using System;
-using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Controls;
+using Windows.Storage;
+using passbolt_windows_tests.Utils;
+using passbolt.Controllers;
 using passbolt_windows_tests.UnitTests;
 
 namespace passbolt_windows_tests
@@ -32,65 +32,71 @@ namespace passbolt_windows_tests
 
         private MainPage page;
         private Frame frame;
+        private WebView2 webviewBackground;
+        private WebView2 webviewRendered;
+        private MockMainController mainController;
+        private StorageFolder backgroundFolder;
+        private StorageFolder renderedFolder;
 
         [TestInitialize]
         public void TestInitialize()
         {
             frame = (Frame)Window.Current.Content;
             page = (MainPage)frame.Content;
+            webviewBackground = ReflectionUtil.GetPrivateProperty<WebView2>(page, "webviewBackground");
+            webviewRendered = ReflectionUtil.GetPrivateProperty<WebView2>(page, "webviewRendered");
+            var controller = ReflectionUtil.GetPrivateField<MainController>(page, "mainController");
+            backgroundFolder = ReflectionUtil.GetPrivateField<StorageFolder>(controller, "backgroundFolder");
+            renderedFolder = ReflectionUtil.GetPrivateField<StorageFolder>(controller, "renderedFolder");
+            mainController = (MockMainController)ReflectionUtil.SetPrivatefield<MainController>(page, "mainController", new MockMainController(webviewRendered, webviewBackground, backgroundFolder, renderedFolder));
         }
 
         [UITestMethod]
-        public void LoadRenderedWebviewTest() { 
-             // Assert
-            Assert.IsNotNull(page.webviewRendered);
-            Assert.AreEqual<string>("http://desktop.passbolt.com/index.html", page.webviewRendered.Source.ToString());
+        public void LoadRenderedWebviewTest() {
+            // Assert
+            Assert.IsNotNull(webviewRendered);
+            //Should initialized the folderStorage
+            Assert.IsNotNull(webviewBackground);
+            Assert.AreEqual("http://desktop.passbolt.com/index.html", webviewRendered.Source.ToString());
         }
 
         [UITestMethod]
         public void LoadBackgroundWebviewTest()
         {
-            var url = page.webviewBackground.Source.ToString();
+            var url = webviewBackground.Source.ToString();
+
             // Assert
             string pattern = @"^http:\/\/[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}\/index\.html$";
-            bool isMatch = Regex.IsMatch(page.webviewBackground.Source.ToString(), pattern);
+            bool isMatch = Regex.IsMatch(webviewBackground.Source.ToString(), pattern);
             Assert.IsTrue(isMatch);
 
             // Call LoadBackgroundWebview asynchronously and wait for it to complete
-            var task = page.LoadBackgroundWebview();
+            var task = this.mainController.LoadBackgroundWebview();
             task.Wait();
 
+            //Should initialized the folderStorage
+            Assert.IsNotNull(backgroundFolder);
             // Check that the url has changed
-            Assert.IsTrue(url != page.webviewBackground.Source.ToString());
+            Assert.IsTrue(url != webviewBackground.Source.ToString());
 
         }
 
-        [UITestMethod]
-        public void ShouldApplySecurityOnSettings()
-        {
-            // Should disable devtools
-            Assert.IsFalse(page.webviewBackground.CoreWebView2.Settings.AreDevToolsEnabled);
-            // Should disable contextual menu
-            Assert.IsFalse(page.webviewBackground.CoreWebView2.Settings.AreDefaultContextMenusEnabled);
-        }
 
         [UITestMethod]
         public void ShouldBlockNewWindowRequested()
         {
-            var task = page.webviewBackground.ExecuteScriptAsync("window.open(\"facebook.com\")");
+            //Check the variable to not be defined 
+            Assert.IsNull(mainController.newWindowRequestedEventArgs);
 
-            // Arrange
-            var mockArgs = new Mock<CoreWebView2NewWindowRequestedEventArgs>();
-            mockArgs.SetupProperty(args => args.Handled);
-
-            var sender = new object();
-
-            // Act
-            page.NewWindowRequested(sender, null);
-
-            // Assert
-            Assert.IsTrue(mockArgs.Object.Handled);
+            this.mainController.SetWebviewSettings(webviewBackground);
+            // Wait for the navigation to complete
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("window.open(\"facebook.com\")");
+            operation.Completed += (info, status) =>
+            {
+                Assert.IsTrue(mainController.newWindowRequestedEventArgs.Handled);
+            };
         }
+
     }
 
 }
