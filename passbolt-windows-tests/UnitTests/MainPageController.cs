@@ -52,15 +52,18 @@ namespace passbolt_windows_tests
         }
 
         [UITestMethod]
+        [Description("As a desktop application I want to launch a rendered webview")]
         public void LoadRenderedWebviewTest() {
             // Assert
             Assert.IsNotNull(webviewRendered);
-            //Should initialized the folderStorage
-            Assert.IsNotNull(webviewBackground);
+            //Should initialized the webview
             Assert.AreEqual("http://desktop.passbolt.com/index.html", webviewRendered.Source.ToString());
+            //Should initialized the folderStorage
+            Assert.IsNotNull(renderedFolder);
         }
 
         [UITestMethod]
+        [Description("As a desktop application I want to launch a background webview")]
         public void LoadBackgroundWebviewTest()
         {
             var url = webviewBackground.Source.ToString();
@@ -78,11 +81,11 @@ namespace passbolt_windows_tests
             Assert.IsNotNull(backgroundFolder);
             // Check that the url has changed
             Assert.IsTrue(url != webviewBackground.Source.ToString());
-
         }
 
 
         [UITestMethod]
+        [Description("As a desktop user I want to be sure that the webviews cannot open new window")]
         public void ShouldBlockNewWindowRequested()
         {
             //Check the variable to not be defined 
