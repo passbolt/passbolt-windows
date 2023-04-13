@@ -12,26 +12,28 @@
  * @since         0.0.1
  */
 
-using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using passbolt.Utils;
 
-namespace passbolt.Utils
+namespace passbolt_windows_tests.UnitTests
 {
-    public class UriBuiler
+    [TestClass]
+        public class UriBuilderTest
     {
-
-        /// <summary>
-        /// build a host uri for webviews
-        /// </summary>
-        /// <param name="host"></param>backgroundFolder
-        /// <param name="path"></param>
-        /// <returns>The uri for the host</returns>
-        public static string BuildHostUri(string host, string path)
+        [TestMethod]
+        [Description("Should return an URI")]
+        public void BuildHostUri_ReturnsCorrectUri()
         {
-            UriBuilder builder = new UriBuilder();
-            builder.Scheme = "http";
-            builder.Host = host;
-            builder.Path = path;
-            return builder.Uri.ToString();
+            // Arrange
+            string host = "example.com";
+            string path = "/home";
+            string expectedUri = "http://example.com/home";
+
+            // Act
+            string actualUri = UriBuiler.BuildHostUri(host, path);
+
+            // Assert
+            Assert.AreEqual(expectedUri, actualUri);
         }
     }
 }
