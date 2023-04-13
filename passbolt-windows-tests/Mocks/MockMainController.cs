@@ -24,6 +24,8 @@ namespace passbolt_windows_tests.UnitTests
     {
 
         public CoreWebView2NewWindowRequestedEventArgs newWindowRequestedEventArgs;
+        public bool hasOpenedDialog = false;
+
         public MockMainController(WebView2 webviewRendered, WebView2 webviewBackground, StorageFolder backgroundFolder,
             StorageFolder renderedFolder) : base(webviewRendered, webviewBackground)
         {
@@ -56,6 +58,9 @@ namespace passbolt_windows_tests.UnitTests
         {
             await base.BackgroundInitialisation();
         }
-
+        public void DomDialogRequested(CoreWebView2 sender, CoreWebView2ScriptDialogOpeningEventArgs args)
+        {
+            this.hasOpenedDialog = true;
+        }
     }
 }

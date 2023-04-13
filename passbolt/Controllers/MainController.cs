@@ -20,6 +20,7 @@ using Microsoft.Web.WebView2.Core;
 using passbolt.Utils;
 using Windows.ApplicationModel;
 using Windows.Storage;
+using Windows.UI.Xaml.Controls;
 
 namespace passbolt.Controllers
 {
@@ -79,6 +80,21 @@ namespace passbolt.Controllers
         /// <param name="webView"></param>
         public virtual void SetWebviewSettings(WebView2 webView)
         {
+            // Remove devtools from settings
+            webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            // Remove swipe navigation
+            webView.CoreWebView2.Settings.IsSwipeNavigationEnabled = false;
+            // Remove autosaved password
+            webView.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+            // New host cannot be added
+            webView.CoreWebView2.Settings.AreHostObjectsAllowed = false;
+            // Dialog will not be allowed
+            webView.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+            // Remove contextual menu
+            webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            // Remove accelerator keys like f12
+            webView.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
+            // Attach new events
             webView.CoreWebView2.NewWindowRequested += NewWindowRequested;
         }
 
@@ -89,7 +105,6 @@ namespace passbolt.Controllers
         {
             args.Handled = true;
         }
-
 
         public virtual async Task BackgroundInitialisation()
         {
