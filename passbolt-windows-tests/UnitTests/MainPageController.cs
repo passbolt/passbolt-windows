@@ -93,7 +93,7 @@ namespace passbolt_windows_tests
 
             this.mainController.SetWebviewSettings(webviewBackground);
             // Wait for the navigation to complete
-            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("window.open(\"facebook.com\")");
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("window.open(\"passbolt.com\")");
             operation.Completed += (info, status) =>
             {
                 Assert.IsTrue(mainController.newWindowRequestedEventArgs.Handled);
@@ -119,8 +119,20 @@ namespace passbolt_windows_tests
             Assert.IsFalse(webviewBackground.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled);
             // Remove swipe navigation
             Assert.IsFalse(webviewBackground.CoreWebView2.Settings.IsSwipeNavigationEnabled);
+            // Should disable devtools 
+            Assert.IsFalse(webviewRendered.CoreWebView2.Settings.AreDevToolsEnabled);
+            // Should disable contextual menu 
+            Assert.IsFalse(webviewRendered.CoreWebView2.Settings.AreDefaultContextMenusEnabled);
+            // Should disable autosaved password
+            Assert.IsFalse(webviewRendered.CoreWebView2.Settings.IsPasswordAutosaveEnabled);
+            // Should disable new host
+            Assert.IsFalse(webviewRendered.CoreWebView2.Settings.AreHostObjectsAllowed);
+            // Should disable new dialog
+            Assert.IsFalse(webviewRendered.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled);
+            // Remove swipe navigation
+            Assert.IsFalse(webviewRendered.CoreWebView2.Settings.IsSwipeNavigationEnabled);
 
-            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("window.alert(\"facebook.com\")");
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("window.alert(\"passbolt.com\")");
             operation.Completed += (info, status) =>
             {
                 Assert.IsFalse(mainController.hasOpenedDialog);

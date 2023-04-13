@@ -96,7 +96,6 @@ namespace passbolt.Controllers
             webView.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
             // Attach new events
             webView.CoreWebView2.NewWindowRequested += NewWindowRequested;
-            webView.CoreWebView2.WebMessageReceived += Webview_WebMessageReceived;
         }
 
         /// <summary>
@@ -105,15 +104,6 @@ namespace passbolt.Controllers
         public virtual void NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
         {
             args.Handled = true;
-        }
-
-        private void Webview_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
-        {
-
-        }
-        public virtual void DevToolsProtocolEventReceived(CoreWebView2 sender, CoreWebView2DevToolsProtocolEventReceivedEventArgs args)
-        {
-            
         }
 
         public virtual async Task BackgroundInitialisation()
