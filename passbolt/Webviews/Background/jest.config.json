@@ -1,0 +1,27 @@
+{
+    "testEnvironment": "jsdom",
+    "reporters": [
+      "default",
+      "jest-junit"
+    ],
+    "transform": {
+      "^.+\\.js$": ["babel-jest", {
+        "presets": ["@babel/env"],
+        "plugins": ["@babel/plugin-transform-runtime"]
+      }]
+    },
+    "setupFiles": [
+      "jest-webextension-mock"
+    ],
+    "coverageReporters": [
+      "cobertura",
+      "html",
+      "text-summary"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js}",
+      "!src/**/*.test.js",
+      "!src/**/*.test.data.js"
+    ]
+  }
+  

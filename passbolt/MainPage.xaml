@@ -10,8 +10,8 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <controls:WebView2 x:Name="Rendered" Source="about:blank"  
-             NavigationStarting="Rendered_NavigationStarting" NavigationCompleted="Rendered_NavigationCompleted" />
+        <controls:WebView2 x:Name="Rendered" Source="about:blank" 
+             NavigationStarting="Rendered_NavigationStarting" NavigationCompleted="Rendered_NavigationCompleted"/>
         <controls:WebView2 x:Name="Background" Source="about:blank"   Visibility="Collapsed"
              NavigationStarting="Background_NavigationStarting" NavigationCompleted="Background_NavigationCompleted"/>
     </Grid>
