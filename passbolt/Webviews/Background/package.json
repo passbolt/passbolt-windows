@@ -10,6 +10,7 @@
   "scripts": {
     "build": "webpack",
     "build-watch": "webpack --watch",
+    "eslint": "eslint -c .eslintrc.json --ext js src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
