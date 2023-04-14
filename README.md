@@ -12,7 +12,7 @@
 
 Passbolt - Open source password manager for teams
 
-(c) 2022 Passbolt SA
+(c) 2023 Passbolt SA
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
 Public License (AGPL) as published by the Free Software Foundation version 3.
@@ -119,6 +119,13 @@ To run the Passbolt Desktop App unit tests using the command line, you can use t
 This command runs the unit tests in Release mode and generates a test results file named PassboltDesktopApp.UnitTests.trx.
 
 After the tests complete, you can view the results in Visual Studio or any other tool that supports TRX format.
+
+## Checking for Outdated .NET NuGet Dependencies in Visual Studio
+1. Open your project in Visual Studio.
+2. In the Solution Explorer, right-click on the project and select "Manage NuGet Packages".
+3. In the NuGet Package Manager, click on the "Updates" tab to see a list of all available updates for your NuGet packages.
+4. You can use this information to determine if any of your NuGet packages need to be updated.
+
 ## Deploying the application
 
 To deploy the application, you can distribute the package file or upload it to the [Microsoft Store](https://docs.microsoft.com/en-us/windows/msix/packaging-tool/create-app-package-with-packaging-tool#step-6-upload-your-package-to-the-store). For more information on deploying UWP apps, refer to the [official documentation](https://docs.microsoft.com/en-us/windows/msix/deploy-uwp-app). 
