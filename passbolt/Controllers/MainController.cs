@@ -17,10 +17,10 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using Windows.ApplicationModel;
 using Windows.Storage;
-using Windows.UI.Xaml.Controls;
 
 namespace passbolt.Controllers
 {
@@ -106,6 +106,10 @@ namespace passbolt.Controllers
             args.Handled = true;
         }
 
+        /// <summary>
+        /// Initialised the background page and inject script
+        /// </summary>
+        /// <returns></returns>
         public virtual async Task BackgroundInitialisation()
         {
             // Load script to inject for background webview
@@ -115,6 +119,20 @@ namespace passbolt.Controllers
             Stream streamJS = await file.OpenStreamForReadAsync();
             string script = new StreamReader(streamJS).ReadToEnd();
             await webviewBackground.ExecuteScriptAsync(script);
+        }
+
+        /// <summary>
+        /// Check Navigation for webviews2
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public virtual void AllowNavigation(WebView2 sender, CoreWebView2NavigationStartingEventArgs args, AbstractNavigationService navigationService)
+        {
+            if (!navigationService.canNavigate(args.Uri))
+            {
+                args.Cancel = true;
+            }
         }
 
         /// <summary>

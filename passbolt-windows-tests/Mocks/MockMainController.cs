@@ -12,10 +12,13 @@
  * @since         0.0.1
  */
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Controllers;
+using passbolt.Services.NavigationService;
+using passbolt.Utils;
 using Windows.Storage;
 
 namespace passbolt_windows_tests.UnitTests
@@ -61,6 +64,21 @@ namespace passbolt_windows_tests.UnitTests
         public void DomDialogRequested(CoreWebView2 sender, CoreWebView2ScriptDialogOpeningEventArgs args)
         {
             this.hasOpenedDialog = true;
+        }
+
+        public override void AllowNavigation(WebView2 sender, CoreWebView2NavigationStartingEventArgs args, AbstractNavigationService navigationService)
+        {
+            base.AllowNavigation(sender, args, navigationService);
+        }
+
+        public string GeneratateRandomBackgroundHost(WebView2 webviewBackground)
+        {
+            var navigationCompletedTask = new TaskCompletionSource<bool>();
+            string randomUrl = Guid.NewGuid().ToString();
+            Uri backgroundUrl = new Uri(UriBuiler.BuildHostUri(randomUrl, "index.html"));
+            // Set virtual host to folder mapping, restrict host access to the randomUrl
+            webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(randomUrl, backgroundFolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
+            return backgroundUrl.ToString();
         }
     }
 }

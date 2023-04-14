@@ -12,16 +12,11 @@
  * @since         0.0.1
  */
  
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
-using Windows.ApplicationModel;
-using Windows.Storage;
 using Windows.UI.Xaml.Controls;
-using System.Reflection;
 using passbolt.Controllers;
+using passbolt.Services.NavigationService;
 
 namespace passbolt
 {
@@ -34,7 +29,9 @@ namespace passbolt
         private WebView2 webviewRendered { get { return Rendered; } }
         private WebView2 webviewBackground { get { return Background; } }
         private MainController mainController;
-
+        private RenderedNavigationService renderedNavigationService = new RenderedNavigationService();
+        private BackgroundNavigationService backgroundNavigationService = new BackgroundNavigationService();
+        
         /// <summary>
         /// Constructor for the main page
         /// </summary>
@@ -50,10 +47,12 @@ namespace passbolt
         /// </summary>
         private async void Rendered_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
+            this.mainController.AllowNavigation(sender, args, this.renderedNavigationService);
+
             if (Rendered != null && args.Uri == this.blankPage)
             {
                 await this.mainController.LoadRenderedWebview();
-                this.mainController.SetWebviewSettings(Rendered);
+               this.mainController.SetWebviewSettings(Rendered);
             }
         }
 
@@ -62,6 +61,9 @@ namespace passbolt
         /// </summary>
         private async void Background_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
+
+            this.mainController.AllowNavigation(sender, args, this.backgroundNavigationService);
+
             if (Rendered != null && args.Uri == this.blankPage)
             {
                 await this.mainController.LoadBackgroundWebview();
