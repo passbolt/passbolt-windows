@@ -1,92 +1,131 @@
-# passbolt-windows
+	      ____                  __          ____
+	     / __ \____  _____ ____/ /_  ____  / / /_
+	    / /_/ / __ `/ ___/ ___/ __ \/ __ \/ / __/
+	   / ____/ /_/ (__  |__  ) /_/ / /_/ / / /_
+	  /_/    \__,_/____/____/_.___/\____/_/\__/
 
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/passbolt/desktop/passbolt-windows.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.com/passbolt/desktop/passbolt-windows/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+	Open source password manager for teams
+	(c) 2021 Passbolt SA
+	https://www.passbolt.com
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Passbolt - Open source password manager for teams
+
+(c) 2023 Passbolt SA
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+Public License (AGPL) as published by the Free Software Foundation version 3.
+
+The name "Passbolt" is a registered trademark of Passbolt SA, and Passbolt SA hereby declines to grant a trademark
+license to "Passbolt" pursuant to the GNU Affero General Public License version 3 Section 7(e), without a separate
+agreement with Passbolt SA.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along with this program. If not,
+see [GNU Affero General Public License v3](http://www.gnu.org/licenses/agpl-3.0.html).
+
+## About passbolt
+
+Passbolt is an open source password manager for teams. It allows to securely share and store credentials.
+For instance, the wifi password of your office, or the administrator password of a router, or your organisation social
+media account password, all of them can be secured using Passbolt.
+
+You can try a demo of passbolt at [https://demo.passbolt.com](https://demo.passbolt.com).
+
+You will need to install a plugin, you can find a step by step guide in the website
+[help section](https://www.passbolt.com/help/start/firefox)
+
+Or, of course, you can use the code in this repository to build it yourself and run it!
+
+
+## About passbolt desktop app
+
+Passbolt Desktop App is a UWP (Universal Windows Platform) application that provides a modern and flexible way to manage your passwords securely. With Passbolt Desktop App, you can store your passwords and other sensitive information in a centralized location, and you can access them from any Windows 10 device.
+
+The app is built using the UWP platform and it leverages the power of Webview2 to provide a rich and engaging user interface. With Webview2, Passbolt Desktop App can display web-based content within the app, such as the Passbolt web interface, and it can interact with the content programmatically.
+
+By using UWP and Webview2, Passbolt Desktop App provides a consistent and seamless user experience across all Windows 10 devices. The app can adapt to the device it's running on, providing a user interface that's optimized for the screen size and input method of the device. With Passbolt Desktop App, you can manage your passwords securely, and you can do it in a way that's flexible and convenient for you.
+
+## Prerequisites
+
+Before building this application, you need to have the following installed on your machine:
+
+- Visual Studio 2019 or later with the UWP workload.
+- The WebView2 runtime installed. You can download it from the [Microsoft Edge WebView2 download page](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
+
+## Building the application
+
+To build the application, follow these steps:
+
+1. Clone the repository or download the source code.
+2. Open the solution file `passbolt-windows.sln` in Visual Studio.
+3. In the Solution Explorer, right-click on the project and select "Manage NuGet Packages".
+4. Search for "Microsoft.Web.WebView2" and install it.
+5. Press F5 to build and run the application.
+
+## Packaging the application
+
+### Building with Visual code
+
+To create a package for the application, follow these steps:
+
+1. In Visual Studio, right-click on the project and select "Store" > "Create App Packages".
+2. Follow the wizard to create a package for the app.
+3. The package will be saved to the output directory of your project.
+
+### Building with Command Line
+
+To build the Passbolt Desktop App using the command line, you can use the MSBuild command-line tool, which is included with Visual Studio. Follow these steps to build the app using the command line:
+
+1. Open a command prompt and navigate to the project directory.
+2. Run the following command to build the solution:
+
+``MSBuild /t:Restore;Build /p:Configuration=Release;Platform=x64``
+
+This command restores the NuGet packages and builds the solution in Release mode for the x64 platform.
+
+3. After the build completes, the app package will be available in the `bin\x64\Release` directory.
+
+## Running tests
+
+### Running tests with Visual code
+
+Passbolt Desktop App includes a suite of unit tests to ensure that the app functions correctly. To run the unit tests, follow these steps:
+
+1. Open the solution in Visual Studio.
+2. In the Solution Explorer, right-click on the `PassboltDesktopApp.UnitTests` project and select "Run Tests".
+3. The unit tests will run, and the results will be displayed in the Test Explorer.
+
+### Running tests with command lines
+
+To run the Passbolt Desktop App unit tests using the command line, you can use the dotnet test command. Follow these steps to run the tests using the command line:
+
+1. Open a command prompt and navigate to the project directory.
+2. Run the following command to restore the NuGet packages:
+
+``MSBuild /t:Restore``
+
+3. Run the following command to build the solution:
+
+``MSBuild /t:Build /p:Configuration=Release``
+
+4. Run the following command to run the unit tests:
+
+``MSBuild /t:VSTest /p:VSTestPath=<Path to vstest.console.exe> /p:VSTestArguments="/Settings:<Path to appsettings.json> /Logger:trx" /p:Configuration=Release``
+
+This command runs the unit tests in Release mode and generates a test results file named PassboltDesktopApp.UnitTests.trx.
+
+After the tests complete, you can view the results in Visual Studio or any other tool that supports TRX format.
+
+## Checking for Outdated .NET NuGet Dependencies in Visual Studio
+1. Open your project in Visual Studio.
+2. In the Solution Explorer, right-click on the project and select "Manage NuGet Packages".
+3. In the NuGet Package Manager, click on the "Updates" tab to see a list of all available updates for your NuGet packages.
+4. You can use this information to determine if any of your NuGet packages need to be updated.
+
+## Deploying the application
+
+To deploy the application, you can distribute the package file or upload it to the [Microsoft Store](https://docs.microsoft.com/en-us/windows/msix/packaging-tool/create-app-package-with-packaging-tool#step-6-upload-your-package-to-the-store). For more information on deploying UWP apps, refer to the [official documentation](https://docs.microsoft.com/en-us/windows/msix/deploy-uwp-app). 

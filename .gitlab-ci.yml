@@ -41,3 +41,23 @@ linter:
     - cd passbolt/Webviews/Background/
     - npm install
     - npm run eslint
+
+npm-dependencies-check:
+  stage: test
+  image: node:16
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH
+  script:
+    - cd passbolt/Webviews/Background/
+    - npm outdated
+
+dotnet- dependencies-check:
+  extends: .shared_windows_runners
+  stage: test
+  script:
+    - dotnet tool install --global dotnet-outdated-tool
+    - dotnet outdated
