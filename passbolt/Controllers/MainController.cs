@@ -13,10 +13,13 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using passbolt.Models;
+using passbolt.Models.Messaging;
 using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using Windows.ApplicationModel;
@@ -30,6 +33,10 @@ namespace passbolt.Controllers
         private WebView2 webviewBackground;
         protected StorageFolder backgroundFolder;
         protected StorageFolder renderedFolder;
+        protected RenderedTopic renderedTopic;
+        protected BackgroundTopic backgroundTopic;
+        protected RenderedNavigationService renderedNavigationService = new RenderedNavigationService();
+        protected BackgroundNavigationService backgroundNavigationService = new BackgroundNavigationService();
 
         public MainController(
             WebView2 webviewRendered, WebView2 webviewBackground) {
@@ -52,7 +59,8 @@ namespace passbolt.Controllers
             // Set virtual host to folder mapping, restrict host access to the desktopUrl
             webviewRendered.CoreWebView2.SetVirtualHostNameToFolderMapping(desktopUrl, renderedFolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
             // Set the source for rendered webview
-            webviewRendered.Source = new Uri(UriBuiler.BuildHostUri(desktopUrl, "index.html"));
+            webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(desktopUrl, "index.html"));
+            webviewRendered.CoreWebView2.WebMessageReceived += WebMessageReceived;
         }
 
         /// <summary>
@@ -71,7 +79,9 @@ namespace passbolt.Controllers
             webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(randomUrl, backgroundFolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
 
             // Set the source for background webview
-            webviewBackground.Source = new Uri(UriBuiler.BuildHostUri(randomUrl, "index.html"));
+            webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(randomUrl, "index.html"));
+            // Subscribes to the WebMessageReceived event of the rendered window
+            webviewBackground.CoreWebView2.WebMessageReceived += WebMessageReceived;
         }
 
         /// <summary>
@@ -133,6 +143,84 @@ namespace passbolt.Controllers
             {
                 args.Cancel = true;
             }
+        }
+
+        /// <summary>
+        /// Listener for webviews message received
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+        {
+            string message = e.TryGetWebMessageAsString();
+            CoreWebView2 webviewSender = this.GetCoreWebView2Sender(sender);
+
+            if (webviewSender == null || message == null) return;
+            var ipc = SerializationHelper.DeserializeFromJson<IPC>(message);
+
+            //Checks if we have data before going futher
+            if (string.IsNullOrEmpty(ipc.topic) || !AllowedTopics.IsTopicNameAllowed(ipc.topic)) 
+            {
+                return;
+            }
+
+            // We identify the sender to proceed message by his source
+            if (backgroundNavigationService.canNavigate(webviewSender.Source))
+            {
+                backgroundTopic.ProceedMessage(ipc);
+            }
+            else if (renderedNavigationService.canNavigate(webviewSender.Source))
+            {
+                renderedTopic.ProceedMessage(ipc);
+            }
+        }
+
+
+        /// <summary>
+        /// When rendered webview has finished his navigation
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <returns></returns>
+        public async Task BackgroundNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        {
+            Debug.WriteLine("NavigationCompleted: " + sender.CoreWebView2.Source);
+            if (args.IsSuccess)
+            {
+                var message = new IPC(AllowedTopics.INITIALIZATION);
+                await webviewBackground.EnsureCoreWebView2Async();
+                await webviewRendered.EnsureCoreWebView2Async();
+                this.renderedTopic = new RenderedTopic(webviewBackground, webviewRendered);
+                this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered);
+                webviewBackground.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(message));
+                webviewRendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(message));
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the Corewebview from the sender
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <returns></returns>
+        private CoreWebView2 GetCoreWebView2Sender(object sender)
+        {
+            CoreWebView2 webviewSender = null;
+            try
+            {
+                if (sender is CoreWebView2)
+                {
+                    webviewSender = (CoreWebView2)sender;
+                }
+                else
+                {
+                    webviewSender = ((WebView2)sender).CoreWebView2;
+                }
+            }
+            catch (InvalidCastException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return webviewSender;
         }
 
         /// <summary>

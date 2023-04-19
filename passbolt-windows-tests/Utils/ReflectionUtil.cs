@@ -93,5 +93,51 @@ namespace passbolt_windows_tests.Utils
             field.SetValue(obj, value);
             return (T)field.GetValue(obj);
         }
+
+        /// <summary>
+        /// Return the method information
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="methodName"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        private static MethodInfo GetMethodInfo(object obj, string methodName, BindingFlags bindingFlags)
+        {
+            var type = obj.GetType();
+            var method = type.GetMethod(methodName,bindingFlags);
+            if (method == null)
+            {
+                throw new ArgumentException($"Method {methodName} not found on type {type.FullName}");
+            }
+            return method;
+        }
+
+        /// <summary>
+        /// Invoke the private method for testing
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="methodName"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public static T InvokePrivateMethod<T>(object obj, string methodName, params object[] parameters)
+        {
+            var method = GetMethodInfo(obj, methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+            return (T)method.Invoke(obj, parameters);
+        }
+
+        /// <summary>
+        /// Invoke the static private method for testing
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="methodName"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public static T InvokePrivateStaticMethod<T>(object obj, string methodName, params object[] parameters)
+        {
+            var method = GetMethodInfo(obj, methodName, BindingFlags.NonPublic | BindingFlags.Static);
+            return (T)method.Invoke(obj, parameters);
+        }
     }
 }

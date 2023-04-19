@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
  *
@@ -31,7 +31,7 @@ namespace passbolt
         private MainController mainController;
         private RenderedNavigationService renderedNavigationService = new RenderedNavigationService();
         private BackgroundNavigationService backgroundNavigationService = new BackgroundNavigationService();
-        
+
         /// <summary>
         /// Constructor for the main page
         /// </summary>
@@ -52,7 +52,7 @@ namespace passbolt
             if (Rendered != null && args.Uri == this.blankPage)
             {
                 await this.mainController.LoadRenderedWebview();
-               this.mainController.SetWebviewSettings(Rendered);
+                this.mainController.SetWebviewSettings(Rendered);
             }
         }
 
@@ -77,6 +77,8 @@ namespace passbolt
 
         private async void Background_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
+           await this.mainController.BackgroundInitialisation();
+           await this.mainController.BackgroundNavigationCompleted(sender, args);
         }
 
         /// <summary>

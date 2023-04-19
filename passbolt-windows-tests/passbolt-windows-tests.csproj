@@ -125,9 +125,12 @@
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
     </Compile>
     <Compile Include="Mocks\MockMainController.cs" />
-    <Compile Include="UnitTests\Services\AbstractNavigationServiceTest.cs" />
-    <Compile Include="UnitTests\Services\BackgroundnavigationServiceTest.cs" />
-    <Compile Include="UnitTests\Services\RenderedNavigationServiceTest.cs" />
+    <Compile Include="UnitTests\Models\Messaging\IPCTests.cs" />
+    <Compile Include="UnitTests\Models\Messaging\AllowedTopicsTest.cs" />
+    <Compile Include="UnitTests\Services\NavigationService\AbstractNavigationServiceTest.cs" />
+    <Compile Include="UnitTests\Services\NavigationService\BackgroundnavigationServiceTest.cs" />
+    <Compile Include="UnitTests\Services\NavigationService\RenderedNavigationServiceTest.cs" />
+    <Compile Include="UnitTests\Utils\SerializationHelperTests.cs" />
     <Compile Include="UnitTests\Utils\UriBuilderTest.cs" />
     <Compile Include="Utils\ReflectionUtil.cs" />
   </ItemGroup>

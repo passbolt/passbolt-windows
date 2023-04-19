@@ -30,7 +30,7 @@ namespace passbolt_windows_tests.UnitTests
             string expectedUri = "http://example.com/home";
 
             // Act
-            string actualUri = UriBuiler.BuildHostUri(host, path);
+            string actualUri = UriBuilderHelper.BuildHostUri(host, path);
 
             // Assert
             Assert.AreEqual(expectedUri, actualUri);
