@@ -52,7 +52,7 @@ namespace passbolt.Controllers
             await webviewRendered.EnsureCoreWebView2Async();
             string desktopUrl = "desktop.passbolt.com";
 
-            // Load rendered folder to insert into the virtual host
+            // Load rendered folder to insert into the virtual host to avoid exception during testing
             if (renderedFolder == null)
                 renderedFolder = await this.FindInWebviewFolder("Rendered");
 
