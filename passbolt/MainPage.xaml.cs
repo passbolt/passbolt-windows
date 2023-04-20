@@ -45,8 +45,6 @@ namespace passbolt
         private void Rendered_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
             this.mainController.RenderedNavigationStarting(sender, args);
-            this.webviewRendered.CoreWebView2.OpenDevToolsWindow();
-
         }
 
         /// <summary>
@@ -55,7 +53,6 @@ namespace passbolt
         private async void Background_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
             await this.mainController.BackgroundNavigationStarting(sender, args);
-            this.webviewBackground.CoreWebView2.OpenDevToolsWindow();
         }
 
         /// <summary>
