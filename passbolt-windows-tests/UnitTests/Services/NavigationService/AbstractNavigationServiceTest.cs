@@ -34,22 +34,16 @@ namespace passbolt_windows_tests.UnitTests.Services
         [TestMethod]
         public void CanNavigate_ValidUrl_ReturnsTrue()
         {
-            // Arrange
             string url = "http://example.com";
-            // Act
             bool result = _navigationService.canNavigate(url);
-            // Assert
             Assert.IsTrue(result);
         }
 
         [TestMethod]
         public void CanNavigate_InvalidUrl_ReturnsFalse()
         {
-            // Arrange
             string url = "http://invalid.com";
-            // Act
             bool result = _navigationService.canNavigate(url);
-            // Assert
             Assert.IsFalse(result);
         }
     }

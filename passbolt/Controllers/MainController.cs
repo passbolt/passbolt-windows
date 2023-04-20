@@ -31,12 +31,12 @@ namespace passbolt.Controllers
     {
         private WebView2 webviewRendered;
         private WebView2 webviewBackground;
-        protected StorageFolder backgroundFolder;
-        protected StorageFolder renderedFolder;
+        private string blankPage = "about:blank";
+        protected StorageFolder distfolder;
         protected RenderedTopic renderedTopic;
         protected BackgroundTopic backgroundTopic;
-        protected RenderedNavigationService renderedNavigationService = new RenderedNavigationService();
-        protected BackgroundNavigationService backgroundNavigationService = new BackgroundNavigationService();
+        protected RenderedNavigationService renderedNavigationService;
+        protected BackgroundNavigationService backgroundNavigationService;
 
         public MainController(
             WebView2 webviewRendered, WebView2 webviewBackground) {
@@ -44,44 +44,79 @@ namespace passbolt.Controllers
             this.webviewRendered = webviewRendered;
         }
 
+
         /// <summary>
-        /// load the rendered web view
+        /// Navigation starting event handler for the background webview
         /// </summary>
-        public virtual async Task LoadRenderedWebview()
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public async Task BackgroundNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
-            await webviewRendered.EnsureCoreWebView2Async();
-            string desktopUrl = "desktop.passbolt.com";
+            if (webviewBackground == null) { return; }
 
-            // Load rendered folder to insert into the virtual host to avoid exception during testing
-            if (renderedFolder == null)
-                renderedFolder = await this.FindInWebviewFolder("Rendered");
+            //This is the navigation guard of our webviews
+            this.AllowNavigation(sender, args, this.backgroundNavigationService);
 
-            // Set virtual host to folder mapping, restrict host access to the desktopUrl
-            webviewRendered.CoreWebView2.SetVirtualHostNameToFolderMapping(desktopUrl, renderedFolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
-            // Set the source for rendered webview
-            webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(desktopUrl, "index.html"));
-            webviewRendered.CoreWebView2.WebMessageReceived += WebMessageReceived;
+            //Webviews are loaded in the background, the default url is about:blank. In case this url is loaded, we load the webviews with the correct urls.
+            if (args.Uri == this.blankPage)
+            {
+                await this.LoadWebviews();
+                this.SetWebviewSettings(webviewBackground);
+                webviewBackground.CoreWebView2.OpenDevToolsWindow();
+            }
         }
 
         /// <summary>
+        /// Navigation starting event handler for the rendered webview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public void RenderedNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+        {
+            if (webviewRendered == null) { return; }
+
+            //This is the navigation guard of our webviews
+            this.AllowNavigation(sender, args, this.renderedNavigationService);
+
+            //Webviews are loaded in the background, the default url is about:blank. In case this url is loaded, we load the webviews with the correct urls.
+            if (args.Uri == this.blankPage)
+            {
+                this.SetWebviewSettings(webviewRendered);
+            }
+        }
+        /// <summary>
         /// load the background web view
         /// </summary>
-        public virtual async Task LoadBackgroundWebview()
+        public virtual async Task LoadWebviews()
         {
+            await webviewRendered.EnsureCoreWebView2Async();
             await webviewBackground.EnsureCoreWebView2Async();
+            
             string randomUrl = Guid.NewGuid().ToString();
+            string backgroundUrl = randomUrl + "/Background";
+            string renderedUrl = randomUrl + "/Rendered";
 
-            // Load background folder to insert into the virtual host
-            if (backgroundFolder == null)
-                backgroundFolder = await this.FindInWebviewFolder("Background");
+            this.backgroundNavigationService = new BackgroundNavigationService(backgroundUrl);
+            this.renderedNavigationService = new RenderedNavigationService(renderedUrl);
+
+            StorageFolder installationFolder = Package.Current.InstalledLocation;
+
+            // Load dist folder to insert into the virtual host to avoid exception during testing
+            if (distfolder == null)
+                distfolder = await installationFolder.GetFolderAsync("Webviews");
 
             // Set virtual host to folder mapping, restrict host access to the randomUrl
-            webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(randomUrl, backgroundFolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
+            webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(randomUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
+            webviewRendered.CoreWebView2.SetVirtualHostNameToFolderMapping(randomUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
 
             // Set the source for background webview
-            webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(randomUrl, "index.html"));
-            // Subscribes to the WebMessageReceived event of the rendered window
+            webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, "index.html"));
+            webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, "index.html"));
+            // Subscribes to the WebMessageReceived event of the rendered adn background window
             webviewBackground.CoreWebView2.WebMessageReceived += WebMessageReceived;
+            webviewRendered.CoreWebView2.WebMessageReceived += WebMessageReceived;
         }
 
         /// <summary>
@@ -120,15 +155,25 @@ namespace passbolt.Controllers
         /// Initialised the background page and inject script
         /// </summary>
         /// <returns></returns>
-        public virtual async Task BackgroundInitialisation()
+        public virtual async Task WebviewInitialisation()
         {
-            // Load script to inject for background webview
+            // Load script to inject for webviews
             StorageFolder backgroundFolder = await this.FindInWebviewFolder("Background");
+            StorageFolder renderedFolder = await this.FindInWebviewFolder("Rendered");
+
             StorageFolder distBackgroundFolder = await backgroundFolder.GetFolderAsync("dist");
-            StorageFile file = await distBackgroundFolder.GetFileAsync("background.js");
-            Stream streamJS = await file.OpenStreamForReadAsync();
-            string script = new StreamReader(streamJS).ReadToEnd();
-            await webviewBackground.ExecuteScriptAsync(script);
+            StorageFolder distRenderedFolder = await renderedFolder.GetFolderAsync("dist");
+
+            StorageFile backgroundFile = await distBackgroundFolder.GetFileAsync("background.js");
+            StorageFile bundleFile = await distRenderedFolder.GetFileAsync("bundle.js");
+
+            Stream streamBackgroundJS = await backgroundFile.OpenStreamForReadAsync();
+            string scriptBackground = new StreamReader(streamBackgroundJS).ReadToEnd();
+            await webviewBackground.ExecuteScriptAsync(scriptBackground);
+
+            Stream streamRenderedJS = await bundleFile.OpenStreamForReadAsync();
+            string scriptRendered = new StreamReader(streamRenderedJS).ReadToEnd();
+            await webviewRendered.ExecuteScriptAsync(scriptRendered);
         }
 
         /// <summary>
@@ -139,7 +184,7 @@ namespace passbolt.Controllers
         /// <returns></returns>
         public virtual void AllowNavigation(WebView2 sender, CoreWebView2NavigationStartingEventArgs args, AbstractNavigationService navigationService)
         {
-            if (!navigationService.canNavigate(args.Uri))
+            if (navigationService != null && !navigationService.canNavigate(args.Uri))
             {
                 args.Cancel = true;
             }
@@ -177,7 +222,7 @@ namespace passbolt.Controllers
 
 
         /// <summary>
-        /// When rendered webview has finished his navigation
+        /// When background webview has finished his navigation
         /// </summary>
         /// <param name="sender"></param>
         /// <returns></returns>
@@ -193,9 +238,23 @@ namespace passbolt.Controllers
                 this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered);
                 webviewBackground.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(message));
                 webviewRendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(message));
+                await this.WebviewInitialisation();
             }
         }
 
+        /// <summary>
+        /// When rendered webview has finished his navigation
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <returns></returns>
+        public async Task RenderedNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        {
+            Debug.WriteLine("NavigationCompleted: " + sender.CoreWebView2.Source);
+            if (args.IsSuccess)
+            {
+                await this.WebviewInitialisation();
+            }
+        }
         /// <summary>
         /// Retrieve the Corewebview from the sender
         /// </summary>

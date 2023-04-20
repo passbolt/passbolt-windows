@@ -22,35 +22,25 @@ namespace passbolt_windows_tests.UnitTests.Services
     {
         private BackgroundNavigationService _navigationService;
 
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            _navigationService = new BackgroundNavigationService();
-        }
-
         [TestMethod]
         public void CanNavigate_ValidUrl_ReturnsTrue()
         {
-            // Arrange
             string url = "http://01234567-89ab-cdef-0123-456789abcdef/index.html";
+            _navigationService = new BackgroundNavigationService(url);
 
-            // Act
             bool result = _navigationService.canNavigate(url);
 
-            // Assert
             Assert.IsTrue(result);
         }
 
         [TestMethod]
         public void CanNavigate_InvalidUrl_ReturnsFalse()
         {
-            // Arrange
             string url = "http://example.com";
+            _navigationService = new BackgroundNavigationService(url);
 
-            // Act
             bool result = _navigationService.canNavigate(url);
 
-            // Assert
             Assert.IsFalse(result);
         }
     }

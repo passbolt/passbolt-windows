@@ -19,10 +19,14 @@ namespace passbolt.Services.NavigationService
 {
     public class RenderedNavigationService : AbstractNavigationService
     {
-        public RenderedNavigationService() {
+        public RenderedNavigationService(string currentUrl) {
+            this.currentUrl = currentUrl;
+
+            string pattern = $"^http://{this.currentUrl}/(index\\.html)$";
+
             base.allowedUrls = new List<Regex>()
                 {
-                    new Regex(@"^http://desktop.passbolt.com/(index\.html)$"),
+                    new Regex(@pattern),
                 };
         }
     }

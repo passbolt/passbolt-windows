@@ -48,15 +48,11 @@ namespace passbolt_windows_tests.UnitTests
             base.SetWebviewSettings(webView);
         }
 
-        public override async Task LoadRenderedWebview()
+        public override async Task LoadWebviews()
         {
-           await base.LoadRenderedWebview();
+           await base.LoadWebviews();
         }
 
-        public override async Task LoadBackgroundWebview()
-        {
-            await base.LoadBackgroundWebview();
-        }
         public override async Task BackgroundInitialisation()
         {
             await base.BackgroundInitialisation();

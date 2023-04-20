@@ -19,11 +19,14 @@ namespace passbolt.Services.NavigationService
 {
     public class BackgroundNavigationService : AbstractNavigationService
     {
-        public BackgroundNavigationService()
+        public BackgroundNavigationService(string currentUrl)
         {
+            this.currentUrl = currentUrl;
+            string pattern = $"^http://{this.currentUrl}/(index\\.html)$";
+
             base.allowedUrls = new List<Regex>()
                 {
-                    new Regex(@"^http:\/\/[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}\/index\.html$"),
+                    new Regex(@pattern),
                 };
         }
     }

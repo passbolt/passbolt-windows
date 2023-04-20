@@ -22,35 +22,26 @@ namespace passbolt_windows_tests.UnitTests.Services
     {
         private RenderedNavigationService _navigationService;
 
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            _navigationService = new RenderedNavigationService();
-        }
 
         [TestMethod]
         public void CanNavigate_ValidUrl_ReturnsTrue()
         {
-            // Arrange
             string url = "http://desktop.passbolt.com/index.html";
+            _navigationService = new RenderedNavigationService(url);
 
-            // Act
             bool result = _navigationService.canNavigate(url);
 
-            // Assert
             Assert.IsTrue(result);
         }
 
         [TestMethod]
         public void CanNavigate_InvalidUrl_ReturnsFalse()
         {
-            // Arrange
             string url = "http://invalid.com";
+            _navigationService = new RenderedNavigationService(url);
 
-            // Act
             bool result = _navigationService.canNavigate(url);
 
-            // Assert
             Assert.IsFalse(result);
         }
     }

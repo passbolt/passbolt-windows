@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
  *
@@ -25,12 +25,9 @@ namespace passbolt
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private string blankPage = "about:blank";
         private WebView2 webviewRendered { get { return Rendered; } }
         private WebView2 webviewBackground { get { return Background; } }
         private MainController mainController;
-        private RenderedNavigationService renderedNavigationService = new RenderedNavigationService();
-        private BackgroundNavigationService backgroundNavigationService = new BackgroundNavigationService();
 
         /// <summary>
         /// Constructor for the main page
@@ -45,15 +42,11 @@ namespace passbolt
         /// <summary>
         /// This method is called when the rendered web view completes navigation.
         /// </summary>
-        private async void Rendered_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+        private void Rendered_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
-            this.mainController.AllowNavigation(sender, args, this.renderedNavigationService);
+            this.mainController.RenderedNavigationStarting(sender, args);
+            this.webviewRendered.CoreWebView2.OpenDevToolsWindow();
 
-            if (Rendered != null && args.Uri == this.blankPage)
-            {
-                await this.mainController.LoadRenderedWebview();
-                this.mainController.SetWebviewSettings(Rendered);
-            }
         }
 
         /// <summary>
@@ -61,14 +54,8 @@ namespace passbolt
         /// </summary>
         private async void Background_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
-
-            this.mainController.AllowNavigation(sender, args, this.backgroundNavigationService);
-
-            if (Rendered != null && args.Uri == this.blankPage)
-            {
-                await this.mainController.LoadBackgroundWebview();
-                this.mainController.SetWebviewSettings(Background);
-            }
+            await this.mainController.BackgroundNavigationStarting(sender, args);
+            this.webviewBackground.CoreWebView2.OpenDevToolsWindow();
         }
 
         /// <summary>
@@ -77,16 +64,15 @@ namespace passbolt
 
         private async void Background_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-           await this.mainController.BackgroundInitialisation();
            await this.mainController.BackgroundNavigationCompleted(sender, args);
         }
 
         /// <summary>
         /// This method is called when the rendered web view completes navigation.
         /// </summary>
-        private void Rendered_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        private async void Rendered_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-
+            await this.mainController.RenderedNavigationCompleted(sender, args);
         }
     }
 }

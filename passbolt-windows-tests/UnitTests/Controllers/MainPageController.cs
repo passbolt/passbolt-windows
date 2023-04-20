@@ -84,7 +84,7 @@ namespace passbolt_windows_tests
             Assert.IsTrue(isMatch);
 
             // Call LoadBackgroundWebview asynchronously and wait for it to complete
-            var task = this.mainController.LoadBackgroundWebview();
+            var task = this.mainController.LoadWebviews();
             task.Wait();
             //Should initialized the folderStorage
             Assert.IsNotNull(backgroundFolder);

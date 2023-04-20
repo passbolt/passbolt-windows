@@ -20,6 +20,7 @@ namespace passbolt.Services.NavigationService
     public abstract class AbstractNavigationService
     {
         protected List<Regex> allowedUrls;
+        public string currentUrl { get; set; }
         public bool canNavigate(string url)
         {
             foreach (Regex regex in allowedUrls)
