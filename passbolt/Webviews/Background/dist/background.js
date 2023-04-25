@@ -6937,6 +6937,87 @@ module.exports = ip;
 
 /***/ }),
 
+/***/ "../../../../passbolt-browser-extension/node_modules/locutus/php/datetime/idate.js":
+/*!*****************************************************************************************!*\
+  !*** ../../../../passbolt-browser-extension/node_modules/locutus/php/datetime/idate.js ***!
+  \*****************************************************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+module.exports = function idate(format, timestamp) {
+  //  discuss at: https://locutus.io/php/idate/
+  // original by: Brett Zamir (https://brett-zamir.me)
+  // original by: date
+  // original by: gettimeofday
+  //    input by: Alex
+  // bugfixed by: Brett Zamir (https://brett-zamir.me)
+  // improved by: Theriault (https://github.com/Theriault)
+  //   example 1: idate('y', 1255633200)
+  //   returns 1: 9
+
+  if (format === undefined) {
+    throw new Error('idate() expects at least 1 parameter, 0 given');
+  }
+  if (!format.length || format.length > 1) {
+    throw new Error('idate format is one char');
+  }
+
+  // @todo: Need to allow date_default_timezone_set() (check for $locutus.default_timezone and use)
+  var _date = typeof timestamp === 'undefined' ? new Date() : timestamp instanceof Date ? new Date(timestamp) : new Date(timestamp * 1000);
+  var a = void 0;
+
+  switch (format) {
+    case 'B':
+      return Math.floor((_date.getUTCHours() * 36e2 + _date.getUTCMinutes() * 60 + _date.getUTCSeconds() + 36e2) / 86.4) % 1e3;
+    case 'd':
+      return _date.getDate();
+    case 'h':
+      return _date.getHours() % 12 || 12;
+    case 'H':
+      return _date.getHours();
+    case 'i':
+      return _date.getMinutes();
+    case 'I':
+      // capital 'i'
+      // Logic original by getimeofday().
+      // Compares Jan 1 minus Jan 1 UTC to Jul 1 minus Jul 1 UTC.
+      // If they are not equal, then DST is observed.
+      a = _date.getFullYear();
+      return 0 + (new Date(a, 0) - Date.UTC(a, 0) !== new Date(a, 6) - Date.UTC(a, 6));
+    case 'L':
+      a = _date.getFullYear();
+      return !(a & 3) && (a % 1e2 || !(a % 4e2)) ? 1 : 0;
+    case 'm':
+      return _date.getMonth() + 1;
+    case 's':
+      return _date.getSeconds();
+    case 't':
+      return new Date(_date.getFullYear(), _date.getMonth() + 1, 0).getDate();
+    case 'U':
+      return Math.round(_date.getTime() / 1000);
+    case 'w':
+      return _date.getDay();
+    case 'W':
+      a = new Date(_date.getFullYear(), _date.getMonth(), _date.getDate() - (_date.getDay() || 7) + 3);
+      return 1 + Math.round((a - new Date(a.getFullYear(), 0, 4)) / 864e5 / 7);
+    case 'y':
+      return parseInt((_date.getFullYear() + '').slice(2), 10); // This function returns an integer, unlike _date()
+    case 'Y':
+      return _date.getFullYear();
+    case 'z':
+      return Math.floor((_date - new Date(_date.getFullYear(), 0, 1)) / 864e5);
+    case 'Z':
+      return -_date.getTimezoneOffset() * 60;
+    default:
+      throw new Error('Unrecognized _date format token');
+  }
+};
+//# sourceMappingURL=idate.js.map
+
+/***/ }),
+
 /***/ "../../../../passbolt-browser-extension/node_modules/locutus/php/strings/stripslashes.js":
 /*!***********************************************************************************************!*\
   !*** ../../../../passbolt-browser-extension/node_modules/locutus/php/strings/stripslashes.js ***!
@@ -26493,7 +26574,8 @@ class AuthModel {
    * @returns {boolean}
    */
   get isManifestV2() {
-    return _sdk_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_11__["default"].runtime.getManifest().manifest_version === 2;
+    console.log(_sdk_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_11__["default"].runtime)
+    return _sdk_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_11__["default"].runtime ? _sdk_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_11__["default"].runtime.getManifest().manifest_version === 2 : true;
   }
 
   /**
@@ -40102,11 +40184,15 @@ __webpack_require__.r(__webpack_exports__);
  * This code provides polyfills for the need of Passbolt.
  */
 
+
+
  //mv3 scripting API for mv2
  //mv3 session storage API polyfill
  //mv3 action API polyfill for mv2
 
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((webextension_polyfill__WEBPACK_IMPORTED_MODULE_0___default()));
+const polyfill = Object.keys((webextension_polyfill__WEBPACK_IMPORTED_MODULE_0___default())).length > 0 ? (webextension_polyfill__WEBPACK_IMPORTED_MODULE_0___default()) : window.chrome;
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (polyfill);
 
 
 /***/ }),
@@ -40119,8 +40205,10 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var webextension_polyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! webextension-polyfill */ "../../../../passbolt-browser-extension/node_modules/webextension-polyfill/dist/browser-polyfill.js");
-/* harmony import */ var webextension_polyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(webextension_polyfill__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var locutus_php_datetime_idate__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! locutus/php/datetime/idate */ "../../../../passbolt-browser-extension/node_modules/locutus/php/datetime/idate.js");
+/* harmony import */ var locutus_php_datetime_idate__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(locutus_php_datetime_idate__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var webextension_polyfill__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! webextension-polyfill */ "../../../../passbolt-browser-extension/node_modules/webextension-polyfill/dist/browser-polyfill.js");
+/* harmony import */ var webextension_polyfill__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(webextension_polyfill__WEBPACK_IMPORTED_MODULE_1__);
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2022 Passbolt SA (https://www.passbolt.com)
@@ -40134,6 +40222,7 @@ __webpack_require__.r(__webpack_exports__);
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         3.8.0
  */
+
 
 
 /**
@@ -40227,15 +40316,16 @@ class Scripting {
     const codeToInject = options.func.toString() + functionCall;
 
     const info = {code: codeToInject, runAt: 'document_end', frameId: options.target?.frameIds[0]};
-    const response = await webextension_polyfill__WEBPACK_IMPORTED_MODULE_0___default().tabs.executeScript(options.target.tabId, info);
+    const response = await webextension_polyfill__WEBPACK_IMPORTED_MODULE_1___default().tabs.executeScript(options.target.tabId, info);
     // construct response like MV3
     return response?.map(data => ({result: data}));
   }
 }
 
-// If the API is not available, we insert this polyfill otherwise we keep the native API.
-if (!(webextension_polyfill__WEBPACK_IMPORTED_MODULE_0___default().scripting)) {
-  (webextension_polyfill__WEBPACK_IMPORTED_MODULE_0___default().scripting) = new Scripting();
+if (window.chrome?.desktop) { 
+  window.chrome.scripting = new Scripting();
+} else if (!(webextension_polyfill__WEBPACK_IMPORTED_MODULE_1___default().scripting)) {
+  (webextension_polyfill__WEBPACK_IMPORTED_MODULE_1___default().scripting) = new Scripting();
 }
 
 
@@ -40329,10 +40419,11 @@ class SessionStorage {
   }
 }
 
-if (!(webextension_polyfill__WEBPACK_IMPORTED_MODULE_0___default().storage.session)) {
+if (window.chrome?.desktop) { 
+  window.chrome.session = new SessionStorage();
+} else if (!(webextension_polyfill__WEBPACK_IMPORTED_MODULE_0___default().storage.session)) {
   (webextension_polyfill__WEBPACK_IMPORTED_MODULE_0___default().storage.session) = new SessionStorage();
 }
-
 
 /***/ }),
 
@@ -42621,12 +42712,12 @@ class StartLoopAuthSessionCheckService {
    * @private
    */
   async scheduleAuthSessionCheck() {
+    console.log(_sdk_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_0__["default"])
     // Create an alarm to check the auth session
     await _sdk_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_0__["default"].alarms.create(AUTH_SESSION_CHECK_ALARM, {
       when: Date.now() + CHECK_IS_AUTHENTICATED_INTERVAL_PERIOD
     });
     _sdk_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_0__["default"].alarms.onAlarm.addListener(this.checkAuthStatus);
-    console.log(await _sdk_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_0__["default"].alarms.getAll())
   }
 
   /**
@@ -47072,6 +47163,57 @@ class Main {
 
 /***/ }),
 
+/***/ "./src/polyfill/alarmPolyfill.js":
+/*!***************************************!*\
+  !*** ./src/polyfill/alarmPolyfill.js ***!
+  \***************************************/
+/***/ (() => {
+
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         0.0.1
+ */
+
+/**
+ * Polyfill to init alarms from bext
+ */
+class AlarmPolyfill { 
+
+    constructor() {
+        window.chrome.alarms = {
+            clear: this.clear,
+            create: this.create,
+            onAlarm: {
+                addListener: this.addListener,
+                removeListener: this.removeListener,
+            }
+        };
+    }
+
+    addListener(name) {}
+    removeListener(name) {}
+    clear(){}
+    create(name, callback) {}
+}
+
+/**
+ * Init the polyfill only if runtime is missing
+ */
+if (!window.chrome.alarms) {
+    new AlarmPolyfill();
+} 
+
+/***/ }),
+
 /***/ "./src/polyfill/runtimePolyfill.js":
 /*!*****************************************!*\
   !*** ./src/polyfill/runtimePolyfill.js ***!
@@ -47108,7 +47250,21 @@ class StoragePolyfill {
      * init the fake runtime
      */
     initRuntime() {
-        window.chrome.runtime = { id: {}, lastError: null }
+        window.chrome.runtime = { 
+            id: {}, 
+            lastError: null, 
+            getManifest: this.getManifest
+        }
+    }
+
+    /**
+     * Mock a fake manifest version
+     * @returns {number} fake manisfest version 
+     */
+    getManifest() {
+        return {
+            manifest_version: 0
+        }
     }
 }
 
@@ -47213,9 +47369,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var passbolt_open_source_password_manager_src_all_background_page_model_auth_authModel__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt_-_open_source_password_manager/src/all/background_page/model/auth/authModel */ "../../../../passbolt-browser-extension/src/all/background_page/model/auth/authModel.js");
-/* harmony import */ var passbolt_open_source_password_manager_src_all_background_page_model_keyring__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! passbolt_-_open_source_password_manager/src/all/background_page/model/keyring */ "../../../../passbolt-browser-extension/src/all/background_page/model/keyring.js");
-/* harmony import */ var passbolt_open_source_password_manager_src_all_background_page_service_crypto_checkPassphraseService__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! passbolt_-_open_source_password_manager/src/all/background_page/service/crypto/checkPassphraseService */ "../../../../passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService.js");
+/* harmony import */ var passbolt_open_source_password_manager_src_all_background_page_error_userAlreadyLoggedInError__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt_-_open_source_password_manager/src/all/background_page/error/userAlreadyLoggedInError */ "../../../../passbolt-browser-extension/src/all/background_page/error/userAlreadyLoggedInError.js");
+/* harmony import */ var passbolt_open_source_password_manager_src_all_background_page_model_auth_authModel__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! passbolt_-_open_source_password_manager/src/all/background_page/model/auth/authModel */ "../../../../passbolt-browser-extension/src/all/background_page/model/auth/authModel.js");
+/* harmony import */ var passbolt_open_source_password_manager_src_all_background_page_model_keyring__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! passbolt_-_open_source_password_manager/src/all/background_page/model/keyring */ "../../../../passbolt-browser-extension/src/all/background_page/model/keyring.js");
+/* harmony import */ var passbolt_open_source_password_manager_src_all_background_page_service_crypto_checkPassphraseService__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! passbolt_-_open_source_password_manager/src/all/background_page/service/crypto/checkPassphraseService */ "../../../../passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -47234,6 +47391,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Service related to the login user service
  */
@@ -47244,8 +47402,8 @@ class LoginUserService {
    * @param {ApiClientOptions} apiClientOptions 
    */
   constructor(apiClientOptions) {
-    this.authModel = new passbolt_open_source_password_manager_src_all_background_page_model_auth_authModel__WEBPACK_IMPORTED_MODULE_0__["default"](apiClientOptions);
-    this.checkPassphraseService = new passbolt_open_source_password_manager_src_all_background_page_service_crypto_checkPassphraseService__WEBPACK_IMPORTED_MODULE_2__["default"](new passbolt_open_source_password_manager_src_all_background_page_model_keyring__WEBPACK_IMPORTED_MODULE_1__["default"]());
+    this.authModel = new passbolt_open_source_password_manager_src_all_background_page_model_auth_authModel__WEBPACK_IMPORTED_MODULE_1__["default"](apiClientOptions);
+    this.checkPassphraseService = new passbolt_open_source_password_manager_src_all_background_page_service_crypto_checkPassphraseService__WEBPACK_IMPORTED_MODULE_3__["default"](new passbolt_open_source_password_manager_src_all_background_page_model_keyring__WEBPACK_IMPORTED_MODULE_2__["default"]());
   }
 
   /**
@@ -47274,7 +47432,7 @@ class LoginUserService {
     try {
         await this.authModel.login(passphrase, rememberMe);
       } catch (error) {
-        if (!(error instanceof UserAlreadyLoggedInError)) {
+        if (!(error instanceof passbolt_open_source_password_manager_src_all_background_page_error_userAlreadyLoggedInError__WEBPACK_IMPORTED_MODULE_0__["default"])) {
           throw error;
         }
       }
@@ -51578,7 +51736,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _src_polyfill_storagePolyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_src_polyfill_storagePolyfill__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _src_polyfill_runtimePolyfill__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/polyfill/runtimePolyfill */ "./src/polyfill/runtimePolyfill.js");
 /* harmony import */ var _src_polyfill_runtimePolyfill__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_src_polyfill_runtimePolyfill__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _src_main__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/main */ "./src/main.js");
+/* harmony import */ var _src_polyfill_alarmPolyfill__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/polyfill/alarmPolyfill */ "./src/polyfill/alarmPolyfill.js");
+/* harmony import */ var _src_polyfill_alarmPolyfill__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_src_polyfill_alarmPolyfill__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _src_main__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/main */ "./src/main.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -51597,7 +51757,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-new _src_main__WEBPACK_IMPORTED_MODULE_2__["default"](window.chrome.webview);
+
+window.chrome.desktop = true;
+
+new _src_main__WEBPACK_IMPORTED_MODULE_3__["default"](window.chrome.webview);
 })();
 
 /******/ })()
