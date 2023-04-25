@@ -11,42 +11,18 @@
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.0.1
  */
+import React from "react";
+import ReactDOM from "react-dom";
+import IPCHandler from "./shared/IPCHandler";
+import ExtBootstrapApp from "./ExtBootstrapApp";
 
-/**
- * Represents a React component that serves as an app.
- * @class
- * @extends React.Component
- */
-class App extends React.Component {
-
-    /**
-     * Creates an instance of the App component.
-     * @param {Object} props - The props passed to the component.
-     */
-    constructor(props) {
-        super(props);
-    }
-
-    /**
-     * Adds event listeners for the "from-main" event from the main process.
-     */
-    componentDidMount() {
-        this.onEvents();
-    } 
-
-    /**
-     * Defines the event handler for "from-main" event from the main process.
-     * @method
-     */
-    onEvents() {
-        window.chrome.webview.addEventListener('message', () => {
-            switch (ipc.topic) {
-                case 'initialization':
-                    window.chrome.webview.postMsessage(JSON.stringify({ topic: 'initialization'}));                    
-                    break;
-            }
-        })
-    }
+export async function main() {
+  // Port connection
+  const channel = new IPCHandler();
+  // Start ExtBootstrapApp
+  const storage = localStorage;
+  const domContainer = document.createElement("div");
+  document.body.appendChild(domContainer);
+  ReactDOM.render(<ExtBootstrapApp port={channel} storage={storage} />, domContainer);
 }
 
-export default App;
