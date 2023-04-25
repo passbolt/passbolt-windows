@@ -55,6 +55,7 @@ Before building this application, you need to have the following installed on yo
 
 - Visual Studio 2019 or later with the UWP workload.
 - The WebView2 runtime installed. You can download it from the [Microsoft Edge WebView2 download page](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
+- Link your bext application : npm link passbolt_-_open_source_password_manager
 
 ## Building the application
 

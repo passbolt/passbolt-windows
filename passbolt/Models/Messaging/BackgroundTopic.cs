@@ -15,6 +15,7 @@
 using Microsoft.UI.Xaml.Controls;
 using passbolt.Exceptions;
 using System.Diagnostics;
+using Windows.UI.Xaml;
 
 namespace passbolt.Models.Messaging
 {
@@ -31,8 +32,8 @@ namespace passbolt.Models.Messaging
         {
             switch (ipc.topic)
             {
-                case AllowedTopics.INITIALIZATION:
-                    Debug.Write("Background webview initialized");
+                case AllowedTopics.DESKTOPAUTHENTICATE:
+                    rendered.Visibility = Visibility.Visible;
                     break;
                 default:
                     new UnauthorizedTopicException("Background webview");

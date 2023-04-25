@@ -61,15 +61,16 @@ namespace passbolt
 
         private async void Background_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
+            webviewBackground.CoreWebView2.OpenDevToolsWindow();
            await this.mainController.BackgroundNavigationCompleted(sender, args);
         }
 
         /// <summary>
         /// This method is called when the rendered web view completes navigation.
         /// </summary>
-        private async void Rendered_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        private void Rendered_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-            await this.mainController.RenderedNavigationCompleted(sender, args);
+            this.mainController.RenderedNavigationCompleted(sender, args);
         }
     }
 }

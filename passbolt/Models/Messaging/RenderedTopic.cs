@@ -12,7 +12,6 @@
  * @since         0.0.1
  */
 
-using System.Diagnostics;
 using Microsoft.UI.Xaml.Controls;
 using passbolt.Exceptions;
 
@@ -32,9 +31,6 @@ namespace passbolt.Models.Messaging
         {
             switch (ipc.topic)
             {
-                case AllowedTopics.INITIALIZATION:
-                    Debug.Write("Rendered webview initialized");
-                    break;
                 default: 
                     new UnauthorizedTopicException("Rendered webview");
                     break;

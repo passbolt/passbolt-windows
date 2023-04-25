@@ -11,6 +11,9 @@
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.0.1
  */
+
+import './src/polyfill/storagePolyfill';
+import './src/polyfill/runtimePolyfill';
 import Main from "./src/main";
 
 new Main(window.chrome.webview);

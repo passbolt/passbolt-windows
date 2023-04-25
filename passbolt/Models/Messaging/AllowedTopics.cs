@@ -18,7 +18,9 @@ namespace passbolt.Models.Messaging
 {
     public class AllowedTopics
     {
-        public const string INITIALIZATION = "initialization";
+        public const string DESKTOPAUTHENTICATE = "passbolt.desktop.authenticate";
+        public const string AFTERLOGIN = "passbolt.auth.after-login";
+        public const string ERROR = "passbolt.error";
 
         /// <summary>
         /// Retrieve all allowed topics
@@ -26,7 +28,7 @@ namespace passbolt.Models.Messaging
         /// <returns></returns>
         private static List<string> GetAllTopicNames()
         {
-            return new List<string> { INITIALIZATION };
+            return new List<string> { DESKTOPAUTHENTICATE, AFTERLOGIN };
         }
 
         /// <summary>

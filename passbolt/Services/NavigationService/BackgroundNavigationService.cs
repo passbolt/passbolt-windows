@@ -22,7 +22,7 @@ namespace passbolt.Services.NavigationService
         public BackgroundNavigationService(string currentUrl)
         {
             this.currentUrl = currentUrl;
-            string pattern = $"^http://{this.currentUrl}/(index\\.html)$";
+            string pattern = $"^https://{this.currentUrl}/(index\\.html)$";
 
             base.allowedUrls = new List<Regex>()
                 {

@@ -12,4 +12,5 @@
  * @since         0.0.1
  */
 
-export const INITIALIZATION = "initialization";
+export const USERLOGGEDIN = "passbolt.auth.after-login";
+export const ERROR = "passbolt.error";

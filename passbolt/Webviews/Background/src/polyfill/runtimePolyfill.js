@@ -12,17 +12,30 @@
  * @since         0.0.1
  */
 
-import { INITIALIZATION } from "../enumerations/appEventEnumeration";
+/**
+ * Polyfill to init a fake runtime to match with bext runtime requierement
+ */
+class StoragePolyfill {
 
-class AppEvent {
-    onMessageReceived(ipc) {
-        switch (ipc.topic) {
-            case INITIALIZATION:
-                window.chrome.webview.postMessage(JSON.stringify({ topic: INITIALIZATION }));
-                break;
-        }
+    /**
+     * constructor to init StoragePolyfill and init a fake runtime
+     */
+    constructor() {
+        this.initRuntime();
+    }
+
+    /**
+     * init the fake runtime
+     */
+    initRuntime() {
+        window.chrome.runtime = { id: {}, lastError: null }
     }
 }
 
-
-export default AppEvent;
+/**
+ * Init the polyfill only if runtime is missing
+ */
+if (!window.chrome.runtime) {
+    new StoragePolyfill();
+}
+  

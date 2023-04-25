@@ -28,10 +28,21 @@ namespace passbolt.Utils
         public static string BuildHostUri(string host, string path)
         {
             UriBuilder builder = new UriBuilder();
-            builder.Scheme = "http";
+            builder.Scheme = "https";
             builder.Host = host;
             builder.Path = path;
             return builder.Uri.ToString();
+        }
+
+        /// <summary>
+        /// retrieve the host and scheme from a uri
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public static string GetHostAndShemeForUri(string uri)
+        {
+            UriBuilder builder = new UriBuilder(uri);
+            return builder.Scheme + "://" + builder.Host;
         }
     }
 }

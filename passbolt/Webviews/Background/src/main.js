@@ -12,8 +12,10 @@
  * @since         0.0.1
  */
 
-import * as openpgp from 'openpgp';
-import AppEvent from './events/appEvents';
+import { AuthEvents } from './events/authEvents';
+import { mockStorage } from './data/mockStorage';
+import LocalStorage from 'passbolt_-_open_source_password_manager/src/all/background_page/sdk/storage';
+
 
 /**
  * Represents the main class that sets up an event listener for the `message` event.
@@ -21,13 +23,14 @@ import AppEvent from './events/appEvents';
  */
 export default class Main {
 
-    appEvents = new AppEvent();
     /**
      * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
      * @constructor
      * @param {HTMLElement} webview - The webview element to listen for the `message` event on.
      */
     constructor(webview) {
+        this.initStorage();
+
         webview.addEventListener("message", (event) => {
             this.onMessageReceived(event);
         });
@@ -39,7 +42,25 @@ export default class Main {
      * @param {HTMLElement} webview - The webview element to listen for the `message` event on.
      */
     onMessageReceived(ipc) {
-        this.appEvents.onMessageReceived(ipc.data);
+        AuthEvents.listen(ipc.data)
+    }
+
+    /**
+     * init the local storage with the mock data in case it does not exist
+     */
+    async initStorage() {
+        if (localStorage.getItem('_passbolt_data') === null) {
+            try {
+                if (localStorage.length === 0) {
+                    Object.keys(mockStorage).forEach((key) => {
+                        localStorage.setItem(key, JSON.stringify(mockStorage[key]));
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to initialize storage:', error);
+            }
+        }
+        await LocalStorage.init()
     }
 }
 

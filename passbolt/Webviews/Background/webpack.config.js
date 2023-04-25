@@ -6,5 +6,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'background.js',
-  },
+    },
+    devtool: 'cheap-module-source-map',
 };
+
