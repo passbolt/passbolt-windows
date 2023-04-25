@@ -13,43 +13,30 @@
  */
 
 /**
- * Polyfill to init a fake runtime to match with bext runtime requierement
+ * Polyfill to init alarms from bext
  */
-class StoragePolyfill {
+class AlarmPolyfill { 
 
-    /**
-     * constructor to init StoragePolyfill and init a fake runtime
-     */
     constructor() {
-        this.initRuntime();
+        window.chrome.alarms = {
+            clear: this.clear,
+            create: this.create,
+            onAlarm: {
+                addListener: this.addListener,
+                removeListener: this.removeListener,
+            }
+        };
     }
 
-    /**
-     * init the fake runtime
-     */
-    initRuntime() {
-        window.chrome.runtime = { 
-            id: {}, 
-            lastError: null, 
-            getManifest: this.getManifest
-        }
-    }
-
-    /**
-     * Mock a fake manifest version
-     * @returns {number} fake manisfest version 
-     */
-    getManifest() {
-        return {
-            manifest_version: 0
-        }
-    }
+    addListener(name) {}
+    removeListener(name) {}
+    clear(){}
+    create(name, callback) {}
 }
 
 /**
  * Init the polyfill only if runtime is missing
  */
-if (!window.chrome.runtime) {
-    new StoragePolyfill();
-}
-  
+if (!window.chrome.alarms) {
+    new AlarmPolyfill();
+} 
