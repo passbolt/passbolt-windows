@@ -15,11 +15,12 @@
 import React, { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom' 
+import App from './src/app';
 
 ReactDOM.render(
     <StrictMode>
        <BrowserRouter>
-            <h2>Rendered</h2>
+            <App />
         </BrowserRouter>
     </StrictMode>
     , document.getElementById('root')

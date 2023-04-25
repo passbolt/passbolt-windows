@@ -25,9 +25,7 @@ using passbolt.Controllers;
 using passbolt_windows_tests.UnitTests;
 using System;
 using passbolt.Utils;
-using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
-using static System.Net.WebRequestMethods;
 
 namespace passbolt_windows_tests
 {
@@ -45,6 +43,8 @@ namespace passbolt_windows_tests
         private string renderedUrl = "http://desktop.passbolt.com/index.html";
         private string attackerUrl = "http://attacker-background.com";
         private string validUrl = "";
+        private string validIPC = "window.chrome.webview.postMessage(JSON.stringify({ topic: \"initialisation\" }))";
+        private string invalidIPC = "window.chrome.webview.postMessage(JSON.stringify({ topic: \"invalid-IPC\" }))";
 
         [TestInitialize]
         public void TestInitialize()
@@ -84,7 +84,7 @@ namespace passbolt_windows_tests
             Assert.IsTrue(isMatch);
 
             // Call LoadBackgroundWebview asynchronously and wait for it to complete
-            var task = this.mainController.LoadBackgroundWebview();
+            var task = this.mainController.LoadWebviews();
             task.Wait();
             //Should initialized the folderStorage
             Assert.IsNotNull(backgroundFolder);
@@ -185,7 +185,7 @@ namespace passbolt_windows_tests
         {
             String backgroundUrl = mainController.GeneratateRandomBackgroundHost(webviewBackground);
             validUrl = backgroundUrl.ToString();
-            webviewBackground.CoreWebView2.NavigationCompleted += async (sender, args) =>
+            webviewBackground.CoreWebView2.NavigationCompleted += (sender, args) =>
             {
                 Assert.AreEqual(backgroundUrl.ToString(), webviewBackground.Source.ToString());
                 Assert.IsTrue(args.IsSuccess);
@@ -202,7 +202,7 @@ namespace passbolt_windows_tests
         [Description("As a desktop application I want to validate the navigation for background webview - error")]
         public void ShouldValidateBackgroundWebviewNavigationError()
         {
-            string randomUrl = new Uri(UriBuiler.BuildHostUri(Guid.NewGuid().ToString(), "index.html")).ToString();
+            string randomUrl = new Uri(UriBuilderHelper.BuildHostUri(Guid.NewGuid().ToString(), "index.html")).ToString();
             webviewBackground.CoreWebView2.NavigationCompleted -= this.Background_NavigationCompletedSuccess;
             webviewBackground.CoreWebView2.NavigationCompleted += this.Background_NavigationCompletedError;
 

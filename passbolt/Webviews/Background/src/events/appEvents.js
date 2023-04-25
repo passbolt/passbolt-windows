@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
  *
@@ -12,26 +12,17 @@
  * @since         0.0.1
  */
 
-using System;
+import { INITIALIZATION } from "../enumerations/appEventEnumeration";
 
-namespace passbolt.Utils
-{
-    public class UriBuiler
-    {
-
-        /// <summary>
-        /// build a host uri for webviews
-        /// </summary>
-        /// <param name="host"></param>backgroundFolder
-        /// <param name="path"></param>
-        /// <returns>The uri for the host</returns>
-        public static string BuildHostUri(string host, string path)
-        {
-            UriBuilder builder = new UriBuilder();
-            builder.Scheme = "http";
-            builder.Host = host;
-            builder.Path = path;
-            return builder.Uri.ToString();
+class AppEvent {
+    onMessageReceived(ipc) {
+        switch (ipc.topic) {
+            case INITIALIZATION:
+                window.chrome.webview.postMessage(JSON.stringify({ topic: INITIALIZATION }));
+                break;
         }
     }
 }
+
+
+export default AppEvent;

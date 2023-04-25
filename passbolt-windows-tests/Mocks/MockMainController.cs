@@ -48,15 +48,11 @@ namespace passbolt_windows_tests.UnitTests
             base.SetWebviewSettings(webView);
         }
 
-        public override async Task LoadRenderedWebview()
+        public override async Task LoadWebviews()
         {
-           await base.LoadRenderedWebview();
+           await base.LoadWebviews();
         }
 
-        public override async Task LoadBackgroundWebview()
-        {
-            await base.LoadBackgroundWebview();
-        }
         public override async Task BackgroundInitialisation()
         {
             await base.BackgroundInitialisation();
@@ -75,7 +71,7 @@ namespace passbolt_windows_tests.UnitTests
         {
             var navigationCompletedTask = new TaskCompletionSource<bool>();
             string randomUrl = Guid.NewGuid().ToString();
-            Uri backgroundUrl = new Uri(UriBuiler.BuildHostUri(randomUrl, "index.html"));
+            Uri backgroundUrl = new Uri(UriBuilderHelper.BuildHostUri(randomUrl, "index.html"));
             // Set virtual host to folder mapping, restrict host access to the randomUrl
             webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(randomUrl, backgroundFolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
             return backgroundUrl.ToString();

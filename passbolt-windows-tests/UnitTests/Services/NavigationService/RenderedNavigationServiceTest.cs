@@ -12,56 +12,37 @@
  * @since         0.0.1
  */
 
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using passbolt.Services.NavigationService;
 
 namespace passbolt_windows_tests.UnitTests.Services
 {
-
     [TestClass]
-    public class AbstractNavigationServiceTests
+    public class RenderedNavigationServiceTests
     {
-        private AbstractNavigationService _navigationService;
+        private RenderedNavigationService _navigationService;
 
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            _navigationService = new MockNavigationService();
-        }
 
         [TestMethod]
         public void CanNavigate_ValidUrl_ReturnsTrue()
         {
-            // Arrange
-            string url = "http://example.com";
-            // Act
+            string url = "http://desktop.passbolt.com/index.html";
+            _navigationService = new RenderedNavigationService(url);
+
             bool result = _navigationService.canNavigate(url);
-            // Assert
+
             Assert.IsTrue(result);
         }
 
         [TestMethod]
         public void CanNavigate_InvalidUrl_ReturnsFalse()
         {
-            // Arrange
             string url = "http://invalid.com";
-            // Act
-            bool result = _navigationService.canNavigate(url);
-            // Assert
-            Assert.IsFalse(result);
-        }
-    }
+            _navigationService = new RenderedNavigationService(url);
 
-    internal class MockNavigationService : AbstractNavigationService
-    {
-        public MockNavigationService()
-        {
-            base.allowedUrls = new List<Regex>()
-                {
-                    new Regex(@"^http:\/\/example\.com$"),
-                };
+            bool result = _navigationService.canNavigate(url);
+
+            Assert.IsFalse(result);
         }
     }
 }

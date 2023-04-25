@@ -13,12 +13,15 @@
  */
 
 import * as openpgp from 'openpgp';
+import AppEvent from './events/appEvents';
 
 /**
  * Represents the main class that sets up an event listener for the `message` event.
  * @class
  */
 export default class Main {
+
+    appEvents = new AppEvent();
     /**
      * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
      * @constructor
@@ -36,7 +39,7 @@ export default class Main {
      * @param {HTMLElement} webview - The webview element to listen for the `message` event on.
      */
     onMessageReceived(ipc) {
-        console.log(ipc)
+        this.appEvents.onMessageReceived(ipc.data);
     }
 }
 

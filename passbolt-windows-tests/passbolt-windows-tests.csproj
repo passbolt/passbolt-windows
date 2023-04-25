@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -125,9 +124,12 @@
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
     </Compile>
     <Compile Include="Mocks\MockMainController.cs" />
-    <Compile Include="UnitTests\Services\AbstractNavigationServiceTest.cs" />
-    <Compile Include="UnitTests\Services\BackgroundnavigationServiceTest.cs" />
-    <Compile Include="UnitTests\Services\RenderedNavigationServiceTest.cs" />
+    <Compile Include="UnitTests\Models\Messaging\IPCTests.cs" />
+    <Compile Include="UnitTests\Models\Messaging\AllowedTopicsTest.cs" />
+    <Compile Include="UnitTests\Services\NavigationService\AbstractNavigationServiceTest.cs" />
+    <Compile Include="UnitTests\Services\NavigationService\BackgroundnavigationServiceTest.cs" />
+    <Compile Include="UnitTests\Services\NavigationService\RenderedNavigationServiceTest.cs" />
+    <Compile Include="UnitTests\Utils\SerializationHelperTests.cs" />
     <Compile Include="UnitTests\Utils\UriBuilderTest.cs" />
     <Compile Include="Utils\ReflectionUtil.cs" />
   </ItemGroup>

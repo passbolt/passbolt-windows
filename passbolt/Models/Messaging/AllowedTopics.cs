@@ -13,24 +13,29 @@
  */
 
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
-namespace passbolt.Services.NavigationService
+namespace passbolt.Models.Messaging
 {
-    public abstract class AbstractNavigationService
+    public class AllowedTopics
     {
-        protected List<Regex> allowedUrls;
-        public string currentUrl { get; set; }
-        public bool canNavigate(string url)
+        public const string INITIALIZATION = "initialization";
+
+        /// <summary>
+        /// Retrieve all allowed topics
+        /// </summary>
+        /// <returns></returns>
+        private static List<string> GetAllTopicNames()
         {
-            foreach (Regex regex in allowedUrls)
-            {
-                if (regex.IsMatch(url))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return new List<string> { INITIALIZATION };
+        }
+
+        /// <summary>
+        /// Check if topic exist
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsTopicNameAllowed(string topicName)
+        {
+            return GetAllTopicNames().Contains(topicName);
         }
     }
 }

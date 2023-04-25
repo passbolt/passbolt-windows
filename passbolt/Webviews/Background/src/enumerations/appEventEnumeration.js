@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
  *
@@ -12,25 +12,4 @@
  * @since         0.0.1
  */
 
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
-namespace passbolt.Services.NavigationService
-{
-    public abstract class AbstractNavigationService
-    {
-        protected List<Regex> allowedUrls;
-        public string currentUrl { get; set; }
-        public bool canNavigate(string url)
-        {
-            foreach (Regex regex in allowedUrls)
-            {
-                if (regex.IsMatch(url))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-}
+export const INITIALIZATION = "initialization";
