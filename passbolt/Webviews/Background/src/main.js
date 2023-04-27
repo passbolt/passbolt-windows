@@ -15,8 +15,19 @@
 import { AuthEvents } from './events/authEvents';
 import { mockStorage } from './data/mockStorage';
 import LocalStorage from 'passbolt_-_open_source_password_manager/src/all/background_page/sdk/storage';
-
-
+import IPCHandler from './shared/IPCHandler';
+import {OrganizationSettingsEvents} from "passbolt_-_open_source_password_manager/src/all/background_page/event/organizationSettingsEvents";
+import {ConfigEvents} from "passbolt_-_open_source_password_manager/src/all/background_page/event/configEvents";
+import {UserEvents} from "passbolt_-_open_source_password_manager/src/all/background_page/event/userEvents";
+import {LocaleEvents} from "passbolt_-_open_source_password_manager/src/all/background_page/event/localeEvents";
+import { RoleEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/roleEvents';
+import { ResourceTypeEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/resourceTypeEvents';
+import { ResourceEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/resourceEvents';
+import { GroupEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/groupEvents';
+import { FolderEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/folderEvents';
+import { SecretEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/secretEvents';
+import { CommentEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/commentEvents';
+import { ActionLogEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/actionLogEvents';
 /**
  * Represents the main class that sets up an event listener for the `message` event.
  * @class
@@ -30,10 +41,21 @@ export default class Main {
      */
     constructor(webview) {
         this.initStorage();
-
-        webview.addEventListener("message", (event) => {
-            this.onMessageReceived(event);
-        });
+        const worker = {port: new IPCHandler()};
+        OrganizationSettingsEvents.listen(worker);
+        ConfigEvents.listen(worker);
+        UserEvents.listen(worker);
+        LocaleEvents.listen(worker);
+        RoleEvents.listen(worker);
+        ResourceTypeEvents.listen(worker);
+        ResourceEvents.listen(worker);
+        GroupEvents.listen(worker);
+        UserEvents.listen(worker);
+        FolderEvents.listen(worker);
+        SecretEvents.listen(worker);
+        CommentEvents.listen(worker);
+        ActionLogEvents.listen(worker);
+        this.initMainCommunication(webview);
     }
 
     /**
@@ -41,8 +63,10 @@ export default class Main {
      * @constructor
      * @param {HTMLElement} webview - The webview element to listen for the `message` event on.
      */
-    onMessageReceived(ipc) {
-        AuthEvents.listen(ipc.data)
+    initMainCommunication(webview) {
+        webview.addEventListener("message", (ipc) => {
+            AuthEvents.listen(ipc.data)
+        });
     }
 
     /**

@@ -28,8 +28,14 @@ class StoragePolyfill {
         window.chrome.storage = {
             local: {
                 get: this.getStorage,
-                set: function (key, value) {
-                    localStorage.setItem(key, value);
+                set: function (storage, value = "") {
+                    if(typeof storage === "object") {
+                        const keys = Object.keys(storage); 
+                        const values = Object.values(storage);
+                        localStorage.setItem(keys[0], JSON.stringify(values[0]));
+                    } else {
+                        localStorage.setItem(storage, value);
+                    }
                 },
                 remove: function (key) {
                     localStorage.removeItem(key);
@@ -50,11 +56,16 @@ class StoragePolyfill {
     getStorage(key, callback) {
         return new Promise(function (resolve, reject) {
             try {
-                var value = localStorage.getItem(key);
+                console.log(key)
+                const value = localStorage.getItem(key);
+                const response = value !== null ? value : {};
                 if (callback) {
-                    callback({ _passbolt_data: JSON.parse(value) });
+                    callback({ _passbolt_data: JSON.parse(response) });
                 }
-                resolve(value);
+
+                const result = {}
+                result[key] = response
+                resolve(result);
             } catch (error) {
                 reject(error);
             }

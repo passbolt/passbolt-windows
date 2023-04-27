@@ -49,7 +49,7 @@ class DesktopAuthenticateController {
     const apiClientOptions = await BuildApiClientOptionsService.buildFromDomain(result.domain);
     const loginUserService = new LoginUserService(apiClientOptions);
     await loginUserService.checkPassphrase(tempPassphrase)
-    await loginUserService.login(tempPassphrase, false)
+    await loginUserService.login(tempPassphrase, true)
   }
 
 }

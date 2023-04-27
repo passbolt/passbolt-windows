@@ -14,6 +14,9 @@
 
 using Microsoft.UI.Xaml.Controls;
 using passbolt.Exceptions;
+using passbolt.Services.NavigationService;
+using passbolt.Utils;
+using System;
 using System.Diagnostics;
 using Windows.UI.Xaml;
 
@@ -32,11 +35,29 @@ namespace passbolt.Models.Messaging
         {
             switch (ipc.topic)
             {
-                case AllowedTopics.DESKTOPAUTHENTICATE:
+                case AllowedTopics.AFTERLOGIN:
                     rendered.Visibility = Visibility.Visible;
+                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index.html"));
+                    break;
+                case AllowedTopics.PROGRESSCLOSEDIALOG:
+                case AllowedTopics.PROGRESSUPDATE:
+                case AllowedTopics.PROGRESSUPDATEGOALS:
+                case AllowedTopics.PROGRESSOPENDIALOG:
+                    if(ipc.requestId != null)
+                    {
+                        AllowedTopics.AddRequestId(ipc.requestId);
+                    }
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
                     break;
                 default:
-                    new UnauthorizedTopicException("Background webview");
+                    if (AllowedTopics.proceedRequestId(ipc.topic))
+                    {
+                        rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
+                    }
+                    else
+                    {
+                        new UnauthorizedTopicException("Rendered webview");
+                    }
                     break;
             }
         }

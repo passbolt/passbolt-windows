@@ -24,18 +24,26 @@ namespace passbolt.Models
         {
             this.topic = topic;
             this.message = null;
+            this.requestId = null;
+            this.status = null;
         }
         public IPC(string topic, string message)
         {
             this.topic = topic;
             this.message = message;
+            this.requestId = null;
+            this.status = null;
         }
 
         [Required]
         [AllowedTopic(ErrorMessage = "Invalid topic")]
         public string topic { get; set; }
 
-        public string message { get; set; }
+        public string status { get; set; }
+
+        public object message { get; set; }
+        public string requestId { get; set; }
+
 
         /// <summary>
         /// Validation attribut for topic

@@ -16,7 +16,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.UI.Xaml.Controls;
 using passbolt.Controllers;
-using passbolt.Services.NavigationService;
 
 namespace passbolt
 {
@@ -70,6 +69,8 @@ namespace passbolt
         /// </summary>
         private void Rendered_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
+            webviewRendered.CoreWebView2.OpenDevToolsWindow();
+
             this.mainController.RenderedNavigationCompleted(sender, args);
         }
     }

@@ -13,21 +13,39 @@
  */
 
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text.RegularExpressions;
+using static System.Net.WebRequestMethods;
 
 namespace passbolt.Services.NavigationService
 {
     public class RenderedNavigationService : AbstractNavigationService
     {
-        public RenderedNavigationService(string currentUrl) {
+        private static readonly RenderedNavigationService instance = new RenderedNavigationService();
+
+        private RenderedNavigationService() { }
+
+        public static RenderedNavigationService Instance
+        {
+            get
+            {
+                return instance;
+            }
+        }
+
+        public void Initialize(string currentUrl)
+        {
             this.currentUrl = currentUrl;
 
-            string pattern = $"^http://{this.currentUrl}/(index\\.html)$";
+            string pattern = $"^https://{this.currentUrl}/Rendered/index\\.html?$";
 
             base.allowedUrls = new List<Regex>()
-                {
-                    new Regex(@pattern),
-                };
+        {
+            new Regex(@pattern),
+            new Regex("^https://"+ this.currentUrl +"/(?:app/passwords/view/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})?$"),
+            new Regex($"^https://{currentUrl}/app/passwords$"),
+            new Regex("^https://"+ this.currentUrl +"/(?:app/folders/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})?$"),
+            };
         }
     }
 }

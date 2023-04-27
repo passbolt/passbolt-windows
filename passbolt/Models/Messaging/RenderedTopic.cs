@@ -14,6 +14,7 @@
 
 using Microsoft.UI.Xaml.Controls;
 using passbolt.Exceptions;
+using passbolt.Utils;
 
 namespace passbolt.Models.Messaging
 {
@@ -31,8 +32,41 @@ namespace passbolt.Models.Messaging
         {
             switch (ipc.topic)
             {
-                default: 
-                    new UnauthorizedTopicException("Rendered webview");
+                case AllowedTopics.GETSITESETTINGS:
+                case AllowedTopics.GETVERSION:
+                case AllowedTopics.FINDLOGGEDINUSER:
+                case AllowedTopics.GETLOCALE:
+                case AllowedTopics.GETALLROLES:
+                case AllowedTopics.GETALLRESOURCETYPE:
+                case AllowedTopics.FINDALLRESOURCES:
+                case AllowedTopics.UPDATELOCALSTORAGEFOLDERS:
+                case AllowedTopics.UPDATELOCALSTORAGEGROUPS:
+                case AllowedTopics.UPDATELOCALSTORAGEUSERS:
+                case AllowedTopics.UPDATELOCALSTORAGERESOURCES:
+                case AllowedTopics.FINDALLCOMMENTBYRESSOURCE:
+                case AllowedTopics.FINDALLACTIONLOGS:
+                case AllowedTopics.FINDPERMISSIONSRESSOURCE:
+                case AllowedTopics.CREATEFOLDERS:
+                case AllowedTopics.UPDATEFOLDERS:
+                case AllowedTopics.UPDATERESOURCES:
+                case AllowedTopics.CREATERESOURCES:
+                case AllowedTopics.DELETECOMMENT:
+                case AllowedTopics.DELETEFOLDERS:
+                case AllowedTopics.OPENDIALOGFOLDERS:
+                case AllowedTopics.CREATECOMMENT:
+                case AllowedTopics.FINDALLFOLDERS:
+                    AllowedTopics.AddRequestId(ipc.requestId);
+                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
+                    break;
+                default:
+                    if (AllowedTopics.proceedRequestId(ipc.topic))
+                    {
+                        rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
+                    }
+                    else
+                    {
+                        new UnauthorizedTopicException("Rendered webview");
+                    }
                     break;
             }
         }

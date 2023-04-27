@@ -77,6 +77,7 @@ namespace passbolt.Controllers
         /// Navigation starting event handler for the rendered webview
         /// </summary>
         /// <param name="sender"></param>
+        /// <param name="sender"></param>
         /// <param name="args"></param>
         /// <returns></returns>
         public void RenderedNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
@@ -108,8 +109,9 @@ namespace passbolt.Controllers
             string renderedUrl = randomUrl + "/Rendered";
 
             this.backgroundNavigationService = new BackgroundNavigationService(backgroundUrl);
-            this.renderedNavigationService = new RenderedNavigationService(renderedUrl);
+            this.renderedNavigationService = RenderedNavigationService.Instance;
 
+            this.renderedNavigationService.Initialize(randomUrl);
             StorageFolder installationFolder = Package.Current.InstalledLocation;
 
             // Load dist folder to insert into the virtual host to avoid exception during testing
@@ -122,7 +124,6 @@ namespace passbolt.Controllers
 
             // Set the source for background webview
             webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, "index.html"));
-            webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, "index.html"));
 
             // Subscribes to the WebResourceRequested event of the background window
             webviewBackground.CoreWebView2.WebResourceRequested += WebResourceRequested;

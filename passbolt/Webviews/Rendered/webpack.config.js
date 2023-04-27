@@ -1,4 +1,5 @@
 const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -16,8 +17,17 @@ module.exports = {
         options: {
           presets: ["@babel/react"],
         },
-      },
+      }
     ],
   },
-  devtool: 'cheap-module-source-map'
+  plugins: [
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'node_modules/passbolt-styleguide/src/locales', to: 'locales' },
+        { from: 'node_modules/passbolt-styleguide/build/css/themes', to: 'themes'},
+        { from: 'node_modules/passbolt-styleguide/src/fonts', to: 'fonts'},
+      ]
+    })
+  ],
+  devtool: "inline-source-map"
 };

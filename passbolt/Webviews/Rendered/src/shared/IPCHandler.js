@@ -15,7 +15,6 @@
 import { v4 as uuidv4 } from "uuid";
 
 class IPCHandler {
-
     
     constructor() {
         this._listeners = {};
@@ -29,6 +28,7 @@ class IPCHandler {
     initListener() {
         window.chrome.webview.addEventListener("message", (event) => {
             this._onMessage(event);
+            console.log(event)
         });
     }
 
@@ -41,14 +41,20 @@ class IPCHandler {
      * @private
      */
     _onMessage(json) {
-        const msg = JSON.parse(json);
-        const eventName = msg.topic;
+        const event = json.data;
+        const eventName = event.topic ? event.topic : event.requestId;
+        console.log(event)
         if (Array.isArray(this._listeners[eventName])) {
             const listeners = this._listeners[eventName];
             for (let i = 0; i < listeners.length; i++) {
                 const listener = listeners[i];
-                const args = Array.prototype.slice.call(msg, 1);
-                listener.callback.apply(this, args);
+                if(event.requestId) {
+                    listener.callback.apply(this, [event.requestId, event.message]);
+                } else if (event.status) {
+                    listener.callback.apply(this, [event.status, event.message]);
+                } else {
+                    listener.callback.apply(this, []);
+                }
                 if (listener.once) {
                     this._listeners[eventName].splice(i, 1);
                     // delete the listener if empty array
@@ -106,9 +112,19 @@ class IPCHandler {
      * @param requestArgs the arguments
      */
     async emit(...requestArgs) {
-        const message = JSON.stringify(requestArgs);
-        await this.connectIfDisconnected();
-        window.chrome.webview.postMessage(message);
+        let ipc;
+
+        if(typeof requestArgs[0] === 'string') {
+            ipc = {
+                topic: requestArgs[0],
+                status: requestArgs[1],
+                message: requestArgs.length > 2 ? requestArgs[2]: null
+            }
+        } else{
+            ipc = requestArgs[0];
+        }
+        console.log(JSON.stringify(ipc))
+        window.chrome.webview.postMessage(JSON.stringify(ipc));
     }
 
     /**
@@ -121,8 +137,7 @@ class IPCHandler {
         // Generate a request id that will be used by the addon to answer this request.
         const requestId = uuidv4();
         // Add the requestId to the request parameters.
-        const requestArgs = [message, requestId].concat(args);
-
+        const requestArgs = [{topic: message, requestId, message:args}];
         // The promise that is return when you call passbolt.request.
         return new Promise((resolve, reject) => {
             /*
@@ -136,6 +151,7 @@ class IPCHandler {
                     reject.apply(null, callbackArgs);
                 }
             });
+            console.log(requestArgs)
             // Emit the message to the addon-code.
             this.emit.apply(this, requestArgs);
         });

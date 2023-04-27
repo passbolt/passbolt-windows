@@ -12,6 +12,20 @@
  * @since         0.0.1
  */
 
-import { main } from "./src/App";
+import App from "./src/app";
+import IPCHandler from "./src/shared/IPCHandler";
+import React from "react";
+import ReactDOM from "react-dom";
+import WebviewStorage from "./src/shared/WebviewStorage";
+
+export async function main() {
+    // Port connection
+    const channel = new IPCHandler();
+    // Start ExtBootstrapApp
+    const storage = new WebviewStorage().storage;
+    const domContainer = document.createElement("div");
+    document.body.appendChild(domContainer);
+    ReactDOM.render(<App port={channel} storage={storage} />, domContainer);
+}
 
 main()

@@ -15,23 +15,35 @@
 /**
  * Polyfill to init alarms from bext
  */
-class AlarmPolyfill { 
+class AlarmPolyfill {
 
     constructor() {
         window.chrome.alarms = {
+            get: this.get,
             clear: this.clear,
             create: this.create,
+            getAll: this.getAll,
             onAlarm: {
                 addListener: this.addListener,
                 removeListener: this.removeListener,
+                hasListener() {return false;}
             }
         };
     }
-
-    addListener(name) {}
-    removeListener(name) {}
-    clear(){}
-    create(name, callback) {}
+    get(name) {
+        return new Promise(resolve => {
+            resolve(null);
+        });
+    }
+    addListener(name) { }
+    removeListener(name) { }
+    getAll() { }
+    clear() {
+        return new Promise(resolve => {
+            resolve();
+        });
+    }
+    create(name, callback) { }
 }
 
 /**

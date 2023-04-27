@@ -6,7 +6,14 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'background.js',
-    },
-    devtool: 'cheap-module-source-map',
+  },
+  resolve: {
+    fallback: {
+      "crypto": require.resolve("crypto-browserify"),
+      "buffer": require.resolve("buffer/"),
+      "stream": require.resolve("stream-browserify")
+    }
+  },
+  devtool: 'cheap-module-source-map',
 };
 
