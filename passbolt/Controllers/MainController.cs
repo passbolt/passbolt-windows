@@ -25,6 +25,7 @@ using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using Windows.ApplicationModel;
 using Windows.Storage;
+using Windows.UI.Xaml.Controls;
 
 namespace passbolt.Controllers
 {
@@ -69,7 +70,6 @@ namespace passbolt.Controllers
             {
                 await this.LoadWebviews();
                 this.SetWebviewSettings(webviewBackground);
-                webviewBackground.CoreWebView2.OpenDevToolsWindow();
             }
         }
 
@@ -204,7 +204,8 @@ namespace passbolt.Controllers
                 string[] optionsHeaders = {
                     $"Access-Control-Allow-Origin: {desktopWebview}",
                     "Access-Control-Allow-Credentials: true",
-                    "Access-Control-Allow-Headers: content-type, x-csrf-token"
+                    "Access-Control-Allow-Headers: content-type, x-csrf-token",
+                    "Access-Control-Allow-Methods: DELETE, POST, GET, OPTIONS, PUT"
                 };
                 // Create Webview2 response with the correct headers to the webviews
                 CoreWebView2WebResourceResponse webView2WebResourceResponse = webviewBackground.CoreWebView2.Environment.CreateWebResourceResponse(

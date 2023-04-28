@@ -28,7 +28,6 @@ class IPCHandler {
     initListener() {
         window.chrome.webview.addEventListener("message", (event) => {
             this._onMessage(event);
-            console.log("message", event)
         });
     }
 
@@ -43,18 +42,15 @@ class IPCHandler {
     _onMessage(json) {
         const event = json.data;
         const eventName = event.topic ? event.topic : event.requestId;
-        console.log("_onMessage", event)
         if (Array.isArray(this._listeners[eventName])) {
             const listeners = this._listeners[eventName];
             for (let i = 0; i < listeners.length; i++) {
                 const listener = listeners[i];
                 if (event.requestId) {
                   let args = Array.isArray(event.message) ? [event.requestId, ...event.message] : [event.requestId, event.message];
-                  console.log(...args);
                   listener.callback.apply(this, args);
                 } else if (event.status) {
                   let args = Array.isArray(event.message) ? [event.status, ...event.message] : [event.status, event.message];
-                  console.log(...args);
                   listener.callback.apply(this, args);
                 }
                 if (listener.once) {
@@ -125,7 +121,6 @@ class IPCHandler {
         } else{
             ipc = requestArgs[0];
         }
-        console.log(JSON.stringify(ipc))
         window.chrome.webview.postMessage(JSON.stringify(ipc));
     }
 
@@ -153,7 +148,6 @@ class IPCHandler {
                     reject.apply(null, callbackArgs);
                 }
             });
-            console.log(requestArgs)
             // Emit the message to the addon-code.
             this.emit.apply(this, requestArgs);
         });

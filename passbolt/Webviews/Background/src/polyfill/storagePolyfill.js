@@ -56,15 +56,18 @@ class StoragePolyfill {
     getStorage(key, callback) {
         return new Promise(function (resolve, reject) {
             try {
-                console.log(key)
-                const value = localStorage.getItem(key);
-                const response = value !== null ? value : {};
+                let localKey = key;
+                if(Array.isArray(key)) {
+                    localKey = key[0]
+                }
+                const value = localStorage.getItem(localKey);
+                const response = value !== null ? value : undefined;
                 if (callback) {
-                    callback({ _passbolt_data: JSON.parse(response) });
+                    callback({ _passbolt_data: response ? JSON.parse(response): undefined });
                 }
 
                 const result = {}
-                result[key] = response
+                result[localKey] = response ? JSON.parse(response): undefined
                 resolve(result);
             } catch (error) {
                 reject(error);

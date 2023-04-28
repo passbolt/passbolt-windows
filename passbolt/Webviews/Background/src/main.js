@@ -13,21 +13,23 @@
  */
 
 import { AuthEvents } from './events/authEvents';
-import { mockStorage } from './data/mockStorage';
-import LocalStorage from 'passbolt_-_open_source_password_manager/src/all/background_page/sdk/storage';
+import { accountDto, mockStorage } from './data/mockStorage';
+import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk/storage';
 import IPCHandler from './shared/IPCHandler';
-import {OrganizationSettingsEvents} from "passbolt_-_open_source_password_manager/src/all/background_page/event/organizationSettingsEvents";
-import {ConfigEvents} from "passbolt_-_open_source_password_manager/src/all/background_page/event/configEvents";
-import {UserEvents} from "passbolt_-_open_source_password_manager/src/all/background_page/event/userEvents";
-import {LocaleEvents} from "passbolt_-_open_source_password_manager/src/all/background_page/event/localeEvents";
-import { RoleEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/roleEvents';
-import { ResourceTypeEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/resourceTypeEvents';
-import { ResourceEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/resourceEvents';
-import { GroupEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/groupEvents';
-import { FolderEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/folderEvents';
-import { SecretEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/secretEvents';
-import { CommentEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/commentEvents';
-import { ActionLogEvents } from 'passbolt_-_open_source_password_manager/src/all/background_page/event/actionLogEvents';
+import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
+import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
+import {UserEvents} from "passbolt-browser-extension/src/all/background_page/event/userEvents";
+import {LocaleEvents} from "passbolt-browser-extension/src/all/background_page/event/localeEvents";
+import { RoleEvents } from 'passbolt-browser-extension/src/all/background_page/event/roleEvents';
+import { ResourceTypeEvents } from 'passbolt-browser-extension/src/all/background_page/event/resourceTypeEvents';
+import { ResourceEvents } from 'passbolt-browser-extension/src/all/background_page/event/resourceEvents';
+import { GroupEvents } from 'passbolt-browser-extension/src/all/background_page/event/groupEvents';
+import { FolderEvents } from 'passbolt-browser-extension/src/all/background_page/event/folderEvents';
+import { SecretEvents } from 'passbolt-browser-extension/src/all/background_page/event/secretEvents';
+import { CommentEvents } from 'passbolt-browser-extension/src/all/background_page/event/commentEvents';
+import { ActionLogEvents } from 'passbolt-browser-extension/src/all/background_page/event/actionLogEvents';
+import AccountModel from 'passbolt-browser-extension/src/all/background_page/model/account/accountModel';
+import AccountEntity from 'passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity';
 /**
  * Represents the main class that sets up an event listener for the `message` event.
  * @class
@@ -75,16 +77,15 @@ export default class Main {
     async initStorage() {
         if (localStorage.getItem('_passbolt_data') === null) {
             try {
-                if (localStorage.length === 0) {
-                    Object.keys(mockStorage).forEach((key) => {
-                        localStorage.setItem(key, JSON.stringify(mockStorage[key]));
-                    });
-                }
-            } catch (error) {
-                console.error('Failed to initialize storage:', error);
+                localStorage.setItem("_passbolt_data", JSON.stringify({}))
+                const accountModel = new AccountModel();
+                const account = new AccountEntity(accountDto);
+                await accountModel.add(account);
+            } catch(error) {
+                console.error(error)    
             }
         }
-        await LocalStorage.init()
+        await LocalStorage.init();
     }
 }
 

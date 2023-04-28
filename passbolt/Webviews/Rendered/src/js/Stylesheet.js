@@ -90,7 +90,6 @@
       async getTheme() {
         if (await this.isThemeDefined()) {
           const storageData = await this.getLocalStorage();
-          console.log(storageData)
           const {_passbolt_data: {config}} = storageData;
           return config["user.settings.theme"];
         }

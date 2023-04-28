@@ -12,9 +12,9 @@
  * @since         0.0.1
  */
 
-import { Config } from "passbolt_-_open_source_password_manager/src/all/background_page/model/config";
-import BuildApiClientOptionsService from "passbolt_-_open_source_password_manager/src/all/background_page/service/account/buildApiClientOptionsService";
-import GetLegacyAccountService from "passbolt_-_open_source_password_manager/src/all/background_page/service/account/getLegacyAccountService";
+import { Config } from "passbolt-browser-extension/src/all/background_page/model/config";
+import BuildApiClientOptionsService from "passbolt-browser-extension/src/all/background_page/service/account/buildApiClientOptionsService";
+import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
 import { tempPassphrase } from "../data/mockStorage";
 import { USERLOGGEDIN, ERROR } from "../enumerations/appEventEnumeration";
 import LoginUserService from "../services/loginUserService";

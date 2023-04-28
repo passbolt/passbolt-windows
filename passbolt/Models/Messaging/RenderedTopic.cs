@@ -51,7 +51,9 @@ namespace passbolt.Models.Messaging
                 case AllowedTopics.UPDATERESOURCES:
                 case AllowedTopics.CREATERESOURCES:
                 case AllowedTopics.DELETECOMMENT:
+                case AllowedTopics.DELETEALLRESOURCES:
                 case AllowedTopics.DELETEFOLDERS:
+                case AllowedTopics.DECRYPTSECRET:
                 case AllowedTopics.OPENDIALOGFOLDERS:
                 case AllowedTopics.CREATECOMMENT:
                 case AllowedTopics.FINDALLFOLDERS:

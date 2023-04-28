@@ -27,7 +27,6 @@ import DragContextProvider from "passbolt-styleguide/src/react-extension/context
 import NavigationContextProvider from "passbolt-styleguide/src/react-extension/contexts/NavigationContext";
 import ExtAppContextProvider from "passbolt-styleguide/src/react-extension/contexts/ExtAppContext";
 import TranslationProvider from "passbolt-styleguide/src/react-extension/components/Common/Internationalisation/TranslationProvider";
-import LocationComponent from "./components/LocationComponent";
 import ActionFeedbackContextProvider from "passbolt-styleguide/src/react-extension/contexts/ActionFeedbackContext";
 import DialogContextProvider from "passbolt-styleguide/src/react-extension/contexts/DialogContext";
 import AnnouncementContextProvider from "passbolt-styleguide/src/react-extension/contexts/AnnouncementContext";
@@ -40,7 +39,8 @@ import DisplayUserSettingsWorkspace from "passbolt-styleguide/src/react-extensio
 import DisplayActionFeedbacks from "passbolt-styleguide/src/react-extension/components/Common/ActionFeedback/DisplayActionFeedbacks";
 import HandleFolderMoveStrategyEvents from "passbolt-styleguide/src/react-extension/components/ResourceFolder/HandleFolderMoveStrategyEvents/HandleFolderMoveStrategyEvents";
 import HandleProgressEvents from "passbolt-styleguide/src/react-extension/components/Common/Progress/HandleProgressEvents/HandleProgressEvents";
-import HandleErrorEvents from "passbolt-styleguide/src/react-extension/components/Common/Error/HandleErrorEvents/HandleErrorEvents";import Footer from "passbolt-styleguide/src/react-extension/components/Common/Footer/Footer";
+import HandleErrorEvents from "passbolt-styleguide/src/react-extension/components/Common/Error/HandleErrorEvents/HandleErrorEvents";
+import Footer from "passbolt-styleguide/src/react-extension/components/Common/Footer/Footer";
 import HandleSessionExpired from "passbolt-styleguide/src/react-extension/components/Authentication/HandleSessionExpired/HandleSessionExpired";
 
 /**
@@ -73,7 +73,6 @@ class App extends Component {
                                 <HandleErrorEvents/>
                                 <HandleSessionExpired/>
                         <Router>
-                          <LocationComponent></LocationComponent>
                           <NavigationContextProvider>
                             <Switch>
                               {/* Passwords workspace */}

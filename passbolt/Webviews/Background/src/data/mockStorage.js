@@ -12,27 +12,175 @@
  * @since         0.0.1
  */
 
-//This is a mock for the first iteration, change it with the bext to adapt your need
-export const mockStorage = { "_passbolt_data": {
-    "config":{
-        "debug": true,
-        "log": {
-            "level": 4,
-            "console": true
-        },
-        "user.settings.securityToken.code": "ZYB",
-        "user.settings.securityToken.color": "#ffeb3b",
-        "user.settings.securityToken.textColor": "#000000",
-        "user.settings.trustedDomain": "https://www.passbolt.local",
-        "user.id": "473f455a-5777-4f1c-9de6-870fd651250b",
-        "user.username": "admin@passbolt.com",
-        "user.firstname": "Admin",
-        "user.lastname": "Admin",
-        "user.settings.locale": "en-UK"
-    },
-	"passbolt-private-gpgkeys": "{\"MY_KEY_ID\":{\"armored_key\":\"-----BEGIN PGP PRIVATE KEY BLOCK-----\\n\\n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\\n=kkPj\\n-----END PGP PRIVATE KEY BLOCK-----\\n\",\"key_id\":\"d06426d3\",\"user_ids\":[{\"name\":\"Passbolt Default Admin\",\"email\":\"admin@passbolt.com\"}],\"fingerprint\":\"0C1D1761110D1E33C9006D1A5B1B332ED06426D3\",\"expires\":\"Infinity\",\"created\":\"2015-10-31T16:21:43.000Z\",\"algorithm\":\"rsa\",\"length\":4096,\"curve\":null,\"private\":true,\"revoked\":false,\"user_id\":\"MY_KEY_ID\"}}",
-	"passbolt-public-gpgkeys": "{\"8c59a588-7148-300a-a8bb-06ac79b9444f\":{\"armored_key\":\"-----BEGIN PGP PUBLIC KEY BLOCK-----\\n\\nxsDNBGQlllkBDAC7XH4etRHGDoiT7tLpPBGGKpuiWg7XrezrEIAtXLxGs3PO\\n58dF0Xu5MmIxhqY5kbtPT1Muw8sqPt/U9LM90buLwgbvB2bl5kly0zkpXj7l\\nMjxVLFyLNpgLcW7WdAs1mv1qy5obD6vpLyVxnKyaqNbf0iYu3NVl7vg9ZuTd\\nvXIgEgoNMSEKwqK2DD3zufqcAo+921OnDP4+i8t933jfmfzPhW2WaORhY8KY\\n5yJos12zO9u6MtR3Syr7HhMRMcn8sUOZf6XjK+OHr9U/ct3mVYYlLEsdF1O2\\nmAsV1JRHKr8RKh90pVPDV8Fh9GoqeMzhOUcGOXPBnsVwdbaatFTexn7Z5347\\nO2zqSGmw1KEQ/16d7D0s3vI6bX1YfcZ8CbE7JghM2zRtLcg5Jkp2QrdHKwzl\\nzkGRvgEwDGoYQsstLZtuR4S2q5dAqQ0XpzLVBR/T9paWeujPQDvZZNgi6VXE\\n/SmYZteAK6PQiBgNUYYmgviE9cT3mClRATlecU8++tsHA9UAEQEAAc0vUGFz\\nc2JvbHQgZGVmYXVsdCB1c2VyIDxwYXNzYm9sdEB5b3VyZG9tYWluLmNvbT7C\\nwSUEEwEKADgWIQQ0+YNKvx/BmKborpviPzu6MPTYAAUCZCWWWQIbAwULCQgH\\nAgYVCgkICwIEFgIDAQIeAQIXgAAhCRDiPzu6MPTYABYhBDT5g0q/H8GYpuiu\\nm+I/O7ow9NgANHsL/3723lEJcrUMAlKJ/7MCZXU6DfezWoqwUtKvef0BDbF2\\ncmJsN3BD5Q4UxSMEn/gbpRs12a8stutqmm4lVU6GxIufBSktE+vKGYz7BSUW\\nmmvUHcH2uSV41pkwoMBFPFxBGlo6CSBaXVaMlXcAXAqQSvnHLWI2wNHVeSaz\\n9Bclx2SFxUtu6sMUXw8mmMKdWb/AZ1GV6HhKmIAM/qVgHWg2DjRPMfcTiEXh\\nJPc2albwd5tCYaWLAaAYKN+yMJtmcwFlWHFf9+u6gvZzmvVdJTjVsx52Fd/S\\n+ItSdr9+n8ijZijwoujpjcBOfoWliH6RxqKpwtQyYHyFV8J93wV76cZdXMu2\\noLb7a+iZq8CN4WTYZPJa6GK7plit6bOyZJzlVqZKKam1wOaEYXofm7nA2+1J\\nOJdcEcICXjwiq98BL5u2sC/zu+gqinSruudRuGQrlnAOLqTk/d2EsSgrA9OF\\nt2ddoIZ+1c9jVGVnxD06qMfgM+wS0P4ki66NM/XD8Xlc1pkiqs7AzQRkJZZZ\\nAQwAqk/wyP08rITqW07RGSmvXz8ZJaJhKnx6MiXoRy82I/qqiSp90iazg2o2\\nEA/qS8Sulp2UTrW6218IDqCiLthkt67P8B0tbsmz9hqc+jzUXaokExa3Z/OM\\nVDdE7oVHKUbaJuazEeDJL8xWpzkc8k85GHJXw9X8oNMBElSOEfigF/ERKueq\\n9HV5/LC0WRziGf+3ey1dqqihaViiuBko5FAo0Tw8Tscx8n0VdkV/7fy7Gqtv\\n1NJieHLcCXYHovM11q+Ev8iTEUgYToOu76a2gOf0qaH2Xs2Xv+0CDKqI0wYe\\nzSCXj5d4W3AakoK34fv6S+w+z9W3mliBPId2IVSElfBRA2r6eJ6vnai5Z7ai\\n7Ss20swglA3oIXg1srsBdyRbU6QSh5aPpFjc7pJ9hed75moDaQCk6iqpL9ki\\nVlmaXxyBLSJVsPo060mU6Dprr451Fm2+Nu/10o/C2sTH8wQ2tuBoxiSwruHl\\n8TsZhv9kZDCFgmw+e+aBaPIHhPtqE19PR7iRABEBAAHCwQ0EGAEKACAWIQQ0\\n+YNKvx/BmKborpviPzu6MPTYAAUCZCWWWQIbDAAhCRDiPzu6MPTYABYhBDT5\\ng0q/H8GYpuium+I/O7ow9NgANooL/iwEuEKuoX23IRPaL9QERnrK8dlMnzLL\\nq+hTFPKGuKMLQhYFKFWDI97ki9tZ5YryyMVLBr39F7S6y8lZIkWtoT6WzUmM\\nbFd8IkYC2uuHHD+vlJHE5IQn/R4abO7fL0PHYDAJd82Crl4MENBzy9OElXmx\\nXweBxuMtiNaff8Bw4CuHcPVo52CfBgtl/35ZTPM2WVITcXyTBMdFSQuB7Tc0\\nGGrFCTgnHdmOyTOF+P1z9Qx7VuL5A8rpkhCm3wEosPcFSpv0YRK3CsxcvcDJ\\nPUE3tw6W1loJx/ErsIZIrpbxDgGzwaZ3sQQom6iK8TatH3bjwO6JBuxhwKB3\\nNM/x++lc7Wa07hT85TZV7JWKMBP7goG7A7amB1xZvy6bSTUmp0dggCjrMQK8\\ne0srRRReKmFkhAlCOtIMtL8PJUlsP7i/x64vkOaBK/L0+oVhf92lZvHBqJ/h\\nsNNL779lVtIbxcSpAmteO9M9jFnyOIN0NxlubP2RO1uK3teY0FlNkyeAJocW\\nqA==\\n=Zegt\\n-----END PGP PUBLIC KEY BLOCK-----\\n\",\"key_id\":\"30f4d800\",\"user_ids\":[{\"name\":\"Passbolt default user\",\"email\":\"passbolt@yourdomain.com\"}],\"fingerprint\":\"34F9834ABF1FC198A6E8AE9BE23F3BBA30F4D800\",\"expires\":\"Infinity\",\"created\":\"2023-03-30T14:02:01.000Z\",\"algorithm\":\"rsa\",\"length\":3072,\"curve\":null,\"private\":false,\"revoked\":false,\"user_id\":\"8c59a588-7148-300a-a8bb-06ac79b9444f\"},\"473f455a-5777-4f1c-9de6-870fd651250b\":{\"armored_key\":\"-----BEGIN PGP PUBLIC KEY BLOCK-----\\n\\nxsFNBFY06pcBEADjYRuq05Zatu4qYtXmexbrwtUdakNJJHPlWxcusohdTLUm\\nSXrt7LegXBE3OjvV9HbdBQfbpjitFp8eJw5krYQmh1+w/UYjb5Jy/A7ma3oa\\nwzbVwNpLwuAafYma5LLLloZD/OpYKprhWfW9FHKyq6t+AcH5CFs/Hvixdrdb\\nAO7K1/z6mgWcT6HBP5/dGTseAlrvUDTsW1kzo6qsrOWoUunrqm31umsvcfNR\\nOtDKM16zgZl+GlYY1BxNcRKr1/AcZUrp4zdSSc6IXrYjJ+1kgHz/ZoSrKn5Q\\niqEn7wQEveJu+jNGSv8jMvQgjq+AmzveJ/4f+RQirbe9JOeDgzX7NqloRil3\\nI0FPFoivbRU0PHi4N2q7sN8eYpXxXzuL+OEq1GQe5fTsSotQTRZUJxbdUS8D\\nfPckQaK79HoybTQAgA6mgQf/C+U0X2TiBUzgBuhayiW12kHmKyK02htDeRNO\\nYs4bBMdeZhAFm+5C74LJ3FGQOHe+/o2oBktk0rAZScjizijzNzJviRB/3nAJ\\nSBW6NSNYcbnosk0ET2osg2tLvzegRI6+NQJEb0EpByTMypUDhCNKgg5aEDUV\\nWcq4iucps/1e6/2vg2XVB7xdphT4/K44ZeBHdFufhGQvs8rkAPzpkpsEWKgp\\nTR+hdhbMmNiL984Ywk98nNuzgfkgpcP57xawNwARAQABzStQYXNzYm9sdCBE\\nZWZhdWx0IEFkbWluIDxhZG1pbkBwYXNzYm9sdC5jb20+wsGlBBMBCgA4AhsD\\nBQsJCAcDBRUKCQgLBRYCAwEAAh4BAheAFiEEDB0XYRENHjPJAG0aWxszLtBk\\nJtMFAl0bmoYAIQkQWxszLtBkJtMWIQQMHRdhEQ0eM8kAbRpbGzMu0GQm0+fG\\nD/9D1Y5ZQZ/tU6d9toiLHc0YA40juuBe4sVzUTS8bbRdZPb4LrEayQXCOglu\\nLIOtsxicgsafu8MifcxKghN6YuO233v+URcrsCBskRZBYXWXGlebScK+MnqH\\n6pq0Yr3qdyNy5rp5xS63XQD8IAKm6rF8o6EPoJozmX+SwQO3C+u/YwhpVqO4\\nK/CD7JTHQjSt8BC/RhNdsnkxGfWm86jdzqflDTPl67+KIbRQ00gTdOTkqlPT\\nYxMy/m6WWm3ea02MwcfT9N0/EK1QpWHirfjHezKJgt6lp11/kK2/0IvnZVZ+\\nwbeoU8ent644VjyV/O56aioP2NwTtAgmeQKbC0tctCsTQ7ZFb/L+heqsRNe7\\nawXIcyvVfD/9B4mAi/rcsEaZw86P3dXIciVxQNqszairb4NcrGsOzbF+cUpU\\nJnClK95wh8pdQqydfcAaul62hl1/DSMBRUjee3pgK7wq9zNfF61+M5Xccddr\\njSC05mTk6gpt+5OPNCWlzWhoPIsfw9PUZiw3fBagOzjO6WHq4oOlK37jPnwf\\nUF88WWs7a6FlJ+TcTze4FBdlwAF5c3EJ2tMImbw/3SxuMu7VOVp46etbBVPt\\niryLwsTuVsBedPUeNCUOLwYHb7YSdlmY5f5nzhrXqMMSVlrNQ2wTzNPs6bKO\\n4HsYYNtAQVjORv12vWPWy6TO3M7BTQRWNOqXARAAnfsL2zimriO9wQXdsmAv\\n6rdIGiWAEik3WDX/CiL28SI6H7t7TwqvyYSEXThylENuFjp1xnw4hchD31+B\\n01d96GUBacjno0T8U4jKJ/xO8YF87rITfl8pKyTAY11RlYhnRTSnFJdC8H4o\\nQZaWrZzdR/+OFNkOcs298OOdiafnJynmxVaG0CYoWFr00nosYDQPUwL6NwIk\\nIq1BEaBW+Wo4RIUOZDs+7z9rKvYE7RREcnQ5vfSUeW4Kegoi/nSoakv0Fi4Y\\nB0J8sEdfNFCEcht9z9xM+QrWRNdfnH8ySISXzxN4Y37KM1VLuqp3FiCz5Bic\\nMNmp6+FYS9XJdVCNwJZIgd+MvXHk12pgvr5yL87HIgWg+zgra6Y3ck+akWL5\\n8g+HYJ7ErLoGfITygCA2+B0Nvpk58C29KFk8ztAbgtlqXb6dinifuAlGHqR6\\nlNBP/gG5rTE61FCGBwjica1wLEQNEwzOOpsZiVydyIyOyIyD0s+lY8MD7Eqt\\nFkpjBUXLy8vH9qU7P+HUFmPHa7tia5oYQ3ETrYt/KHTF6gIENN2dYQ5BMfot\\nWyiZW1Q7UVVqnW3mORhJ2nEG4d/z/Zh7s3cVMxEp72fh7vmwAnTS62cyXo/Z\\nlxr2YzhPb08r4s8XHYbaHfkNDsxsSJ3VwBnxBVHdTKiJHz672Mx6T724UKb6\\ncDEAEQEAAcLBjQQYAQoAIAIbDBYhBAwdF2ERDR4zyQBtGlsbMy7QZCbTBQJd\\nG5qZACEJEFsbMy7QZCbTFiEEDB0XYRENHjPJAG0aWxszLtBkJtNODw//bBZh\\nZHaEqsFPxJ++/odILeJJ5YGW4I9Ika6Jp5JyMCygWySV5LB5jD1yQfW91mf4\\nBld6T1bQ1gyoNzWVuByytd8N7N8ENlYlVQOhcwAQ0pCN2AapJGrC0WVO6DfV\\n2o3RX6YecC4Q0oEwo0p3Bn3I1cz7oFii6jz4oWTupqasUhWBIcfqfzvNE5Y/\\ndFLDhUXaLe3Kp+cDoV2bSrENEcGgP7qv7BXulDShxtkQYEH6I+SW2syW75YD\\nIlsYQWpcGSkFrPCAYf+GoPABcMKCTfoDrTTPQuFAh7vsrdE79v07vgKXI9KM\\nhWiiQ+LkFJgoUNnw0crKiRCIXnvsi9vZq3XAeIxu0Nq7fB24WMJbByoGrNGC\\nB3UenVDgossO9otJIcK3djw4MSkbufnKG+sDEql2yCMRSyywAh8trCnen0HI\\nPBcaIrxIhdJUXzIt9gP2Fhif5NTqBQs1ueShV6qgTKbWGVodiXs4bbZonWBz\\n3O42rOxxD58N0r1TNIGAHJhFVlr4yn1KToUmGJJPwe9cPUbiKT8siOxtlyPA\\n2xtrbZ4AyDi/J40usm1PToOskzVKBy9cFhGTdW9385yh3AvZcq/DCINNEDXg\\nyLbfYiCwjpI6BHVHWrqpUSGvhJlLvgC/iaG65UE88qwiJu2mk9x6fRMmhMec\\nbyQ1rZo4HxWDQhbVdX8=\\n=3ogW\\n-----END PGP PUBLIC KEY BLOCK-----\\n\",\"key_id\":\"d06426d3\",\"user_ids\":[{\"name\":\"Passbolt Default Admin\",\"email\":\"admin@passbolt.com\"}],\"fingerprint\":\"0C1D1761110D1E33C9006D1A5B1B332ED06426D3\",\"expires\":\"Infinity\",\"created\":\"2015-10-31T16:21:43.000Z\",\"algorithm\":\"rsa\",\"length\":4096,\"curve\":null,\"private\":false,\"revoked\":false,\"user_id\":\"473f455a-5777-4f1c-9de6-870fd651250b\"}}"
-    }
+//This is a mock for the first iteration, change it with the bext to adapt your nee
+
+export const accountDto = {
+    "domain": "https://www.passbolt.local",
+    "user_id": "60e6b124-9d2b-43c1-abee-427a643437b8",
+    "username": "user@passbolt.com",
+    "first_name": "User",
+    "last_name": "User",
+    "user_public_armored_key": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n" +
+    "\n" +
+    "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\n" +
+    "=VYl3\n" +
+    "-----END PGP PUBLIC KEY BLOCK-----",
+    "user_private_armored_key": "-----BEGIN PGP PRIVATE KEY BLOCK-----\n" +
+    "\n" +
+    "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\n" +
+    "Sd+Iq0thyecUADwQRKgoM0yI3sHEVLWB02g=\n" +
+    "=8RNj\n" +
+    "-----END PGP PRIVATE KEY BLOCK-----",
+    "server_public_armored_key": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmQGNBGQlllkBDAC7XH4etRHGDoiT7tLpPBGGKpuiWg7XrezrEIAtXLxGs3PO58dF\n0Xu5MmIxhqY5kbtPT1Muw8sqPt\/U9LM90buLwgbvB2bl5kly0zkpXj7lMjxVLFyL\nNpgLcW7WdAs1mv1qy5obD6vpLyVxnKyaqNbf0iYu3NVl7vg9ZuTdvXIgEgoNMSEK\nwqK2DD3zufqcAo+921OnDP4+i8t933jfmfzPhW2WaORhY8KY5yJos12zO9u6MtR3\nSyr7HhMRMcn8sUOZf6XjK+OHr9U\/ct3mVYYlLEsdF1O2mAsV1JRHKr8RKh90pVPD\nV8Fh9GoqeMzhOUcGOXPBnsVwdbaatFTexn7Z5347O2zqSGmw1KEQ\/16d7D0s3vI6\nbX1YfcZ8CbE7JghM2zRtLcg5Jkp2QrdHKwzlzkGRvgEwDGoYQsstLZtuR4S2q5dA\nqQ0XpzLVBR\/T9paWeujPQDvZZNgi6VXE\/SmYZteAK6PQiBgNUYYmgviE9cT3mClR\nATlecU8++tsHA9UAEQEAAbQvUGFzc2JvbHQgZGVmYXVsdCB1c2VyIDxwYXNzYm9s\ndEB5b3VyZG9tYWluLmNvbT6JAc4EEwEKADgWIQQ0+YNKvx\/BmKborpviPzu6MPTY\nAAUCZCWWWQIbAwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRDiPzu6MPTYADR7\nC\/9+9t5RCXK1DAJSif+zAmV1Og33s1qKsFLSr3n9AQ2xdnJibDdwQ+UOFMUjBJ\/4\nG6UbNdmvLLbrappuJVVOhsSLnwUpLRPryhmM+wUlFppr1B3B9rkleNaZMKDARTxc\nQRpaOgkgWl1WjJV3AFwKkEr5xy1iNsDR1Xkms\/QXJcdkhcVLburDFF8PJpjCnVm\/\nwGdRleh4SpiADP6lYB1oNg40TzH3E4hF4ST3NmpW8HebQmGliwGgGCjfsjCbZnMB\nZVhxX\/fruoL2c5r1XSU41bMedhXf0viLUna\/fp\/Io2Yo8KLo6Y3ATn6FpYh+kcai\nqcLUMmB8hVfCfd8Fe+nGXVzLtqC2+2vomavAjeFk2GTyWuhiu6ZYremzsmSc5Vam\nSimptcDmhGF6H5u5wNvtSTiXXBHCAl48IqvfAS+btrAv87voKop0q7rnUbhkK5Zw\nDi6k5P3dhLEoKwPThbdnXaCGftXPY1RlZ8Q9OqjH4DPsEtD+JIuujTP1w\/F5XNaZ\nIqq5AY0EZCWWWQEMAKpP8Mj9PKyE6ltO0Rkpr18\/GSWiYSp8ejIl6EcvNiP6qokq\nfdIms4NqNhAP6kvErpadlE61uttfCA6goi7YZLeuz\/AdLW7Js\/YanPo81F2qJBMW\nt2fzjFQ3RO6FRylG2ibmsxHgyS\/MVqc5HPJPORhyV8PV\/KDTARJUjhH4oBfxESrn\nqvR1efywtFkc4hn\/t3stXaqooWlYorgZKORQKNE8PE7HMfJ9FXZFf+38uxqrb9TS\nYnhy3Al2B6LzNdavhL\/IkxFIGE6Dru+mtoDn9Kmh9l7Nl7\/tAgyqiNMGHs0gl4+X\neFtwGpKCt+H7+kvsPs\/Vt5pYgTyHdiFUhJXwUQNq+nier52ouWe2ou0rNtLMIJQN\n6CF4NbK7AXckW1OkEoeWj6RY3O6SfYXne+ZqA2kApOoqqS\/ZIlZZml8cgS0iVbD6\nNOtJlOg6a6+OdRZtvjbv9dKPwtrEx\/MENrbgaMYksK7h5fE7GYb\/ZGQwhYJsPnvm\ngWjyB4T7ahNfT0e4kQARAQABiQG2BBgBCgAgFiEENPmDSr8fwZim6K6b4j87ujD0\n2AAFAmQlllkCGwwACgkQ4j87ujD02AA2igv+LAS4Qq6hfbchE9ov1ARGesrx2Uyf\nMsur6FMU8oa4owtCFgUoVYMj3uSL21nlivLIxUsGvf0XtLrLyVkiRa2hPpbNSYxs\nV3wiRgLa64ccP6+UkcTkhCf9Hhps7t8vQ8dgMAl3zYKuXgwQ0HPL04SVebFfB4HG\n4y2I1p9\/wHDgK4dw9WjnYJ8GC2X\/fllM8zZZUhNxfJMEx0VJC4HtNzQYasUJOCcd\n2Y7JM4X4\/XP1DHtW4vkDyumSEKbfASiw9wVKm\/RhErcKzFy9wMk9QTe3DpbWWgnH\n8SuwhkiulvEOAbPBpnexBCibqIrxNq0fduPA7okG7GHAoHc0z\/H76VztZrTuFPzl\nNlXslYowE\/uCgbsDtqYHXFm\/LptJNSanR2CAKOsxArx7SytFFF4qYWSECUI60gy0\nvw8lSWw\/uL\/Hri+Q5oEr8vT6hWF\/3aVm8cGon+Gw00vvv2VW0hvFxKkCa1470z2M\nWfI4g3Q3GW5s\/ZE7W4re15jQWU2TJ4Amhxao\n=cCXV\n-----END PGP PUBLIC KEY BLOCK-----\n",
+    "security_token": {"code": "IEX", "color": "#607d8b", "textcolor": "#ffffff",},
+
 }
 
-export const tempPassphrase = "admin@passbolt.com"
+export const tempPassphrase = "user@passbolt.com"

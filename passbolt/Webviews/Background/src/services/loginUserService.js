@@ -12,10 +12,10 @@
  * @since         0.0.1
  */
 
-import UserAlreadyLoggedInError from "passbolt_-_open_source_password_manager/src/all/background_page/error/userAlreadyLoggedInError";
-import AuthModel from "passbolt_-_open_source_password_manager/src/all/background_page/model/auth/authModel";
-import Keyring from "passbolt_-_open_source_password_manager/src/all/background_page/model/keyring";
-import CheckPassphraseService from "passbolt_-_open_source_password_manager/src/all/background_page/service/crypto/checkPassphraseService";
+import UserAlreadyLoggedInError from "passbolt-browser-extension/src/all/background_page/error/userAlreadyLoggedInError";
+import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
+import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
+import CheckPassphraseService from "passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService";
 
 /**
  * Service related to the login user service
