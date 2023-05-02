@@ -128,4 +128,4 @@ After the tests complete, you can view the results in Visual Studio or any other
 
 ## Deploying the application
 
-To deploy the application, you can distribute the package file or upload it to the [Microsoft Store](https://docs.microsoft.com/en-us/windows/msix/packaging-tool/create-app-package-with-packaging-tool#step-6-upload-your-package-to-the-store). For more information on deploying UWP apps, refer to the [official documentation](https://docs.microsoft.com/en-us/windows/msix/deploy-uwp-app). 
+To deploy the application, you can distribute the package file or upload it to the [Microsoft Store](https://docs.microsoft.com/en-us/windows/msix/packaging-tool/create-app-package-with-packaging-tool#step-6-upload-your-package-to-the-store). For more information on deploying UWP apps, refer to the [official documentation](https://learn.microsoft.com/en-us/windows/msix/desktop/source-code-overview). 
