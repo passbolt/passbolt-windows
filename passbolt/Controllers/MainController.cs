@@ -258,14 +258,11 @@ namespace passbolt.Controllers
             Debug.WriteLine("NavigationCompleted: " + sender.CoreWebView2.Source);
             if (args.IsSuccess)
             {
-                var message = new IPC(AllowedTopics.DESKTOPAUTHENTICATE);
                 await webviewBackground.EnsureCoreWebView2Async();
                 await webviewRendered.EnsureCoreWebView2Async();
 
                 this.renderedTopic = new RenderedTopic(webviewBackground, webviewRendered);
                 this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered);
-                webviewBackground.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(message));
-                webviewRendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(message));
             }
         }
 
@@ -303,18 +300,6 @@ namespace passbolt.Controllers
             }
 
             return webviewSender;
-        }
-
-        /// <summary>
-        /// find folder into the webview folder
-        /// </summary>
-        /// <param name="webviewFolder"></param>
-        /// <returns> The Storage folder found </returns>
-        private async Task<StorageFolder> FindInWebviewFolder(string webviewFolder)
-        {
-            StorageFolder installationFolder = Package.Current.InstalledLocation;
-            StorageFolder viewsFolder = await installationFolder.GetFolderAsync("Webviews");
-            return await viewsFolder.GetFolderAsync(webviewFolder);
         }
     }
 }

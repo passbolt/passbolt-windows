@@ -51,12 +51,121 @@ By using UWP and Webview2, Passbolt Desktop App provides a consistent and seamle
 
 ## Prerequisites
 
+### Clone the project 
+
+``
+https://github.com/passbolt/passbolt-windows
+`` 
+
+### Build the Rendered webview
+
+``
+cd passbolt/Webviews/Rendered
+npm ci
+npm run build
+`` 
+
+You can run a watcher to build the application each time you have a change : 
+
+``
+npm run build-watch
+`` 
+
+### Build the Background webview
+
+``
+cd passbolt/Webviews/Background
+npm ci
+npm run build
+``
+
+You can run a watcher to build the application each time you have a change : 
+
+``
+npm run build-watch
+`` 
+
+### Setup visual studio and visual studio code
+
 Before building this application, you need to have the following installed on your machine:
 
-- Visual Studio 2019 or later with the UWP workload.
-- The WebView2 runtime installed. You can download it from the [Microsoft Edge WebView2 download page](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
-- Link your bext application : npm link
-- Link your background webview to the bext (go to Background folder): npm run link passbolt_-_open_source_password_manager
+- Visual Studio 2019 or later with the UWP workload. (community edition)
+- Visual Studio Code
+
+Build the dotnet code with the community edition and use VS Code for the javascript.
+
+It is possible that any changes done with Visual studio on the javascript will not appear during the build, it is why it is important to run and update the js code into VSCode.
+
+### Install the webview2 runtime
+
+In case Edge is not install, you will need to install the runtime to launch the Webview2: [Microsoft Edge WebView2 download page](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
+
+### How to define your current user ?
+
+You will need to retrieve the different data to launch the application for the first time. Enter your data into the mock data file : 
+
+``
+cd passbolt/Webviews/Background/src/data/mockStorage.js
+``
+
+You will have to provide these data : 
+
+``{
+        "domain": string,
+        "user_id": string,
+        "username": string,
+        "first_name": string,
+        "last_name": string,
+        "user_public_armored_key": string,
+        "user_private_armored_key": string,
+        "server_public_armored_key": string,
+        "security_token": {
+			"code": string,
+			"color": string,
+			"textcolor": string
+		},
+}
+``
+
+To find the user id you will need to be connected and open the following url : 
+
+``
+https://www.passbolt.local/account/settings.json?api-version=v2
+``
+
+It will return the user id of the current user. 
+
+<u>Note:</u> if you use https, you will have to trust the certificate, without it it will not work
+
+## Development
+
+During the development, you will need to make changes into the different components. First link your actual browser extension to the Background webview, it will be easier to debug : 
+
+`` 
+cd path-to-your-browser-extension
+npm link
+``
+Then into your background webview : 
+
+``
+cd passbolt/Webviews/Background
+npm link passbolt-browser-extension
+``
+
+<u>Note</u>: Make sure that the version of the browser extension into your package.json match with the browser extension project.
+
+Each time you will make a change on the webviews, you will need to rebuilt them by using the command : 
+
+`` 
+npm run build
+``
+
+or  
+
+`` 
+npm run build-watch
+``
+
 
 ## Building the application
 

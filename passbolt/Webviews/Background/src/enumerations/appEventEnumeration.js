@@ -13,4 +13,5 @@
  */
 
 export const USERLOGGEDIN = "passbolt.auth.after-login";
+export const BACKGROUNDREADY = "passbolt.background.is-ready";
 export const ERROR = "passbolt.error";

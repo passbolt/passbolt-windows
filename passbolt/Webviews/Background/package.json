@@ -16,6 +16,7 @@
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.21.4",
     "@babel/preset-env": "^7.21.4",
+    "clean-webpack-plugin": "^4.0.0",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
     "jest-junit": "^15.0.0",
@@ -26,7 +27,8 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
-    "stream-browserify": "^3.0.0",
-    "passbolt-browser-extension": "3.12.1"
+    "passbolt-browser-extension": "3.12.1",
+    "setimmediate": "^1.0.5",
+    "stream-browserify": "^3.0.0"
   }
 }

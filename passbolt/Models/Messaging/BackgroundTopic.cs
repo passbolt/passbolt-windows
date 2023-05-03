@@ -17,7 +17,6 @@ using passbolt.Exceptions;
 using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using System;
-using System.Diagnostics;
 using Windows.UI.Xaml;
 
 namespace passbolt.Models.Messaging
@@ -35,6 +34,9 @@ namespace passbolt.Models.Messaging
         {
             switch (ipc.topic)
             {
+                case AllowedTopics.BACKGROUNDREADY:
+                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.DESKTOPAUTHENTICATE))); 
+                    break;
                 case AllowedTopics.AFTERLOGIN:
                     rendered.Visibility = Visibility.Visible;
                     rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index.html"));

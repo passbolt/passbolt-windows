@@ -12,43 +12,11 @@
  * @since         0.0.1
  */
 
-/**
- * Polyfill to init alarms from bext
- */
-class AlarmPolyfill {
-
-    constructor() {
-        window.chrome.alarms = {
-            get: this.get,
-            clear: this.clear,
-            create: this.create,
-            getAll: this.getAll,
-            onAlarm: {
-                addListener: this.addListener,
-                removeListener: this.removeListener,
-                hasListener() {return false;}
-            }
-        };
-    }
-    get(name) {
-        return new Promise(resolve => {
-            resolve(null);
-        });
-    }
-    addListener(name) { }
-    removeListener(name) { }
-    getAll() { }
-    clear() {
-        return new Promise(resolve => {
-            resolve();
-        });
-    }
-    create(name, callback) { }
-}
+import MockAlarms from "passbolt-browser-extension/test/mocks/mockAlarms";
 
 /**
  * Init the polyfill only if runtime is missing
  */
 if (!window.chrome.alarms) {
-    new AlarmPolyfill();
+    window.chrome.alarms = new MockAlarms()
 } 

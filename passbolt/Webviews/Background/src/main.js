@@ -30,6 +30,7 @@ import { CommentEvents } from 'passbolt-browser-extension/src/all/background_pag
 import { ActionLogEvents } from 'passbolt-browser-extension/src/all/background_page/event/actionLogEvents';
 import AccountModel from 'passbolt-browser-extension/src/all/background_page/model/account/accountModel';
 import AccountEntity from 'passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity';
+import { BACKGROUNDREADY } from './enumerations/appEventEnumeration';
 /**
  * Represents the main class that sets up an event listener for the `message` event.
  * @class
@@ -86,6 +87,7 @@ export default class Main {
             }
         }
         await LocalStorage.init();
+        window.chrome.webview.postMessage(JSON.stringify({ topic: BACKGROUNDREADY}));
     }
 }
 
