@@ -44,17 +44,12 @@
         this.getLinkTag().setAttribute("href", `${baseUrl}/Rendered/dist/themes/${this.theme}/${cssFile}`);
       }
 
-      getStorage(key) {
-        return new Promise(function (resolve, reject) {
-            try {
-                let response = {};
-                var value = localStorage.getItem(key);
-                response[key] = JSON.parse(value);
-                resolve(response);
-            } catch (error) {
-                reject(error);
-            }
-        });
+      async getStorage(key) {
+        const value = localStorage.getItem(key);
+        return {
+          [key]: JSON.parse(value)
+        };
+      });
     }
   
       getLinkTag() {
