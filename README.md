@@ -59,11 +59,11 @@ git clone git@github.com:passbolt/passbolt-windows
 
 ### Build the Rendered webview
 
-``
+```bash
 cd passbolt/Webviews/Rendered
 npm ci
 npm run build
-`` 
+```
 
 You can run a watcher to build the application each time you have a change : 
 
