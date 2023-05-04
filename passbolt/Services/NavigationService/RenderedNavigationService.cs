@@ -31,7 +31,7 @@ namespace passbolt.Services.NavigationService
             {
                 return instance;
             }
-        }
+        public static RenderedNavigationService Instance {get => instance}
 
         public void Initialize(string currentUrl)
         {
