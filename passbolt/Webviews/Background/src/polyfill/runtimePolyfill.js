@@ -15,41 +15,14 @@
 /**
  * Polyfill to init a fake runtime to match with bext runtime requierement
  */
-class StoragePolyfill {
-
-    /**
-     * constructor to init StoragePolyfill and init a fake runtime
-     */
-    constructor() {
-        this.initRuntime();
-    }
-
-    /**
-     * init the fake runtime
-     */
-    initRuntime() {
-        window.chrome.runtime = { 
-            id: {}, 
-            lastError: null, 
-            getManifest: this.getManifest
-        }
-    }
-
-    /**
-     * Mock a fake manifest version
-     * @returns {number} fake manisfest version 
-     */
-    getManifest() {
-        return {
-            manifest_version: 0
-        }
-    }
-}
-
 /**
  * Init the polyfill only if runtime is missing
  */
 if (!window.chrome.runtime) {
-    new StoragePolyfill();
+    window.chrome.runtime = {
+      id: {},
+      lastError: null,
+      getManifest: () => ({manifest_version: 0})
+    };
 }
   
