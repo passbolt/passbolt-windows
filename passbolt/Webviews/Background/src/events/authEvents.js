@@ -25,6 +25,9 @@ const listen = function(worker) {
         const controller = new DesktopAuthenticateController();
         controller._exec();          
         break;
+      default:
+        console.log(`Unsupported topic: ${worker.topic}`)
+        break;
     }
 }  
 
