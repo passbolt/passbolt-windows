@@ -1,6 +1,6 @@
 /**
  * Passbolt ~ Open source password manager for teams
- * Copyright (c) 2022 Passbolt SA (https://www.passbolt.com)
+ * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
  * Licensed under GNU Affero General Public License version 3 of the or any later version.
  * For full copyright and license information, please see the LICENSE.txt

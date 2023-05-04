@@ -1,6 +1,6 @@
 ﻿/**
  * Passbolt ~ Open source password manager for teams
- * Copyright (c) 2022 Passbolt SA (https://www.passbolt.com)
+ * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
  * Licensed under GNU Affero General Public License version 3 of the or any later version.
  * For full copyright and license information, please see the LICENSE.txt
@@ -24,8 +24,8 @@ namespace passbolt
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private WebView2 webviewRendered { get { return Rendered; } }
-        private WebView2 webviewBackground { get { return Background; } }
+        private WebView2 webviewRendered { get => Rendered; }
+        private WebView2 webviewBackground { get => Background; }
         private MainController mainController;
 
         /// <summary>
@@ -60,6 +60,7 @@ namespace passbolt
 
         private async void Background_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
+            webviewBackground.CoreWebView2.OpenDevToolsWindow();
             await this.mainController.BackgroundNavigationCompleted(sender, args);
         }
 
@@ -68,6 +69,7 @@ namespace passbolt
         /// </summary>
         private void Rendered_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
+            webviewRendered.CoreWebView2.OpenDevToolsWindow();
             this.mainController.RenderedNavigationCompleted(sender, args);
         }
     }
