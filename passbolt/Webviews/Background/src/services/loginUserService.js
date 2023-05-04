@@ -1,12 +1,12 @@
 /**
  * Passbolt ~ Open source password manager for teams
- * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * Copyright (c) 2022 Passbolt SA (https://www.passbolt.com)
  *
  * Licensed under GNU Affero General Public License version 3 of the or any later version.
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.0.1
@@ -20,7 +20,7 @@ import CheckPassphraseService from "passbolt-browser-extension/src/all/backgroun
 /**
  * Service related to the login user service
  */
-class LoginUserService { 
+class LoginUserService {
 
   /**
    * constructor for the login user service
@@ -37,15 +37,15 @@ class LoginUserService {
    */
   async checkPassphrase(passphrase) {
     if (typeof passphrase === "undefined") {
-        throw new Error("A passphrase is required.");
-      }
-      if (typeof passphrase !== "string") {
-        throw new Error("The passphrase should be a string.");
-      }
-      if (typeof rememberMe !== "undefined" && typeof rememberMe !== "boolean") {
-        throw new Error("The rememberMe should be a boolean.");
-      }
-      await this.checkPassphraseService.checkPassphrase(passphrase);
+      throw new Error("A passphrase is required.");
+    }
+    if (typeof passphrase !== "string") {
+      throw new Error("The passphrase should be a string.");
+    }
+    if (typeof rememberMe !== "undefined" && typeof rememberMe !== "boolean") {
+      throw new Error("The rememberMe should be a boolean.");
+    }
+    await this.checkPassphraseService.checkPassphrase(passphrase);
   }
 
   /**
@@ -55,12 +55,12 @@ class LoginUserService {
    */
   async login(passphrase, rememberMe) {
     try {
-        await this.authModel.login(passphrase, rememberMe);
-      } catch (error) {
-        if (!(error instanceof UserAlreadyLoggedInError)) {
-          throw error;
-        }
+      await this.authModel.login(passphrase, rememberMe);
+    } catch (error) {
+      if (!(error instanceof UserAlreadyLoggedInError)) {
+        throw error;
       }
+    }
   }
 }
 

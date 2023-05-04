@@ -1,12 +1,12 @@
 ﻿/**
  * Passbolt ~ Open source password manager for teams
- * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * Copyright (c) 2022 Passbolt SA (https://www.passbolt.com)
  *
  * Licensed under GNU Affero General Public License version 3 of the or any later version.
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.0.1
@@ -46,7 +46,8 @@ namespace passbolt.Controllers
         /// <param name="webviewRendered"></param>
         /// <param name="webviewBackground"></param>
         public MainController(
-            WebView2 webviewRendered, WebView2 webviewBackground) {
+            WebView2 webviewRendered, WebView2 webviewBackground)
+        {
             this.webviewBackground = webviewBackground;
             this.webviewRendered = webviewRendered;
         }
@@ -185,7 +186,7 @@ namespace passbolt.Controllers
         /// <param name="e"></param>
         protected void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs e)
         {
-            var backendUri = UriBuilderHelper.GetHostAndShemeForUri(e.Request.Uri);
+            string backendUri = UriBuilderHelper.GetHostAndShemeForUri(e.Request.Uri);
 
             // We change orign and referer to avoid CORS issues
             e.Request.Headers.SetHeader("Accept", "application/json");
@@ -198,7 +199,7 @@ namespace passbolt.Controllers
             if (e.Request.Method == HttpMethod.Options.Method)
             {
                 //Get the webview host and scheme
-                var desktopWebview = UriBuilderHelper.GetHostAndShemeForUri(sender.Source);
+                string desktopWebview = UriBuilderHelper.GetHostAndShemeForUri(sender.Source);
 
                 // Create the headers for the options response
                 string[] optionsHeaders = {
@@ -228,10 +229,10 @@ namespace passbolt.Controllers
             CoreWebView2 webviewSender = this.GetCoreWebView2Sender(sender);
 
             if (webviewSender == null || message == null) return;
-            var ipc = SerializationHelper.DeserializeFromJson<IPC>(message);
+            IPC ipc = SerializationHelper.DeserializeFromJson<IPC>(message);
 
             //Checks if we have data before going futher
-            if (string.IsNullOrEmpty(ipc.topic) || !AllowedTopics.IsTopicNameAllowed(ipc.topic)) 
+            if (string.IsNullOrEmpty(ipc.topic) || !AllowedTopics.IsTopicNameAllowed(ipc.topic))
             {
                 return;
             }

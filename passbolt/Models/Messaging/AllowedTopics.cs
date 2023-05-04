@@ -1,22 +1,18 @@
 ﻿/**
  * Passbolt ~ Open source password manager for teams
- * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * Copyright (c) 2022 Passbolt SA (https://www.passbolt.com)
  *
  * Licensed under GNU Affero General Public License version 3 of the or any later version.
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.0.1
  */
 
 using System.Collections.Generic;
-using System.Globalization;
-using System.Resources;
-using System.Security;
-using System.Xml.Linq;
 
 namespace passbolt.Models.Messaging
 {
@@ -44,7 +40,7 @@ namespace passbolt.Models.Messaging
         public const string PROGRESSOPENDIALOG = "passbolt.progress.open-progress-dialog";
         public const string PROGRESSUPDATEGOALS = "passbolt.progress.update-goals";
         public const string PROGRESSCLOSEDIALOG = "passbolt.progress.close-progress-dialog";
-        public const string PROGRESSUPDATE= "passbolt.progress.update";
+        public const string PROGRESSUPDATE = "passbolt.progress.update";
         public const string FINDALLCOMMENTBYRESSOURCE = "passbolt.comments.find-all-by-resource";
         public const string FINDALLACTIONLOGS = "passbolt.actionlogs.find-all-for";
         public const string CREATEFOLDERS = "passbolt.folders.create";
@@ -66,9 +62,13 @@ namespace passbolt.Models.Messaging
         /// <returns></returns>
         private static List<string> GetAllTopicNames()
         {
-            return new List<string> { BACKGROUNDREADY, DELETEALLRESOURCES, CREATEFOLDERS, UPDATEFOLDERS, UPDATERESOURCES, CREATERESOURCES, DELETECOMMENT, CREATECOMMENT, OPENDIALOGFOLDERS, DELETEFOLDERS, FINDALLFOLDERS , FINDALLCOMMENTBYRESSOURCE, FINDALLACTIONLOGS, FINDALLCOMMENTBYRESSOURCE,  FINDPERMISSIONSRESSOURCE, PROGRESSOPENDIALOG, ISAUTHENTICATED, PASSWORDGENERATORSETTINGS, PROGRESSUPDATEGOALS, PROGRESSCLOSEDIALOG,  PROGRESSUPDATE, PASSPHRASEREQUEST, DESKTOPAUTHENTICATE, AFTERLOGIN, GETSITESETTINGS, GETVERSION, FINDLOGGEDINUSER, GETLOCALE, GETALLRESOURCETYPE, GETALLROLES, FINDALLRESOURCES, UPDATELOCALSTORAGEFOLDERS, UPDATELOCALSTORAGERESOURCES, UPDATELOCALSTORAGEGROUPS, UPDATELOCALSTORAGEUSERS, DECRYPTSECRET };
+            return new List<string> { BACKGROUNDREADY, DELETEALLRESOURCES, CREATEFOLDERS, UPDATEFOLDERS, UPDATERESOURCES, CREATERESOURCES, DELETECOMMENT, CREATECOMMENT, OPENDIALOGFOLDERS, DELETEFOLDERS, FINDALLFOLDERS, FINDALLCOMMENTBYRESSOURCE, FINDALLACTIONLOGS, FINDALLCOMMENTBYRESSOURCE, FINDPERMISSIONSRESSOURCE, PROGRESSOPENDIALOG, ISAUTHENTICATED, PASSWORDGENERATORSETTINGS, PROGRESSUPDATEGOALS, PROGRESSCLOSEDIALOG, PROGRESSUPDATE, PASSPHRASEREQUEST, DESKTOPAUTHENTICATE, AFTERLOGIN, GETSITESETTINGS, GETVERSION, FINDLOGGEDINUSER, GETLOCALE, GETALLRESOURCETYPE, GETALLROLES, FINDALLRESOURCES, UPDATELOCALSTORAGEFOLDERS, UPDATELOCALSTORAGERESOURCES, UPDATELOCALSTORAGEGROUPS, UPDATELOCALSTORAGEUSERS, DECRYPTSECRET };
         }
 
+        /// <summary>
+        /// Add a requestId to the list to allow the callback
+        /// </summary>
+        /// <param name="requestId"></param>
         public static void AddRequestId(string requestId)
         {
             requestIds.Add(requestId);
@@ -83,7 +83,11 @@ namespace passbolt.Models.Messaging
             return GetAllTopicNames().Contains(topicName) || requestIds.Contains(topicName);
         }
 
-        public static bool proceedRequestId(string requestId)
+        /// <summary>
+        /// Check if the requestId callback is allowed
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <returns></returns>
         public static bool proceedRequestId(string requestId) => requestIds.Remove(requestId);
     }
 }

@@ -1,28 +1,28 @@
 /**
  * Passbolt ~ Open source password manager for teams
- * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * Copyright (c) 2022 Passbolt SA (https://www.passbolt.com)
  *
  * Licensed under GNU Affero General Public License version 3 of the or any later version.
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.0.1
  */
 
-import { Config } from "passbolt-browser-extension/src/all/background_page/model/config";
+import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
 import BuildApiClientOptionsService from "passbolt-browser-extension/src/all/background_page/service/account/buildApiClientOptionsService";
 import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
-import { tempPassphrase } from "../data/mockStorage";
-import { USERLOGGEDIN, ERROR } from "../enumerations/appEventEnumeration";
+import {tempPassphrase} from "../data/mockStorage";
+import {USERLOGGEDIN, ERROR} from "../enumerations/appEventEnumeration";
 import LoginUserService from "../services/loginUserService";
 
 /**
  * Controller related to the desktop authentication
  */
-class DesktopAuthenticateController { 
+class DesktopAuthenticateController {
 
   /**
    * Wrapper of exec function to run.
@@ -34,7 +34,7 @@ class DesktopAuthenticateController {
       await this.exec();
       window.chrome.webview.postMessage(JSON.stringify({ topic: USERLOGGEDIN }));
     } catch (error) {
-      window.chrome.webview.postMessage(JSON.stringify({ topic: ERROR , message: error}));
+      window.chrome.webview.postMessage(JSON.stringify({ topic: ERROR, message: error }));
     }
   }
 
