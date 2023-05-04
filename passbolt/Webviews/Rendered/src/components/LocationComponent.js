@@ -39,9 +39,7 @@ class LocationComponent extends React.Component {
      * @return {JSX}
      */
     render() {
-        return (
-            <></>
-        );
+        return null;
     }
 }
 
