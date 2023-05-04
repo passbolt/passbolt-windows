@@ -84,14 +84,6 @@ namespace passbolt.Models.Messaging
         }
 
         public static bool proceedRequestId(string requestId)
-        {
-            var isPresent = requestIds.Contains(requestId);
-            if (isPresent)
-            {
-                requestIds.Remove(requestId);
-                return true;
-            }
-            return isPresent;
-        }
+        public static bool proceedRequestId(string requestId) => requestIds.Remove(requestId);
     }
 }
