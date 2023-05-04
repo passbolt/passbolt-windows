@@ -52,14 +52,10 @@ namespace passbolt.Models.Messaging
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
                     break;
                 default:
-                    if (AllowedTopics.proceedRequestId(ipc.topic))
-                    {
-                        rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
+                    if (!AllowedTopics.proceedRequestId(ipc.topic)) {
+                        throw new UnauthorizedTopicException("Rendered webview");
                     }
-                    else
-                    {
-                        new UnauthorizedTopicException("Rendered webview");
-                    }
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
                     break;
             }
         }
