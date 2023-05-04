@@ -53,9 +53,9 @@ By using UWP and Webview2, Passbolt Desktop App provides a consistent and seamle
 
 ### Clone the project 
 
-``
-https://github.com/passbolt/passbolt-windows
-`` 
+```bash
+git clone git@github.com:passbolt/passbolt-windows
+```
 
 ### Build the Rendered webview
 
