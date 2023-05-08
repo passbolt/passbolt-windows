@@ -1,12 +1,12 @@
 ﻿/**
  * Passbolt ~ Open source password manager for teams
- * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
  * Licensed under GNU Affero General Public License version 3 of the or any later version.
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.0.1
@@ -14,7 +14,8 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -24,6 +25,7 @@ using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using Windows.ApplicationModel;
 using Windows.Storage;
+using Windows.UI.Xaml.Controls;
 
 namespace passbolt.Controllers
 {
@@ -38,8 +40,14 @@ namespace passbolt.Controllers
         protected RenderedNavigationService renderedNavigationService;
         protected BackgroundNavigationService backgroundNavigationService;
 
+        /// <summary>
+        /// controller
+        /// </summary>
+        /// <param name="webviewRendered"></param>
+        /// <param name="webviewBackground"></param>
         public MainController(
-            WebView2 webviewRendered, WebView2 webviewBackground) {
+            WebView2 webviewRendered, WebView2 webviewBackground)
+        {
             this.webviewBackground = webviewBackground;
             this.webviewRendered = webviewRendered;
         }
@@ -63,13 +71,13 @@ namespace passbolt.Controllers
             {
                 await this.LoadWebviews();
                 this.SetWebviewSettings(webviewBackground);
-                webviewBackground.CoreWebView2.OpenDevToolsWindow();
             }
         }
 
         /// <summary>
         /// Navigation starting event handler for the rendered webview
         /// </summary>
+        /// <param name="sender"></param>
         /// <param name="sender"></param>
         /// <param name="args"></param>
         /// <returns></returns>
@@ -93,14 +101,18 @@ namespace passbolt.Controllers
         {
             await webviewRendered.EnsureCoreWebView2Async();
             await webviewBackground.EnsureCoreWebView2Async();
-            
-            string randomUrl = Guid.NewGuid().ToString();
+
+            // Init filter to catch all http request from background 
+            webviewBackground.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.XmlHttpRequest);
+
+            string randomUrl = "www.desktop.passbolt.local";
             string backgroundUrl = randomUrl + "/Background";
             string renderedUrl = randomUrl + "/Rendered";
 
             this.backgroundNavigationService = new BackgroundNavigationService(backgroundUrl);
-            this.renderedNavigationService = new RenderedNavigationService(renderedUrl);
+            this.renderedNavigationService = RenderedNavigationService.Instance;
 
+            this.renderedNavigationService.Initialize(randomUrl);
             StorageFolder installationFolder = Package.Current.InstalledLocation;
 
             // Load dist folder to insert into the virtual host to avoid exception during testing
@@ -113,8 +125,10 @@ namespace passbolt.Controllers
 
             // Set the source for background webview
             webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, "index.html"));
-            webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, "index.html"));
-            // Subscribes to the WebMessageReceived event of the rendered adn background window
+
+            // Subscribes to the WebResourceRequested event of the background window
+            webviewBackground.CoreWebView2.WebResourceRequested += WebResourceRequested;
+            // Subscribes to the WebMessageReceived event of the rendered and background window
             webviewBackground.CoreWebView2.WebMessageReceived += WebMessageReceived;
             webviewRendered.CoreWebView2.WebMessageReceived += WebMessageReceived;
         }
@@ -152,31 +166,6 @@ namespace passbolt.Controllers
         }
 
         /// <summary>
-        /// Initialised the background page and inject script
-        /// </summary>
-        /// <returns></returns>
-        public virtual async Task WebviewInitialisation()
-        {
-            // Load script to inject for webviews
-            StorageFolder backgroundFolder = await this.FindInWebviewFolder("Background");
-            StorageFolder renderedFolder = await this.FindInWebviewFolder("Rendered");
-
-            StorageFolder distBackgroundFolder = await backgroundFolder.GetFolderAsync("dist");
-            StorageFolder distRenderedFolder = await renderedFolder.GetFolderAsync("dist");
-
-            StorageFile backgroundFile = await distBackgroundFolder.GetFileAsync("background.js");
-            StorageFile bundleFile = await distRenderedFolder.GetFileAsync("bundle.js");
-
-            Stream streamBackgroundJS = await backgroundFile.OpenStreamForReadAsync();
-            string scriptBackground = new StreamReader(streamBackgroundJS).ReadToEnd();
-            await webviewBackground.ExecuteScriptAsync(scriptBackground);
-
-            Stream streamRenderedJS = await bundleFile.OpenStreamForReadAsync();
-            string scriptRendered = new StreamReader(streamRenderedJS).ReadToEnd();
-            await webviewRendered.ExecuteScriptAsync(scriptRendered);
-        }
-
-        /// <summary>
         /// Check Navigation for webviews2
         /// </summary>
         /// <param name="sender"></param>
@@ -191,6 +180,45 @@ namespace passbolt.Controllers
         }
 
         /// <summary>
+        /// WebMessageReceived event handler for the background
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs e)
+        {
+            string backendUri = UriBuilderHelper.GetHostAndShemeForUri(e.Request.Uri);
+
+            // We change orign and referer to avoid CORS issues
+            e.Request.Headers.SetHeader("Accept", "application/json");
+            e.Request.Headers.SetHeader("Origin", backendUri);
+            e.Request.Headers.SetHeader("Referer", backendUri);
+
+            //TO DO: create a custom client to handle the request and avoid client to send it directly
+
+            // API does not support OPTIONS method, we need to intercept it and return the correct headers
+            if (e.Request.Method == HttpMethod.Options.Method)
+            {
+                //Get the webview host and scheme
+                string desktopWebview = UriBuilderHelper.GetHostAndShemeForUri(sender.Source);
+
+                // Create the headers for the options response
+                string[] optionsHeaders = {
+                    $"Access-Control-Allow-Origin: {desktopWebview}",
+                    "Access-Control-Allow-Credentials: true",
+                    "Access-Control-Allow-Headers: content-type, x-csrf-token",
+                    "Access-Control-Allow-Methods: DELETE, POST, GET, OPTIONS, PUT"
+                };
+                // Create Webview2 response with the correct headers to the webviews
+                CoreWebView2WebResourceResponse webView2WebResourceResponse = webviewBackground.CoreWebView2.Environment.CreateWebResourceResponse(
+                    null,
+                    (int)HttpStatusCode.OK,
+                    HttpStatusCode.OK.ToString(),
+                    string.Join("\n", optionsHeaders));
+                e.Response = webView2WebResourceResponse;
+            }
+        }
+
+        /// <summary>
         /// Listener for webviews message received
         /// </summary>
         /// <param name="sender"></param>
@@ -201,10 +229,10 @@ namespace passbolt.Controllers
             CoreWebView2 webviewSender = this.GetCoreWebView2Sender(sender);
 
             if (webviewSender == null || message == null) return;
-            var ipc = SerializationHelper.DeserializeFromJson<IPC>(message);
+            IPC ipc = SerializationHelper.DeserializeFromJson<IPC>(message);
 
             //Checks if we have data before going futher
-            if (string.IsNullOrEmpty(ipc.topic) || !AllowedTopics.IsTopicNameAllowed(ipc.topic)) 
+            if (string.IsNullOrEmpty(ipc.topic) || !AllowedTopics.IsTopicNameAllowed(ipc.topic))
             {
                 return;
             }
@@ -231,14 +259,11 @@ namespace passbolt.Controllers
             Debug.WriteLine("NavigationCompleted: " + sender.CoreWebView2.Source);
             if (args.IsSuccess)
             {
-                var message = new IPC(AllowedTopics.INITIALIZATION);
                 await webviewBackground.EnsureCoreWebView2Async();
                 await webviewRendered.EnsureCoreWebView2Async();
+
                 this.renderedTopic = new RenderedTopic(webviewBackground, webviewRendered);
                 this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered);
-                webviewBackground.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(message));
-                webviewRendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(message));
-                await this.WebviewInitialisation();
             }
         }
 
@@ -247,13 +272,9 @@ namespace passbolt.Controllers
         /// </summary>
         /// <param name="sender"></param>
         /// <returns></returns>
-        public async Task RenderedNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        public void RenderedNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
             Debug.WriteLine("NavigationCompleted: " + sender.CoreWebView2.Source);
-            if (args.IsSuccess)
-            {
-                await this.WebviewInitialisation();
-            }
         }
         /// <summary>
         /// Retrieve the Corewebview from the sender
@@ -280,18 +301,6 @@ namespace passbolt.Controllers
             }
 
             return webviewSender;
-        }
-
-        /// <summary>
-        /// find folder into the webview folder
-        /// </summary>
-        /// <param name="webviewFolder"></param>
-        /// <returns> The Storage folder found </returns>
-        private async Task<StorageFolder> FindInWebviewFolder(string webviewFolder)
-        {
-            StorageFolder installationFolder = Package.Current.InstalledLocation;
-            StorageFolder viewsFolder = await installationFolder.GetFolderAsync("Webviews");
-            return await viewsFolder.GetFolderAsync(webviewFolder);
         }
     }
 }

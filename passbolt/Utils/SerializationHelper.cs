@@ -1,16 +1,17 @@
 ﻿/**
-* Passbolt ~ Open source password manager for teams
-* Copyright (c) Passbolt SA (https://www.passbolt.com)
-*
-* Licensed under GNU Affero General Public License version 3 of the or any later version.
-* For full copyright and license information, please see the LICENSE.txt
-* Redistributions of files must retain the above copyright notice.
-*
-* @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
-* @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
-* @link          https://www.passbolt.com Passbolt(tm)
-* @since         0.0.1
-*/
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         0.0.1
+ */
+
 using System;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
@@ -35,7 +36,7 @@ namespace passbolt.Utils
             if (string.IsNullOrEmpty(data))
                 throw new ArgumentNullException(nameof(data));
 
-            var settings = new JsonSerializerSettings
+            JsonSerializerSettings settings = new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Auto,
                 StringEscapeHandling = StringEscapeHandling.EscapeHtml,
@@ -43,7 +44,7 @@ namespace passbolt.Utils
             };
             try
             {
-                var obj = JsonConvert.DeserializeObject<T>(SanitizeData(data), settings);
+                T obj = JsonConvert.DeserializeObject<T>(SanitizeData(data), settings);
 
                 if (obj == null)
                     throw new InvalidOperationException("Deserialized object is null.");
@@ -58,7 +59,7 @@ namespace passbolt.Utils
 
         private static string SanitizeData(string data)
         {
-            var sanitizeData = Regex.Replace(data, @"<script.*?</script>", "", RegexOptions.IgnoreCase);
+            string sanitizeData = Regex.Replace(data, @"<script.*?</script>", "", RegexOptions.IgnoreCase);
             sanitizeData = Regex.Replace(sanitizeData, @"require", "", RegexOptions.IgnoreCase);
 
             return sanitizeData;

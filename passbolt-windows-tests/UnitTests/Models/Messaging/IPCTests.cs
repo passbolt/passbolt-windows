@@ -26,7 +26,7 @@ namespace passbolt_windows_tests.UnitTests.Models
         [TestMethod]
         public void IPC_ValidTopic_ShouldPassValidation()
         {
-            IPC ipc = new IPC(AllowedTopics.INITIALIZATION);
+            IPC ipc = new IPC(AllowedTopics.DESKTOPAUTHENTICATE);
 
             var validationContext = new ValidationContext(ipc, null, null);
             var results = new List<ValidationResult>();
@@ -67,7 +67,7 @@ namespace passbolt_windows_tests.UnitTests.Models
         [TestMethod]
         public void IPC_MessageCanBeEmpty()
         {
-            IPC ipc = new IPC(AllowedTopics.INITIALIZATION);
+            IPC ipc = new IPC(AllowedTopics.DESKTOPAUTHENTICATE);
 
             var validationContext = new ValidationContext(ipc, null, null);
             var results = new List<ValidationResult>();

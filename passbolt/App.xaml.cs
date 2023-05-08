@@ -1,17 +1,17 @@
 ﻿/**
  * Passbolt ~ Open source password manager for teams
- * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
  * Licensed under GNU Affero General Public License version 3 of the or any later version.
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.0.1
  */
- 
+
 using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -96,7 +96,7 @@ namespace passbolt
         /// <param name="e">Details about the suspend request.</param>
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
-            var deferral = e.SuspendingOperation.GetDeferral();
+            SuspendingDeferral deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
             deferral.Complete();
         }

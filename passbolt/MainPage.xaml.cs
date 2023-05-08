@@ -1,22 +1,21 @@
 ﻿/**
  * Passbolt ~ Open source password manager for teams
- * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
  * Licensed under GNU Affero General Public License version 3 of the or any later version.
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.0.1
  */
- 
+
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.UI.Xaml.Controls;
 using passbolt.Controllers;
-using passbolt.Services.NavigationService;
 
 namespace passbolt
 {
@@ -25,8 +24,8 @@ namespace passbolt
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private WebView2 webviewRendered { get { return Rendered; } }
-        private WebView2 webviewBackground { get { return Background; } }
+        private WebView2 webviewRendered { get => Rendered; }
+        private WebView2 webviewBackground { get => Background; }
         private MainController mainController;
 
         /// <summary>
@@ -61,15 +60,17 @@ namespace passbolt
 
         private async void Background_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-           await this.mainController.BackgroundNavigationCompleted(sender, args);
+            webviewBackground.CoreWebView2.OpenDevToolsWindow();
+            await this.mainController.BackgroundNavigationCompleted(sender, args);
         }
 
         /// <summary>
         /// This method is called when the rendered web view completes navigation.
         /// </summary>
-        private async void Rendered_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        private void Rendered_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-            await this.mainController.RenderedNavigationCompleted(sender, args);
+            webviewRendered.CoreWebView2.OpenDevToolsWindow();
+            this.mainController.RenderedNavigationCompleted(sender, args);
         }
     }
 }
