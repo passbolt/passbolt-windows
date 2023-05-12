@@ -49,6 +49,19 @@ namespace passbolt.Services.HttpService
         /// <exception cref="UnauthorizedAPICallException"></exception>
         public async void CheckAPICall(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs webviewRequest)
         {
+            await this.GetTrustedDomainFromWebview(sender);
+            if (!UriBuilderHelper.GetHostAndShemeForUri(webviewRequest.Request.Uri).Equals(this.trustedDomain))
+            {
+                throw new UnauthorizedAPICallException();
+            }
+        }
+
+        /// <summary>
+        /// Check if trusted domain is set or retrieve it from the webview
+        /// </summary>
+        /// <param name="sender"></param>
+        public async Task GetTrustedDomainFromWebview(CoreWebView2 sender)
+        {
             if (string.IsNullOrEmpty(trustedDomain))
             {
                 string localItem = await sender.ExecuteScriptAsync("JSON.parse(localStorage.getItem('_passbolt_data'))");
@@ -57,10 +70,6 @@ namespace passbolt.Services.HttpService
                     var passboltData = SerializationHelper.DeserializeFromJson<PassboltData>(localItem);
                     trustedDomain = passboltData.Config.TrustedDomain;
                 }
-            }
-            if (!UriBuilderHelper.GetHostAndShemeForUri(webviewRequest.Request.Uri).Equals(this.trustedDomain))
-            {
-                throw new UnauthorizedAPICallException();
             }
         }
 
