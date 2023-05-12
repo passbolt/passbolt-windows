@@ -14,13 +14,16 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Net;
 using System.Net.Http;
+using System.Resources;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Models;
 using passbolt.Models.Messaging;
+using passbolt.Services.HttpService;
 using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using Windows.ApplicationModel;
@@ -39,6 +42,7 @@ namespace passbolt.Controllers
         protected BackgroundTopic backgroundTopic;
         protected RenderedNavigationService renderedNavigationService;
         protected BackgroundNavigationService backgroundNavigationService;
+        protected HttpService httpService = new HttpService();
 
         /// <summary>
         /// controller
@@ -184,37 +188,20 @@ namespace passbolt.Controllers
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs e)
+        protected void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
         {
-            string backendUri = UriBuilderHelper.GetHostAndShemeForUri(e.Request.Uri);
-
-            // We change orign and referer to avoid CORS issues
-            e.Request.Headers.SetHeader("Accept", "application/json");
-            e.Request.Headers.SetHeader("Origin", backendUri);
-            e.Request.Headers.SetHeader("Referer", backendUri);
-
-            //TO DO: create a custom client to handle the request and avoid client to send it directly
-
+            //Check if the request is allowed with the trusted domain
+            httpService.CheckAPICall(sender, resource);
             // API does not support OPTIONS method, we need to intercept it and return the correct headers
-            if (e.Request.Method == HttpMethod.Options.Method)
+            if (resource.Request.Method == HttpMethod.Options.Method)
             {
-                //Get the webview host and scheme
-                string desktopWebview = UriBuilderHelper.GetHostAndShemeForUri(sender.Source);
-
-                // Create the headers for the options response
-                string[] optionsHeaders = {
-                    $"Access-Control-Allow-Origin: {desktopWebview}",
-                    "Access-Control-Allow-Credentials: true",
-                    "Access-Control-Allow-Headers: content-type, x-csrf-token",
-                    "Access-Control-Allow-Methods: DELETE, POST, GET, OPTIONS, PUT"
-                };
-                // Create Webview2 response with the correct headers to the webviews
-                CoreWebView2WebResourceResponse webView2WebResourceResponse = webviewBackground.CoreWebView2.Environment.CreateWebResourceResponse(
-                    null,
-                    (int)HttpStatusCode.OK,
-                    HttpStatusCode.OK.ToString(),
-                    string.Join("\n", optionsHeaders));
-                e.Response = webView2WebResourceResponse;
+                httpService.ResolveOptionMethod(sender, resource);
+            }
+            else
+            {
+                HttpRequestMessage request = httpService.BuildHttpRequest(resource);
+                HttpResponseMessage response = httpService.SendRequest(request).Result;
+                httpService.SendResponseToWebview(sender, resource, response);
             }
         }
 
