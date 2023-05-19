@@ -12,28 +12,41 @@
  * @since         0.0.1
  */
 
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using passbolt.Utils;
 
 namespace passbolt_windows_tests.UnitTests
 {
     [TestClass]
-        public class UriBuilderTest
+    public class UriBuilderTest
     {
+        string uri = "https://passbolt.local";
+        string path = "/api";
+        string apiUri;
+
+        public UriBuilderTest()
+        {
+            apiUri = string.Concat(uri, path);
+        }
+
         [TestMethod]
         [Description("Should return an URI")]
         public void BuildHostUri_ReturnsCorrectUri()
         {
-            // Arrange
-            string host = "example.com";
-            string path = "/home";
-            string expectedUri = "http://example.com/home";
-
-            // Act
+            string host = "passbolt.local";
             string actualUri = UriBuilderHelper.BuildHostUri(host, path);
 
-            // Assert
-            Assert.AreEqual(expectedUri, actualUri);
+            Assert.AreEqual(apiUri, actualUri);
+        }
+
+        [TestMethod]
+        [Description("Should return the host and scheme from the URL")]
+        public void GetHostAndSchemeForUri_ValidUri_ReturnsHostAndScheme()
+        {
+            string result = UriBuilderHelper.GetHostAndShemeForUri(apiUri);
+
+            Assert.AreEqual(uri, result);
         }
     }
 }

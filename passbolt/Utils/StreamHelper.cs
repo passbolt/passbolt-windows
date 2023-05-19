@@ -20,7 +20,7 @@ using Windows.Storage.Streams;
 
 namespace passbolt.Utils
 {
-    internal static class StreamHelper
+    public static class StreamHelper
     {
         /// <summary>
         /// Transform stream to random access stream

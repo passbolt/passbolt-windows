@@ -29,7 +29,7 @@ namespace passbolt_windows_tests.UnitTests.Utils
         {
             // Arrange
             var originalObject = new IPC("hello-word", "My message");
-            var expectedJson = "{\"topic\":\"hello-word\",\"message\":\"My message\"}";
+            var expectedJson = "{\"topic\":\"hello-word\",\"status\":null,\"message\":\"My message\",\"requestId\":null}";
 
             // Act
             var actualJson = SerializationHelper.SerializeToJson(originalObject);
@@ -75,7 +75,7 @@ namespace passbolt_windows_tests.UnitTests.Utils
             var deserializedPerson = SerializationHelper.DeserializeFromJson<IPC>(maliciousJson);
 
             // Assert
-            Assert.IsFalse(deserializedPerson.message.Contains("<script>"));
+            Assert.IsFalse(deserializedPerson.message.ToString().Contains("<script>"));
         }
     }
 }

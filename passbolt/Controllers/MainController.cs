@@ -14,10 +14,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
-using System.Net;
 using System.Net.Http;
-using System.Resources;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -28,7 +25,6 @@ using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using Windows.ApplicationModel;
 using Windows.Storage;
-using Windows.UI.Xaml.Controls;
 
 namespace passbolt.Controllers
 {
@@ -188,7 +184,7 @@ namespace passbolt.Controllers
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
+        protected virtual void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
         {
             //Check if the request is allowed with the trusted domain
             httpService.CheckAPICall(sender, resource);

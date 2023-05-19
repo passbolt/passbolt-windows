@@ -11,16 +11,20 @@
     "build": "webpack",
     "build-watch": "webpack --watch",
     "eslint": "eslint -c .eslintrc.json --ext js src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:unit": "jest --no-cache ./src/",
+    "test:coverage": "jest --no-cache ./src/ --coverage"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.21.4",
-    "@babel/preset-env": "^7.21.4",
+    "@babel/preset-env": "^7.21.5",
     "clean-webpack-plugin": "^4.0.0",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
+    "jest-fetch-mock": "^3.0.3",
     "jest-junit": "^15.0.0",
     "jest-webextension-mock": "^3.8.9",
+    "text-encoding-utf-8": "^1.0.2",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1"
   },
