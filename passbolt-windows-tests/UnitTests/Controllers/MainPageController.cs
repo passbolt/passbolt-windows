@@ -64,7 +64,7 @@ namespace passbolt_windows_tests
         }
 
         [UITestMethod]
-        [Description("As a desktop application I want to launch a rendered webview an do not display a screen")]
+        [Description("As a desktop application I want to launch a rendered webview and do not display a screen")]
         public void LoadRenderedWebviewTest()
         {
             // Assert
