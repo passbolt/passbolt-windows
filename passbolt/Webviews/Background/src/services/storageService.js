@@ -14,7 +14,7 @@
 
 import AccountModel from "passbolt-browser-extension/src/all/background_page/model/account/accountModel";
 import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
-import { accountDto } from "../data/mockStorage";
+import {accountDto} from "../data/mockStorage";
 import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk/storage';
 
 
