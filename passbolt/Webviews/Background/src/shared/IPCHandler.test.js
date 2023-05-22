@@ -69,7 +69,7 @@ describe('IPCHandler', () => {
       const spy = jest.spyOn(ipcHandler, 'emit');
       ipcHandler.request(topic, mockCallback);
 
-      const requestId = Object.keys(ipcHandler._listeners)[0]
+      const requestId = Object.keys(ipcHandler._listeners)[0];
 
       expect.assertions(4);
 
