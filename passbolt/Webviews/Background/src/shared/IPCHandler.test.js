@@ -31,8 +31,9 @@ describe('IPCHandler', () => {
 
   describe("IPCHandler:on", () => {
     it('should add a listener when on is called', () => {
-      ipcHandler.on(topic, mockCallback);
       expect.assertions(4);
+
+      ipcHandler.on(topic, mockCallback);
 
       expect(ipcHandler._listeners[topic]).toBeDefined();
       expect(ipcHandler._listeners[topic]).toHaveLength(1);
@@ -43,9 +44,9 @@ describe('IPCHandler', () => {
 
   describe("IPCHandler:once", () => {
     it('should add a listener that only triggers once when once is called', () => {
-      ipcHandler.once(topic, mockCallback);
-
       expect.assertions(4);
+
+      ipcHandler.once(topic, mockCallback);
 
       expect(ipcHandler._listeners[topic]).toBeDefined();
       expect(ipcHandler._listeners[topic]).toHaveLength(1);
@@ -56,9 +57,9 @@ describe('IPCHandler', () => {
 
   describe("IPCHandler:emit", () => {
     it('should emit function sends message via postMessage', async () => {
-      await ipcHandler.emit(topic, successTopic.status, successTopic.message);
-
       expect.assertions(1);
+      
+      await ipcHandler.emit(topic, successTopic.status, successTopic.message);
 
       expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify(successTopic));
     });
@@ -66,12 +67,11 @@ describe('IPCHandler', () => {
 
   describe("IPCHandler:request", () => {
     it('should request function emits request and registers one-time listener for response', () => {
+      expect.assertions(4);
+
       const spy = jest.spyOn(ipcHandler, 'emit');
       ipcHandler.request(topic, mockCallback);
-
       const requestId = Object.keys(ipcHandler._listeners)[0];
-
-      expect.assertions(4);
 
       expect(ipcHandler._listeners[requestId]).toBeDefined();
       expect(ipcHandler._listeners[requestId]).toHaveLength(1);
@@ -79,6 +79,8 @@ describe('IPCHandler', () => {
       expect(spy).toHaveBeenCalled();
     });
     it('should request generates a requestId and adds it to the request parameters', async () => {
+      expect.assertions(1);
+
       const mockCallback = jest.fn();
       const mockCallbackArgs = ['testArg1', 'testArg2'];
       const spy = jest.spyOn(ipcHandler, '_addListener');
@@ -86,31 +88,27 @@ describe('IPCHandler', () => {
       ipcHandler.request({ message: topic }, mockCallback, ...mockCallbackArgs);
       const requestId = Object.keys(ipcHandler._listeners)[0]
 
-      expect.assertions(1);
       expect(spy).toHaveBeenCalledWith(requestId, expect.any(Function), true);
     });
 
 
     it('should request resolve in case of status is success', async () => {
+      expect.assertions(1);
+
       const promise = ipcHandler.request({ message: topic });
       const requestId = Object.keys(ipcHandler._listeners)[0];
-
       ipcHandler._onMessage({ data: { topic: requestId, status: successTopic.status, message: successTopic.message } });
 
-      // expectations
-      expect.assertions(1);
       expect(await promise).toBe(successTopic.message);
-
     });
 
     it('should request reject in case of status is error', async () => {
+      expect.assertions(1);
+
       const promise = ipcHandler.request({ message: topic });
       const requestId = Object.keys(ipcHandler._listeners)[0];
 
       ipcHandler._onMessage({ data: { topic: requestId, status: errorTopic.status, message: errorTopic.message } });
-
-      // expectations
-      expect.assertions(1);
 
       try {
         await promise
@@ -130,22 +128,22 @@ describe('IPCHandler', () => {
 
   describe("IPCHandler:_onMessage", () => {
     it('_onMessage triggers registered callbacks with correct arguments', () => {
-      const mockCallback = jest.fn();
+      expect.assertions(1);
 
+      const mockCallback = jest.fn();
       ipcHandler.on(topic, mockCallback);
       ipcHandler._onMessage(buildMessage(successTopic, requestId));
 
-      expect.assertions(1);
       expect(mockCallback).toHaveBeenCalledWith(requestId, successTopic.message);
     });
 
     it('_onMessage removes once listener after first trigger', () => {
-      const mockCallback = jest.fn();
+      expect.assertions(1);
 
+      const mockCallback = jest.fn();
       ipcHandler.once(topic, mockCallback);
       ipcHandler._onMessage(buildMessage(successTopic, requestId));
 
-      expect.assertions(1);
       expect(ipcHandler._listeners[topic]).toBeUndefined();
     });
 
@@ -153,9 +151,10 @@ describe('IPCHandler', () => {
 
   describe("IPCHandler:_addListener", () => {
     it('_addListener adds listener object to listeners', () => {
+      expect.assertions(4);
+
       ipcHandler._addListener(topic, mockCallback, false);
 
-      expect.assertions(4);
       expect(ipcHandler._listeners[topic]).toBeDefined();
       expect(ipcHandler._listeners[topic]).toHaveLength(1);
       expect(ipcHandler._listeners[topic][0].callback).toBe(mockCallback);

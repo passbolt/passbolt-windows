@@ -45,59 +45,62 @@ describe('DesktopAuthenticateController', () => {
   describe('DesktopAuthenticateController', () => {
     describe('DesktopAuthenticateController:_exec', () => {
       it('should post message with USERLOGGEDIN topic if exec succeeds', async () => {
+        expect.assertions(2);
+
         jest.spyOn(desktopAuthenticateController, 'exec').mockResolvedValue();
         await desktopAuthenticateController._exec();
 
-        expect.assertions(2);
         expect(desktopAuthenticateController.exec).toHaveBeenCalled();
         expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: USERLOGGEDIN }));
       });
 
       it('should post message with ERROR topic and error message if exec fails', async () => {
+        expect.assertions(2);
+
         const error = new Error('Some error');
         jest.spyOn(desktopAuthenticateController, 'exec').mockRejectedValue(error);
         await desktopAuthenticateController._exec();
 
-        expect.assertions(2);
         expect(desktopAuthenticateController.exec).toHaveBeenCalled();
         expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: ERROR, message: error }));
       });
     });
     describe('DesktopAuthenticateController:exec', () => {
       it('should initiate configuration', async () => {
+        expect.assertions(2);
+
         jest.spyOn(Config, "init")
         
         await desktopAuthenticateController.exec();
 
-        expect.assertions(2);
         expect(Config.init).toHaveBeenCalled();
         expect(Config.readAll()).toEqual(passboltData)
       })
 
       it('should build apiclientoptions with GetLegacyAccountService', async () => {
+        expect.assertions(1);
         jest.spyOn(BuildApiClientOptionsService, "buildFromDomain")
 
         await desktopAuthenticateController.exec();
 
-        expect.assertions(1);
         expect(BuildApiClientOptionsService.buildFromDomain).toHaveBeenCalledWith(legacyResult.domain);
       })
 
-      it('should check and validate the passphrase', async () => {
+      it('should check and validate the passphrase', async () => {        expect.assertions(1);
+        expect.assertions(1);
         jest.spyOn(LoginUserService.prototype, "checkPassphrase")
 
         await desktopAuthenticateController.exec();
 
-        expect.assertions(1);
         expect(LoginUserService.prototype.checkPassphrase).toHaveBeenCalledWith(tempPassphrase);
       })
 
       it('should login and persist the passphrase', async () => {
+        expect.assertions(1);
         jest.spyOn(LoginUserService.prototype, "login")
 
         await desktopAuthenticateController.exec();
         
-        expect.assertions(1);
         expect(LoginUserService.prototype.login).toHaveBeenCalledWith(tempPassphrase, true);
       })
     });

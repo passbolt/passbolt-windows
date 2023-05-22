@@ -55,19 +55,21 @@ describe("Main class", () => {
   });
 
   it('should listen to authenticate eveent', () => {
+    expect.assertions(2);
+
     jest.spyOn(AuthEvents, "listen");
     new Main(window.chrome.webview);
     const callback = window.chrome.webview.addEventListener.mock.calls[0][1];
-
     callback(ipcDataMock);
 
-    expect.assertions(2);
     expect(window.chrome.webview.addEventListener).toHaveBeenCalledWith('message', expect.any(Function));
     expect(AuthEvents.listen).toHaveBeenCalledWith(ipcDataMock.data);
   });
 
 
   it('should listen to the browser extension events', () => {
+    expect.assertions(13);
+
     jest.spyOn(OrganizationSettingsEvents, "listen");
     jest.spyOn(ConfigEvents, "listen");
     jest.spyOn(UserEvents, "listen");
@@ -82,12 +84,9 @@ describe("Main class", () => {
     jest.spyOn(ActionLogEvents, "listen");
 
     main = new Main(window.chrome.webview);
-
     const callback = window.chrome.webview.addEventListener.mock.calls[0][1];
-
     callback(ipcDataMock);
 
-    expect.assertions(13);
     expect(window.chrome.webview.addEventListener).toHaveBeenCalledWith('message', expect.any(Function));
     expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
@@ -104,11 +103,12 @@ describe("Main class", () => {
   });
 
   it('should initialize the local storage and post a message', async () => {
+    expect.assertions(12);
+
     localStorage.removeItem('_passbolt_data')
     
     await main.initStorage();
 
-    expect.assertions(12);
     expect(localStorage.getItem("_passbolt_data")).not.toBeNull();
 
     const storage = JSON.parse(localStorage.getItem("_passbolt_data"))
@@ -129,11 +129,11 @@ describe("Main class", () => {
     expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: BACKGROUNDREADY }));
   });
 
-  it('should not initialize the local storage if user exist and post a message', async () => {    
+  it('should not initialize the local storage if user exist and post a message', async () => {  
+    expect.assertions(2);
+  
     jest.spyOn(window.chrome.storage.local, "set")
     await main.initStorage();
-
-    expect.assertions(2);
 
     expect(window.chrome.storage.local.set).not.toHaveBeenCalled();
     expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: BACKGROUNDREADY }));
