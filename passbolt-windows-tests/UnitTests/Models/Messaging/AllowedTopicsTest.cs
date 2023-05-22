@@ -33,11 +33,11 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedFolderTopics()
         {
-            bool findAllFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.FINDALLFOLDERS);
-            bool openDialogFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.OPENDIALOGFOLDERS);
-            bool updateLocalStorageFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.UPDATELOCALSTORAGEFOLDERS);
-            bool createFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.CREATEFOLDERS);
-            bool deleteFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.DELETEFOLDERS);
+            bool findAllFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.FIND_ALL);
+            bool openDialogFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.OPEN_DIALOG);
+            bool updateLocalStorageFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.UPDATE_LOCALSTORAGE);
+            bool createFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.CREATE);
+            bool deleteFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.DELETE);
 
             Assert.IsTrue(findAllFolders);
             Assert.IsTrue(openDialogFolders);
@@ -49,9 +49,9 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedCommentTopics()
         {
-            bool deleteComment = AllowedTopics.IsTopicNameAllowed(CommentTopics.DELETECOMMENT);
-            bool createComment = AllowedTopics.IsTopicNameAllowed(CommentTopics.CREATECOMMENT);
-            bool findAllCommentByRessource = AllowedTopics.IsTopicNameAllowed(CommentTopics.FINDALLCOMMENTBYRESSOURCE);
+            bool deleteComment = AllowedTopics.IsTopicNameAllowed(CommentTopics.DELETE);
+            bool createComment = AllowedTopics.IsTopicNameAllowed(CommentTopics.CREATE);
+            bool findAllCommentByRessource = AllowedTopics.IsTopicNameAllowed(CommentTopics.FIND_ALL_BY_RESSOURCE);
 
             Assert.IsTrue(createComment);
             Assert.IsTrue(deleteComment);
@@ -61,7 +61,7 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedGroupTopics()
         {
-            bool updateLocalStorageGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.UPDATELOCALSTORAGEGROUPS);
+            bool updateLocalStorageGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.UPDATE_LOCALESTORAGE);
 
             Assert.IsTrue(updateLocalStorageGroups);
         }
@@ -69,7 +69,7 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedLocaleTopics()
         {
-            bool getLocale = AllowedTopics.IsTopicNameAllowed(LocaleTopics.GETLOCALE);
+            bool getLocale = AllowedTopics.IsTopicNameAllowed(LocaleTopics.GET);
 
             Assert.IsTrue(getLocale);
         }
@@ -91,13 +91,13 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedResourceTopics()
         {
-            bool updateLocalStorageResources = AllowedTopics.IsTopicNameAllowed(ResourceTopics.UPDATELOCALSTORAGERESOURCES);
-            bool findAllResources = AllowedTopics.IsTopicNameAllowed(ResourceTopics.FINDALLRESOURCES);
-            bool deleteAllResources = AllowedTopics.IsTopicNameAllowed(ResourceTopics.DELETEALLRESOURCES);
-            bool createResources = AllowedTopics.IsTopicNameAllowed(ResourceTopics.CREATERESOURCES);
-            bool findPermissionsResource = AllowedTopics.IsTopicNameAllowed(ResourceTopics.FINDPERMISSIONSRESSOURCE);
-            bool getAllResourceType = AllowedTopics.IsTopicNameAllowed(ResourceTopics.GETALLRESOURCETYPE);
-            bool updateResources = AllowedTopics.IsTopicNameAllowed(ResourceTopics.UPDATERESOURCES);
+            bool updateLocalStorageResources = AllowedTopics.IsTopicNameAllowed(ResourceTopics.UPDATE_LOCALSTORAGE);
+            bool findAllResources = AllowedTopics.IsTopicNameAllowed(ResourceTopics.FIND_ALL);
+            bool deleteAllResources = AllowedTopics.IsTopicNameAllowed(ResourceTopics.DELETE_ALL);
+            bool createResources = AllowedTopics.IsTopicNameAllowed(ResourceTopics.CREATE);
+            bool findPermissionsResource = AllowedTopics.IsTopicNameAllowed(ResourceTopics.FIND_PERMISSION);
+            bool getAllResourceType = AllowedTopics.IsTopicNameAllowed(ResourceTopics.GET_ALL);
+            bool updateResources = AllowedTopics.IsTopicNameAllowed(ResourceTopics.UPDATE);
 
             Assert.IsTrue(updateLocalStorageResources);
             Assert.IsTrue(findAllResources);
@@ -111,7 +111,7 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedRoleTopics()
         {
-            bool getAllRoles = AllowedTopics.IsTopicNameAllowed(RoleTopics.GETALLROLES);
+            bool getAllRoles = AllowedTopics.IsTopicNameAllowed(RoleTopics.GET_ALL);
 
             Assert.IsTrue(getAllRoles);
         }
@@ -119,8 +119,8 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedSecretTopics()
         {
-            bool decryptSecret = AllowedTopics.IsTopicNameAllowed(SecretTopics.DECRYPTSECRET);
-            bool passphraseRequest = AllowedTopics.IsTopicNameAllowed(SecretTopics.PASSPHRASEREQUEST);
+            bool decryptSecret = AllowedTopics.IsTopicNameAllowed(SecretTopics.DECRYPT_SECRET);
+            bool passphraseRequest = AllowedTopics.IsTopicNameAllowed(SecretTopics.PASSPHRASE_REQUEST);
 
             Assert.IsTrue(decryptSecret);
             Assert.IsTrue(passphraseRequest);
@@ -129,9 +129,9 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedSettingTopics()
         {
-            bool passwordGeneratorSettings = AllowedTopics.IsTopicNameAllowed(SettingTopics.PASSWORDGENERATORSETTINGS);
-            bool getSiteSettings = AllowedTopics.IsTopicNameAllowed(SettingTopics.GETSITESETTINGS);
-            bool getVersion = AllowedTopics.IsTopicNameAllowed(SettingTopics.GETVERSION);
+            bool passwordGeneratorSettings = AllowedTopics.IsTopicNameAllowed(SettingTopics.PASSWORD_GENERATOR_SETTINGS);
+            bool getSiteSettings = AllowedTopics.IsTopicNameAllowed(SettingTopics.GET);
+            bool getVersion = AllowedTopics.IsTopicNameAllowed(SettingTopics.GET_VERSION);
 
             Assert.IsTrue(passwordGeneratorSettings);
             Assert.IsTrue(getSiteSettings);
@@ -141,8 +141,8 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedUserTopics()
         {
-            bool updateLocalStorageUsers = AllowedTopics.IsTopicNameAllowed(UserTopics.UPDATELOCALSTORAGEUSERS);
-            bool findLoggedInUser = AllowedTopics.IsTopicNameAllowed(UserTopics.FINDLOGGEDINUSER);
+            bool updateLocalStorageUsers = AllowedTopics.IsTopicNameAllowed(UserTopics.UPDATE_LOCALSTORAGE);
+            bool findLoggedInUser = AllowedTopics.IsTopicNameAllowed(UserTopics.FIND_LOGGED_IN_USER);
 
             Assert.IsTrue(updateLocalStorageUsers);
             Assert.IsTrue(findLoggedInUser);
@@ -151,7 +151,7 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedActionLogsTopics()
         {
-            bool findAllActionLogs = AllowedTopics.IsTopicNameAllowed(ActionLogsTopics.FINDALLACTIONLOGS);
+            bool findAllActionLogs = AllowedTopics.IsTopicNameAllowed(ActionLogsTopics.FIND_ALL);
 
             Assert.IsTrue(findAllActionLogs);
         }

@@ -16,7 +16,7 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class UserTopics
     {
-        public const string FINDLOGGEDINUSER = "passbolt.users.find-logged-in-user";
-        public const string UPDATELOCALSTORAGEUSERS = "passbolt.users.update-local-storage";
+        public const string FIND_LOGGED_IN_USER = "passbolt.users.find-logged-in-user";
+        public const string UPDATE_LOCALSTORAGE = "passbolt.users.update-local-storage";
     }
 }

@@ -16,7 +16,7 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class SecretTopics
     {
-        public const string DECRYPTSECRET = "passbolt.secret.decrypt";
-        public const string PASSPHRASEREQUEST = "passbolt.passphrase.request";
+        public const string DECRYPT_SECRET = "passbolt.secret.decrypt";
+        public const string PASSPHRASE_REQUEST = "passbolt.passphrase.request";
     }
 }

@@ -16,11 +16,11 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class FolderTopics
     {
-        public const string CREATEFOLDERS = "passbolt.folders.create";
-        public const string UPDATEFOLDERS = "passbolt.folders.update";
-        public const string FINDALLFOLDERS = "passbolt.folders.find-permissions";
-        public const string DELETEFOLDERS = "passbolt.folders.delete";
-        public const string OPENDIALOGFOLDERS = "passbolt.folders.open-move-confirmation-dialog";
-        public const string UPDATELOCALSTORAGEFOLDERS = "passbolt.folders.update-local-storage";
+        public const string CREATE= "passbolt.folders.create";
+        public const string UPDATE = "passbolt.folders.update";
+        public const string FIND_ALL = "passbolt.folders.find-permissions";
+        public const string DELETE= "passbolt.folders.delete";
+        public const string OPEN_DIALOG= "passbolt.folders.open-move-confirmation-dialog";
+        public const string UPDATE_LOCALSTORAGE= "passbolt.folders.update-local-storage";
     }
 }

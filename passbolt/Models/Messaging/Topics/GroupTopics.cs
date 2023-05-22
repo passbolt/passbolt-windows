@@ -16,6 +16,6 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class GroupTopics
     {
-        public const string UPDATELOCALSTORAGEGROUPS = "passbolt.groups.update-local-storage";
+        public const string UPDATE_LOCALESTORAGE= "passbolt.groups.update-local-storage";
     }
 }

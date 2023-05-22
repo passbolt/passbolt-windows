@@ -17,6 +17,6 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class LocaleTopics
     {
-        public const string GETLOCALE = "passbolt.locale.get";
+        public const string GET = "passbolt.locale.get";
     }
 }

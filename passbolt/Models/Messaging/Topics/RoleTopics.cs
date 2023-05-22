@@ -16,6 +16,6 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class RoleTopics
     {
-        public const string GETALLROLES = "passbolt.role.get-all";
+        public const string GET_ALL = "passbolt.role.get-all";
     }
 }

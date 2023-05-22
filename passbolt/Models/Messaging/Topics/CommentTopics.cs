@@ -16,8 +16,8 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class CommentTopics
     {
-        public const string FINDALLCOMMENTBYRESSOURCE = "passbolt.comments.find-all-by-resource";
-        public const string CREATECOMMENT = "passbolt.comments.create";
-        public const string DELETECOMMENT = "passbolt.comments.delete";
+        public const string FIND_ALL_BY_RESSOURCE = "passbolt.comments.find-all-by-resource";
+        public const string CREATE = "passbolt.comments.create";
+        public const string DELETE = "passbolt.comments.delete";
     }
 }

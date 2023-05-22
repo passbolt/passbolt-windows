@@ -16,6 +16,6 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class ActionLogsTopics
     {
-        public const string FINDALLACTIONLOGS = "passbolt.actionlogs.find-all-for";
+        public const string FIND_ALL = "passbolt.actionlogs.find-all-for";
     }
 }

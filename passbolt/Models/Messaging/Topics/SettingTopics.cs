@@ -15,8 +15,8 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class SettingTopics
     {
-        public const string GETSITESETTINGS = "passbolt.organization-settings.get";
-        public const string GETVERSION = "passbolt.addon.get-version";
-        public const string PASSWORDGENERATORSETTINGS = "passbolt.password-generator.settings";
+        public const string GET = "passbolt.organization-settings.get";
+        public const string GET_VERSION = "passbolt.addon.get-version";
+        public const string PASSWORD_GENERATOR_SETTINGS = "passbolt.password-generator.settings";
     }
 }

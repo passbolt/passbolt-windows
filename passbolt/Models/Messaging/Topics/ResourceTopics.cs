@@ -16,12 +16,12 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class ResourceTopics
     {
-        public const string FINDALLRESOURCES = "passbolt.resources.find-all";
-        public const string UPDATELOCALSTORAGERESOURCES = "passbolt.resources.update-local-storage";
-        public const string FINDPERMISSIONSRESSOURCE = "passbolt.resources.find-permissions";
-        public const string UPDATERESOURCES = "passbolt.resources.update";
-        public const string CREATERESOURCES = "passbolt.resources.create";
-        public const string DELETEALLRESOURCES = "passbolt.resources.delete-all";
-        public const string GETALLRESOURCETYPE = "passbolt.resource-type.get-all";
+        public const string FIND_ALL = "passbolt.resources.find-all";
+        public const string UPDATE_LOCALSTORAGE = "passbolt.resources.update-local-storage";
+        public const string FIND_PERMISSION = "passbolt.resources.find-permissions";
+        public const string UPDATE = "passbolt.resources.update";
+        public const string CREATE = "passbolt.resources.create";
+        public const string DELETE_ALL = "passbolt.resources.delete-all";
+        public const string GET_ALL = "passbolt.resource-type.get-all";
     }
 }

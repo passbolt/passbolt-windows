@@ -12,7 +12,7 @@
  * @since         0.0.1
  */
 
-import { buildMessage, errorTopic, requestId, successTopic, topic } from './IPCHander.test.data';
+import {buildMessage, errorTopic, requestId, successTopic, topic} from './IPCHander.test.data';
 import IPCHandler from './IPCHandler';
 
 
