@@ -14,21 +14,21 @@
 
 import Main from "./main";
 
-import { AuthEvents } from "./events/authEvents";
-import { OrganizationSettingsEvents } from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
-import { ConfigEvents } from "passbolt-browser-extension/src/all/background_page/event/configEvents";
-import { UserEvents } from "passbolt-browser-extension/src/all/background_page/event/userEvents";
-import { LocaleEvents } from "passbolt-browser-extension/src/all/background_page/event/localeEvents";
-import { RoleEvents } from "passbolt-browser-extension/src/all/background_page/event/roleEvents";
-import { ResourceTypeEvents } from "passbolt-browser-extension/src/all/background_page/event/resourceTypeEvents";
-import { ResourceEvents } from "passbolt-browser-extension/src/all/background_page/event/resourceEvents";
-import { GroupEvents } from "passbolt-browser-extension/src/all/background_page/event/groupEvents";
-import { FolderEvents } from "passbolt-browser-extension/src/all/background_page/event/folderEvents";
-import { SecretEvents } from "passbolt-browser-extension/src/all/background_page/event/secretEvents";
-import { CommentEvents } from "passbolt-browser-extension/src/all/background_page/event/commentEvents";
-import { ActionLogEvents } from "passbolt-browser-extension/src/all/background_page/event/actionLogEvents";
-import { accountDto } from "./data/mockStorage";
-import { BACKGROUNDREADY } from "./enumerations/appEventEnumeration";
+import {AuthEvents} from "./events/authEvents";
+import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
+import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
+import {UserEvents} from "passbolt-browser-extension/src/all/background_page/event/userEvents";
+import {LocaleEvents} from "passbolt-browser-extension/src/all/background_page/event/localeEvents";
+import {RoleEvents} from "passbolt-browser-extension/src/all/background_page/event/roleEvents";
+import {ResourceTypeEvents} from "passbolt-browser-extension/src/all/background_page/event/resourceTypeEvents";
+import {ResourceEvents} from "passbolt-browser-extension/src/all/background_page/event/resourceEvents";
+import {GroupEvents} from "passbolt-browser-extension/src/all/background_page/event/groupEvents";
+import {FolderEvents} from "passbolt-browser-extension/src/all/background_page/event/folderEvents";
+import {SecretEvents} from "passbolt-browser-extension/src/all/background_page/event/secretEvents";
+import {CommentEvents} from "passbolt-browser-extension/src/all/background_page/event/commentEvents";
+import {ActionLogEvents} from "passbolt-browser-extension/src/all/background_page/event/actionLogEvents";
+import {accountDto} from "./data/mockStorage";
+import {BACKGROUNDREADY} from "./enumerations/appEventEnumeration";
 
 
 describe("Main class", () => {
