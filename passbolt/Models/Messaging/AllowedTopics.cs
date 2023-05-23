@@ -18,7 +18,7 @@ using passbolt.Utils;
 
 namespace passbolt.Models.Messaging
 {
-    public static class AllowedTopics
+    public class AllowedTopics
     {
         public const string ERROR = "passbolt.error";
         public const string BACKGROUNDREADY = "passbolt.background.is-ready";
@@ -26,10 +26,17 @@ namespace passbolt.Models.Messaging
         private static List<string> requestIds = new List<string>();
 
         /// <summary>
-        /// Retrieve all allowed topics
+        /// static constructor for AllowedTopics
         /// </summary>
-        /// <returns></returns>
-        private static List<string> GetAllTopicNames()
+        static AllowedTopics()
+        {
+            InitTopics();
+        }
+
+        /// <summary>
+        /// init topics list with all topics
+        /// </summary>
+        private static void InitTopics()
         {
             if (topics.Count == 2)
             {
@@ -46,6 +53,16 @@ namespace passbolt.Models.Messaging
                 topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
                 topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
             }
+        }
+
+
+        /// <summary>
+        /// Retrieve all allowed topics
+        /// </summary>
+        /// <returns></returns>
+        private static List<string> GetAllTopicNames()
+        {
+
 
             return topics;
         }
