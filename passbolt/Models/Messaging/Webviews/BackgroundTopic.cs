@@ -14,6 +14,7 @@
 
 using Microsoft.UI.Xaml.Controls;
 using passbolt.Exceptions;
+using passbolt.Models.Messaging.Topics;
 using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using System;
@@ -21,7 +22,7 @@ using Windows.UI.Xaml;
 
 namespace passbolt.Models.Messaging
 {
-    public class BackgroundTopic : Topic
+    public class BackgroundTopic : WebviewTopic
     {
 
         public BackgroundTopic(WebView2 background, WebView2 rendered) : base(background, rendered) { }
@@ -35,16 +36,16 @@ namespace passbolt.Models.Messaging
             switch (ipc.topic)
             {
                 case AllowedTopics.BACKGROUNDREADY:
-                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.DESKTOPAUTHENTICATE)));
+                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AuthenticationTopics.DESKTOPAUTHENTICATE)));
                     break;
-                case AllowedTopics.AFTERLOGIN:
+                case AuthenticationTopics.AFTERLOGIN:
                     rendered.Visibility = Visibility.Visible;
                     rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index.html"));
                     break;
-                case AllowedTopics.PROGRESSCLOSEDIALOG:
-                case AllowedTopics.PROGRESSUPDATE:
-                case AllowedTopics.PROGRESSUPDATEGOALS:
-                case AllowedTopics.PROGRESSOPENDIALOG:
+                case ProgressTopics.PROGRESSCLOSEDIALOG:
+                case ProgressTopics.PROGRESSUPDATE:
+                case ProgressTopics.PROGRESSUPDATEGOALS:
+                case ProgressTopics.PROGRESSOPENDIALOG:
                     if (ipc.requestId != null)
                     {
                         AllowedTopics.AddRequestId(ipc.requestId);

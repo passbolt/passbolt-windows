@@ -13,13 +13,14 @@
  */
 
 using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Controllers;
 using passbolt.Services.NavigationService;
-using passbolt.Utils;
-using Windows.Storage;
+using Windows.UI.Xaml.Controls;
 
 namespace passbolt_windows_tests.UnitTests
 {
@@ -28,12 +29,12 @@ namespace passbolt_windows_tests.UnitTests
 
         public CoreWebView2NewWindowRequestedEventArgs newWindowRequestedEventArgs;
         public bool hasOpenedDialog = false;
+        public CoreWebView2WebResourceResponse webView2WebResourceResponse;
+        public string trustedDomain = null;
 
-        public MockMainController(WebView2 webviewRendered, WebView2 webviewBackground, StorageFolder backgroundFolder,
-            StorageFolder renderedFolder) : base(webviewRendered, webviewBackground)
+
+        public MockMainController(WebView2 webviewRendered, WebView2 webviewBackground) : base(webviewRendered, webviewBackground)
         {
-            this.backgroundFolder = backgroundFolder;
-            this.renderedFolder = renderedFolder;
         }
 
         public override void NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
@@ -53,10 +54,6 @@ namespace passbolt_windows_tests.UnitTests
            await base.LoadWebviews();
         }
 
-        public override async Task BackgroundInitialisation()
-        {
-            await base.BackgroundInitialisation();
-        }
         public void DomDialogRequested(CoreWebView2 sender, CoreWebView2ScriptDialogOpeningEventArgs args)
         {
             this.hasOpenedDialog = true;
@@ -67,14 +64,16 @@ namespace passbolt_windows_tests.UnitTests
             base.AllowNavigation(sender, args, navigationService);
         }
 
-        public string GeneratateRandomBackgroundHost(WebView2 webviewBackground)
+        /// <summary>
+        /// WebMessageReceived event handler for the background
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected override void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
         {
-            var navigationCompletedTask = new TaskCompletionSource<bool>();
-            string randomUrl = Guid.NewGuid().ToString();
-            Uri backgroundUrl = new Uri(UriBuilderHelper.BuildHostUri(randomUrl, "index.html"));
-            // Set virtual host to folder mapping, restrict host access to the randomUrl
-            webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(randomUrl, backgroundFolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
-            return backgroundUrl.ToString();
+            base.WebResourceRequested(sender, resource);
+            trustedDomain = resource.Request.Uri;
+            webView2WebResourceResponse = resource.Response;
         }
     }
 }

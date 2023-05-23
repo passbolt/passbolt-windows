@@ -79,6 +79,4 @@ class StoragePolyfill {
 /**
  * init localstorage if not exist
  */
-if (!window.chrome.storage) {
-    new StoragePolyfill();
-}
+new StoragePolyfill();
