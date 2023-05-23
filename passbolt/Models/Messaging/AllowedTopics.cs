@@ -18,7 +18,7 @@ using passbolt.Utils;
 
 namespace passbolt.Models.Messaging
 {
-    public class AllowedTopics
+    public static class AllowedTopics
     {
         public const string ERROR = "passbolt.error";
         public const string BACKGROUNDREADY = "passbolt.background.is-ready";
