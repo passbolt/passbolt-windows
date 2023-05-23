@@ -26,26 +26,40 @@ namespace passbolt.Models.Messaging
         private static List<string> requestIds = new List<string>();
 
         /// <summary>
+        /// static constructor for AllowedTopics
+        /// </summary>
+        static AllowedTopics()
+        {
+            InitTopics();
+        }
+
+        /// <summary>
+        /// init topics list with all topics
+        /// </summary>
+        private static void InitTopics()
+        {
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(GroupTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(LocaleTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ProgressTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(SecretTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
+        }
+
+
+        /// <summary>
         /// Retrieve all allowed topics
         /// </summary>
         /// <returns></returns>
         private static List<string> GetAllTopicNames()
         {
-            if (topics.Count == 2)
-            {
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(GroupTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(LocaleTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(ProgressTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(SecretTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
-            }
+
 
             return topics;
         }
