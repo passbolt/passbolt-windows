@@ -125,6 +125,8 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\Authentication\LocalUserManager.cs" />
+    <Compile Include="Models\CredentialLocker\ApplicationConfiguration.cs" />
     <Compile Include="Models\LocalStorage\PassboltConfig.cs" />
     <Compile Include="Models\LocalStorage\PassboltData.cs" />
     <Compile Include="Models\Messaging\AllowedTopics.cs" />
@@ -144,7 +146,9 @@
     <Compile Include="Models\Messaging\IPC.cs" />
     <Compile Include="Models\Messaging\Webviews\RenderedTopic.cs" />
     <Compile Include="Models\Messaging\Webviews\WebviewTopic.cs" />
+    <Compile Include="Models\User\UserOs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\CredentialLockerService\CredentialLockerService.cs" />
     <Compile Include="Services\HttpService\HttpService.cs" />
     <Compile Include="Services\NavigationService\AbstractNavigationService.cs" />
     <Compile Include="Services\NavigationService\BackgroundNavigationService.cs" />

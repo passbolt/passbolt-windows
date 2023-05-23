@@ -19,7 +19,9 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Models;
+using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging;
+using passbolt.Services.CredentialLockerService;
 using passbolt.Services.HttpService;
 using passbolt.Services.NavigationService;
 using passbolt.Utils;
@@ -39,6 +41,7 @@ namespace passbolt.Controllers
         protected RenderedNavigationService renderedNavigationService;
         protected BackgroundNavigationService backgroundNavigationService;
         protected HttpService httpService = new HttpService();
+        protected CredentialLockerService credentialLockerService = new CredentialLockerService();
 
         /// <summary>
         /// controller
@@ -102,6 +105,8 @@ namespace passbolt.Controllers
             await webviewRendered.EnsureCoreWebView2Async();
             await webviewBackground.EnsureCoreWebView2Async();
 
+            var applicationConfiguration = this.GetApplicationConfiguration();
+
             // Init filter to catch all http request from background 
             webviewBackground.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.XmlHttpRequest);
 
@@ -131,6 +136,25 @@ namespace passbolt.Controllers
             // Subscribes to the WebMessageReceived event of the rendered and background window
             webviewBackground.CoreWebView2.WebMessageReceived += WebMessageReceived;
             webviewRendered.CoreWebView2.WebMessageReceived += WebMessageReceived;
+        }
+
+        /// <summary>
+        /// Get the application configuration from the credential locker
+        /// </summary>
+        /// <returns></returns>
+        public ApplicationConfiguration GetApplicationConfiguration()
+        {
+            var applicationConfiguration = credentialLockerService.GetApplicationConfiguration();
+
+            if (applicationConfiguration == null) {
+                var configuration = new ApplicationConfiguration() {
+                    renderedUrl = Guid.NewGuid().ToString(),
+                    backgroundUrl= Guid.NewGuid().ToString()
+                };
+                credentialLockerService.Create("configuration", SerializationHelper.SerializeToJson<ApplicationConfiguration>(configuration));
+            }
+
+            return applicationConfiguration;
         }
 
         /// <summary>
