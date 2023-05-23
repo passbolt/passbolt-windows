@@ -38,21 +38,18 @@ namespace passbolt.Models.Messaging
         /// </summary>
         private static void InitTopics()
         {
-            if (topics.Count == 2)
-            {
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(GroupTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(LocaleTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(ProgressTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(SecretTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
-                topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
-            }
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(GroupTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(LocaleTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ProgressTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(SecretTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
         }
 
 
