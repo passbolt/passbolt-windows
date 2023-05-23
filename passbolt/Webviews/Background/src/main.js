@@ -13,8 +13,6 @@
  */
 
 import {AuthEvents} from './events/authEvents';
-import {accountDto} from './data/mockStorage';
-import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk/storage';
 import IPCHandler from './shared/IPCHandler';
 import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
@@ -28,14 +26,15 @@ import {FolderEvents} from 'passbolt-browser-extension/src/all/background_page/e
 import {SecretEvents} from 'passbolt-browser-extension/src/all/background_page/event/secretEvents';
 import {CommentEvents} from 'passbolt-browser-extension/src/all/background_page/event/commentEvents';
 import {ActionLogEvents} from 'passbolt-browser-extension/src/all/background_page/event/actionLogEvents';
-import AccountModel from 'passbolt-browser-extension/src/all/background_page/model/account/accountModel';
-import AccountEntity from 'passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity';
 import {BACKGROUNDREADY} from './enumerations/appEventEnumeration';
+import StorageService from './services/storageService';
 /**
  * Represents the main class that sets up an event listener for the `message` event.
  * @class
  */
 export default class Main {
+
+    worker = null;
 
     /**
      * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
@@ -43,21 +42,21 @@ export default class Main {
      * @param {HTMLElement} webview - The webview element to listen for the `message` event on.
      */
     constructor(webview) {
+        this.storageService = new StorageService();
         this.initStorage();
-        const worker = { port: new IPCHandler() };
-        OrganizationSettingsEvents.listen(worker);
-        ConfigEvents.listen(worker);
-        UserEvents.listen(worker);
-        LocaleEvents.listen(worker);
-        RoleEvents.listen(worker);
-        ResourceTypeEvents.listen(worker);
-        ResourceEvents.listen(worker);
-        GroupEvents.listen(worker);
-        UserEvents.listen(worker);
-        FolderEvents.listen(worker);
-        SecretEvents.listen(worker);
-        CommentEvents.listen(worker);
-        ActionLogEvents.listen(worker);
+        this.worker = {port: new IPCHandler()};
+        OrganizationSettingsEvents.listen(this.worker);
+        ConfigEvents.listen(this.worker);
+        LocaleEvents.listen(this.worker);
+        RoleEvents.listen(this.worker);
+        ResourceTypeEvents.listen(this.worker);
+        ResourceEvents.listen(this.worker);
+        GroupEvents.listen(this.worker);
+        UserEvents.listen(this.worker);
+        FolderEvents.listen(this.worker);
+        SecretEvents.listen(this.worker);
+        CommentEvents.listen(this.worker);
+        ActionLogEvents.listen(this.worker);
         this.initMainCommunication(webview);
     }
 
@@ -76,17 +75,7 @@ export default class Main {
      * init the local storage with the mock data in case it does not exist
      */
     async initStorage() {
-        if (localStorage.getItem('_passbolt_data') === null) {
-            try {
-                localStorage.setItem("_passbolt_data", JSON.stringify({}))
-                const accountModel = new AccountModel();
-                const account = new AccountEntity(accountDto);
-                await accountModel.add(account);
-            } catch (error) {
-                console.error(error)
-            }
-        }
-        await LocalStorage.init();
+        await this.storageService.initPassboltData();
         window.chrome.webview.postMessage(JSON.stringify({ topic: BACKGROUNDREADY }));
     }
 }

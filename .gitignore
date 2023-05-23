@@ -16,3 +16,4 @@ passbolt/testEnvironments.json
 
 *.map
 ._.DS_Store
+passbolt/Webviews/Background/coverage/

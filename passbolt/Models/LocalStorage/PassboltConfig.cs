@@ -28,7 +28,7 @@ namespace passbolt.Models.LocalStorage
         public string TrustedDomain { get; set; }
         [JsonProperty("user.id")]
         public string UserId { get; set; }
-        [JsonProperty("\"user.username")]
+        [JsonProperty("user.username")]
         public string Username { get; set; }
         [JsonProperty("user.lastname")]
         public string Lastname { get; set; }

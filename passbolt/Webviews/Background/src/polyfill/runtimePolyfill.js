@@ -18,10 +18,11 @@
 /**
  * Init the polyfill only if runtime is missing
  */
-if (!window.chrome.runtime) {
-    window.chrome.runtime = {
-        id: {},
-        lastError: null,
-        getManifest: () => ({ manifest_version: 0 })
-    };
-}
+
+
+window.chrome.runtime = {
+    id: {},
+    lastError: null,
+    getManifest: () => ({ manifest_version: 0 })
+};
+

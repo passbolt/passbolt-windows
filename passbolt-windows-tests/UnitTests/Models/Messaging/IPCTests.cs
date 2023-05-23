@@ -17,6 +17,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using passbolt.Models;
 using passbolt.Models.Messaging;
+using passbolt.Models.Messaging.Topics;
 
 namespace passbolt_windows_tests.UnitTests.Models
 {
@@ -26,7 +27,7 @@ namespace passbolt_windows_tests.UnitTests.Models
         [TestMethod]
         public void IPC_ValidTopic_ShouldPassValidation()
         {
-            IPC ipc = new IPC(AllowedTopics.DESKTOPAUTHENTICATE);
+            IPC ipc = new IPC(AuthenticationTopics.DESKTOPAUTHENTICATE);
 
             var validationContext = new ValidationContext(ipc, null, null);
             var results = new List<ValidationResult>();
@@ -67,7 +68,7 @@ namespace passbolt_windows_tests.UnitTests.Models
         [TestMethod]
         public void IPC_MessageCanBeEmpty()
         {
-            IPC ipc = new IPC(AllowedTopics.DESKTOPAUTHENTICATE);
+            IPC ipc = new IPC(AuthenticationTopics.DESKTOPAUTHENTICATE);
 
             var validationContext = new ValidationContext(ipc, null, null);
             var results = new List<ValidationResult>();

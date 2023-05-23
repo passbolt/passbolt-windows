@@ -16,17 +16,17 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace passbolt.Models.Messaging
 {
-    public abstract class Topic
+    public abstract class WebviewTopic
     {
         protected WebView2 background { get; set; }
         protected WebView2 rendered { get; set; }
 
-        public Topic()
+        public WebviewTopic()
         {
             background = null;
             rendered = null;
         }
-        public Topic(WebView2 _background, WebView2 _rendered)
+        public WebviewTopic(WebView2 _background, WebView2 _rendered)
         {
             background = _background;
             rendered = _rendered;

@@ -12,28 +12,31 @@
  * @since         0.0.1
  */
 
+
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System;
-using System.IO;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using Windows.Storage.Streams;
 
 namespace passbolt.Utils
 {
-    public static class StreamHelper
+    public static class ListHelper
     {
         /// <summary>
-        /// Transform stream to random access stream
+        /// Get all the constants of a class and return them as a list
         /// </summary>
-        /// <param name="stream"></param>
+        /// <param name="type"></param>
         /// <returns></returns>
-        public async static Task <IRandomAccessStream> ConvertStreamToAccessStream(Stream stream)
+        public static List<string> GetClassContantsToList(Type type)
         {
-            var buffer = new byte[stream.Length];
-            await stream.ReadAsync(buffer, 0, buffer.Length);
-            var randomAccessStream = new InMemoryRandomAccessStream();
-            await randomAccessStream.WriteAsync(buffer.AsBuffer());
-            return randomAccessStream;
+            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+
+            List<string> topicList = fields
+                .Where(field => field.FieldType == typeof(string))
+                .Select(field => (string)field.GetValue(null))
+                .ToList();
+
+            return topicList;
         }
     }
 }

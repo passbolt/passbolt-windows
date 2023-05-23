@@ -17,7 +17,6 @@ using passbolt;
 using Windows.UI.Xaml.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
 using Windows.UI.Xaml;
-using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
 using passbolt_windows_tests.Utils;
@@ -26,6 +25,9 @@ using passbolt_windows_tests.UnitTests;
 using System;
 using passbolt.Utils;
 using Microsoft.Web.WebView2.Core;
+using passbolt.Models.LocalStorage;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace passbolt_windows_tests
 {
@@ -38,60 +40,109 @@ namespace passbolt_windows_tests
         private WebView2 webviewBackground;
         private WebView2 webviewRendered;
         private MockMainController mainController;
-        private StorageFolder backgroundFolder;
-        private StorageFolder renderedFolder;
-        private string renderedUrl = "http://desktop.passbolt.com/index.html";
+        private StorageFolder distfolder;
+        private string webviewsURLBackground = "https://www.desktop.passbolt.local/Background/index.html";
+        private string webviewsURLRendered = "https://www.desktop.passbolt.local/Rendered/index.html";
+        private string aboutBlank = "about:blank";
         private string attackerUrl = "http://attacker-background.com";
-        private string validUrl = "";
-        private string validIPC = "window.chrome.webview.postMessage(JSON.stringify({ topic: \"initialisation\" }))";
-        private string invalidIPC = "window.chrome.webview.postMessage(JSON.stringify({ topic: \"invalid-IPC\" }))";
+        private string trustedDomain = "";
 
         [TestInitialize]
         public void TestInitialize()
         {
-            if(frame == null) {
+            if (frame == null)
+            {
                 frame = (Frame)Window.Current.Content;
                 page = (MainPage)frame.Content;
                 webviewBackground = ReflectionUtil.GetPrivateProperty<WebView2>(page, "webviewBackground");
                 webviewRendered = ReflectionUtil.GetPrivateProperty<WebView2>(page, "webviewRendered");
                 var controller = ReflectionUtil.GetPrivateField<MainController>(page, "mainController");
-                backgroundFolder = ReflectionUtil.GetPrivateField<StorageFolder>(controller, "backgroundFolder");
-                renderedFolder = ReflectionUtil.GetPrivateField<StorageFolder>(controller, "renderedFolder");
-                mainController = (MockMainController)ReflectionUtil.SetPrivatefield<MainController>(page, "mainController", new MockMainController(webviewRendered, webviewBackground, backgroundFolder, renderedFolder));
+                distfolder = ReflectionUtil.GetPrivateField<StorageFolder>(controller, "distfolder");
+                mainController = (MockMainController)ReflectionUtil.SetPrivatefield<MainController>(page, "mainController", new MockMainController(webviewRendered, webviewBackground));
+
             }
         }
 
         [UITestMethod]
-        [Description("As a desktop application I want to launch a rendered webview")]
-        public void LoadRenderedWebviewTest() {
+        [Description("As a desktop application I want to launch a rendered webview and do not display a screen")]
+        public void LoadRenderedWebviewTest()
+        {
             // Assert
             Assert.IsNotNull(webviewRendered);
             //Should initialized the webview
-            Assert.AreEqual(renderedUrl, webviewRendered.Source.ToString());
-            //Should initialized the folderStorage
-            Assert.IsNotNull(renderedFolder);
+            Assert.AreEqual(aboutBlank, webviewRendered.Source.ToString());
         }
 
         [UITestMethod]
         [Description("As a desktop application I want to launch a background webview")]
         public void LoadBackgroundWebviewTest()
         {
-            var url = webviewBackground.Source.ToString();
-
             // Assert
-            string pattern = @"^http:\/\/[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}\/index\.html$";
-            bool isMatch = Regex.IsMatch(webviewBackground.Source.ToString(), pattern);
-            Assert.IsTrue(isMatch);
-
-            // Call LoadBackgroundWebview asynchronously and wait for it to complete
-            var task = this.mainController.LoadWebviews();
-            task.Wait();
+            Assert.IsNotNull(webviewRendered);
+            //Should initialized the webview
+            Assert.AreEqual(webviewsURLBackground, webviewBackground.Source.ToString());
             //Should initialized the folderStorage
-            Assert.IsNotNull(backgroundFolder);
-            // Check that the url has changed
-            Assert.IsTrue(url != webviewBackground.Source.ToString());
+            Assert.IsNotNull(distfolder);
         }
 
+        [UITestMethod]
+        [Description("As a desktop application I want to display the password workspace when user is logged in")]
+        public void LoadPasswordWorkspace_WhenUserLoggedIn()
+        {
+            var authenticateMessage = "<script>window.chrome.webview.postMessage(JSON.stringify({topic: 'passbolt.auth.after-login'}));</ script>";
+
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync(authenticateMessage);
+            operation.Completed += (info, status) =>
+            {
+                // Assert
+                Assert.IsNotNull(webviewRendered);
+                //Should initialized the webview
+                Assert.AreEqual(webviewsURLRendered, webviewRendered.Source.ToString());
+            };
+        }
+
+        [UITestMethod]
+        [Description("As a desktop application I should not be blocked by CORS when calling API - Should block API which are not trusted")]
+        public void WebResourceRequested_ShouldBlockUntrustedDomain()
+        {
+            var authenticateMessage = "<script>fetch(\"https://www.attacker.com\");</ script>";
+
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync(authenticateMessage);
+            operation.Completed += (info, status) =>
+            {
+                mainController.webView2WebResourceResponse.Equals(null);
+            };
+        }
+
+        [UITestMethod]
+        [Description("As a desktop application I should not be blocked by CORS when calling API")]
+        public void WebResourceRequested_ShouldAddHeaders()
+        {
+            var authenticateMessage = $"<script>fetch(\"{trustedDomain}/movies.json\");</ script>";
+
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync(authenticateMessage);
+            operation.Completed += (info, status) =>
+            {
+                Assert.AreEqual(mainController.webView2WebResourceResponse.Headers.GetHeader("Access-Control-Allow-Origin"), trustedDomain);
+                Assert.AreEqual(mainController.webView2WebResourceResponse.Headers.GetHeader("Access-Control-Allow-Credentials"), "true");
+                Assert.AreEqual(mainController.webView2WebResourceResponse.Headers.GetHeader("Access-Control-Allow-Methods"), "DELETE, POST, GET, OPTIONS, PUT");
+                Assert.AreEqual(mainController.webView2WebResourceResponse.Headers.GetHeader("Access-Control-Allow-Headers"), "Content-Type, Authorization, X-Requested-With, x-csrf-token");
+            };
+        }
+
+        [UITestMethod]
+        [Description("As a desktop application I should not be blocked by CORS when calling API - Should send back the option request")]
+        public void WebResourceRequested_ShouldSendBackOptionRequest()
+        {
+            var authenticateMessage = $"<script>fetch(\"{trustedDomain}/movies.json\", {{ method: method: \"OPTION\"  }});</ script>";
+
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync(authenticateMessage);
+            operation.Completed += (info, status) =>
+            {
+                Assert.AreEqual(mainController.webView2WebResourceResponse.Content,  null);
+                Assert.AreEqual(mainController.webView2WebResourceResponse.ReasonPhrase, "Option method");
+            };
+        }
 
         [UITestMethod]
         [Description("As a desktop user I want to be sure that the webviews cannot open new window")]
@@ -155,7 +206,7 @@ namespace passbolt_windows_tests
             webviewRendered.CoreWebView2.NavigationCompleted += this.Rendered_NavigationCompletedSuccess;
 
             //Check a valid url 
-            webviewRendered.Source = new Uri(renderedUrl);
+            webviewRendered.Source = new Uri(webviewsURLRendered);
         }
 
 
@@ -175,7 +226,7 @@ namespace passbolt_windows_tests
             var operation = webviewRendered.CoreWebView2.ExecuteScriptAsync("window.location.href = \"passbolt.com\"");
             operation.Completed += (info, status) =>
             {
-                Assert.AreEqual(renderedUrl, webviewRendered.Source.ToString());
+                Assert.AreEqual(webviewsURLRendered, webviewRendered.Source.ToString());
             };
         }
 
@@ -183,11 +234,9 @@ namespace passbolt_windows_tests
         [Description("As a desktop application I want to validate the navigation for background webview - success")]
         public void ShouldValidateBackgroundWebviewNavigationSuccess()
         {
-            String backgroundUrl = mainController.GeneratateRandomBackgroundHost(webviewBackground);
-            validUrl = backgroundUrl.ToString();
             webviewBackground.CoreWebView2.NavigationCompleted += (sender, args) =>
             {
-                Assert.AreEqual(backgroundUrl.ToString(), webviewBackground.Source.ToString());
+                Assert.AreEqual(webviewsURLRendered, webviewBackground.Source.ToString());
                 Assert.IsTrue(args.IsSuccess);
             };
 
@@ -195,7 +244,7 @@ namespace passbolt_windows_tests
             webviewBackground.CoreWebView2.NavigationCompleted += this.Background_NavigationCompletedSuccess;
 
             //Check a valid url 
-            webviewBackground.CoreWebView2.Navigate(validUrl);
+            webviewBackground.CoreWebView2.Navigate(webviewsURLRendered);
         }
 
         [UITestMethod]
@@ -220,7 +269,6 @@ namespace passbolt_windows_tests
             };
         }
 
-
         /// <summary>
         /// Navigation completed with success for testing
         /// </summary>
@@ -228,7 +276,7 @@ namespace passbolt_windows_tests
         /// <param name="args"></param>
         public void Background_NavigationCompletedSuccess(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-            Assert.AreEqual(validUrl, webviewBackground.Source.ToString());
+            Assert.AreEqual(webviewsURLRendered, webviewBackground.Source.ToString());
             Assert.IsTrue(args.IsSuccess);
         }
 
@@ -249,7 +297,7 @@ namespace passbolt_windows_tests
         /// <param name="args"></param>
         public void Rendered_NavigationCompletedSuccess(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-            Assert.AreEqual(validUrl, webviewRendered.Source.ToString());
+            Assert.AreEqual(webviewsURLRendered, webviewRendered.Source.ToString());
             Assert.IsTrue(args.IsSuccess);
         }
 
@@ -262,6 +310,19 @@ namespace passbolt_windows_tests
         {
             Assert.AreNotEqual(attackerUrl, webviewRendered.Source.ToString());
             Assert.IsFalse(args.IsSuccess);
+        }
+
+        /// <summary>
+        /// return the trusted domain
+        /// </summary>
+        public async void GetTrustedDomain()
+        {
+            string localItem = await webviewBackground.ExecuteScriptAsync("JSON.parse(localStorage.getItem('_passbolt_data'))");
+            if (!string.IsNullOrEmpty(localItem))
+            {
+                var passboltData = SerializationHelper.DeserializeFromJson<PassboltData>(localItem);
+                trustedDomain = passboltData.Config.TrustedDomain;
+            }
         }
     }
 }
