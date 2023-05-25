@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
@@ -15,6 +15,7 @@
 using System;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Resources;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
