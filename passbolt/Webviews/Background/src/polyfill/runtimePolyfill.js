@@ -19,7 +19,6 @@
  * Init the polyfill only if runtime is missing
  */
 
-
 window.chrome.runtime = {
     id: {},
     lastError: null,

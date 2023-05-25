@@ -23,6 +23,7 @@ using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging;
 using passbolt.Services.CredentialLockerService;
 using passbolt.Services.HttpService;
+using passbolt.Services.LocalStorage;
 using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using Windows.ApplicationModel;
@@ -35,13 +36,13 @@ namespace passbolt.Controllers
         private WebView2 webviewRendered;
         private WebView2 webviewBackground;
         private string blankPage = "about:blank";
+        protected CredentialLockerService credentialLockerService;
         protected StorageFolder distfolder;
         protected RenderedTopic renderedTopic;
         protected BackgroundTopic backgroundTopic;
         protected RenderedNavigationService renderedNavigationService;
         protected BackgroundNavigationService backgroundNavigationService;
         protected HttpService httpService = new HttpService();
-        protected CredentialLockerService credentialLockerService = new CredentialLockerService();
 
         /// <summary>
         /// controller
@@ -53,6 +54,7 @@ namespace passbolt.Controllers
         {
             this.webviewBackground = webviewBackground;
             this.webviewRendered = webviewRendered;
+            credentialLockerService = new CredentialLockerService();
         }
 
 
@@ -105,19 +107,18 @@ namespace passbolt.Controllers
             await webviewRendered.EnsureCoreWebView2Async();
             await webviewBackground.EnsureCoreWebView2Async();
 
-            var applicationConfiguration = this.GetApplicationConfiguration();
+            var applicationConfiguration = await this.GetApplicationConfiguration();
 
             // Init filter to catch all http request from background 
             webviewBackground.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.XmlHttpRequest);
 
-            string randomUrl = "www.desktop.passbolt.local";
-            string backgroundUrl = randomUrl + "/Background";
-            string renderedUrl = randomUrl + "/Rendered";
+            string backgroundUrl = applicationConfiguration.backgroundUrl + "/Background";
+            string renderedUrl = applicationConfiguration.renderedUrl + "/Rendered";
 
             this.backgroundNavigationService = new BackgroundNavigationService(backgroundUrl);
             this.renderedNavigationService = RenderedNavigationService.Instance;
 
-            this.renderedNavigationService.Initialize(randomUrl);
+            this.renderedNavigationService.Initialize(applicationConfiguration.renderedUrl);
             StorageFolder installationFolder = Package.Current.InstalledLocation;
 
             // Load dist folder to insert into the virtual host to avoid exception during testing
@@ -125,8 +126,8 @@ namespace passbolt.Controllers
                 distfolder = await installationFolder.GetFolderAsync("Webviews");
 
             // Set virtual host to folder mapping, restrict host access to the randomUrl
-            webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(randomUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
-            webviewRendered.CoreWebView2.SetVirtualHostNameToFolderMapping(randomUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
+            webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(applicationConfiguration.backgroundUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
+            webviewRendered.CoreWebView2.SetVirtualHostNameToFolderMapping(applicationConfiguration.renderedUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
 
             // Set the source for background webview
             webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, "index.html"));
@@ -142,20 +143,28 @@ namespace passbolt.Controllers
         /// Get the application configuration from the credential locker
         /// </summary>
         /// <returns></returns>
-        public ApplicationConfiguration GetApplicationConfiguration()
+        protected virtual async Task<ApplicationConfiguration> GetApplicationConfiguration()
         {
-            var applicationConfiguration = credentialLockerService.GetApplicationConfiguration();
-
-            if (applicationConfiguration == null) {
-                var configuration = new ApplicationConfiguration() {
-                    renderedUrl = Guid.NewGuid().ToString(),
-                    backgroundUrl= Guid.NewGuid().ToString()
+            ApplicationConfiguration applicationConfiguration;
+            try
+            {
+                applicationConfiguration = await credentialLockerService.GetApplicationConfiguration();
+            }
+            catch (System.Exception)
+            {
+                applicationConfiguration = new ApplicationConfiguration()
+                {
+                    renderedUrl = GenerateWebviewUrl(),
+                    backgroundUrl = GenerateWebviewUrl()
                 };
-                credentialLockerService.Create("configuration", SerializationHelper.SerializeToJson<ApplicationConfiguration>(configuration));
+                await credentialLockerService.Create("configuration", SerializationHelper.SerializeToJson(applicationConfiguration));
             }
 
             return applicationConfiguration;
         }
+
+
+
 
         /// <summary>
         /// Set the webview settings including minimal security requirements
@@ -279,9 +288,10 @@ namespace passbolt.Controllers
         /// </summary>
         /// <param name="sender"></param>
         /// <returns></returns>
-        public void RenderedNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        public async void RenderedNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
             Debug.WriteLine("NavigationCompleted: " + sender.CoreWebView2.Source);
+
         }
         /// <summary>
         /// Retrieve the Corewebview from the sender
@@ -308,6 +318,15 @@ namespace passbolt.Controllers
             }
 
             return webviewSender;
+        }
+
+        /// <summary>
+        /// generate a random webview URL
+        /// </summary>
+        /// <returns></returns>
+        private string GenerateWebviewUrl()
+        {
+            return Guid.NewGuid().ToString() + ".passbolt.local";
         }
     }
 }

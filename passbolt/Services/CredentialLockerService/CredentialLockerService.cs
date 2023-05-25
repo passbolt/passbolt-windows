@@ -13,6 +13,7 @@
  */
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using passbolt.Models.Authentication;
 using passbolt.Models.CredentialLocker;
 using passbolt.Utils;
@@ -22,17 +23,23 @@ namespace passbolt.Services.CredentialLockerService
 {
     public class CredentialLockerService
     {
-        private PasswordVault vault = new PasswordVault();
-        private LocalUserManager localUserManager = new LocalUserManager();
+        private PasswordVault vault;
+        private LocalUserManager localUserManager;
+
+        public CredentialLockerService() {
+            this.vault = new PasswordVault();
+            this.localUserManager = new LocalUserManager();
+        }
 
         /// <summary>
         /// Create an entry in the credential locker
         /// </summary>
         /// <param name="resource"></param>
         /// <param name="password"></param>
-        public void Create(string resource, string password)
+        public async Task Create(string resource, string password)
         {
-            var credential = new PasswordCredential(resource, localUserManager.userOs.username, password);
+            var currentUser = await localUserManager.GetCurrentUser();
+            var credential = new PasswordCredential(resource, currentUser.username, password);
             vault.Add(credential);
         }
 
@@ -41,9 +48,10 @@ namespace passbolt.Services.CredentialLockerService
         /// </summary>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public PasswordCredential Get(string resource)
+        public async Task<PasswordCredential> Get(string resource)
         {
-            return vault.Retrieve(resource, localUserManager.userOs.username);
+            var currentUser = await localUserManager.GetCurrentUser();
+            return vault.Retrieve(resource, currentUser.username);
         }
 
         /// <summary>
@@ -56,12 +64,22 @@ namespace passbolt.Services.CredentialLockerService
         }
 
         /// <summary>
+        /// Get all entries from the credential locker
+        /// </summary>
+        /// <returns></returns>
+        public async Task Remove(string resource)
+        {
+            var credential = await Get(resource);
+            vault.Remove(credential);
+        }
+
+        /// <summary>
         /// Get the application configuration from the credential locker
         /// </summary>
         /// <returns></returns>
-        public ApplicationConfiguration GetApplicationConfiguration()
+        public async Task<ApplicationConfiguration> GetApplicationConfiguration()
         {
-            var credential = Get("configuration");
+            var credential = await Get("configuration");
             return credential != null ? SerializationHelper.DeserializeFromJson<ApplicationConfiguration>(credential.Password) : null;
         }
     }

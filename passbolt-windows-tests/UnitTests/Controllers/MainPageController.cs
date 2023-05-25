@@ -26,7 +26,7 @@ using System;
 using passbolt.Utils;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Models.LocalStorage;
-using System.Reflection;
+using passbolt.Services.CredentialLockerService;
 using System.Threading.Tasks;
 
 namespace passbolt_windows_tests
@@ -41,11 +41,12 @@ namespace passbolt_windows_tests
         private WebView2 webviewRendered;
         private MockMainController mainController;
         private StorageFolder distfolder;
-        private string webviewsURLBackground = "https://www.desktop.passbolt.local/Background/index.html";
-        private string webviewsURLRendered = "https://www.desktop.passbolt.local/Rendered/index.html";
+        private string webviewsURLBackground = "";
+        private string webviewsURLRendered = "";
         private string aboutBlank = "about:blank";
         private string attackerUrl = "http://attacker-background.com";
         private string trustedDomain = "";
+        private CredentialLockerService credentialLockerService;
 
         [TestInitialize]
         public void TestInitialize()
@@ -58,8 +59,9 @@ namespace passbolt_windows_tests
                 webviewRendered = ReflectionUtil.GetPrivateProperty<WebView2>(page, "webviewRendered");
                 var controller = ReflectionUtil.GetPrivateField<MainController>(page, "mainController");
                 distfolder = ReflectionUtil.GetPrivateField<StorageFolder>(controller, "distfolder");
-                mainController = (MockMainController)ReflectionUtil.SetPrivatefield<MainController>(page, "mainController", new MockMainController(webviewRendered, webviewBackground));
-
+                credentialLockerService = ReflectionUtil.GetPrivateField<CredentialLockerService>(controller, "credentialLockerService");
+                mainController = (MockMainController)ReflectionUtil.SetPrivatefield<MainController>(page, "mainController", new MockMainController(webviewRendered, webviewBackground, credentialLockerService));
+                InitialiseWebviewUrl().Wait(5000);
             }
         }
 
@@ -94,10 +96,17 @@ namespace passbolt_windows_tests
             var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync(authenticateMessage);
             operation.Completed += (info, status) =>
             {
-                // Assert
-                Assert.IsNotNull(webviewRendered);
-                //Should initialized the webview
-                Assert.AreEqual(webviewsURLRendered, webviewRendered.Source.ToString());
+                var passboltData = webviewRendered.CoreWebView2.ExecuteScriptAsync("localStorage.getItem('_passbolt_data')");
+                passboltData.Completed += (localstorage, webviewStatus) =>
+                {
+                    var result = passboltData.GetResults();
+                    Assert.AreNotEqual(result, "null");
+                    // Assert
+                    Assert.IsNotNull(webviewRendered);
+                    //Should initialized the webview
+                    Assert.AreEqual(webviewsURLRendered, webviewRendered.Source.ToString());
+                };
+ 
             };
         }
 
@@ -269,6 +278,47 @@ namespace passbolt_windows_tests
             };
         }
 
+        [UITestMethod]
+        [Description("As a desktop application I should have a webview url different on each install")]
+        public void ShouldChangeWebviewUrlsOnEachInstall()
+        {
+            var previousBackgroundUrl = webviewBackground.Source.ToString();
+            var previousRenderedUrl = webviewRendered.Source.ToString();
+
+            mainController.RemoveConfiguration().Wait();
+            mainController.GetConfiguredApplication().Wait();
+
+            Assert.IsTrue(previousBackgroundUrl != mainController.backgroundUrl);
+            Assert.IsTrue(previousRenderedUrl != mainController.renderedUrl);
+        }
+
+        [UITestMethod]
+        [Description("As a desktop application I should have store configuration the Credential locker")]
+        public void ShouldStoreConfigurationToTheCredentialLocker()
+        {
+            Assert.IsNotNull(mainController.applicationConfiguration.backgroundUrl);
+            Assert.IsNotNull(mainController.applicationConfiguration.renderedUrl);
+        }
+
+        [UITestMethod]
+        [Description("As a desktop application when localstorage from background change I should replicate it to rendered webview")]
+        public void ShouldReplicateLocalstorageToRendered()
+        {
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("<script>" +
+                "localStorage.setItem('test', 'test');" +
+                "window.chrome.webview.postMessage(JSON.stringify({topic: 'passbolt.background.localstorage-update', message: 'test'}));" +
+                "</ script>");
+            operation.Completed += (info, status) =>
+            {
+                var renderedLocalstorage = webviewRendered.CoreWebView2.ExecuteScriptAsync("localStorage.getItem('test')");
+                renderedLocalstorage.Completed += (localstorage, webviewStatus) =>
+                {
+                    var result = renderedLocalstorage.GetResults();
+                    Assert.AreEqual("test", result);
+                };
+            };
+        }
+
         /// <summary>
         /// Navigation completed with success for testing
         /// </summary>
@@ -322,6 +372,19 @@ namespace passbolt_windows_tests
             {
                 var passboltData = SerializationHelper.DeserializeFromJson<PassboltData>(localItem);
                 trustedDomain = passboltData.Config.TrustedDomain;
+            }
+        }
+
+        /// <summary>
+        /// initialise the webview url
+        /// </summary>
+        public async Task InitialiseWebviewUrl()
+        {
+            if(string.IsNullOrEmpty(webviewsURLRendered))
+            {
+                await mainController.GetConfiguredApplication();
+                webviewsURLBackground =  mainController.backgroundUrl + "/Background/index.html";
+                webviewsURLRendered =  mainController.renderedUrl + "/Rendered/index.html";
             }
         }
     }

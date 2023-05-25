@@ -24,14 +24,18 @@ namespace passbolt.Models.Authentication
 {
     public class LocalUserManager
     {
-        public UserOs userOs { get; set; }
+        private UserOs userOs;
 
-        public LocalUserManager()
+        public async Task<UserOs> GetCurrentUser()
         {
-            this.RetrieveCurrentUser();
+            if (this.userOs == null)
+            {
+                await this.RetrieveCurrentUser();
+            }
+            return this.userOs;
         }
 
-        private async void RetrieveCurrentUser()
+        private async Task RetrieveCurrentUser()
         {
             IReadOnlyList<User> users = await User.FindAllAsync();
             var current = users.Where(p => p.AuthenticationStatus == UserAuthenticationStatus.LocallyAuthenticated &&

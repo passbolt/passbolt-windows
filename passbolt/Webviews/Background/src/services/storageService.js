@@ -22,7 +22,6 @@ import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk
  * Service related to the storage service
  */
 class StorageService {
-
     /**
      * init the passbolt configuration storage
      */
@@ -32,7 +31,6 @@ class StorageService {
                 localStorage.setItem("_passbolt_data", JSON.stringify({}))
                 const accountModel = new AccountModel();
                 const account = new AccountEntity(accountDto);
-
                 await accountModel.add(account);
             } catch (error) {
                 console.error(error)

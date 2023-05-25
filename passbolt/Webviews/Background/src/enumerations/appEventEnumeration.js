@@ -12,6 +12,10 @@
  * @since         0.0.1
  */
 
-export const USERLOGGEDIN = "passbolt.auth.after-login";
-export const BACKGROUNDREADY = "passbolt.background.is-ready";
+export const USER_LOGGED_IN = "passbolt.auth.after-login";
+export const BACKGROUND_READY = "passbolt.background.is-ready";
 export const ERROR = "passbolt.error";
+export const LOCALSTORAGE_UPDATE = "passbolt.background.localstorage-update";
+export const LOCALSTORAGE_DELETE = "passbolt.background.localstorage-delete";
+export const LOCALSTORAGE_CLEAR = "passbolt.background.localstorage-clear";
+
