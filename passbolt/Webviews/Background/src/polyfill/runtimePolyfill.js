@@ -12,6 +12,8 @@
  * @since         0.0.1
  */
 
+import {version} from '../../package.json';
+
 /**
  * Polyfill to init a fake runtime to match with bext runtime requierement
  */
@@ -22,6 +24,6 @@
 window.chrome.runtime = {
     id: {},
     lastError: null,
-    getManifest: () => ({ manifest_version: 0 })
+    getManifest: () => ({ version })
 };
 
