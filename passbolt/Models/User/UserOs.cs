@@ -24,6 +24,6 @@ namespace passbolt.Models.Users
         }
 
         [Required]
-        public string username { get; set; }
+        public string username { get; private set; }
     }
 }
