@@ -16,6 +16,7 @@ import UserAlreadyLoggedInError from "passbolt-browser-extension/src/all/backgro
 import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
 import CheckPassphraseService from "passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService";
+import CurrentUser from "../models/CurrentUser";
 
 /**
  * Service related to the login user service
@@ -61,6 +62,15 @@ class LoginUserService {
         throw error;
       }
     }
+  }
+
+  /**
+   * get the config for current user
+   * @returns the config
+   */
+  async getCurrentUser() {
+    const passboltData = JSON.parse(localStorage.getItem("_passbolt_data"));
+    return new CurrentUser(passboltData)
   }
 }
 

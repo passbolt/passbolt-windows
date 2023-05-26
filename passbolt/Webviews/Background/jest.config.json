@@ -10,9 +10,8 @@
         "plugins": ["@babel/plugin-transform-runtime"]
       }]
     },
-    "setupFiles": [
-      "jest-webextension-mock"
-    ],
+    "transformIgnorePatterns": ["/node_modules/(.!passbolt-browser-extension)"],
+    "setupFilesAfterEnv": ["<rootDir>/test/jest.setup.js"],
     "coverageReporters": [
       "cobertura",
       "html",

@@ -12,11 +12,12 @@
  * @since         0.0.1
  */
 
+
+import './src/polyfill/desktopPolyfill';
 import './src/polyfill/storagePolyfill';
 import './src/polyfill/runtimePolyfill';
 import './src/polyfill/alarmPolyfill';
 import Main from "./src/main";
 
-window.chrome.desktop = true;
 
 new Main(window.chrome.webview);

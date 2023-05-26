@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
  *
@@ -166,6 +166,18 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
             Assert.IsTrue(afterLogin);
             Assert.IsTrue(isAuthenticated);
             Assert.IsTrue(desktopAuthenticate);
+        }
+
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedLocalStorageTopics()
+        {
+            bool clearStorage = AllowedTopics.IsTopicNameAllowed(LocalStorageTopics.BACKGROUND_LOCALSTORAGE_CLEAR);
+            bool updateStorage = AllowedTopics.IsTopicNameAllowed(LocalStorageTopics.BACKGROUND_LOCALSTORAGE_UPDATE);
+            bool deleteStorage = AllowedTopics.IsTopicNameAllowed(LocalStorageTopics.BACKGROUND_LOCALSTORAGE_DELETE);
+
+            Assert.IsTrue(clearStorage);
+            Assert.IsTrue(updateStorage);
+            Assert.IsTrue(deleteStorage);
         }
     }
 }

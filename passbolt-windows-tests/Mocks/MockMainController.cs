@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
  *
@@ -12,15 +12,14 @@
  * @since         0.0.1
  */
 
-using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
+
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Controllers;
+using passbolt.Models.CredentialLocker;
+using passbolt.Services.CredentialLockerService;
 using passbolt.Services.NavigationService;
-using Windows.UI.Xaml.Controls;
 
 namespace passbolt_windows_tests.UnitTests
 {
@@ -31,10 +30,13 @@ namespace passbolt_windows_tests.UnitTests
         public bool hasOpenedDialog = false;
         public CoreWebView2WebResourceResponse webView2WebResourceResponse;
         public string trustedDomain = null;
+        public string renderedUrl = null;
+        public string backgroundUrl = null;
+        public ApplicationConfiguration applicationConfiguration;
 
-
-        public MockMainController(WebView2 webviewRendered, WebView2 webviewBackground) : base(webviewRendered, webviewBackground)
+        public MockMainController(WebView2 webviewRendered, WebView2 webviewBackground, CredentialLockerService credentialLockerService) : base(webviewRendered, webviewBackground)
         {
+            base.credentialLockerService = credentialLockerService;
         }
 
         public override void NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
@@ -74,6 +76,26 @@ namespace passbolt_windows_tests.UnitTests
             base.WebResourceRequested(sender, resource);
             trustedDomain = resource.Request.Uri;
             webView2WebResourceResponse = resource.Response;
+        }
+
+        /// <summary>
+        /// Get the configuration from the credential locker
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ApplicationConfiguration> GetConfiguredApplication() {
+            applicationConfiguration = await base.GetApplicationConfiguration();
+            renderedUrl = "https://" + applicationConfiguration.renderedUrl;
+            backgroundUrl = "https://" + applicationConfiguration.backgroundUrl;
+            return applicationConfiguration;
+        }
+
+        /// <summary>
+        /// Remove the configuration from the credential locker
+        /// </summary>
+        /// <returns></returns>
+        public async Task RemoveConfiguration()
+        {
+            await base.credentialLockerService.Remove("configuration");
         }
     }
 }

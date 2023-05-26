@@ -30,3 +30,12 @@ export const passboltData = {
   "user.settings.trustedDomain": accountDto.domain, 
   "user.username": accountDto.username
 }
+
+
+export const userConfig = {
+  "config": {
+    "user.firstname": accountDto.first_name, 
+    "user.lastname": accountDto.last_name, 
+    "user.username": accountDto.username
+  }
+}

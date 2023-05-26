@@ -28,7 +28,7 @@ import {SecretEvents} from "passbolt-browser-extension/src/all/background_page/e
 import {CommentEvents} from "passbolt-browser-extension/src/all/background_page/event/commentEvents";
 import {ActionLogEvents} from "passbolt-browser-extension/src/all/background_page/event/actionLogEvents";
 import {accountDto} from "./data/mockStorage";
-import {BACKGROUNDREADY} from "./enumerations/appEventEnumeration";
+import {BACKGROUND_READY, LOCALSTORAGE_CLEAR, LOCALSTORAGE_DELETE, LOCALSTORAGE_UPDATE} from "./enumerations/appEventEnumeration";
 
 
 describe("Main class", () => {
@@ -126,7 +126,7 @@ describe("Main class", () => {
     expect(config["user.lastname"]).toEqual(accountDto.last_name);
     expect(privateGPGKeys).not.toBeNull();
     expect(publicGPGKeys).not.toBeNull();
-    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: BACKGROUNDREADY }));
+    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: BACKGROUND_READY }));
   });
 
   it('should not initialize the local storage if user exist and post a message', async () => {  
@@ -136,7 +136,33 @@ describe("Main class", () => {
     await main.initStorage();
 
     expect(window.chrome.storage.local.set).not.toHaveBeenCalled();
-    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: BACKGROUNDREADY }));
+    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: BACKGROUND_READY }));
   });
 
+  it('should send an event when localstorage is updated', () => {
+    expect.assertions(1);
+
+    const key = "test";
+    const value = "with jest";
+    window.chrome.storage.local.set(key, value)
+
+    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: LOCALSTORAGE_UPDATE, message: key }));
+  });
+
+  it('should send an event when localstorage is delete', () => {
+    expect.assertions(1);
+
+    const key = "test-delete";
+    window.chrome.storage.local.remove(key)
+
+    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: LOCALSTORAGE_DELETE, message: key }));
+  });
+
+  it('should send an event when localstorage is cleared', () => {
+    expect.assertions(1);
+
+    window.chrome.storage.local.clear()
+
+    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: LOCALSTORAGE_CLEAR }));
+  });
 });

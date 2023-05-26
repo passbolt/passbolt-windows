@@ -17,6 +17,7 @@ import MockAlarms from "passbolt-browser-extension/test/mocks/mockAlarms";
 /**
  * Init the polyfill only if runtime is missing
  */
+
 if (!window.chrome.alarms) {
     window.chrome.alarms = new MockAlarms()
 } 

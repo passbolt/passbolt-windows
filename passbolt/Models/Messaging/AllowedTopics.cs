@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
@@ -21,8 +21,8 @@ namespace passbolt.Models.Messaging
     public class AllowedTopics
     {
         public const string ERROR = "passbolt.error";
-        public const string BACKGROUNDREADY = "passbolt.background.is-ready";
-        private static List<string> topics = new List<string>() { BACKGROUNDREADY, ERROR };
+        public const string BACKGROUND_READY = "passbolt.background.is-ready";
+        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR };
         private static List<string> requestIds = new List<string>();
 
         /// <summary>
@@ -44,6 +44,7 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(GroupTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(LocaleTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(LocalStorageTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ProgressTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
