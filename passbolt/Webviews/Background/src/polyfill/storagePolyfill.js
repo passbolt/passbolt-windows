@@ -12,6 +12,8 @@
  * @since         0.0.1
  */
 
+import { LOCALSTORAGE_CLEAR, LOCALSTORAGE_DELETE, LOCALSTORAGE_UPDATE } from "../enumerations/appEventEnumeration";
+
 /**
  * Polyfill to match the webview storage with the bext storage
  */
@@ -26,22 +28,26 @@ class StoragePolyfill {
      */
     initLocaleStorage() {
         window.chrome.storage = {
-            local: {
+            local : {
                 get: this.getStorage,
-                set: function (storage, value = "") {
+                set:  (storage, value = "") => {
                     if (typeof storage === "object") {
                         const keys = Object.keys(storage);
                         const values = Object.values(storage);
                         localStorage.setItem(keys[0], JSON.stringify(values[0]));
+                        this.onStorageChanges(keys[0])
                     } else {
                         localStorage.setItem(storage, value);
+                        this.onStorageChanges(storage)
                     }
                 },
-                remove: function (key) {
+                remove: (key) => {
                     localStorage.removeItem(key);
+                    this.onStorageDelete(key)
                 },
-                clear: function () {
+                clear: () => {
                     localStorage.clear();
+                    this.onStorageCleared()
                 }
             }
         }
@@ -74,9 +80,40 @@ class StoragePolyfill {
             }
         });
     }
+
+    /**
+     * Send event whenever storage has been cleared
+     * @param {string} key 
+     * @returns 
+     */
+    onStorageCleared() {
+        window.chrome.webview.postMessage(JSON.stringify({ topic: LOCALSTORAGE_CLEAR}));
+    }
+
+    /**
+     * Send event whenever storage has a entry deleted
+     * @param {string} key 
+     * @returns 
+     */
+    onStorageDelete(key) {
+        window.chrome.webview.postMessage(JSON.stringify({ topic: LOCALSTORAGE_DELETE, message: key}));
+    }
+
+    /**
+     * Send event whenever storage has been changed
+     * @param {string} key 
+     * @returns 
+     */
+    onStorageChanges(key) {
+        if(key != "_passbolt_data") {
+            window.chrome.webview.postMessage(JSON.stringify({ topic: LOCALSTORAGE_UPDATE, message: key}));
+        }
+    }
 }
 
 /**
- * init localstorage if not exist
+ * Init the polyfill only if runtime is missing
  */
-new StoragePolyfill();
+if (!window.chrome.storage?.local) {
+    new StoragePolyfill()
+} 

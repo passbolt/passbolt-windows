@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
@@ -13,34 +13,49 @@
  */
 
 using Microsoft.UI.Xaml.Controls;
+using Newtonsoft.Json.Linq;
 using passbolt.Exceptions;
 using passbolt.Models.Messaging.Topics;
+using passbolt.Services.LocalStorage;
 using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using System;
+using System.ServiceModel.Channels;
 using Windows.UI.Xaml;
 
 namespace passbolt.Models.Messaging
 {
     public class BackgroundTopic : WebviewTopic
     {
-
-        public BackgroundTopic(WebView2 background, WebView2 rendered) : base(background, rendered) { }
+        private LocalStorageService localStorageService;
+        public BackgroundTopic(WebView2 background, WebView2 rendered) : base(background, rendered) {
+            localStorageService = new LocalStorageService();
+        }
 
         /// <summary>
         /// Process ipc message receive for Background webview
         /// </summary>
         /// <param name="ipc"></param>
-        public override void ProceedMessage(IPC ipc)
+        public async override void ProceedMessage(IPC ipc)
         {
             switch (ipc.topic)
             {
-                case AllowedTopics.BACKGROUNDREADY:
+                case AllowedTopics.BACKGROUND_READY:
                     background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AuthenticationTopics.DESKTOPAUTHENTICATE)));
+                    break;
+                case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_UPDATE:
+                    await this.localStorageService.LoadLocalStorage(background, rendered, (string) ipc.message) ;
+                    break;
+                case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_DELETE:
+                    await this.localStorageService.RemoveLocalStorage(rendered, (string)ipc.message);
+                    break;
+                case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_CLEAR:
+                    await this.localStorageService.ClearLocalStorage(rendered);
                     break;
                 case AuthenticationTopics.AFTERLOGIN:
                     rendered.Visibility = Visibility.Visible;
                     rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index.html"));
+                    localStorageService.InitPassboltData(rendered, SerializationHelper.SerializeToJson(ipc.message));
                     break;
                 case ProgressTopics.PROGRESSCLOSEDIALOG:
                 case ProgressTopics.PROGRESSUPDATE:

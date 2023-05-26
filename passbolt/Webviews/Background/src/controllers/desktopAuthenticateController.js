@@ -16,7 +16,7 @@ import {Config} from "passbolt-browser-extension/src/all/background_page/model/c
 import BuildApiClientOptionsService from "passbolt-browser-extension/src/all/background_page/service/account/buildApiClientOptionsService";
 import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
 import {tempPassphrase} from "../data/mockStorage";
-import {USERLOGGEDIN, ERROR} from "../enumerations/appEventEnumeration";
+import {USER_LOGGED_IN, ERROR} from "../enumerations/appEventEnumeration";
 import LoginUserService from "../services/loginUserService";
 
 /**
@@ -31,8 +31,8 @@ class DesktopAuthenticateController {
    */
   async _exec() {
     try {
-      await this.exec();
-      window.chrome.webview.postMessage(JSON.stringify({ topic: USERLOGGEDIN }));
+      const config = await this.exec();
+      window.chrome.webview.postMessage(JSON.stringify({ topic: USER_LOGGED_IN, message: JSON.stringify(config) }));
     } catch (error) {
       window.chrome.webview.postMessage(JSON.stringify({ topic: ERROR, message: error }));
     }
@@ -50,6 +50,8 @@ class DesktopAuthenticateController {
     const loginUserService = new LoginUserService(apiClientOptions);
     await loginUserService.checkPassphrase(tempPassphrase)
     await loginUserService.login(tempPassphrase, true)
+    console.log(loginUserService.getCurrentUser())
+    return loginUserService.getCurrentUser();
   }
 
 }

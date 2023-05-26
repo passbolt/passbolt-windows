@@ -26,7 +26,7 @@ import {FolderEvents} from 'passbolt-browser-extension/src/all/background_page/e
 import {SecretEvents} from 'passbolt-browser-extension/src/all/background_page/event/secretEvents';
 import {CommentEvents} from 'passbolt-browser-extension/src/all/background_page/event/commentEvents';
 import {ActionLogEvents} from 'passbolt-browser-extension/src/all/background_page/event/actionLogEvents';
-import {BACKGROUNDREADY} from './enumerations/appEventEnumeration';
+import {BACKGROUND_READY} from './enumerations/appEventEnumeration';
 import StorageService from './services/storageService';
 /**
  * Represents the main class that sets up an event listener for the `message` event.
@@ -76,7 +76,7 @@ export default class Main {
      */
     async initStorage() {
         await this.storageService.initPassboltData();
-        window.chrome.webview.postMessage(JSON.stringify({ topic: BACKGROUNDREADY }));
+        window.chrome.webview.postMessage(JSON.stringify({ topic: BACKGROUND_READY }));
     }
 }
 
