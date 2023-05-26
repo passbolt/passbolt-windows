@@ -32,7 +32,6 @@ class DesktopAuthenticateController {
   async _exec() {
     try {
       const config = await this.exec();
-      console.log(config)
       window.chrome.webview.postMessage(JSON.stringify({ topic: USER_LOGGED_IN, message: JSON.stringify(config) }));
     } catch (error) {
       window.chrome.webview.postMessage(JSON.stringify({ topic: ERROR, message: error }));
