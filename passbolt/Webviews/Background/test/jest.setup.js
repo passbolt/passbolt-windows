@@ -11,19 +11,4 @@ global.TextDecoder = require('text-encoding-utf-8').TextDecoder;
 global.fetch = require('node-fetch');
 global.window = Object.create(window);
 
-jest.mock("webextension-polyfill", () => {
-  
-  const polyfill = Object.assign({}, {
-    storage: new MockStorage(),
-    runtime: {
-      id: {},
-      lastError: null,
-      getManifest: () => ({ manifest_version: 0 })
-    },
-    alarms: new MockAlarms(),
-  })
-  return polyfill;
-});
-
-
 global.chrome = window.chrome;

@@ -32,7 +32,7 @@ class WebviewStorage {
             },
             onChanged: {
                 addListener: function (callback) {
-                    addEventListener("storage", (event) => {
+                    window.addEventListener("storage", (event) => {
                         const changes = {}
                         const key = event.key;
                         try {

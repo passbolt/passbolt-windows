@@ -14,8 +14,8 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
-using System.Resources;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -24,7 +24,6 @@ using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging;
 using passbolt.Services.CredentialLockerService;
 using passbolt.Services.HttpService;
-using passbolt.Services.LocalStorage;
 using passbolt.Services.NavigationService;
 using passbolt.Utils;
 using Windows.ApplicationModel;
@@ -124,7 +123,7 @@ namespace passbolt.Controllers
 
             // Load dist folder to insert into the virtual host to avoid exception during testing
             if (distfolder == null)
-                distfolder = await installationFolder.GetFolderAsync("Webviews");
+               distfolder = await installationFolder.GetFolderAsync("Webviews");
 
             // Set virtual host to folder mapping, restrict host access to the randomUrl
             webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(applicationConfiguration.backgroundUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
@@ -227,6 +226,10 @@ namespace passbolt.Controllers
             {
                 httpService.ResolveOptionMethod(sender, resource);
             }
+            else if(httpService.isCallToPownedService(resource))
+            {
+                resource.GetDeferral().Complete();
+            }
             else
             {
                 HttpRequestMessage request = httpService.BuildHttpRequest(resource);
@@ -289,7 +292,7 @@ namespace passbolt.Controllers
         /// </summary>
         /// <param name="sender"></param>
         /// <returns></returns>
-        public async void RenderedNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        public  void RenderedNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
             Debug.WriteLine("NavigationCompleted: " + sender.CoreWebView2.Source);
 
@@ -329,5 +332,6 @@ namespace passbolt.Controllers
         {
             return Guid.NewGuid().ToString() + ".passbolt.local";
         }
+
     }
 }

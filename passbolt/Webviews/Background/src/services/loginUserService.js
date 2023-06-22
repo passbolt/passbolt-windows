@@ -17,6 +17,9 @@ import AuthModel from "passbolt-browser-extension/src/all/background_page/model/
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
 import CheckPassphraseService from "passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService";
 import CurrentUser from "../models/CurrentUser";
+import Settings from "../models/settings";
+import passphraseStorageService from "passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService";
+import PassboltData from "../models/passboltData";
 
 /**
  * Service related to the login user service
@@ -60,7 +63,8 @@ class LoginUserService {
     } catch (error) {
       if (!(error instanceof UserAlreadyLoggedInError)) {
         throw error;
-      }
+      } 
+      await passphraseStorageService.set(passphrase, -1);
     }
   }
 
@@ -70,7 +74,9 @@ class LoginUserService {
    */
   async getCurrentUser() {
     const passboltData = JSON.parse(localStorage.getItem("_passbolt_data"));
-    return new CurrentUser(passboltData)
+    const currentUser = new CurrentUser(passboltData);
+    const settings = new Settings(passboltData);
+    return new PassboltData(currentUser, settings)
   }
 }
 

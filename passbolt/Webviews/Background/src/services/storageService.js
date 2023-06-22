@@ -36,6 +36,11 @@ class StorageService {
                 console.error(error)
             }
         }
+        let metaCSP = document.querySelector('meta[http-equiv=\"Content-Security-Policy\"]');
+        metaCSP = document.createElement('meta');
+        metaCSP.setAttribute('http-equiv', 'Content-Security-Policy');
+        document.head.appendChild(metaCSP);
+        metaCSP.setAttribute('content', `default-src 'self' ${accountDto.domain} https://api.pwnedpasswords.com; script-src 'self'`);
         await LocalStorage.init();
     }
 }

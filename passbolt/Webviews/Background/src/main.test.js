@@ -29,7 +29,14 @@ import {CommentEvents} from "passbolt-browser-extension/src/all/background_page/
 import {ActionLogEvents} from "passbolt-browser-extension/src/all/background_page/event/actionLogEvents";
 import {accountDto} from "./data/mockStorage";
 import {BACKGROUND_READY, LOCALSTORAGE_CLEAR, LOCALSTORAGE_DELETE, LOCALSTORAGE_UPDATE} from "./enumerations/appEventEnumeration";
-
+import {KeyringEvents} from "passbolt-browser-extension/src/all/background_page/event/keyringEvents";
+import {ShareEvents} from "passbolt-browser-extension/src/all/background_page/event/shareEvents";
+import {FavoriteEvents} from "passbolt-browser-extension/src/all/background_page/event/favoriteEvents";
+import {TagEvents} from "passbolt-browser-extension/src/all/background_page/event/tagEvents";
+import {PasswordGeneratorEvents} from "passbolt-browser-extension/src/all/background_page/event/passwordGeneratorEvents";
+import {ImportResourcesEvents} from "passbolt-browser-extension/src/all/background_page/event/importResourcesEvents";
+import {PownedPasswordEvents} from "passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents";
+import {AccountRecoveryEvents} from "./events/accountRecoveryEvents";
 
 describe("Main class", () => {
   const ipcDataMock = {
@@ -54,7 +61,7 @@ describe("Main class", () => {
     jest.resetAllMocks();
   });
 
-  it('should listen to authenticate eveent', () => {
+  it('should listen to authenticate event', () => {
     expect.assertions(2);
 
     jest.spyOn(AuthEvents, "listen");
@@ -68,7 +75,7 @@ describe("Main class", () => {
 
 
   it('should listen to the browser extension events', () => {
-    expect.assertions(13);
+    expect.assertions(20);
 
     jest.spyOn(OrganizationSettingsEvents, "listen");
     jest.spyOn(ConfigEvents, "listen");
@@ -82,6 +89,13 @@ describe("Main class", () => {
     jest.spyOn(SecretEvents, "listen");
     jest.spyOn(CommentEvents, "listen");
     jest.spyOn(ActionLogEvents, "listen");
+    jest.spyOn(KeyringEvents, "listen");
+    jest.spyOn(ShareEvents, "listen");
+    jest.spyOn(FavoriteEvents, "listen");
+    jest.spyOn(ImportResourcesEvents, "listen");
+    jest.spyOn(PasswordGeneratorEvents, "listen");
+    jest.spyOn(TagEvents, "listen");
+    jest.spyOn(PownedPasswordEvents, "listen");
 
     main = new Main(window.chrome.webview);
     const callback = window.chrome.webview.addEventListener.mock.calls[0][1];
@@ -100,13 +114,20 @@ describe("Main class", () => {
     expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(CommentEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(ActionLogEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(KeyringEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(FavoriteEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ImportResourcesEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(PasswordGeneratorEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(TagEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(PownedPasswordEvents.listen).toHaveBeenCalledWith(main.worker);
   });
 
   it('should initialize the local storage and post a message', async () => {
     expect.assertions(12);
 
     localStorage.removeItem('_passbolt_data')
-    
+
     await main.initStorage();
 
     expect(localStorage.getItem("_passbolt_data")).not.toBeNull();
@@ -129,9 +150,9 @@ describe("Main class", () => {
     expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: BACKGROUND_READY }));
   });
 
-  it('should not initialize the local storage if user exist and post a message', async () => {  
+  it('should not initialize the local storage if user exist and post a message', async () => {
     expect.assertions(2);
-  
+
     jest.spyOn(window.chrome.storage.local, "set")
     await main.initStorage();
 
@@ -146,7 +167,7 @@ describe("Main class", () => {
     const value = "with jest";
     window.chrome.storage.local.set(key, value)
 
-    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: LOCALSTORAGE_UPDATE, message: key }));
+    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: LOCALSTORAGE_UPDATE, message: {key, value} }));
   });
 
   it('should send an event when localstorage is delete', () => {

@@ -28,6 +28,7 @@ using Microsoft.Web.WebView2.Core;
 using passbolt.Models.LocalStorage;
 using passbolt.Services.CredentialLockerService;
 using System.Threading.Tasks;
+using System.Reflection.Metadata;
 
 namespace passbolt_windows_tests
 {
@@ -150,6 +151,19 @@ namespace passbolt_windows_tests
             {
                 Assert.AreEqual(mainController.webView2WebResourceResponse.Content,  null);
                 Assert.AreEqual(mainController.webView2WebResourceResponse.ReasonPhrase, "Option method");
+            };
+        }
+
+        [UITestMethod]
+        [Description("As a desktop application user I should be informed about the complexity of my password")]
+        public void WebResourceRequested_ShouldAllPOWNEDSERVICEAPI()
+        {
+            var authenticateMessage = $"<script>fetch(\"https://api.pwnedpasswords.com/range/106a6\", {{ method: method: \"GET\"  }});</ script>";
+
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync(authenticateMessage);
+            operation.Completed += (info, status) =>
+            {
+                Assert.AreEqual(mainController.webView2WebResourceResponse.StatusCode, 200);
             };
         }
 
@@ -316,6 +330,26 @@ namespace passbolt_windows_tests
                     var result = renderedLocalstorage.GetResults();
                     Assert.AreEqual("test", result);
                 };
+            };
+        }        
+        
+        [UITestMethod]
+        [Description("Rendered webview should dynamically authorise API domain in its CSP")]
+        public void ShouldInitCSPFromMainProcess()
+        {
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("var csp = ''; "+
+                "var metaTags = document.getElementsByTagName('meta'); " +
+                "for (var i = 0; i < metaTags.length; i++) { " +
+                "if (metaTags[i].httpEquiv === 'Content-Security-Policy')" +
+                "csp = metaTags[i].content;" +
+                "break;" +  
+                "}" +
+                "return csp;");
+            operation.Completed += (info, status) =>
+            {
+                var csp = operation.GetResults();
+                string expectedCSP = $"default-src 'self'; script-src 'self'; img-src 'self' {trustedDomain} {webviewsURLRendered};";
+                Assert.AreEqual(expectedCSP, csp);
             };
         }
 

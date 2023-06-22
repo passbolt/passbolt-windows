@@ -17,8 +17,7 @@ namespace passbolt.Models.CredentialLocker
     public class ApplicationConfiguration
     {
 
-        public ApplicationConfiguration() { 
-        }
+        public ApplicationConfiguration() {}
         public string renderedUrl { get; set; }
         public string backgroundUrl { get; set; }
 

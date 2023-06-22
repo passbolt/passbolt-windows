@@ -18,5 +18,11 @@ namespace passbolt.Models.Messaging.Topics
     {
         public const string FIND_LOGGED_IN_USER = "passbolt.users.find-logged-in-user";
         public const string UPDATE_LOCALSTORAGE = "passbolt.users.update-local-storage";
+        public const string GET_ALL = "passbolt.users.get-all";
+        public const string CREATE = "passbolt.users.create";
+        public const string UPDATE = "passbolt.users.update";
+        public const string DELETE_DRY_RUN = "passbolt.users.delete-dry-run";
+        public const string DELETE = "passbolt.users.delete";
+        public const string RESEND_INVITE = "passbolt.users.resend-invite";
     }
 }

@@ -17,27 +17,11 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
-using Newtonsoft.Json.Linq;
-using passbolt.Models;
-using passbolt.Models.LocalStorage;
-using passbolt.Utils;
 
 namespace passbolt.Services.LocalStorage
 {
     public class LocalStorageService
     {
-        /// <summary>
-        /// Get the local storage of a webview and set it to another webview
-        /// </summary>
-        /// <param name="webviewSource"></param>
-        /// <param name="webviewTarget"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public async Task LoadLocalStorage(WebView2 webviewSource, WebView2 webviewTarget, string key)
-        {
-            var value = await this.GetLocalStorage(webviewSource, key);
-            await this.SetLocalStorage(webviewTarget, key, value);
-        }
 
         /// <summary>
         /// Get the local storage of a webview
@@ -58,28 +42,8 @@ namespace passbolt.Services.LocalStorage
         /// <param name="value"></param>
         /// <returns></returns>
         public async Task SetLocalStorage(WebView2 webviewTarget, string key, string value) {
-            await webviewTarget.CoreWebView2.ExecuteScriptAsync($"localStorage.setItem('{key}', {value})");
-        }
-
-        /// <summary>
-        /// clear the local storage of a webview
-        /// </summary>
-        /// <param name="webviewTarget"></param>
-        /// <returns></returns>
-        public async Task ClearLocalStorage(WebView2 webviewTarget)
-        {
-            await webviewTarget.CoreWebView2.ExecuteScriptAsync($"localStorage.clear()");
-        }
-
-        /// <summary>
-        /// remove a key from the local storage of a webview
-        /// </summary>
-        /// <param name="webviewTarget"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public async Task RemoveLocalStorage(WebView2 webviewTarget, string key)
-        {
-            await webviewTarget.CoreWebView2.ExecuteScriptAsync($"localStorage.removeItem('{key}')");
+            var storageEvent = $"window.dispatchEvent( new StorageEvent('storage', {{key: '{key}', newValue: {value} }}))";
+            await webviewTarget.CoreWebView2.ExecuteScriptAsync($"localStorage.setItem('{key}', {value}); {storageEvent};");
         }
 
 

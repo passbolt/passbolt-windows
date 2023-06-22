@@ -42,14 +42,26 @@ namespace passbolt_windows_tests.UnitTests.Services
             string workspaceUrl = "https://desktop.passbolt.com/app/passwords";
             string passwordViewUrl = "https://desktop.passbolt.com/app/passwords/view/a8734e0a-3587-42f6-ab15-f9239cf1ce68";
             string folderViewUrl = "https://desktop.passbolt.com/app/folders/view/57341148-2e61-4f1a-88f7-250b95faffae";
+            string usersUrl = "https://desktop.passbolt.com/app/users";
+            string usersViewUrl = "https://desktop.passbolt.com/app/users/view/57341148-2e61-4f1a-88f7-250b95faffae";
+            string groupsViewUrl = "https://desktop.passbolt.com/app/groups/view/57341148-2e61-4f1a-88f7-250b95faffae";
+            string groupsEditUrl = "https://desktop.passbolt.com/app/groups/edit/57341148-2e61-4f1a-88f7-250b95faffae";
 
             bool resultWorkspace = RenderedNavigationService.Instance.canNavigate(workspaceUrl);
             bool resultPasswordView = RenderedNavigationService.Instance.canNavigate(passwordViewUrl);
             bool resultFolderView = RenderedNavigationService.Instance.canNavigate(folderViewUrl);
+            bool resultUsers = RenderedNavigationService.Instance.canNavigate(usersUrl);
+            bool resultUsersView = RenderedNavigationService.Instance.canNavigate(usersViewUrl);
+            bool resultGroupsView = RenderedNavigationService.Instance.canNavigate(groupsViewUrl);
+            bool resultGroupsEdit = RenderedNavigationService.Instance.canNavigate(groupsEditUrl);
 
             Assert.IsTrue(resultWorkspace);
             Assert.IsTrue(resultPasswordView);
             Assert.IsTrue(resultFolderView);
+            Assert.IsTrue(resultUsers);
+            Assert.IsTrue(resultUsersView);
+            Assert.IsTrue(resultGroupsView);
+            Assert.IsTrue(resultGroupsEdit);
         }
 
 

@@ -18,7 +18,7 @@ export default class CurrentUser {
         this.config =  {
             "user.username": passboltData?.config["user.username"],
             "user.lastname": passboltData?.config["user.lastname"],
-            "user.firstname": passboltData?.config["user.firstname"]
-          }
+            "user.firstname": passboltData?.config["user.firstname"],
+        }
     }
 }

@@ -62,8 +62,18 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedGroupTopics()
         {
             bool updateLocalStorageGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.UPDATE_LOCALESTORAGE);
+            bool createGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.CREATE);
+            bool deleteGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.DELETE);
+            bool findAllGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.FINDALL);
+            bool deleteDryRunGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.DELETE_DRY_RUN);
+            bool updateGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.UPDATE);
 
             Assert.IsTrue(updateLocalStorageGroups);
+            Assert.IsTrue(createGroups);
+            Assert.IsTrue(deleteGroups);
+            Assert.IsTrue(findAllGroups);
+            Assert.IsTrue(deleteDryRunGroups);
+            Assert.IsTrue(updateGroups);
         }
 
         [TestMethod]
@@ -143,9 +153,19 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         {
             bool updateLocalStorageUsers = AllowedTopics.IsTopicNameAllowed(UserTopics.UPDATE_LOCALSTORAGE);
             bool findLoggedInUser = AllowedTopics.IsTopicNameAllowed(UserTopics.FIND_LOGGED_IN_USER);
+            bool getAllUsers = AllowedTopics.IsTopicNameAllowed(UserTopics.GET_ALL);
+            bool createUsers = AllowedTopics.IsTopicNameAllowed(UserTopics.CREATE);
+            bool resendInvite = AllowedTopics.IsTopicNameAllowed(UserTopics.RESEND_INVITE);
+            bool deleteUser = AllowedTopics.IsTopicNameAllowed(UserTopics.DELETE);
+            bool deleteDryRunUser = AllowedTopics.IsTopicNameAllowed(UserTopics.DELETE_DRY_RUN);
 
             Assert.IsTrue(updateLocalStorageUsers);
             Assert.IsTrue(findLoggedInUser);
+            Assert.IsTrue(getAllUsers);
+            Assert.IsTrue(createUsers);
+            Assert.IsTrue(resendInvite);
+            Assert.IsTrue(deleteUser);
+            Assert.IsTrue(deleteDryRunUser);
         }
 
         [TestMethod]
@@ -179,5 +199,99 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
             Assert.IsTrue(updateStorage);
             Assert.IsTrue(deleteStorage);
         }
+
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedShareTopics()
+        {
+            bool saveResources = AllowedTopics.IsTopicNameAllowed(ShareTopics.SAVE_RESOURCES);
+            bool saveFolders = AllowedTopics.IsTopicNameAllowed(ShareTopics.SAVE_FOLDERS);
+            bool getResources = AllowedTopics.IsTopicNameAllowed(ShareTopics.GET_RESOURCES);
+            bool searchAros = AllowedTopics.IsTopicNameAllowed(ShareTopics.SEARCH_AROS);
+            bool getFolders = AllowedTopics.IsTopicNameAllowed(ShareTopics.GET_FOLDERS);
+
+            Assert.IsTrue(getResources);
+            Assert.IsTrue(searchAros);
+            Assert.IsTrue(getFolders);
+            Assert.IsTrue(saveFolders);
+            Assert.IsTrue(saveResources);
+        }
+
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedKeyringTopics()
+        {
+            bool getPublicInfoByUser = AllowedTopics.IsTopicNameAllowed(KeyringTopics.GET_PUBLIC_KEY_INFO_BY_USER);
+            bool getKeyInfo = AllowedTopics.IsTopicNameAllowed(KeyringTopics.GET_KEY_INFO);;
+
+            Assert.IsTrue(getPublicInfoByUser);
+            Assert.IsTrue(getKeyInfo);
+        }
+
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedFavoriteTopics()
+        {
+            bool addFavorite = AllowedTopics.IsTopicNameAllowed(FavoriteTopics.ADD);
+            bool deleteFavorite = AllowedTopics.IsTopicNameAllowed(FavoriteTopics.DELETE);
+
+            Assert.IsTrue(addFavorite);
+            Assert.IsTrue(deleteFavorite);
+        }        
+        
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedPasswordGeneratorTopics()
+        {
+            bool getSettings = AllowedTopics.IsTopicNameAllowed(PasswordGeneratorTopics.GET_SETTINGS);
+
+            Assert.IsTrue(getSettings);
+        }
+
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedTagTopics()
+        {
+            bool addTag = AllowedTopics.IsTopicNameAllowed(TagTopics.ADD);
+            bool deleteTag = AllowedTopics.IsTopicNameAllowed(TagTopics.DELETE);
+            bool findAllTag = AllowedTopics.IsTopicNameAllowed(TagTopics.FIND_ALL);
+            bool updateTag = AllowedTopics.IsTopicNameAllowed(TagTopics.UPDATE);
+            bool updateResourcesTags = AllowedTopics.IsTopicNameAllowed(TagTopics.UPDATE_RESOURCE_TAGS);
+
+            Assert.IsTrue(addTag);
+            Assert.IsTrue(deleteTag);
+            Assert.IsTrue(findAllTag);
+            Assert.IsTrue(updateTag);
+            Assert.IsTrue(updateResourcesTags);
+        }
+
+
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedImportExportTopics()
+        {
+            bool import = AllowedTopics.IsTopicNameAllowed(ImportExportTopics.IMPORT);
+            bool export = AllowedTopics.IsTopicNameAllowed(ImportExportTopics.EXPORT);
+
+            Assert.IsTrue(import);
+            Assert.IsTrue(export);
+        }
+
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedPownedPasswordTopics()
+        {
+            bool checkPassword = AllowedTopics.IsTopicNameAllowed(PownedPasswordTopics.CHECK);
+
+            Assert.IsTrue(checkPassword);
+        }
+
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedAccountRecoveryTopics()
+        {
+            bool validateOrganizationPrivateKey = AllowedTopics.IsTopicNameAllowed(AccountRecoveryTopics.VALIDATE_ORGANIZATION_PRIVATE_KEY);
+            bool getOrganizationPolicy = AllowedTopics.IsTopicNameAllowed(AccountRecoveryTopics.GET_ORGANIZATION_POLICY);
+            bool getUserRequests = AllowedTopics.IsTopicNameAllowed(AccountRecoveryTopics.GET_USER_REQUESTS);
+            bool reviewRequest = AllowedTopics.IsTopicNameAllowed(AccountRecoveryTopics.REVIEW_REQUEST);
+
+            Assert.IsTrue(validateOrganizationPrivateKey);
+            Assert.IsTrue(getOrganizationPolicy);
+            Assert.IsTrue(getUserRequests);
+            Assert.IsTrue(reviewRequest);
+        }
+
     }
 }

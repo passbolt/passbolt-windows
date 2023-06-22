@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -130,18 +130,26 @@
     <Compile Include="Models\LocalStorage\PassboltConfig.cs" />
     <Compile Include="Models\LocalStorage\PassboltData.cs" />
     <Compile Include="Models\Messaging\AllowedTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\ImportExportTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\AccountRecoveryTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ActionLogsTopics.cs" />
     <Compile Include="Models\Messaging\Topics\AuthenticationTopics.cs" />
     <Compile Include="Models\Messaging\Topics\CommentTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\FavoriteTopics.cs" />
     <Compile Include="Models\Messaging\Topics\FolderTopics.cs" />
     <Compile Include="Models\Messaging\Topics\GroupTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\KeyringTopics.cs" />
     <Compile Include="Models\Messaging\Topics\LocaleTopics.cs" />
     <Compile Include="Models\Messaging\Topics\LocalStorageTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\PownedPasswordTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\PasswordGeneratorTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ProgressTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ResourceTopics.cs" />
     <Compile Include="Models\Messaging\Topics\RoleTopics.cs" />
     <Compile Include="Models\Messaging\Topics\SecretTopics.cs" />
     <Compile Include="Models\Messaging\Topics\SettingTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\ShareTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\TagTopics.cs" />
     <Compile Include="Models\Messaging\Topics\UserTopics.cs" />
     <Compile Include="Models\Messaging\Webviews\BackgroundTopic.cs" />
     <Compile Include="Models\Messaging\IPC.cs" />
@@ -155,6 +163,8 @@
     <Compile Include="Services\NavigationService\AbstractNavigationService.cs" />
     <Compile Include="Services\NavigationService\BackgroundNavigationService.cs" />
     <Compile Include="Services\NavigationService\RenderedNavigationService.cs" />
+    <Compile Include="Services\WebviewService\BackgroundWebviewService.cs" />
+    <Compile Include="Services\WebviewService\RenderedWebviewService.cs" />
     <Compile Include="Utils\ListHelper.cs" />
     <Compile Include="Utils\SerializationHelper.cs" />
     <Compile Include="Utils\StreamHelper.cs" />
@@ -218,6 +228,10 @@
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Webviews\Rendered\img\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="Webviews\Background\package.json">
