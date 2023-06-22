@@ -22,7 +22,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Exceptions;
-using passbolt.Models.LocalStorage;
+using passbolt.Services.WebviewService;
 using passbolt.Utils;
 using Windows.Storage.Streams;
 
@@ -32,6 +32,7 @@ namespace passbolt.Services.HttpService
     {
         private HttpClient httpClient;
         private string trustedDomain = null;
+        public string pownedUrl = "https://api.pwnedpasswords.com";
 
         /// <summary>
         /// HttpService constructor
@@ -50,11 +51,25 @@ namespace passbolt.Services.HttpService
         public async void CheckAPICall(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs webviewRequest)
         {
             await this.GetTrustedDomainFromWebview(sender);
-            if (!UriBuilderHelper.GetHostAndShemeForUri(webviewRequest.Request.Uri).Equals(this.trustedDomain))
+            if (!this.isCallToServer(webviewRequest) && !this.isCallToPownedService(webviewRequest))
             {
                 throw new UnauthorizedAPICallException();
             }
         }
+
+        /// <summary>
+        /// check if http call is made to the trusted domain
+        /// </summary>
+        /// <param name="webviewRequest"></param>
+        /// <returns></returns>
+        public bool isCallToServer(CoreWebView2WebResourceRequestedEventArgs webviewRequest) => webviewRequest.Request.Uri.StartsWith(this.trustedDomain);
+
+        /// <summary>
+        /// check if http call is made to the powned service
+        /// </summary>
+        /// <param name="webviewRequest"></param>
+        /// <returns></returns>
+        public bool isCallToPownedService(CoreWebView2WebResourceRequestedEventArgs webviewRequest) => webviewRequest.Request.Uri.StartsWith(pownedUrl);
 
         /// <summary>
         /// Check if trusted domain is set or retrieve it from the webview
@@ -64,12 +79,8 @@ namespace passbolt.Services.HttpService
         {
             if (string.IsNullOrEmpty(trustedDomain))
             {
-                string localItem = await sender.ExecuteScriptAsync("JSON.parse(localStorage.getItem('_passbolt_data'))");
-                if (!string.IsNullOrEmpty(localItem))
-                {
-                    var passboltData = SerializationHelper.DeserializeFromJson<PassboltData>(localItem);
-                    trustedDomain = passboltData.Config.TrustedDomain;
-                }
+                var backgroundWebviewService = new BackgroundWebviewService(sender);
+                trustedDomain = await backgroundWebviewService.GetTrustedDomain();
             }
         }
 

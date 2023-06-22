@@ -20,5 +20,8 @@ namespace passbolt.Models.Messaging.Topics
         public const string BACKGROUND_LOCALSTORAGE_UPDATE = "passbolt.background.localstorage-update";
         public const string BACKGROUND_LOCALSTORAGE_CLEAR = "passbolt.background.localstorage-clear";
         public const string BACKGROUND_LOCALSTORAGE_DELETE = "passbolt.background.localstorage-delete";
+        public const string RENDERED_LOCALSTORAGE_UPDATE = "passbolt.rendered.localstorage-update";
+        public const string RENDERED_LOCALSTORAGE_CLEAR = "passbolt.rendered.localstorage-clear";
+        public const string RENDERED_LOCALSTORAGE_DELETE = "passbolt.rendered.localstorage-delete";
     }
 }

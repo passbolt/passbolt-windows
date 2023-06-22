@@ -60,7 +60,6 @@ namespace passbolt
 
         private async void Background_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-            webviewBackground.CoreWebView2.OpenDevToolsWindow();
             await this.mainController.BackgroundNavigationCompleted(sender, args);
         }
 
@@ -69,7 +68,6 @@ namespace passbolt
         /// </summary>
         private void Rendered_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-            webviewRendered.CoreWebView2.OpenDevToolsWindow();
             this.mainController.RenderedNavigationCompleted(sender, args);
         }
     }

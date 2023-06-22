@@ -50,7 +50,6 @@ class DesktopAuthenticateController {
     const loginUserService = new LoginUserService(apiClientOptions);
     await loginUserService.checkPassphrase(tempPassphrase)
     await loginUserService.login(tempPassphrase, true)
-    console.log(loginUserService.getCurrentUser())
     return loginUserService.getCurrentUser();
   }
 

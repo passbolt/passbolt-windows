@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
@@ -24,15 +24,23 @@ namespace passbolt.Models.Messaging
     {
         private List<string> topics = new List<string>();
         public RenderedTopic(WebView2 background, WebView2 rendered) : base(background, rendered) {
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AccountRecoveryTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(FavoriteTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(GroupTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ImportExportTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(LocaleTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(KeyringTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(PownedPasswordTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(PasswordGeneratorTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SecretTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ShareTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(TagTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
         }
 

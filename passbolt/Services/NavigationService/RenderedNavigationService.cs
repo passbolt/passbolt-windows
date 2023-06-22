@@ -34,9 +34,12 @@ namespace passbolt.Services.NavigationService
             base.allowedUrls = new List<Regex>()
         {
             new Regex(@pattern),
-            new Regex($"^https://{currentUrl}/(?:app/passwords/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})?$"),
+            new Regex($"^https://{currentUrl}/(?:app/passwords/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
             new Regex($"^https://{currentUrl}/app/passwords$"),
-            new Regex($"^https://{currentUrl}/(?:app/folders/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})?$"),
+            new Regex($"^https://{currentUrl}/(?:app/folders/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{currentUrl}/(?:app/groups/(view|edit)/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{currentUrl}/(?:app/users/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{currentUrl}/app/users$"),
             };
         }
     }

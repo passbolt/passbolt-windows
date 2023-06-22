@@ -36,6 +36,11 @@ export const userConfig = {
   "config": {
     "user.firstname": accountDto.first_name, 
     "user.lastname": accountDto.last_name, 
-    "user.username": accountDto.username
+    "user.username": accountDto.username,
+    "user.settings.trustedDomain": accountDto.domain, 
+    "user.settings.securityToken.code": "YUL",
+    "user.settings.securityToken.color": "#FF9800",
+    "user.settings.securityToken.textColor": "#000000",
+    "user.settings.trustedDomain": "https://www.passbolt.local",
   }
 }

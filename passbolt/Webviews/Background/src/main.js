@@ -24,10 +24,21 @@ import {ResourceEvents} from 'passbolt-browser-extension/src/all/background_page
 import {GroupEvents} from 'passbolt-browser-extension/src/all/background_page/event/groupEvents';
 import {FolderEvents} from 'passbolt-browser-extension/src/all/background_page/event/folderEvents';
 import {SecretEvents} from 'passbolt-browser-extension/src/all/background_page/event/secretEvents';
+import {ShareEvents} from 'passbolt-browser-extension/src/all/background_page/event/shareEvents';
 import {CommentEvents} from 'passbolt-browser-extension/src/all/background_page/event/commentEvents';
 import {ActionLogEvents} from 'passbolt-browser-extension/src/all/background_page/event/actionLogEvents';
 import {BACKGROUND_READY} from './enumerations/appEventEnumeration';
 import StorageService from './services/storageService';
+import {KeyringEvents} from 'passbolt-browser-extension/src/all/background_page/event/keyringEvents';
+import {TagEvents} from 'passbolt-browser-extension/src/all/background_page/event/tagEvents';
+import {FavoriteEvents} from 'passbolt-browser-extension/src/all/background_page/event/favoriteEvents';
+import {PownedPasswordEvents} from 'passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents';
+import {PasswordGeneratorEvents} from 'passbolt-browser-extension/src/all/background_page/event/passwordGeneratorEvents';
+import {ImportResourcesEvents} from 'passbolt-browser-extension/src/all/background_page/event/importResourcesEvents';
+import {AccountRecoveryEvents} from './events/accountRecoveryEvents';
+import AccountEntity from 'passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity';
+import {accountDto} from './data/mockStorage';
+
 /**
  * Represents the main class that sets up an event listener for the `message` event.
  * @class
@@ -45,18 +56,26 @@ export default class Main {
         this.storageService = new StorageService();
         this.initStorage();
         this.worker = {port: new IPCHandler()};
-        OrganizationSettingsEvents.listen(this.worker);
-        ConfigEvents.listen(this.worker);
-        LocaleEvents.listen(this.worker);
-        RoleEvents.listen(this.worker);
-        ResourceTypeEvents.listen(this.worker);
-        ResourceEvents.listen(this.worker);
-        GroupEvents.listen(this.worker);
-        UserEvents.listen(this.worker);
-        FolderEvents.listen(this.worker);
-        SecretEvents.listen(this.worker);
-        CommentEvents.listen(this.worker);
+        AccountRecoveryEvents.listen(this.worker, new AccountEntity(accountDto));
         ActionLogEvents.listen(this.worker);
+        CommentEvents.listen(this.worker);
+        ConfigEvents.listen(this.worker);
+        FavoriteEvents.listen(this.worker);
+        FolderEvents.listen(this.worker);
+        GroupEvents.listen(this.worker);
+        ImportResourcesEvents.listen(this.worker);
+        KeyringEvents.listen(this.worker);
+        LocaleEvents.listen(this.worker);
+        OrganizationSettingsEvents.listen(this.worker);
+        PasswordGeneratorEvents.listen(this.worker);
+        ResourceEvents.listen(this.worker);
+        ResourceTypeEvents.listen(this.worker);
+        RoleEvents.listen(this.worker);
+        SecretEvents.listen(this.worker);
+        ShareEvents.listen(this.worker);
+        TagEvents.listen(this.worker);
+        UserEvents.listen(this.worker);
+        PownedPasswordEvents.listen(this.worker);
         this.initMainCommunication(webview);
     }
 

@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="7" failures="0" errors="0" time="7.541">
-  <testsuite name="Main class" errors="0" failures="0" skipped="0" timestamp="2023-05-25T06:19:43" time="5.764" tests="7">
-    <testcase classname="Main class should listen to authenticate eveent" name="Main class should listen to authenticate eveent" time="0.086">
+<testsuites name="jest tests" tests="7" failures="0" errors="0" time="11.027">
+  <testsuite name="DesktopAuthenticateController" errors="0" failures="0" skipped="6" timestamp="2023-06-15T06:05:59" time="8.265" tests="7">
+    <testcase classname="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:_exec should post message with USER_LOGGED_IN topic if exec succeeds and return config" name="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:_exec should post message with USER_LOGGED_IN topic if exec succeeds and return config" time="0">
+      <skipped/>
     </testcase>
-    <testcase classname="Main class should listen to the browser extension events" name="Main class should listen to the browser extension events" time="0.022">
+    <testcase classname="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:_exec should post message with ERROR topic and error message if exec fails" name="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:_exec should post message with ERROR topic and error message if exec fails" time="0">
+      <skipped/>
     </testcase>
-    <testcase classname="Main class should initialize the local storage and post a message" name="Main class should initialize the local storage and post a message" time="0.106">
+    <testcase classname="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:exec should initiate configuration" name="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:exec should initiate configuration" time="0">
+      <skipped/>
     </testcase>
-    <testcase classname="Main class should not initialize the local storage if user exist and post a message" name="Main class should not initialize the local storage if user exist and post a message" time="0.085">
+    <testcase classname="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:exec should build apiclientoptions with GetLegacyAccountService" name="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:exec should build apiclientoptions with GetLegacyAccountService" time="0">
+      <skipped/>
     </testcase>
-    <testcase classname="Main class should send an event when localstorage is updated" name="Main class should send an event when localstorage is updated" time="0.012">
+    <testcase classname="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:exec should check and validate the passphrase" name="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:exec should check and validate the passphrase" time="0">
+      <skipped/>
     </testcase>
-    <testcase classname="Main class should send an event when localstorage is delete" name="Main class should send an event when localstorage is delete" time="0.008">
+    <testcase classname="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:exec should login and persist the passphrase" name="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:exec should login and persist the passphrase" time="0">
+      <skipped/>
     </testcase>
-    <testcase classname="Main class should send an event when localstorage is cleared" name="Main class should send an event when localstorage is cleared" time="0.015">
+    <testcase classname="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:exec should return passbolt data without sensible data inside" name="DesktopAuthenticateController DesktopAuthenticateController DesktopAuthenticateController:exec should return passbolt data without sensible data inside" time="0.443">
     </testcase>
   </testsuite>
 </testsuites>

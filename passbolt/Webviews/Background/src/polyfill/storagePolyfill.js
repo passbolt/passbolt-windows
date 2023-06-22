@@ -35,10 +35,10 @@ class StoragePolyfill {
                         const keys = Object.keys(storage);
                         const values = Object.values(storage);
                         localStorage.setItem(keys[0], JSON.stringify(values[0]));
-                        this.onStorageChanges(keys[0])
+                        this.onStorageChanges(keys[0], JSON.stringify(values[0]))
                     } else {
                         localStorage.setItem(storage, value);
-                        this.onStorageChanges(storage)
+                        this.onStorageChanges(storage, value)
                     }
                 },
                 remove: (key) => {
@@ -104,9 +104,9 @@ class StoragePolyfill {
      * @param {string} key 
      * @returns 
      */
-    onStorageChanges(key) {
+    onStorageChanges(key, value) {
         if(key != "_passbolt_data") {
-            window.chrome.webview.postMessage(JSON.stringify({ topic: LOCALSTORAGE_UPDATE, message: key}));
+            window.chrome.webview.postMessage(JSON.stringify({ topic: LOCALSTORAGE_UPDATE, message: {key, value}}));
         }
     }
 }

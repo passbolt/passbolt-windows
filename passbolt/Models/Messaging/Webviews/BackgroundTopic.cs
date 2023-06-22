@@ -13,14 +13,15 @@
  */
 
 using Microsoft.UI.Xaml.Controls;
-using Newtonsoft.Json.Linq;
 using passbolt.Exceptions;
 using passbolt.Models.Messaging.Topics;
+using passbolt.Services.CredentialLockerService;
 using passbolt.Services.LocalStorage;
 using passbolt.Services.NavigationService;
+using passbolt.Services.WebviewService;
 using passbolt.Utils;
 using System;
-using System.ServiceModel.Channels;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 
 namespace passbolt.Models.Messaging
@@ -28,8 +29,13 @@ namespace passbolt.Models.Messaging
     public class BackgroundTopic : WebviewTopic
     {
         private LocalStorageService localStorageService;
+        private BackgroundWebviewService backgroundWebviewService;
+        private RenderedWebviewService renderedWebviewService;
+
         public BackgroundTopic(WebView2 background, WebView2 rendered) : base(background, rendered) {
             localStorageService = new LocalStorageService();
+            backgroundWebviewService = new BackgroundWebviewService(background.CoreWebView2);
+            renderedWebviewService = new RenderedWebviewService(rendered.CoreWebView2);
         }
 
         /// <summary>
@@ -44,18 +50,20 @@ namespace passbolt.Models.Messaging
                     background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AuthenticationTopics.DESKTOPAUTHENTICATE)));
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_UPDATE:
-                    await this.localStorageService.LoadLocalStorage(background, rendered, (string) ipc.message) ;
+                    var iptopic = new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_UPDATE, SerializationHelper.SerializeToJson(ipc.message));
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_UPDATE, SerializationHelper.SerializeToJson(ipc.message))));
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_DELETE:
-                    await this.localStorageService.RemoveLocalStorage(rendered, (string)ipc.message);
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_DELETE, (string) ipc.message)));
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_CLEAR:
-                    await this.localStorageService.ClearLocalStorage(rendered);
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_CLEAR)));
                     break;
                 case AuthenticationTopics.AFTERLOGIN:
                     rendered.Visibility = Visibility.Visible;
                     rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index.html"));
                     localStorageService.InitPassboltData(rendered, SerializationHelper.SerializeToJson(ipc.message));
+                    await this.InitRenderedCSP();
                     break;
                 case ProgressTopics.PROGRESSCLOSEDIALOG:
                 case ProgressTopics.PROGRESSUPDATE:
@@ -75,6 +83,17 @@ namespace passbolt.Models.Messaging
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
                     break;
             }
+        }
+
+        /// <summary>
+        /// init the rendered webview CSP after initialisation
+        /// </summary>
+        private async Task InitRenderedCSP()
+        {
+            var credentialLockerService = new CredentialLockerService();
+            var trustedDomain = await this.backgroundWebviewService.GetTrustedDomain();
+            var renderedUrl = (await credentialLockerService.GetApplicationConfiguration()).renderedUrl;
+            this.renderedWebviewService.initRenderedCSP(trustedDomain, renderedUrl);
         }
     }
 }
