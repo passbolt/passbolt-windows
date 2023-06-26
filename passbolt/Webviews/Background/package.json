@@ -31,7 +31,7 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
-    "passbolt-browser-extension": "4.0.1",
+    "passbolt-browser-extension": "github:passbolt/passbolt_browser_extension#desktop-bext",
     "setimmediate": "^1.0.5",
     "stream-browserify": "^3.0.0"
   }
