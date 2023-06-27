@@ -157,7 +157,7 @@ Then into your background webview :
 
 ``
 cd passbolt/Webviews/Background
-npm i
+npm link passbolt-browser-extension
 ``
 
 <u>Note</u>: Make sure that the version of the browser extension into your package.json match with the browser extension project.
