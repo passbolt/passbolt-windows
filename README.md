@@ -141,7 +141,7 @@ It will return the user id of the current user.
 
 ### Trouble shooting
 - I have changed the current user but the last is still present :
-Rebuild you Background webview with the mocked user.
+Webview are built with the previous user, it is the reason why you still have the previous user. Rebuild you Background webview with the mocked user.
 - I have started the application, visual studio failed when calling API
  In case of https, it not accept to have an untrusted certificate. You have to trust the certificate of your API.
 
