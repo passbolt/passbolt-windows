@@ -26,16 +26,15 @@ class StorageService {
      * init the passbolt configuration storage
      */
     async initPassboltData() {
-        if (localStorage.getItem('_passbolt_data') === null) {
-            try {
-                localStorage.setItem("_passbolt_data", JSON.stringify({}))
-                const accountModel = new AccountModel();
-                const account = new AccountEntity(accountDto);
-                await accountModel.add(account);
-            } catch (error) {
-                console.error(error)
-            }
+        try {
+            localStorage.setItem("_passbolt_data", JSON.stringify({}))
+            const accountModel = new AccountModel();
+            const account = new AccountEntity(accountDto);
+            await accountModel.add(account);
+        } catch (error) {
+            console.error(error)
         }
+
         let metaCSP = document.querySelector('meta[http-equiv=\"Content-Security-Policy\"]');
         metaCSP = document.createElement('meta');
         metaCSP.setAttribute('http-equiv', 'Content-Security-Policy');
