@@ -31,6 +31,18 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         }
 
         [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedMainTopics()
+        {
+            bool error = AllowedTopics.IsTopicNameAllowed(AllowedTopics.ERROR);
+            bool downloadFile = AllowedTopics.IsTopicNameAllowed(AllowedTopics.BACKGROUND_DOWNLOAD_FILE);
+            bool backgroundReady = AllowedTopics.IsTopicNameAllowed(AllowedTopics.BACKGROUND_READY);
+
+            Assert.IsTrue(error);
+            Assert.IsTrue(backgroundReady);
+            Assert.IsTrue(downloadFile);
+        }
+
+        [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedFolderTopics()
         {
             bool findAllFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.FIND_ALL);

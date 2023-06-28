@@ -20,9 +20,10 @@ namespace passbolt.Models.Messaging
 {
     public class AllowedTopics
     {
-        public const string ERROR = "passbolt.error";
+        public const string ERROR = "passbolt.error";
         public const string BACKGROUND_READY = "passbolt.background.is-ready";
-        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR };
+        public const string BACKGROUND_DOWNLOAD_FILE = "passbolt.background.download-file";
+        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR , BACKGROUND_DOWNLOAD_FILE };
         private static List<string> requestIds = new List<string>();
 
         /// <summary>

@@ -18,4 +18,5 @@ export const ERROR = "passbolt.error";
 export const LOCALSTORAGE_UPDATE = "passbolt.background.localstorage-update";
 export const LOCALSTORAGE_DELETE = "passbolt.background.localstorage-delete";
 export const LOCALSTORAGE_CLEAR = "passbolt.background.localstorage-clear";
+export const DOWNLOAD_FILE = "passbolt.background.download-file";
 
