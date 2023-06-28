@@ -36,6 +36,7 @@ import {PownedPasswordEvents} from 'passbolt-browser-extension/src/all/backgroun
 import {PasswordGeneratorEvents} from 'passbolt-browser-extension/src/all/background_page/event/passwordGeneratorEvents';
 import {ImportResourcesEvents} from 'passbolt-browser-extension/src/all/background_page/event/importResourcesEvents';
 import {AccountRecoveryEvents} from './events/accountRecoveryEvents';
+import {ExportResourcesEvents} from './events/exportResourcesEvents';
 import AccountEntity from 'passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity';
 import {accountDto} from './data/mockStorage';
 
@@ -60,6 +61,7 @@ export default class Main {
         ActionLogEvents.listen(this.worker);
         CommentEvents.listen(this.worker);
         ConfigEvents.listen(this.worker);
+        ExportResourcesEvents.listen(this.worker);
         FavoriteEvents.listen(this.worker);
         FolderEvents.listen(this.worker);
         GroupEvents.listen(this.worker);

@@ -14,8 +14,10 @@
 
 using Microsoft.UI.Xaml.Controls;
 using passbolt.Exceptions;
+using passbolt.Models.Files;
 using passbolt.Models.Messaging.Topics;
 using passbolt.Services.CredentialLockerService;
+using passbolt.Services.DownloadService;
 using passbolt.Services.LocalStorage;
 using passbolt.Services.NavigationService;
 using passbolt.Services.WebviewService;
@@ -48,6 +50,10 @@ namespace passbolt.Models.Messaging
             {
                 case AllowedTopics.BACKGROUND_READY:
                     background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AuthenticationTopics.DESKTOPAUTHENTICATE)));
+                    break;
+                case AllowedTopics.BACKGROUND_DOWNLOAD_FILE:
+                    var downloadService = new DownloadService();
+                    await downloadService.Download(ipc);
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_UPDATE:
                     var iptopic = new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_UPDATE, SerializationHelper.SerializeToJson(ipc.message));
@@ -95,5 +101,6 @@ namespace passbolt.Models.Messaging
             var renderedUrl = (await credentialLockerService.GetApplicationConfiguration()).renderedUrl;
             this.renderedWebviewService.initRenderedCSP(trustedDomain, renderedUrl);
         }
+
     }
 }
