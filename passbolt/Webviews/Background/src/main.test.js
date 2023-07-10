@@ -17,7 +17,6 @@ import Main from "./main";
 import {AuthEvents} from "./events/authEvents";
 import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
-import {UserEvents} from "passbolt-browser-extension/src/all/background_page/event/userEvents";
 import {LocaleEvents} from "passbolt-browser-extension/src/all/background_page/event/localeEvents";
 import {RoleEvents} from "passbolt-browser-extension/src/all/background_page/event/roleEvents";
 import {ResourceTypeEvents} from "passbolt-browser-extension/src/all/background_page/event/resourceTypeEvents";
@@ -36,7 +35,9 @@ import {TagEvents} from "passbolt-browser-extension/src/all/background_page/even
 import {PasswordGeneratorEvents} from "passbolt-browser-extension/src/all/background_page/event/passwordGeneratorEvents";
 import {ImportResourcesEvents} from "passbolt-browser-extension/src/all/background_page/event/importResourcesEvents";
 import {PownedPasswordEvents} from "passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents";
+import {RbacEvents} from "./events/rbacEvents";
 import {AccountRecoveryEvents} from "./events/accountRecoveryEvents";
+import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
 
 describe("Main class", () => {
   const ipcDataMock = {
@@ -65,21 +66,21 @@ describe("Main class", () => {
     expect.assertions(2);
 
     jest.spyOn(AuthEvents, "listen");
-    new Main(window.chrome.webview);
+
+    const main = new Main(window.chrome.webview);
     const callback = window.chrome.webview.addEventListener.mock.calls[0][1];
     callback(ipcDataMock);
 
     expect(window.chrome.webview.addEventListener).toHaveBeenCalledWith('message', expect.any(Function));
-    expect(AuthEvents.listen).toHaveBeenCalledWith(ipcDataMock.data);
+    expect(AuthEvents.listen).toHaveBeenCalledWith(main.worker, ipcDataMock.data);
   });
 
 
   it('should listen to the browser extension events', () => {
-    expect.assertions(20);
+    expect.assertions(21);
 
     jest.spyOn(OrganizationSettingsEvents, "listen");
     jest.spyOn(ConfigEvents, "listen");
-    jest.spyOn(UserEvents, "listen");
     jest.spyOn(LocaleEvents, "listen");
     jest.spyOn(RoleEvents, "listen");
     jest.spyOn(ResourceTypeEvents, "listen");
@@ -96,6 +97,8 @@ describe("Main class", () => {
     jest.spyOn(PasswordGeneratorEvents, "listen");
     jest.spyOn(TagEvents, "listen");
     jest.spyOn(PownedPasswordEvents, "listen");
+    jest.spyOn(RbacEvents, "listen");
+    jest.spyOn(AccountRecoveryEvents, "listen")
 
     main = new Main(window.chrome.webview);
     const callback = window.chrome.webview.addEventListener.mock.calls[0][1];
@@ -104,7 +107,6 @@ describe("Main class", () => {
     expect(window.chrome.webview.addEventListener).toHaveBeenCalledWith('message', expect.any(Function));
     expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(UserEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(ResourceTypeEvents.listen).toHaveBeenCalledWith(main.worker);
@@ -121,6 +123,8 @@ describe("Main class", () => {
     expect(PasswordGeneratorEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(TagEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(PownedPasswordEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(RbacEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(AccountRecoveryEvents.listen).toHaveBeenCalledWith(main.worker,  new AccountEntity(accountDto));
   });
 
   it('should initialize the local storage and post a message', async () => {

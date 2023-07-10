@@ -189,6 +189,14 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         }
 
         [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedRbacTopics()
+        {
+            bool findMe = AllowedTopics.IsTopicNameAllowed(RbacTopics.FIND_ME);
+
+            Assert.IsTrue(findMe);
+        }
+
+        [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedAuthenticationTopics()
         {
             bool afterLogin = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.AFTERLOGIN);

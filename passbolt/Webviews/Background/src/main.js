@@ -16,7 +16,6 @@ import {AuthEvents} from './events/authEvents';
 import IPCHandler from './shared/IPCHandler';
 import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
-import {UserEvents} from "passbolt-browser-extension/src/all/background_page/event/userEvents";
 import {LocaleEvents} from "passbolt-browser-extension/src/all/background_page/event/localeEvents";
 import {RoleEvents} from 'passbolt-browser-extension/src/all/background_page/event/roleEvents';
 import {ResourceTypeEvents} from 'passbolt-browser-extension/src/all/background_page/event/resourceTypeEvents';
@@ -39,6 +38,7 @@ import {AccountRecoveryEvents} from './events/accountRecoveryEvents';
 import {ExportResourcesEvents} from './events/exportResourcesEvents';
 import AccountEntity from 'passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity';
 import {accountDto} from './data/mockStorage';
+import {RbacEvents} from './events/rbacEvents';
 
 /**
  * Represents the main class that sets up an event listener for the `message` event.
@@ -76,7 +76,6 @@ export default class Main {
         SecretEvents.listen(this.worker);
         ShareEvents.listen(this.worker);
         TagEvents.listen(this.worker);
-        UserEvents.listen(this.worker);
         PownedPasswordEvents.listen(this.worker);
         this.initMainCommunication(webview);
     }
@@ -88,7 +87,7 @@ export default class Main {
      */
     initMainCommunication(webview) {
         webview.addEventListener("message", (ipc) => {
-            AuthEvents.listen(ipc.data)
+            AuthEvents.listen(this.worker, ipc.data)
         });
     }
 

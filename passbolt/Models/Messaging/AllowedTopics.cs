@@ -12,10 +12,14 @@
  * @since         0.0.1
  */
 
-using System.Collections.Generic;
-using passbolt.Models.Messaging.Topics;
-using passbolt.Utils;
-
+using System.Collections.Generic;
+
+using passbolt.Models.Messaging.Topics;
+
+using passbolt.Utils;
+
+
+
 namespace passbolt.Models.Messaging
 {
     public class AllowedTopics
@@ -32,10 +36,12 @@ namespace passbolt.Models.Messaging
         static AllowedTopics()
         {
             InitTopics();
-        }
+        }
+
         /// <summary>
         /// init topics list with all topics
-        /// </summary>
+        /// </summary>
+
         private static void InitTopics()
         {
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
@@ -52,13 +58,15 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(PownedPasswordTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(PasswordGeneratorTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ProgressTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(RbacTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SecretTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ShareTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(TagTopics)));
-            topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));        }
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
+        }
 
         /// <summary>
         /// Retrieve all allowed topics

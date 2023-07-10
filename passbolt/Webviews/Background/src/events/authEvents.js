@@ -14,19 +14,19 @@
 
 import DesktopAuthenticateController from "../controllers/desktopAuthenticateController";
 
-const listen = function (worker) {
+const listen = function (worker, ipc) {
   /*
    * Attempt to login the current user.
    *
    * @listens passbolt.desktop.authenticate
    */
-  switch (worker.topic) {
+  switch (ipc.topic) {
     case "passbolt.desktop.authenticate":
       const controller = new DesktopAuthenticateController();
-      controller._exec();
+      controller._exec(worker);
       break;
     default:
-      console.log(`Unsupported topic: ${worker.topic}`)
+      console.log(`Unsupported topic: ${ipc.topic}`)
       break;
   }
 }

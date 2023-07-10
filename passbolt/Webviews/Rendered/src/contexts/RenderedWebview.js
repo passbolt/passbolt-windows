@@ -13,7 +13,7 @@
  */
 
 import {withRouter} from "react-router-dom";
-import {withAppContext} from "passbolt-styleguide/src/react-extension/contexts/AppContext";
+import {withAppContext} from "passbolt-styleguide/src/shared/context/AppContext/AppContext";
 import {ResourceWorkspaceFilterTypes, withResourceWorkspace} from "passbolt-styleguide/src/react-extension/contexts/ResourceWorkspaceContext";
 import React from "react";
 import PropTypes from "prop-types";

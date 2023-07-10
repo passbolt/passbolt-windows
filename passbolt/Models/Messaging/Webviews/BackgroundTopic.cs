@@ -56,7 +56,6 @@ namespace passbolt.Models.Messaging
                     await downloadService.Download(ipc);
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_UPDATE:
-                    var iptopic = new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_UPDATE, SerializationHelper.SerializeToJson(ipc.message));
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_UPDATE, SerializationHelper.SerializeToJson(ipc.message))));
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_DELETE:
