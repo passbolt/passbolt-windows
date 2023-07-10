@@ -25,13 +25,17 @@ import {mockApiResponse} from "passbolt-browser-extension/test/mocks/mockApiResp
 import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import BuildApiClientOptionsService from "passbolt-browser-extension/src/all/background_page/service/account/buildApiClientOptionsService";
 import LoginUserService from "../services/loginUserService";
+import IPCHandler from "../shared/IPCHandler";
+import { UserEvents } from "passbolt-browser-extension/src/all/background_page/event/userEvents";
 
 describe('DesktopAuthenticateController', () => {
   let desktopAuthenticateController;
-  let storageService
+  let storageService;
+  let worker;
 
   beforeEach(async () => {
     enableFetchMocks();
+    worker = {port: new IPCHandler()};
     jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => legacyResult);    
     fetch.doMockIf(/users\/csrf-token.json/, () =>  mockApiResponse("csrf-token"))
     jest.spyOn(AuthModel.prototype, 'login').mockResolvedValue();
@@ -48,7 +52,7 @@ describe('DesktopAuthenticateController', () => {
         expect.assertions(2);
 
         jest.spyOn(desktopAuthenticateController, 'exec').mockResolvedValue(userConfig);
-        await desktopAuthenticateController._exec();
+        await desktopAuthenticateController._exec(worker);
 
         expect(desktopAuthenticateController.exec).toHaveBeenCalled();
         expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: USER_LOGGED_IN, message: JSON.stringify(userConfig) }));
@@ -60,7 +64,7 @@ describe('DesktopAuthenticateController', () => {
 
         const error = new Error('Some error');
         jest.spyOn(desktopAuthenticateController, 'exec').mockRejectedValue(error);
-        await desktopAuthenticateController._exec();
+        await desktopAuthenticateController._exec(worker);
 
         expect(desktopAuthenticateController.exec).toHaveBeenCalled();
         expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: ERROR, message: error }));
@@ -72,7 +76,7 @@ describe('DesktopAuthenticateController', () => {
 
         jest.spyOn(Config, "init")
         
-        await desktopAuthenticateController.exec();
+        await desktopAuthenticateController.exec(worker);
 
         expect(Config.init).toHaveBeenCalled();
         expect(Config.readAll()).toEqual(passboltData)
@@ -82,7 +86,7 @@ describe('DesktopAuthenticateController', () => {
         expect.assertions(1);
         jest.spyOn(BuildApiClientOptionsService, "buildFromDomain")
 
-        await desktopAuthenticateController.exec();
+        await desktopAuthenticateController.exec(worker);
 
         expect(BuildApiClientOptionsService.buildFromDomain).toHaveBeenCalledWith(legacyResult.domain);
       })
@@ -91,7 +95,7 @@ describe('DesktopAuthenticateController', () => {
         expect.assertions(1);
         jest.spyOn(LoginUserService.prototype, "checkPassphrase")
 
-        await desktopAuthenticateController.exec();
+        await desktopAuthenticateController.exec(worker);
 
         expect(LoginUserService.prototype.checkPassphrase).toHaveBeenCalledWith(tempPassphrase);
       })
@@ -100,7 +104,7 @@ describe('DesktopAuthenticateController', () => {
         expect.assertions(1);
         jest.spyOn(LoginUserService.prototype, "login")
 
-        await desktopAuthenticateController.exec();
+        await desktopAuthenticateController.exec(worker);
         
         expect(LoginUserService.prototype.login).toHaveBeenCalledWith(tempPassphrase, true);
       })
@@ -108,9 +112,18 @@ describe('DesktopAuthenticateController', () => {
       it('should return passbolt data without sensible data inside', async () => {
         expect.assertions(1);
 
-        const config = await desktopAuthenticateController.exec();
+        const config = await desktopAuthenticateController.exec(worker);
         
         expect(config).toEqual(userConfig);
+      })
+
+      it('should listen to UserEvents when user is authenticated', async () => {
+        expect.assertions(1);
+        
+        jest.spyOn(UserEvents, "listen");
+        const config = await desktopAuthenticateController.exec(worker);
+        
+        expect(UserEvents.listen).toHaveBeenCalled();
       })
     });
 

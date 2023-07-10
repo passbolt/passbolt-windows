@@ -18,6 +18,8 @@ import GetLegacyAccountService from "passbolt-browser-extension/src/all/backgrou
 import {tempPassphrase} from "../data/mockStorage";
 import {USER_LOGGED_IN, ERROR} from "../enumerations/appEventEnumeration";
 import LoginUserService from "../services/loginUserService";
+import { UserEvents } from "passbolt-browser-extension/src/all/background_page/event/userEvents";
+import { RbacEvents } from "../events/rbacEvents";
 
 /**
  * Controller related to the desktop authentication
@@ -29,9 +31,9 @@ class DesktopAuthenticateController {
    *
    * @return {Promise<void>}
    */
-  async _exec() {
+  async _exec(worker) {
     try {
-      const config = await this.exec();
+      const config = await this.exec(worker);
       window.chrome.webview.postMessage(JSON.stringify({ topic: USER_LOGGED_IN, message: JSON.stringify(config) }));
     } catch (error) {
       window.chrome.webview.postMessage(JSON.stringify({ topic: ERROR, message: error }));
@@ -43,13 +45,16 @@ class DesktopAuthenticateController {
    * 
    * @return {Promise<void>}
    */
-  async exec() {
+  async exec(worker) {
     await Config.init();
     const result = await GetLegacyAccountService.get();
     const apiClientOptions = await BuildApiClientOptionsService.buildFromDomain(result.domain);
     const loginUserService = new LoginUserService(apiClientOptions);
     await loginUserService.checkPassphrase(tempPassphrase)
     await loginUserService.login(tempPassphrase, true)
+    const account = await GetLegacyAccountService.get({role: true});
+    RbacEvents.listen(worker, account);
+    UserEvents.listen(worker, account)
     return loginUserService.getCurrentUser();
   }
 

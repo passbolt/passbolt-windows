@@ -28,7 +28,9 @@ class IPCHandler {
      */
     initListener() {
         window.chrome.webview.addEventListener("message", (event) => {
-            this._onMessage(event);
+            if(event) {
+                this._onMessage(event);
+            }
         });
     }
 
