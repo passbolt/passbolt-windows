@@ -14,17 +14,15 @@
 
 using Microsoft.UI.Xaml.Controls;
 using passbolt.Exceptions;
-using passbolt.Models.Files;
 using passbolt.Models.Messaging.Topics;
 using passbolt.Services.CredentialLockerService;
 using passbolt.Services.DownloadService;
+using passbolt.Services.LocalFolder;
 using passbolt.Services.LocalStorage;
 using passbolt.Services.NavigationService;
 using passbolt.Services.WebviewService;
 using passbolt.Utils;
 using System;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
 
 namespace passbolt.Models.Messaging
 {
@@ -33,11 +31,14 @@ namespace passbolt.Models.Messaging
         private LocalStorageService localStorageService;
         private BackgroundWebviewService backgroundWebviewService;
         private RenderedWebviewService renderedWebviewService;
+        private CredentialLockerService credentialLockerService;
 
-        public BackgroundTopic(WebView2 background, WebView2 rendered) : base(background, rendered) {
+        public BackgroundTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService) : base(background, rendered, localFolderService)
+        {
             localStorageService = new LocalStorageService();
             backgroundWebviewService = new BackgroundWebviewService(background.CoreWebView2);
             renderedWebviewService = new RenderedWebviewService(rendered.CoreWebView2);
+            credentialLockerService = new CredentialLockerService();
         }
 
         /// <summary>
@@ -46,10 +47,12 @@ namespace passbolt.Models.Messaging
         /// <param name="ipc"></param>
         public async override void ProceedMessage(IPC ipc)
         {
+            var accountMetaData = await this.credentialLockerService.GetAccountMetadata();
+
             switch (ipc.topic)
             {
                 case AllowedTopics.BACKGROUND_READY:
-                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AuthenticationTopics.DESKTOPAUTHENTICATE)));
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_READY)));
                     break;
                 case AllowedTopics.BACKGROUND_DOWNLOAD_FILE:
                     var downloadService = new DownloadService();
@@ -59,16 +62,26 @@ namespace passbolt.Models.Messaging
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_UPDATE, SerializationHelper.SerializeToJson(ipc.message))));
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_DELETE:
-                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_DELETE, (string) ipc.message)));
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_DELETE, (string)ipc.message)));
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_CLEAR:
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_CLEAR)));
                     break;
-                case AuthenticationTopics.AFTERLOGIN:
-                    rendered.Visibility = Visibility.Visible;
-                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index.html"));
-                    localStorageService.InitPassboltData(rendered, SerializationHelper.SerializeToJson(ipc.message));
-                    await this.InitRenderedCSP();
+                case AuthenticationTopics.LOG_OUT:
+                    await localFolderService.RemoveFile("Rendered", "index-workspace.html");
+                    await localFolderService.RemoveFile("Background", "index-workspace.html");
+                    await localFolderService.CreateRenderedIndex("index-auth.html", "rendered-auth", "ext_authentication.min.css", accountMetaData.domain);
+                    await localFolderService.CreateBackgroundIndex("index-auth.html", "background-auth", accountMetaData.domain);
+                    background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-auth.html"));
+                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-auth.html"));
+                    break;
+                case AuthenticationTopics.AFTER_LOGIN:
+                    await localFolderService.RemoveFile("Rendered", "index-auth.html");
+                    await localFolderService.RemoveFile("Background", "index-auth.html");
+                    await localFolderService.CreateRenderedIndex("index-workspace.html", "rendered-workspace", "ext_app.min.css", accountMetaData.domain);
+                    await localFolderService.CreateBackgroundIndex("index-workspace.html", "background-workspace", accountMetaData.domain);
+                    background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-workspace.html"));
+                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-workspace.html"));
                     break;
                 case ProgressTopics.PROGRESSCLOSEDIALOG:
                 case ProgressTopics.PROGRESSUPDATE:
@@ -88,17 +101,6 @@ namespace passbolt.Models.Messaging
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
                     break;
             }
-        }
-
-        /// <summary>
-        /// init the rendered webview CSP after initialisation
-        /// </summary>
-        private async Task InitRenderedCSP()
-        {
-            var credentialLockerService = new CredentialLockerService();
-            var trustedDomain = await this.backgroundWebviewService.GetTrustedDomain();
-            var renderedUrl = (await credentialLockerService.GetApplicationConfiguration()).renderedUrl;
-            this.renderedWebviewService.initRenderedCSP(trustedDomain, renderedUrl);
         }
 
     }

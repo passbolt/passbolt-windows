@@ -55,6 +55,8 @@ class IPCHandler {
                 } else if (event.status) {
                     let args = Array.isArray(event.message) ? [event.status, ...event.message] : [event.status, event.message];
                     listener.callback.apply(this, args);
+                }  else {
+                    listener.callback.apply(this, [event.message]);
                 }
                 if (listener.once) {
                     this._listeners[eventName].splice(i, 1);
@@ -116,13 +118,23 @@ class IPCHandler {
         let ipc;
 
         if (typeof requestArgs[0] === 'string') {
+            let status, message;
+
+            if (requestArgs[1] === 'SUCCESS' || requestArgs[1] === 'ERROR') {
+                status = requestArgs[1];
+                message = requestArgs.length > 2 ? requestArgs[2] : null;
+            } else {
+                status = null;
+                message = requestArgs[1];
+            }
+            
             ipc = {
                 topic: requestArgs[0],
-                status: requestArgs[1],
-                message: requestArgs.length > 2 ? requestArgs[2] : null
+                status,
+                message
             }
         } else {
-            ipc = requestArgs[0];
+            ipc = requestArgs
         }
         window.chrome.webview.postMessage(JSON.stringify(ipc));
     }
@@ -133,7 +145,8 @@ class IPCHandler {
      * @param args the arguments
      * @return Promise
      */
-    request(message, ...args) {
+    request(message, args) {
+        
         // Generate a request id that will be used by the addon to answer this request.
         const requestId = uuidv4();
         // Add the requestId to the request parameters.

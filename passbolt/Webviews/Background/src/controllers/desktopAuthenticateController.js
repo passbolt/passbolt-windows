@@ -15,47 +15,56 @@
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
 import BuildApiClientOptionsService from "passbolt-browser-extension/src/all/background_page/service/account/buildApiClientOptionsService";
 import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
-import {tempPassphrase} from "../data/mockStorage";
-import {USER_LOGGED_IN, ERROR} from "../enumerations/appEventEnumeration";
+import {USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
 import LoginUserService from "../services/loginUserService";
-import { UserEvents } from "passbolt-browser-extension/src/all/background_page/event/userEvents";
-import { RbacEvents } from "../events/rbacEvents";
 
 /**
  * Controller related to the desktop authentication
  */
 class DesktopAuthenticateController {
 
+    /**
+   * DesktopAuthenticateController constructor
+   * @param {Worker} worker
+   */
+    constructor(worker, requestId, apiClientOptions) {
+      this.worker = worker;
+      this.requestId = requestId;
+      this.apiClientOptions = apiClientOptions;
+    }
+  
+
   /**
    * Wrapper of exec function to run.
    *
    * @return {Promise<void>}
    */
-  async _exec(worker) {
+  async _exec(passphrase) {
     try {
-      const config = await this.exec(worker);
-      window.chrome.webview.postMessage(JSON.stringify({ topic: USER_LOGGED_IN, message: JSON.stringify(config) }));
+      await this.exec(passphrase);
+      this.worker.port.emit(this.requestId, 'SUCCESS');
     } catch (error) {
-      window.chrome.webview.postMessage(JSON.stringify({ topic: ERROR, message: error }));
+      console.error(error)
+      this.worker.port.emit(this.requestId, 'ERROR', error);
     }
   }
 
   /**
    * Attemps to sign in the current user.
-   * 
+   * @param {string} passphrase the user passphrase
    * @return {Promise<void>}
    */
-  async exec(worker) {
+  async exec(passphrase) {
+    if (typeof passphrase !== "string") {
+      throw new TypeError("The passphrase should be a string.");
+    }
+    //Need to reinit configuration as we launch a new application
     await Config.init();
-    const result = await GetLegacyAccountService.get();
-    const apiClientOptions = await BuildApiClientOptionsService.buildFromDomain(result.domain);
-    const loginUserService = new LoginUserService(apiClientOptions);
-    await loginUserService.checkPassphrase(tempPassphrase)
-    await loginUserService.login(tempPassphrase, true)
-    const account = await GetLegacyAccountService.get({role: true});
-    RbacEvents.listen(worker, account);
-    UserEvents.listen(worker, account)
-    return loginUserService.getCurrentUser();
+    const loginUserService = new LoginUserService(this.apiClientOptions);
+    await loginUserService.checkPassphrase(passphrase)
+    await loginUserService.login(passphrase, true)
+    //Send message to the UWP's main process to handle specific 'log in' process
+    this.worker.port.emit(USER_LOGGED_IN);
   }
 
 }

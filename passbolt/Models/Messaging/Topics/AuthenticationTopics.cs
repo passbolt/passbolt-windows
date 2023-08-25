@@ -17,8 +17,13 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class AuthenticationTopics
     {
-        public const string DESKTOPAUTHENTICATE = "passbolt.desktop.authenticate";
-        public const string AFTERLOGIN = "passbolt.auth.after-login";
-        public const string ISAUTHENTICATED = "passbolt.auth.is-authenticated";
+        public const string VERIFY_PASSPHRASE = "passbolt.auth.verify-passphrase";
+        public const string DESKTOP_AUTHENTICATE = "passbolt.auth.login";
+        public const string AFTER_LOGIN = "passbolt.auth.after-login";
+        public const string IS_AUTHENTICATED = "passbolt.auth.is-authenticated";
+        public const string VERIFY_SERVER = "passbolt.auth.verify-server-key";
+        public const string GET_SERVER_KEY = "passbolt.auth.get-server-key";
+        public const string SET_SERVER_KEY = "passbolt.auth.replace-server-key";
+        public const string LOG_OUT = "passbolt.auth.logout";
     }
 }

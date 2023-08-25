@@ -9,10 +9,10 @@
  * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
- * @since         0.0.1
+ * @since         0.0.3
  */
 
-import App from "./src/app";
+import AppWorkspace from "./src/AppWorkspace";
 import IPCHandler from "./src/shared/IPCHandler";
 import React from "react";
 import ReactDOM from "react-dom";
@@ -25,7 +25,7 @@ export async function main() {
     const storage = new WebviewStorage().storage;
     const domContainer = document.createElement("div");
     document.body.appendChild(domContainer);
-    ReactDOM.render(<App port={channel} storage={storage} />, domContainer);
+    ReactDOM.render(<AppWorkspace port={channel} storage={storage} />, domContainer);
 }
 
 main()

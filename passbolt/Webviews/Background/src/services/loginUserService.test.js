@@ -13,11 +13,9 @@
  */
 
 import UserAlreadyLoggedInError from "passbolt-browser-extension/src/all/background_page/error/userAlreadyLoggedInError";
-import CurrentUser from "../models/CurrentUser";
 import LoginUserService from "./loginUserService";
 import passphraseStorageService from "passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService";
 import PassboltData from "../models/passboltData";
-import Settings from "../models/settings";
 
 jest.mock('passbolt-browser-extension/src/all/background_page/model/auth/authModel');
 jest.mock('passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService');
@@ -67,17 +65,6 @@ describe("LoginUserService", () => {
               throw error;
             });
             await expect(service.login("secret", true)).rejects.toThrow(error);
-        });
-    })
-
-  
-    describe("getCurrentUser", () => {
-        it("should return current user data correctly", async () => {
-            const fakeData = '{"config": {"user.settings.trustedDomain":"https://www.passbolt.local"}}';
-            localStorage.setItem("_passbolt_data", fakeData);
-            const result = await service.getCurrentUser();
-            expect(result).toBeInstanceOf(PassboltData);
-            expect(result).toEqual(JSON.parse(fakeData));
         });
     })
 });

@@ -29,7 +29,7 @@ namespace passbolt.Services.NavigationService
         {
             this.currentUrl = currentUrl;
 
-            string pattern = $"^https://{this.currentUrl}/Rendered/index\\.html?$";
+            string pattern = $"^https://{this.currentUrl}/Rendered/(index-auth\\.html|index-workspace\\.html)$";
 
             base.allowedUrls = new List<Regex>()
         {

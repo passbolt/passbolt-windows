@@ -20,6 +20,7 @@ using passbolt.Controllers;
 using passbolt.Models.CredentialLocker;
 using passbolt.Services.CredentialLockerService;
 using passbolt.Services.NavigationService;
+using Windows.Storage;
 
 namespace passbolt_windows_tests.UnitTests
 {

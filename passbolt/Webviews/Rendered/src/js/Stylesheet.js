@@ -38,9 +38,8 @@
 
       this.theme = await this.getTheme();
       const cssFile = cssInfoTag.dataset.file;
-      const baseUrl = window.location.origin;
 
-      this.getLinkTag().setAttribute("href", `${baseUrl}/Rendered/dist/themes/${this.theme}/${cssFile}`);
+      this.getLinkTag().setAttribute("href", `https://rendered.dist/Rendered/dist/themes/${this.theme}/${cssFile}`);
     }
 
     async getStorage(key) {
@@ -67,7 +66,7 @@
     }
 
     handleStorageChange(changes) {
-      if (changes._passbolt_data && changes._passbolt_data.newValue.config) {
+      if (changes?._passbolt_data?.newValue?.config) {
         const config = changes._passbolt_data.newValue.config;
         if (config && this.theme !== config["user.settings.theme"] && this.isValidTheme(config["user.settings.theme"])) {
           this.theme = config["user.settings.theme"];

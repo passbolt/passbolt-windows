@@ -67,17 +67,6 @@ class LoginUserService {
       await passphraseStorageService.set(passphrase, -1);
     }
   }
-
-  /**
-   * get the config for current user
-   * @returns the config
-   */
-  async getCurrentUser() {
-    const passboltData = JSON.parse(localStorage.getItem("_passbolt_data"));
-    const currentUser = new CurrentUser(passboltData);
-    const settings = new Settings(passboltData);
-    return new PassboltData(currentUser, settings)
-  }
 }
 
 export default LoginUserService;

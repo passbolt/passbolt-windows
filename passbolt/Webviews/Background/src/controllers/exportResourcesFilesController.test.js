@@ -14,7 +14,6 @@
 
 import {resourceToExport} from "../services/exportResourcesFilesService.test.data";
 import ExportResourcesFileDesktopController from "./exportResourcesFilesController";
-import IPCHandler from "../shared/IPCHandler";
 import {defaultApiClientOptions} from "passbolt-browser-extension/src/all/background_page/service/api/apiClient/apiClientOptions.test.data";
 
 beforeEach(() => {
