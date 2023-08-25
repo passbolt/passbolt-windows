@@ -22,22 +22,23 @@ namespace passbolt_windows_tests.UnitTests.Services
     public class BackgroundNavigationServiceTests
     {
         private BackgroundNavigationService _navigationService;
-        private string url = "desktop.passbolt.com/Background";
 
         public BackgroundNavigationServiceTests()
         {
-            _navigationService = new BackgroundNavigationService("desktop.passbolt.com/Background");
+             BackgroundNavigationService.Instance.Initialize("desktop.passbolt.com");
         }
 
         [TestMethod]
         public void CanNavigate_ValidUrl_ReturnsTrue()
         {
-            string backgroundUrl = String.Concat("https://", url, "/index.html");
-            _navigationService = new BackgroundNavigationService(url);
+            string urlAuth = "https://desktop.passbolt.com/Background/index-auth.html";
+            string urlWorkspace = "https://desktop.passbolt.com/Background/index-workspace.html";
 
-            bool result = _navigationService.canNavigate(backgroundUrl);
+            bool resultAuthHtml = BackgroundNavigationService.Instance.canNavigate(urlAuth);
+            bool resultWorkspaceHtml = BackgroundNavigationService.Instance.canNavigate(urlWorkspace);
 
-            Assert.IsTrue(result);
+            Assert.IsTrue(resultAuthHtml);
+            Assert.IsTrue(resultWorkspaceHtml);
         }
 
         [TestMethod]
@@ -45,7 +46,7 @@ namespace passbolt_windows_tests.UnitTests.Services
         {
             string url = "https://example.com";
 
-            bool result = _navigationService.canNavigate(url);
+            bool result = BackgroundNavigationService.Instance.canNavigate(url);
 
             Assert.IsFalse(result);
         }

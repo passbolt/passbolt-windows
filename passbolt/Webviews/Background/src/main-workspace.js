@@ -9,10 +9,9 @@
  * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
- * @since         0.0.1
+ * @since         0.0.3
  */
 
-import {AuthEvents} from './events/authEvents';
 import IPCHandler from './shared/IPCHandler';
 import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
@@ -26,8 +25,6 @@ import {SecretEvents} from 'passbolt-browser-extension/src/all/background_page/e
 import {ShareEvents} from 'passbolt-browser-extension/src/all/background_page/event/shareEvents';
 import {CommentEvents} from 'passbolt-browser-extension/src/all/background_page/event/commentEvents';
 import {ActionLogEvents} from 'passbolt-browser-extension/src/all/background_page/event/actionLogEvents';
-import {BACKGROUND_READY} from './enumerations/appEventEnumeration';
-import StorageService from './services/storageService';
 import {KeyringEvents} from 'passbolt-browser-extension/src/all/background_page/event/keyringEvents';
 import {TagEvents} from 'passbolt-browser-extension/src/all/background_page/event/tagEvents';
 import {FavoriteEvents} from 'passbolt-browser-extension/src/all/background_page/event/favoriteEvents';
@@ -36,31 +33,33 @@ import {PasswordGeneratorEvents} from 'passbolt-browser-extension/src/all/backgr
 import {ImportResourcesEvents} from 'passbolt-browser-extension/src/all/background_page/event/importResourcesEvents';
 import {AccountRecoveryEvents} from './events/accountRecoveryEvents';
 import {ExportResourcesEvents} from './events/exportResourcesEvents';
-import AccountEntity from 'passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity';
-import {accountDto} from './data/mockStorage';
 import {RbacEvents} from './events/rbacEvents';
+import {BACKGROUND_READY} from './enumerations/appEventEnumeration';
+import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
+import {UserEvents} from "passbolt-browser-extension/src/all/background_page/event/userEvents";
+import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
+import {DesktopEvents} from './events/desktopEvents';
+import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk/storage';
 
 /**
- * Represents the main class that sets up an event listener for the `message` event.
+ * Represents the main workspace class that sets up an event listener for the `message` event.
  * @class
  */
-export default class Main {
+export default class MainWorkspace {
 
     worker = null;
 
     /**
      * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
      * @constructor
-     * @param {HTMLElement} webview - The webview element to listen for the `message` event on.
      */
-    constructor(webview) {
-        this.storageService = new StorageService();
+    constructor() {
         this.initStorage();
         this.worker = {port: new IPCHandler()};
-        AccountRecoveryEvents.listen(this.worker, new AccountEntity(accountDto));
         ActionLogEvents.listen(this.worker);
         CommentEvents.listen(this.worker);
         ConfigEvents.listen(this.worker);
+        DesktopEvents.listen(this.worker);
         ExportResourcesEvents.listen(this.worker);
         FavoriteEvents.listen(this.worker);
         FolderEvents.listen(this.worker);
@@ -70,32 +69,25 @@ export default class Main {
         LocaleEvents.listen(this.worker);
         OrganizationSettingsEvents.listen(this.worker);
         PasswordGeneratorEvents.listen(this.worker);
+        PownedPasswordEvents.listen(this.worker);
         ResourceEvents.listen(this.worker);
         ResourceTypeEvents.listen(this.worker);
         RoleEvents.listen(this.worker);
         SecretEvents.listen(this.worker);
         ShareEvents.listen(this.worker);
         TagEvents.listen(this.worker);
-        PownedPasswordEvents.listen(this.worker);
-        this.initMainCommunication(webview);
     }
 
     /**
-     * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
-     * @constructor
-     * @param {HTMLElement} webview - The webview element to listen for the `message` event on.
-     */
-    initMainCommunication(webview) {
-        webview.addEventListener("message", (ipc) => {
-            AuthEvents.listen(this.worker, ipc.data)
-        });
-    }
-
-    /**
-     * init the local storage with the mock data in case it does not exist
+     * init the local storage with the account data
      */
     async initStorage() {
-        await this.storageService.initPassboltData();
+        await LocalStorage.init();
+        await Config.init();
+        const account = await GetLegacyAccountService.get({role: true});
+        AccountRecoveryEvents.listen(this.worker, account);
+        UserEvents.listen(this.worker, account)
+        RbacEvents.listen(this.worker, account);
         window.chrome.webview.postMessage(JSON.stringify({ topic: BACKGROUND_READY }));
     }
 }

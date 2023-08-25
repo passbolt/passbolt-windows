@@ -13,6 +13,7 @@
  */
 
 export const USER_LOGGED_IN = "passbolt.auth.after-login";
+export const USER_LOGGED_OUT = "passbolt.auth.logout"
 export const BACKGROUND_READY = "passbolt.background.is-ready";
 export const ERROR = "passbolt.error";
 export const LOCALSTORAGE_UPDATE = "passbolt.background.localstorage-update";

@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using Microsoft.UI.Xaml.Controls;
 using passbolt.Exceptions;
 using passbolt.Models.Messaging.Topics;
+using passbolt.Services.LocalFolder;
 using passbolt.Utils;
 
 namespace passbolt.Models.Messaging
@@ -23,9 +24,10 @@ namespace passbolt.Models.Messaging
     public class RenderedTopic : WebviewTopic
     {
         private List<string> topics = new List<string>();
-        public RenderedTopic(WebView2 background, WebView2 rendered) : base(background, rendered) {
+        public RenderedTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService) : base(background, rendered, localFolderService) {
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AccountRecoveryTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FavoriteTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
@@ -9,15 +9,21 @@
  * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
- * @since         0.0.1
+ * @since         0.0.3
  */
 
+using Microsoft.UI.Xaml.Controls;
+using passbolt.Utils;
+using System;
 
-import './src/polyfill/desktopPolyfill';
-import './src/polyfill/storagePolyfill';
-import './src/polyfill/runtimePolyfill';
-import './src/polyfill/alarmPolyfill';
-import Main from "./src/main";
-
-
-new Main(window.chrome.webview);
+namespace passbolt.Models.Messaging
+{
+    public static class Messaging
+    {
+        public static void Send(WebView2 webview, string topic, Object data) {
+            var message = new IPC(topic, SerializationHelper.SerializeToJson(data));
+            webview.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(message));
+            AllowedTopics.AddRequestId(message.requestId);
+        }
+    }
+}

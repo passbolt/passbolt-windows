@@ -2,10 +2,15 @@ const path = require('path');
 
 module.exports = {
   mode: 'development',
-  entry: './index.js',
+  entry: {
+    'background-workspace': './index-workspace.js',
+    'background-auth': './index-auth.js',
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'background.js',
+    filename: (chunkData) => {
+      return `${chunkData.chunk.name}.js`;
+    },
   },
   resolve: {
     fallback: {

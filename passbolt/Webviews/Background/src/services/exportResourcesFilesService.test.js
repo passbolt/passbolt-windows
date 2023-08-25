@@ -62,7 +62,7 @@ describe('ExportResourcesFileService', () => {
         expect(exportResourcesFileService.exportResoucesFileController.prepareExportContent).toHaveBeenCalledWith(exportEntity);
         expect(exportResourcesFileService.exportResoucesFileController.prepareExportContent).toHaveBeenCalledTimes(1);
         expect(exportResourcesFileService.exportResoucesFileController.getPrivateKey).toHaveBeenCalledTimes(1);
-        expect(exportResourcesFileService.exportResoucesFileController.decryptSecrets).toHaveBeenCalledTimes();
+        expect(exportResourcesFileService.exportResoucesFileController.decryptSecrets).toHaveBeenCalledTimes(1);
         expect(exportResourcesFileService.exportResoucesFileController.export).toHaveBeenCalledWith(exportEntity);
         expect(exportResourcesFileService.exportResoucesFileController.export).toHaveBeenCalledTimes(1);
     });

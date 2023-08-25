@@ -17,7 +17,7 @@
 
 export const accountDto = {
     "domain": "https://www.passbolt.local",
-    "user_id": "473f455a-5777-4f1c-9de6-870fd651250b",
+    "user_id": "6b97f765-f1bd-4f1c-9cc5-f03bbb591a66",
     "username": "admin@passbolt.com",
     "first_name": "Admin",
     "last_name": "admin",

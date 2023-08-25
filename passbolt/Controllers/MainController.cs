@@ -14,7 +14,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
@@ -24,9 +23,9 @@ using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging;
 using passbolt.Services.CredentialLockerService;
 using passbolt.Services.HttpService;
+using passbolt.Services.LocalFolder;
 using passbolt.Services.NavigationService;
 using passbolt.Utils;
-using Windows.ApplicationModel;
 using Windows.Storage;
 
 namespace passbolt.Controllers
@@ -36,8 +35,8 @@ namespace passbolt.Controllers
         private WebView2 webviewRendered;
         private WebView2 webviewBackground;
         private string blankPage = "about:blank";
+        protected LocalFolderService localFolderService = LocalFolderService.Instance;
         protected CredentialLockerService credentialLockerService;
-        protected StorageFolder distfolder;
         protected RenderedTopic renderedTopic;
         protected BackgroundTopic backgroundTopic;
         protected RenderedNavigationService renderedNavigationService;
@@ -66,6 +65,7 @@ namespace passbolt.Controllers
         /// <returns></returns>
         public async Task BackgroundNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
+
             if (webviewBackground == null) { return; }
 
             //This is the navigation guard of our webviews
@@ -74,6 +74,9 @@ namespace passbolt.Controllers
             //Webviews are loaded in the background, the default url is about:blank. In case this url is loaded, we load the webviews with the correct urls.
             if (args.Uri == this.blankPage)
             {
+                var accountMetaData = await this.credentialLockerService.GetAccountMetadata();
+                await LocalFolderService.Instance.CreateRenderedIndex("index-auth.html", "rendered-auth", "ext_authentication.min.css", accountMetaData.domain);
+                await LocalFolderService.Instance.CreateBackgroundIndex("index-auth.html", "background-auth", accountMetaData.domain);
                 await this.LoadWebviews();
                 this.SetWebviewSettings(webviewBackground);
             }
@@ -115,22 +118,25 @@ namespace passbolt.Controllers
             string backgroundUrl = applicationConfiguration.backgroundUrl + "/Background";
             string renderedUrl = applicationConfiguration.renderedUrl + "/Rendered";
 
-            this.backgroundNavigationService = new BackgroundNavigationService(backgroundUrl);
+            this.backgroundNavigationService = BackgroundNavigationService.Instance;
             this.renderedNavigationService = RenderedNavigationService.Instance;
 
+            this.backgroundNavigationService.Initialize(applicationConfiguration.backgroundUrl);
             this.renderedNavigationService.Initialize(applicationConfiguration.renderedUrl);
-            StorageFolder installationFolder = Package.Current.InstalledLocation;
+            StorageFolder distfolder = this.localFolderService.GetWebviewsFolder();
+            var installedDistFolder = this.localFolderService.GetWebviewsFolderInstallation();
 
-            // Load dist folder to insert into the virtual host to avoid exception during testing
-            if (distfolder == null)
-               distfolder = await installationFolder.GetFolderAsync("Webviews");
+            // Set virtual host for each dist
+            webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping("background.dist", installedDistFolder.Path, CoreWebView2HostResourceAccessKind.Allow);
+            webviewRendered.CoreWebView2.SetVirtualHostNameToFolderMapping("rendered.dist", installedDistFolder.Path, CoreWebView2HostResourceAccessKind.Allow);
 
             // Set virtual host to folder mapping, restrict host access to the randomUrl
             webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(applicationConfiguration.backgroundUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
             webviewRendered.CoreWebView2.SetVirtualHostNameToFolderMapping(applicationConfiguration.renderedUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
 
-            // Set the source for background webview
-            webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, "index.html"));
+            // Navigate to index auth
+            webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, "index-auth.html"));
+            webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, "index-auth.html"));
 
             // Subscribes to the WebResourceRequested event of the background window
             webviewBackground.CoreWebView2.WebResourceRequested += WebResourceRequested;
@@ -138,6 +144,7 @@ namespace passbolt.Controllers
             webviewBackground.CoreWebView2.WebMessageReceived += WebMessageReceived;
             webviewRendered.CoreWebView2.WebMessageReceived += WebMessageReceived;
         }
+
 
         /// <summary>
         /// Get the application configuration from the credential locker
@@ -162,9 +169,6 @@ namespace passbolt.Controllers
 
             return applicationConfiguration;
         }
-
-
-
 
         /// <summary>
         /// Set the webview settings including minimal security requirements
@@ -282,8 +286,16 @@ namespace passbolt.Controllers
                 await webviewBackground.EnsureCoreWebView2Async();
                 await webviewRendered.EnsureCoreWebView2Async();
 
-                this.renderedTopic = new RenderedTopic(webviewBackground, webviewRendered);
-                this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered);
+                if(backgroundNavigationService?.IsAuthApplication(sender.CoreWebView2.Source) == true)
+                {
+                    var accountMetaData = await this.credentialLockerService.GetAccountMetadata();
+                    var accountSecret = await this.credentialLockerService.GetAccountSecret();
+
+                    Messaging.Send(webviewBackground, "passbolt.account.set-current", new AccountKit(accountMetaData, accountSecret));
+                }
+
+                this.renderedTopic = new RenderedTopic(webviewBackground, webviewRendered, localFolderService);
+                this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered, localFolderService);
             }
         }
 

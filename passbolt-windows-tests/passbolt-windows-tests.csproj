@@ -124,6 +124,10 @@
       <DependentUpon>UnitTestApp.xaml</DependentUpon>
     </Compile>
     <Compile Include="Mocks\MockMainController.cs" />
+    <Compile Include="UnitTests\Models\CredentialLocker\AccountKitTests.cs" />
+    <Compile Include="UnitTests\Models\CredentialLocker\AccountMetaDataTests.cs" />
+    <Compile Include="UnitTests\Models\CredentialLocker\AccountSecretTests.cs" />
+    <Compile Include="UnitTests\Models\CredentialLocker\SecurityTokenTests.cs" />
     <Compile Include="UnitTests\Models\Messaging\IPCTests.cs" />
     <Compile Include="UnitTests\Models\Messaging\AllowedTopicsTest.cs" />
     <Compile Include="UnitTests\Services\DownloadService\DownloadService.cs" />
@@ -170,8 +174,11 @@
       <Name>passbolt-windows</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Assets\" />
+    <None Include="Mocks\Data\account_kit.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

@@ -41,7 +41,6 @@ class ExportResourcesFileService {
    * @return {Promise}
    */
   async download(exportResourcesFileDto) {
-    console.log(exportResourcesFileDto)
     const userId = User.getInstance()?.get().id;
     try {
       this.progressService.start(INITIAL_PROGRESS_GOAL, i18n.t("Generate file"));

@@ -14,35 +14,28 @@
 
 import AccountModel from "passbolt-browser-extension/src/all/background_page/model/account/accountModel";
 import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
-import {accountDto} from "../data/mockStorage";
 import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk/storage';
 
 
 /**
  * Service related to the storage service
  */
-class StorageService {
+class InitPassboltDataLocalStorageService {
     /**
      * init the passbolt configuration storage
      */
-    async initPassboltData() {
-        if (localStorage.getItem('_passbolt_data') === null) {
-            try {
-                localStorage.setItem("_passbolt_data", JSON.stringify({}))
-                const accountModel = new AccountModel();
-                const account = new AccountEntity(accountDto);
-                await accountModel.add(account);
-            } catch (error) {
-                console.error(error)
-            }
+    async initPassboltData(accountData) {
+        try {
+            // The local storage needs to be initialized with an empty object prior adding account into it
+            // Should be moved to the accountModel
+            localStorage.setItem("_passbolt_data", JSON.stringify({}))
+            const accountModel = new AccountModel();
+            await accountModel.add(accountData);
+        } catch (error) {
+            console.error(error)
         }
-        let metaCSP = document.querySelector('meta[http-equiv=\"Content-Security-Policy\"]');
-        metaCSP = document.createElement('meta');
-        metaCSP.setAttribute('http-equiv', 'Content-Security-Policy');
-        document.head.appendChild(metaCSP);
-        metaCSP.setAttribute('content', `default-src 'self' ${accountDto.domain} https://api.pwnedpasswords.com; script-src 'self'`);
         await LocalStorage.init();
     }
 }
 
-export default StorageService;
+export default InitPassboltDataLocalStorageService;

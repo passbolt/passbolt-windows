@@ -12,9 +12,8 @@
  * @since         0.0.1
  */
 
-import Main from "./main";
+import Main from "./main-workspace";
 
-import {AuthEvents} from "./events/authEvents";
 import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
 import {LocaleEvents} from "passbolt-browser-extension/src/all/background_page/event/localeEvents";
@@ -37,9 +36,13 @@ import {ImportResourcesEvents} from "passbolt-browser-extension/src/all/backgrou
 import {PownedPasswordEvents} from "passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents";
 import {RbacEvents} from "./events/rbacEvents";
 import {AccountRecoveryEvents} from "./events/accountRecoveryEvents";
+import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
+import {DesktopEvents} from "./events/desktopEvents";
+import {ExportResourcesEvents} from "./events/exportResourcesEvents";
+import {UserEvents} from "passbolt-browser-extension/src/all/background_page/event/userEvents";
 import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
 
-describe("Main class", () => {
+describe("Main workspace class", () => {
   const ipcDataMock = {
     data: {
       topic: "passbolt.desktop.authenticate"
@@ -53,7 +56,8 @@ describe("Main class", () => {
         callback(ipcDataMock)
       }
     })
-
+    localStorage.setItem('_passbolt_data', JSON.stringify(accountDto))
+    jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(accountDto).toDto());    
     main = new Main(window.chrome.webview);
   })
 
@@ -62,96 +66,58 @@ describe("Main class", () => {
     jest.resetAllMocks();
   });
 
-  it('should listen to authenticate event', () => {
-    expect.assertions(2);
+  it('should listen to the browser extension events', async () => {
+    expect.assertions(22);
 
-    jest.spyOn(AuthEvents, "listen");
-
-    const main = new Main(window.chrome.webview);
-    const callback = window.chrome.webview.addEventListener.mock.calls[0][1];
-    callback(ipcDataMock);
-
-    expect(window.chrome.webview.addEventListener).toHaveBeenCalledWith('message', expect.any(Function));
-    expect(AuthEvents.listen).toHaveBeenCalledWith(main.worker, ipcDataMock.data);
-  });
-
-
-  it('should listen to the browser extension events', () => {
-    expect.assertions(21);
-
-    jest.spyOn(OrganizationSettingsEvents, "listen");
-    jest.spyOn(ConfigEvents, "listen");
-    jest.spyOn(LocaleEvents, "listen");
-    jest.spyOn(RoleEvents, "listen");
-    jest.spyOn(ResourceTypeEvents, "listen");
-    jest.spyOn(ResourceEvents, "listen");
-    jest.spyOn(GroupEvents, "listen");
-    jest.spyOn(FolderEvents, "listen");
-    jest.spyOn(SecretEvents, "listen");
-    jest.spyOn(CommentEvents, "listen");
+    jest.spyOn(AccountRecoveryEvents, "listen")
     jest.spyOn(ActionLogEvents, "listen");
-    jest.spyOn(KeyringEvents, "listen");
-    jest.spyOn(ShareEvents, "listen");
+    jest.spyOn(CommentEvents, "listen");
+    jest.spyOn(ConfigEvents, "listen");
+    jest.spyOn(DesktopEvents, "listen");
+    jest.spyOn(ExportResourcesEvents, "listen");
     jest.spyOn(FavoriteEvents, "listen");
+    jest.spyOn(FolderEvents, "listen");
+    jest.spyOn(GroupEvents, "listen");
     jest.spyOn(ImportResourcesEvents, "listen");
+    jest.spyOn(KeyringEvents, "listen");
+    jest.spyOn(LocaleEvents, "listen");
+    jest.spyOn(OrganizationSettingsEvents, "listen");
     jest.spyOn(PasswordGeneratorEvents, "listen");
-    jest.spyOn(TagEvents, "listen");
     jest.spyOn(PownedPasswordEvents, "listen");
     jest.spyOn(RbacEvents, "listen");
-    jest.spyOn(AccountRecoveryEvents, "listen")
+    jest.spyOn(ResourceEvents, "listen");
+    jest.spyOn(ResourceTypeEvents, "listen");
+    jest.spyOn(RoleEvents, "listen");
+    jest.spyOn(SecretEvents, "listen");
+    jest.spyOn(ShareEvents, "listen");
+    jest.spyOn(TagEvents, "listen");
+    jest.spyOn(UserEvents, "listen");
 
-    main = new Main(window.chrome.webview);
-    const callback = window.chrome.webview.addEventListener.mock.calls[0][1];
-    callback(ipcDataMock);
-
-    expect(window.chrome.webview.addEventListener).toHaveBeenCalledWith('message', expect.any(Function));
-    expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(ResourceTypeEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(ResourceEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(GroupEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(FolderEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(CommentEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(ActionLogEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(KeyringEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(FavoriteEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(ImportResourcesEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(PasswordGeneratorEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(TagEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(PownedPasswordEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(RbacEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(AccountRecoveryEvents.listen).toHaveBeenCalledWith(main.worker,  new AccountEntity(accountDto));
-  });
-
-  it('should initialize the local storage and post a message', async () => {
-    expect.assertions(12);
-
-    localStorage.removeItem('_passbolt_data')
-
+    main = new Main();
     await main.initStorage();
 
-    expect(localStorage.getItem("_passbolt_data")).not.toBeNull();
-
-    const storage = JSON.parse(localStorage.getItem("_passbolt_data"))
-    const config = storage.config
-    const privateGPGKeys = JSON.parse(storage["passbolt-private-gpgkeys"])
-    const publicGPGKeys = JSON.parse(storage["passbolt-public-gpgkeys"])
-
-    expect(config["user.settings.securityToken.code"]).toEqual(accountDto.security_token.code);
-    expect(config["user.settings.securityToken.color"]).toEqual(accountDto.security_token.color);
-    expect(config["user.settings.securityToken.textColor"]).toEqual(accountDto.security_token.textcolor);
-    expect(config["user.settings.trustedDomain"]).toEqual(accountDto.domain);
-    expect(config["user.id"]).toEqual(accountDto.user_id);
-    expect(config["user.username"]).toEqual(accountDto.username);
-    expect(config["user.firstname"]).toEqual(accountDto.first_name);
-    expect(config["user.lastname"]).toEqual(accountDto.last_name);
-    expect(privateGPGKeys).not.toBeNull();
-    expect(publicGPGKeys).not.toBeNull();
-    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: BACKGROUND_READY }));
+    expect(AccountRecoveryEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
+    expect(ActionLogEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(CommentEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(DesktopEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ExportResourcesEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(FavoriteEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(FolderEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(GroupEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ImportResourcesEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(KeyringEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(PasswordGeneratorEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(PownedPasswordEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ResourceEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(RbacEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
+    expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(TagEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(UserEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
   });
 
   it('should not initialize the local storage if user exist and post a message', async () => {

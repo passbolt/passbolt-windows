@@ -12,32 +12,32 @@
  * @since         0.0.1
  */
 
-import { accountDto } from "../data/mockStorage";
+import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
 
 export const legacyResult = {
-  domain: accountDto.domain
+  domain: defaultAccountDto().domain
 }
 
 export const passboltData = {
   "debug": false,
   "log": { "console": false, "level": 0 }, 
-  "user.firstname": accountDto.first_name, 
-  "user.id": accountDto.user_id, 
-  "user.lastname": accountDto.last_name, 
-  "user.settings.securityToken.code": accountDto.security_token.code, 
-  "user.settings.securityToken.color": accountDto.security_token.color, 
-  "user.settings.securityToken.textColor": accountDto.security_token.textcolor, 
-  "user.settings.trustedDomain": accountDto.domain, 
-  "user.username": accountDto.username
+  "user.firstname": defaultAccountDto().first_name, 
+  "user.id": defaultAccountDto().user_id, 
+  "user.lastname": defaultAccountDto().last_name, 
+  "user.settings.securityToken.code": defaultAccountDto().security_token.code, 
+  "user.settings.securityToken.color": defaultAccountDto().security_token.color, 
+  "user.settings.securityToken.textColor": defaultAccountDto().security_token.textcolor, 
+  "user.settings.trustedDomain": defaultAccountDto().domain, 
+  "user.username": defaultAccountDto().username
 }
 
 
 export const userConfig = {
   "config": {
-    "user.firstname": accountDto.first_name, 
-    "user.lastname": accountDto.last_name, 
-    "user.username": accountDto.username,
-    "user.settings.trustedDomain": accountDto.domain, 
+    "user.firstname": defaultAccountDto().first_name, 
+    "user.lastname": defaultAccountDto().last_name, 
+    "user.username": defaultAccountDto().username,
+    "user.settings.trustedDomain": defaultAccountDto().domain, 
     "user.settings.securityToken.code": "YUL",
     "user.settings.securityToken.color": "#FF9800",
     "user.settings.securityToken.textColor": "#000000",

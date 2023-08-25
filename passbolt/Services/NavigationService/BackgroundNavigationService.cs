@@ -19,15 +19,30 @@ namespace passbolt.Services.NavigationService
 {
     public class BackgroundNavigationService : AbstractNavigationService
     {
-        public BackgroundNavigationService(string currentUrl)
+        private static readonly BackgroundNavigationService instance = new BackgroundNavigationService();
+
+        public static BackgroundNavigationService Instance { get => instance; }
+
+        public BackgroundNavigationService() { }
+
+        public void Initialize(string currentUrl)
         {
             this.currentUrl = currentUrl;
-            string pattern = $"^https://{this.currentUrl}/(index\\.html)$";
+            string pattern = $"^https://{this.currentUrl}/Background/(index-auth\\.html|index-workspace\\.html)$";
 
             base.allowedUrls = new List<Regex>()
                 {
                     new Regex(@pattern),
                 };
+        }
+
+        /// <summary>
+        /// Check if background webview is running the authentication file
+        /// </summary>
+        /// <returns></returns>
+        public bool IsAuthApplication(string url)
+        {
+            return url == $"https://{this.currentUrl}/Background/index-auth.html";
         }
     }
 }
