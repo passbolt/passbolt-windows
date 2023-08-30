@@ -12,6 +12,7 @@
  * @since         0.0.1
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -28,7 +29,8 @@ namespace passbolt.Services.CredentialLockerService
         private PasswordVault vault;
         private LocalUserManager localUserManager;
 
-        public CredentialLockerService() {
+        public CredentialLockerService()
+        {
             this.vault = new PasswordVault();
             this.localUserManager = new LocalUserManager();
         }
@@ -52,8 +54,15 @@ namespace passbolt.Services.CredentialLockerService
         /// <returns></returns>
         public async Task<PasswordCredential> Get(string resource)
         {
-            var currentUser = await localUserManager.GetCurrentUser();
-            return vault.Retrieve(resource, currentUser.username);
+            try
+            {
+                var currentUser = await localUserManager.GetCurrentUser();
+                return vault.Retrieve(resource, currentUser.username);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>

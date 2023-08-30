@@ -12,12 +12,22 @@
  * @since         0.3.0
  */
 
+import IPCHandler from './shared/IPCHandler';
 
-import './src/polyfill/desktopPolyfill';
-import './src/polyfill/storagePolyfill';
-import './src/polyfill/runtimePolyfill';
-import './src/polyfill/alarmPolyfill';
-import Main from "./src/main-auth";
+/**
+ * Represents the main import class that sets up an event listener for the `message` event.
+ * @class
+ */
+export default class MainImport {
 
+    worker = null;
 
-new Main();
+    /**
+     * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
+     * @constructor
+     */
+    constructor() {
+        this.worker = {port: new IPCHandler()};
+    }
+}
+

@@ -6,6 +6,7 @@ module.exports = {
   entry: {
     'rendered-workspace': './index-workspace.js',
     'rendered-auth': './index-auth.js',
+    'rendered-import': './index-import.js',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

@@ -34,6 +34,7 @@ namespace passbolt.Controllers
     {
         private WebView2 webviewRendered;
         private WebView2 webviewBackground;
+        private AccountMetaData currentAccountMetaData;
         private string blankPage = "about:blank";
         protected LocalFolderService localFolderService = LocalFolderService.Instance;
         protected CredentialLockerService credentialLockerService;
@@ -74,9 +75,21 @@ namespace passbolt.Controllers
             //Webviews are loaded in the background, the default url is about:blank. In case this url is loaded, we load the webviews with the correct urls.
             if (args.Uri == this.blankPage)
             {
-                var accountMetaData = await this.credentialLockerService.GetAccountMetadata();
-                await LocalFolderService.Instance.CreateRenderedIndex("index-auth.html", "rendered-auth", "ext_authentication.min.css", accountMetaData.domain);
-                await LocalFolderService.Instance.CreateBackgroundIndex("index-auth.html", "background-auth", accountMetaData.domain);
+                currentAccountMetaData = await this.credentialLockerService.GetAccountMetadata();
+
+                if (currentAccountMetaData != null)
+                {
+                    //If the credential locker is not empty we launch the authentication applications.
+                    await LocalFolderService.Instance.CreateRenderedIndex("index-auth.html", "rendered-auth", "ext_authentication.min.css", currentAccountMetaData.domain);
+                    await LocalFolderService.Instance.CreateBackgroundIndex("index-auth.html", "background-auth", currentAccountMetaData.domain);
+                }
+                else
+                {
+                    //If the credential locker is  empty we launch the importation applications.
+                    await LocalFolderService.Instance.CreateRenderedIndex("index-import.html", "rendered-import", "ext_authentication.min.css");
+                    await LocalFolderService.Instance.CreateBackgroundIndex("index-import.html", "background-import");
+                }
+
                 await this.LoadWebviews();
                 this.SetWebviewSettings(webviewBackground);
             }
@@ -134,9 +147,12 @@ namespace passbolt.Controllers
             webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(applicationConfiguration.backgroundUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
             webviewRendered.CoreWebView2.SetVirtualHostNameToFolderMapping(applicationConfiguration.renderedUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
 
-            // Navigate to index auth
-            webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, "index-auth.html"));
-            webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, "index-auth.html"));
+            var indexPage = currentAccountMetaData != null
+                ? "index-auth.html"
+                : "index-import.html";
+
+             webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, indexPage));
+             webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, indexPage));
 
             // Subscribes to the WebResourceRequested event of the background window
             webviewBackground.CoreWebView2.WebResourceRequested += WebResourceRequested;
@@ -153,11 +169,9 @@ namespace passbolt.Controllers
         protected virtual async Task<ApplicationConfiguration> GetApplicationConfiguration()
         {
             ApplicationConfiguration applicationConfiguration;
-            try
-            {
-                applicationConfiguration = await credentialLockerService.GetApplicationConfiguration();
-            }
-            catch (System.Exception)
+
+            applicationConfiguration = await credentialLockerService.GetApplicationConfiguration();
+            if (applicationConfiguration == null)
             {
                 applicationConfiguration = new ApplicationConfiguration()
                 {
@@ -230,7 +244,7 @@ namespace passbolt.Controllers
             {
                 httpService.ResolveOptionMethod(sender, resource);
             }
-            else if(httpService.isCallToPownedService(resource))
+            else if (httpService.isCallToPownedService(resource))
             {
                 resource.GetDeferral().Complete();
             }
@@ -290,6 +304,7 @@ namespace passbolt.Controllers
                 {
                     var accountMetaData = await this.credentialLockerService.GetAccountMetadata();
                     var accountSecret = await this.credentialLockerService.GetAccountSecret();
+                    var accounkit = (accountMetaData != null && accountSecret != null) ? new AccountKit(accountMetaData, accountSecret) : null;
 
                     Messaging.Send(webviewBackground, "passbolt.account.set-current", new AccountKit(accountMetaData, accountSecret));
                 }
@@ -304,10 +319,9 @@ namespace passbolt.Controllers
         /// </summary>
         /// <param name="sender"></param>
         /// <returns></returns>
-        public  void RenderedNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        public void RenderedNavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
             Debug.WriteLine("NavigationCompleted: " + sender.CoreWebView2.Source);
-
         }
         /// <summary>
         /// Retrieve the Corewebview from the sender
