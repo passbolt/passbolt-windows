@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
  *
@@ -48,6 +48,8 @@ namespace passbolt_windows_tests
             await LocalFolderService.Instance.InitiateLocalFolder();
             LocalFolderService.Instance.CreateRenderedIndex("index-auth.html", "rendered-auth", "ext_authentication.min.css");
             LocalFolderService.Instance.CreateBackgroundIndex("index-auth.html", "background-auth");
+            await new CredentialLockerService().CreateAccount();
+
             await new CredentialLockerService().CreateAccount();
 
 #if DEBUG

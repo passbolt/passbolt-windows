@@ -27,7 +27,6 @@ namespace passbolt_windows_tests.UnitTests.Utils
         [TestMethod]
         public void TestSerializationAndDeserialization()
         {
-            // Arrange
             var originalObject = new IPC("hello-word", "My message");
             originalObject.requestId = null;
             var expectedJson = "{\"topic\":\"hello-word\",\"status\":null,\"message\":\"My message\",\"requestId\":null}";

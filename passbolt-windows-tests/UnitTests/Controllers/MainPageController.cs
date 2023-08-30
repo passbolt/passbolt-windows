@@ -66,7 +66,7 @@ namespace passbolt_windows_tests
                 var controller = ReflectionUtil.GetPrivateField<MainController>(page, "mainController");
                 credentialLockerService = ReflectionUtil.GetPrivateField<CredentialLockerService>(controller, "credentialLockerService");
                 mainController = (MockMainController)ReflectionUtil.SetPrivatefield<MainController>(page, "mainController", new MockMainController(webviewRendered, webviewBackground, credentialLockerService));
-                InitialiseWebviewUrl().Wait(5000);
+                InitialiseWebviewUrl().Wait(7000);
             }
         }
 
@@ -424,6 +424,20 @@ namespace passbolt_windows_tests
                 };
             };
         }
+
+
+        [UITestMethod]
+        [Description("As a desktop application I want to launch the rendered with index-import.html when no account exist")]
+        public void LoadBackgroundWebviewWithoutAccountTest()
+        {
+            credentialLockerService.Remove("account-metadata").Wait();
+            mainController.LoadWebviews().Wait();
+            Assert.IsNotNull(webviewRendered);
+            //Should initialized the webview
+            Assert.IsTrue(webviewBackground.Source.ToString().Contains("Background/index-import.html"));
+            Assert.IsTrue(webviewRendered.Source.ToString().Contains("Rendered/index-import.html"));
+        }
+
 
         /// <summary>
         /// Navigation completed with success for testing

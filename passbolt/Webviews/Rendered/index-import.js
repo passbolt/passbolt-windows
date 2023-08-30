@@ -12,12 +12,20 @@
  * @since         0.3.0
  */
 
+import IPCHandler from "./src/shared/IPCHandler";
+import React from "react";
+import ReactDOM from "react-dom";
+import WebviewStorage from "./src/shared/WebviewStorage";
+import AppImport from "./src/AppImport";
 
-import './src/polyfill/desktopPolyfill';
-import './src/polyfill/storagePolyfill';
-import './src/polyfill/runtimePolyfill';
-import './src/polyfill/alarmPolyfill';
-import Main from "./src/main-auth";
+export async function main() {
+    // Port connection
+    const channel = new IPCHandler();
+    // Start ExtBootstrapApp
+    const storage = new WebviewStorage().storage;
+    const domContainer = document.createElement("div");
+    document.body.appendChild(domContainer);
+    ReactDOM.render(<AppImport port={channel} storage={storage} />, domContainer);
+}
 
-
-new Main();
+main()
