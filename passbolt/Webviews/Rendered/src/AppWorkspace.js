@@ -91,7 +91,6 @@ class AppWorkspace extends Component {
                                 { /* Dialogs Management */}
                                 <HandleFolderMoveStrategyEvents />
                                 <HandleProgressEvents />
-                                <HandleErrorEvents />
                                 <HandleSessionExpired />
                                 <Router>
                                   <NavigationContextProvider>
