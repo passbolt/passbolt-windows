@@ -116,7 +116,6 @@ class IPCHandler {
      */
     async emit(...requestArgs) {
         let ipc;
-
         if (typeof requestArgs[0] === 'string') {
             let status, message;
 
@@ -127,14 +126,14 @@ class IPCHandler {
                 status = null;
                 message = requestArgs[1];
             }
-            
             ipc = {
                 topic: requestArgs[0],
                 status,
                 message
             }
+
         } else {
-            ipc = requestArgs
+            ipc = requestArgs[0]
         }
         window.chrome.webview.postMessage(JSON.stringify(ipc));
     }

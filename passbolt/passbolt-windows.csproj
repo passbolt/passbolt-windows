@@ -136,6 +136,8 @@
     <Compile Include="Models\LocalStorage\PassboltData.cs" />
     <Compile Include="Models\Messaging\AllowedTopics.cs" />
     <Compile Include="Models\Messaging\Messaging.cs" />
+    <Compile Include="Models\Messaging\Topics\AuthImportTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\BrowserTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ImportExportTopics.cs" />
     <Compile Include="Models\Messaging\Topics\AccountRecoveryTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ActionLogsTopics.cs" />
@@ -260,6 +262,14 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
     <None Include="Webviews\Rendered\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="Webviews\Background\dist\background-import.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="Webviews\Background\dist\background-import.js.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>

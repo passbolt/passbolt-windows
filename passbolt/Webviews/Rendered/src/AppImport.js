@@ -19,8 +19,9 @@ import AppContext from "passbolt-styleguide/src/shared/context/AppContext/AppCon
 import TranslationProvider from "passbolt-styleguide/src/react-extension/components/Common/Internationalisation/TranslationProvider";
 import Footer from "passbolt-styleguide/src/react-extension/components/Common/Footer/Footer";
 import OrchestrateAccountKitImportation from "passbolt-styleguide/src/react-extension/components/Desktop/OrchestrateAccountKitImportation/OrchestrateAccountKitImportation";
-import {ImportAccountKitContextProvider} from "passbolt-styleguide/src/react-extension/contexts/Desktop/ImportAccountKitContext";
+import ImportAccountKitContextProvider from "passbolt-styleguide/src/react-extension/contexts/Desktop/ImportAccountKitContext";
 import RenderedWebview from "./components/RenderedWebview";
+import {version} from '../package.json'; 
 
 /**
  * The import application
@@ -43,8 +44,9 @@ class AppImport extends Component {
             port: props.port, // The background page communication port
             storage: props.storage, // The storage
             siteSettings: {
+                version,
                 url: ""
-            }, // The site settings
+            },
         };
     }
 

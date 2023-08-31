@@ -26,6 +26,7 @@ namespace passbolt.Models.Messaging
     {
         public const string ERROR = "passbolt.error";
         public const string BACKGROUND_READY = "passbolt.background.is-ready";
+        public const string BACKGROUND_IMPORT = "passbolt.background.import";
         public const string BACKGROUND_DOWNLOAD_FILE = "passbolt.background.download-file";
         private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR, BACKGROUND_DOWNLOAD_FILE };
         private static List<string> requestIds = new List<string>();
@@ -44,9 +45,11 @@ namespace passbolt.Models.Messaging
 
         private static void InitTopics()
         {
-            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AccountRecoveryTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthImportTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(BrowserTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FavoriteTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));

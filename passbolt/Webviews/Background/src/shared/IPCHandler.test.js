@@ -63,6 +63,41 @@ describe('IPCHandler', () => {
 
       expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify(successTopic));
     });
+
+  
+    it('should correctly form ipc for topic and message', async () => {
+      expect.assertions(1);
+
+      await ipcHandler.emit(topic, successTopic.message);
+  
+      expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({
+        topic,
+        status: null,
+        message: successTopic.message,
+      }));
+    });
+  
+    it('should pass the raw requestArgs if the first argument is not a string', async () => {
+      expect.assertions(1);
+
+      const data = { some: 'data' };
+      await ipcHandler.emit(data);
+
+      expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify(data));
+    });
+
+    it('should correctly form ipc for topic and SUCCESS status', async () => {
+      expect.assertions(1);
+
+      await ipcHandler.emit(topic, 'SUCCESS');
+
+      expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({
+        topic,
+        status: 'SUCCESS',
+        message: null
+      }));
+    });
+  
   })
 
   describe("IPCHandler:request", () => {

@@ -47,7 +47,8 @@ namespace passbolt
         {
             await LocalFolderService.Instance.InitiateLocalFolder();
 
-            await new CredentialLockerService().CreateAccount();
+            // To remove
+            //await new CredentialLockerService().CreateAccount();
 
             Frame rootFrame = Window.Current.Content as Frame;
 

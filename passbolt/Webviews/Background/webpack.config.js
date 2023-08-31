@@ -5,6 +5,7 @@ module.exports = {
   entry: {
     'background-workspace': './index-workspace.js',
     'background-auth': './index-auth.js',
+    'background-import': './index-import.js',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
