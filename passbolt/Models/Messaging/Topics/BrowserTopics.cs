@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
@@ -12,24 +12,10 @@
  * @since         0.3.0
  */
 
-import {AuthImportEvents} from './events/authImportEvents';
-import IPCHandler from './shared/IPCHandler';
-
-/**
- * Represents the main import class that sets up an event listener for the `message` event.
- * @class
- */
-export default class MainImport {
-
-    worker = null;
-
-    /**
-     * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
-     * @constructor
-     */
-    constructor() {
-        this.worker = {port: new IPCHandler()};
-        AuthImportEvents.listen(this.worker);
+namespace passbolt.Models.Messaging.Topics
+{
+    public class BrowserTopics
+    {
+        public const string OPEN_TO_BROWSER = "passbolt.rendered.open-to-browser";
     }
 }
-

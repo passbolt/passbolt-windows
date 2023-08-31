@@ -12,7 +12,10 @@
  * @since         0.0.1
  */
 
+using System;
 using System.Collections.Generic;
+using System.ServiceModel.Channels;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using passbolt.Exceptions;
 using passbolt.Models.Messaging.Topics;
@@ -24,10 +27,13 @@ namespace passbolt.Models.Messaging
     public class RenderedTopic : WebviewTopic
     {
         private List<string> topics = new List<string>();
+
         public RenderedTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService) : base(background, rendered, localFolderService) {
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AccountRecoveryTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthImportTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(BrowserTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FavoriteTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));
@@ -52,19 +58,42 @@ namespace passbolt.Models.Messaging
         /// Proceed IPC message for rendered webviews
         /// </summary>
         /// <param name="ipc"></param>
-        public override void ProceedMessage(IPC ipc)
+        public override async void ProceedMessage(IPC ipc)
         {
             if (!topics.Contains(ipc.topic) && !AllowedTopics.proceedRequestId(ipc.topic))
             {
                 new UnauthorizedTopicException("Rendered webview");
                 return;
             }
+            else if (CanOpenToBrowser(ipc))
+            {
+                var url = (string)ipc.message;
+                await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+            }
             else if (topics.Contains(ipc.topic))
             {
                 AllowedTopics.AddRequestId(ipc.requestId);
-            }
+            } 
+
 
             background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
+        }
+
+        /// <summary>
+        /// Check if the uwp main process can open the browser url
+        /// </summary>
+        /// <param name="ipc"></param>
+        /// <returns></returns>
+        public bool CanOpenToBrowser(IPC ipc)
+        {
+            if (!(ipc.message is string))
+            {
+                return false;
+            }
+
+            var url = (string)ipc.message;
+            //We allow by default the passbolt help url, more will come
+            return url.StartsWith("https://help.passbolt.com/");
         }
     }
 }

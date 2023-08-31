@@ -149,6 +149,7 @@ class AppAuthentication extends Component {
             <RenderedWebview port={this.props.port}>
                 {this.state.isReady && <AppContext.Provider value={this.state}>
                     <TranslationProvider loadingPath="https://rendered.dist/Rendered/dist/locales/{{lng}}/{{ns}}.json">
+                        <Router>
                             <AuthenticationLoginContextProvider>
                                 <div id="container" className="container page login">
                                     <div className="content">
@@ -162,8 +163,8 @@ class AppAuthentication extends Component {
                                 </div>
                                 <Footer />
                             </AuthenticationLoginContextProvider>
+                        </Router>
                     </TranslationProvider>
-
                 </AppContext.Provider>
                 }
             </RenderedWebview>
