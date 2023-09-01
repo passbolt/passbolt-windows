@@ -23,5 +23,7 @@ namespace passbolt.Models.Messaging.Topics
         public const string CREATE = "passbolt.resources.create";
         public const string DELETE_ALL = "passbolt.resources.delete-all";
         public const string GET_ALL = "passbolt.resource-type.get-all";
+        public const string GET_GRID_SETTING = "passbolt.resources.get-grid-setting";
+        public const string SET_GRID_SETTING = "passbolt.resources.set-grid-setting";
     }
 }

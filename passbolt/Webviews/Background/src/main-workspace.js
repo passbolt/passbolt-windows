@@ -28,8 +28,8 @@ import {ActionLogEvents} from 'passbolt-browser-extension/src/all/background_pag
 import {KeyringEvents} from 'passbolt-browser-extension/src/all/background_page/event/keyringEvents';
 import {TagEvents} from 'passbolt-browser-extension/src/all/background_page/event/tagEvents';
 import {FavoriteEvents} from 'passbolt-browser-extension/src/all/background_page/event/favoriteEvents';
+import {PasswordPoliciesEvents} from 'passbolt-browser-extension/src/all/background_page/event/passwordPoliciesEvents';
 import {PownedPasswordEvents} from 'passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents';
-import {PasswordGeneratorEvents} from 'passbolt-browser-extension/src/all/background_page/event/passwordGeneratorEvents';
 import {ImportResourcesEvents} from 'passbolt-browser-extension/src/all/background_page/event/importResourcesEvents';
 import {AccountRecoveryEvents} from './events/accountRecoveryEvents';
 import {ExportResourcesEvents} from './events/exportResourcesEvents';
@@ -68,9 +68,7 @@ export default class MainWorkspace {
         KeyringEvents.listen(this.worker);
         LocaleEvents.listen(this.worker);
         OrganizationSettingsEvents.listen(this.worker);
-        PasswordGeneratorEvents.listen(this.worker);
         PownedPasswordEvents.listen(this.worker);
-        ResourceEvents.listen(this.worker);
         ResourceTypeEvents.listen(this.worker);
         RoleEvents.listen(this.worker);
         SecretEvents.listen(this.worker);
@@ -84,10 +82,13 @@ export default class MainWorkspace {
     async initStorage() {
         await LocalStorage.init();
         await Config.init();
+        // check supported types
         const account = await GetLegacyAccountService.get({role: true});
         AccountRecoveryEvents.listen(this.worker, account);
-        UserEvents.listen(this.worker, account)
+        UserEvents.listen(this.worker, null, account)
         RbacEvents.listen(this.worker, account);
+        ResourceEvents.listen(this.worker, null, account);
+        PasswordPoliciesEvents.listen(this.worker, null, account);
         window.chrome.webview.postMessage(JSON.stringify({ topic: BACKGROUND_READY }));
     }
 }

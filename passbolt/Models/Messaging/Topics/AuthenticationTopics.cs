@@ -25,5 +25,6 @@ namespace passbolt.Models.Messaging.Topics
         public const string GET_SERVER_KEY = "passbolt.auth.get-server-key";
         public const string SET_SERVER_KEY = "passbolt.auth.replace-server-key";
         public const string LOG_OUT = "passbolt.auth.logout";
+        public const string POST_LOGIN_REDIRECT = "passbolt.auth.post-login-redirect";
     }
 }
