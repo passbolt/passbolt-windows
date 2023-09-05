@@ -39,8 +39,8 @@ class VerifyAccountKitController {
    */
   async _exec(encodedAccountKit) {
     try {
-      await this.exec(encodedAccountKit);
-      this.worker.port.emit(this.requestId, 'SUCCESS');
+      const accountKit = await this.exec(encodedAccountKit);
+      this.worker.port.emit(this.requestId, 'SUCCESS', accountKit);
     } catch (error) {
       console.error(error.details)
       this.worker.port.emit(this.requestId, 'ERROR', error);
@@ -67,6 +67,7 @@ class VerifyAccountKitController {
     const accountKit = JSON.parse(accountKitStringify)
     const authAccountEntity = new AuthImportEntity({account_kit: accountKit})
     AuthImportStorageService.set(authAccountEntity)
+    return accountKit;
   }
 }
 

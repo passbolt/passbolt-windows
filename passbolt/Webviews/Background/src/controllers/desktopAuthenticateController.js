@@ -13,8 +13,6 @@
  */
 
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
-import BuildApiClientOptionsService from "passbolt-browser-extension/src/all/background_page/service/account/buildApiClientOptionsService";
-import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
 import {USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
 import LoginUserService from "../services/loginUserService";
 

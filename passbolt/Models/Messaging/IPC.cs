@@ -37,6 +37,14 @@ namespace passbolt.Models
             this.status = null;
         }
 
+        public IPC(string topic, string message, string requestId)
+        {
+            this.topic = topic;
+            this.message = message;
+            this.requestId = requestId;
+            this.status = null;
+        }
+
         [Required]
         [AllowedTopic(ErrorMessage = "Invalid topic")]
         public string topic { get; set; }

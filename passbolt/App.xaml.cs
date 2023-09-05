@@ -12,7 +12,6 @@
  * @since         0.0.1
  */
 
-using passbolt.Services.CredentialLockerService;
 using passbolt.Services.LocalFolder;
 using System;
 using Windows.ApplicationModel;

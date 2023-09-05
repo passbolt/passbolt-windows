@@ -12,6 +12,7 @@
  * @since         0.3.0
  */
 
+import { PownedPasswordEvents } from "passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents";
 import {AuthImportEvents} from "./events/authImportEvents";
 import Main from "./main-import";
 
@@ -29,12 +30,14 @@ describe("Main import class", () => {
   });
 
   it('should listen to the browser extension events', async () => {
-    expect.assertions(1);
+    expect.assertions(2);
 
     jest.spyOn(AuthImportEvents, "listen")
+    jest.spyOn(PownedPasswordEvents, "listen")
 
     main = new Main();
 
     expect(AuthImportEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(PownedPasswordEvents.listen).toHaveBeenCalledWith(main.worker);
   });
 });

@@ -18,7 +18,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Controllers;
 using passbolt.Models.CredentialLocker;
-using passbolt.Services.CredentialLockerService;
+using passbolt.Services.CredentialLocker;
 using passbolt.Services.NavigationService;
 using passbolt.Utils;
 

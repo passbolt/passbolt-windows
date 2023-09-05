@@ -12,7 +12,8 @@
  * @since         0.3.0
  */
 
-import {AuthImportEvents} from './events/authImportEvents';
+import { PownedPasswordEvents } from 'passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents';
+import { AuthImportEvents } from './events/authImportEvents';
 import IPCHandler from './shared/IPCHandler';
 
 /**
@@ -30,6 +31,7 @@ export default class MainImport {
     constructor() {
         this.worker = {port: new IPCHandler()};
         AuthImportEvents.listen(this.worker);
+        PownedPasswordEvents.listen(this.worker);
     }
 }
 
