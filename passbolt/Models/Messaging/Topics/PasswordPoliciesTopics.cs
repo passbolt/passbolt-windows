@@ -9,19 +9,14 @@
  * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
- * @since         0.0.1
+ * @since         0.3.0
  */
-
 namespace passbolt.Models.Messaging.Topics
 {
-    public class FolderTopics
+    public  class PasswordPoliciesTopics
     {
-        public const string CREATE= "passbolt.folders.create";
-        public const string UPDATE = "passbolt.folders.update";
-        public const string FIND_ALL = "passbolt.folders.find-permissions";
-        public const string DELETE= "passbolt.folders.delete";
-        public const string OPEN_DIALOG= "passbolt.folders.open-move-confirmation-dialog";
-        public const string UPDATE_LOCALSTORAGE= "passbolt.folders.update-local-storage";
-        public const string SELECT_AND_SCROLL_TO = "passbolt.folders.select-and-scroll-to";
+        public const string POLICIES_GET = "passbolt.password-policies.get";
+        public const string POLICIES_SAVE = "passbolt.password-policies.save";
+        public const string POLICIES_GET_ADMIN_SETTINGS = "passbolt.password-policies.get-admin-settings";
     }
 }

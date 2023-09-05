@@ -100,6 +100,21 @@ const listen = function(worker) {
     const controller = new CheckPassphraseController(worker, requestId);
     await controller._exec(passphrase);
   });
+
+  /*
+   * Redirect the user post login.
+   *
+   * @listens passbolt.auth.post-login-redirect
+   * @param requestId {uuid} The request identifier
+   */
+  worker.port.on('passbolt.auth.post-login-redirect', requestId => {
+    let url = Config.read('user.settings.trustedDomain');
+    const redirectTo = (new URL(worker.tab.url)).searchParams.get('redirect');
+    if (/^\/[A-Za-z0-9\-\/]*$/.test(redirectTo)) {
+      url = `${url}${redirectTo}`;
+    }
+    worker.port.emit(requestId, 'SUCCESS');
+  });
 };
 
 export const AuthEvents = {listen};

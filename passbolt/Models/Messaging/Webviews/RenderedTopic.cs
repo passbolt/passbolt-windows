@@ -43,6 +43,7 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(KeyringTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(PownedPasswordTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(PasswordGeneratorTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(PasswordPoliciesTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(RbacTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
