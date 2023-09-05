@@ -26,7 +26,7 @@ using System;
 using passbolt.Utils;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Models.LocalStorage;
-using passbolt.Services.CredentialLockerService;
+using passbolt.Services.CredentialLocker;
 using System.Threading.Tasks;
 using System.Reflection.Metadata;
 using passbolt.Services.NavigationService;

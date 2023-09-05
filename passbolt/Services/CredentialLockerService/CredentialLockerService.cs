@@ -22,7 +22,7 @@ using passbolt.Models.CredentialLocker;
 using passbolt.Utils;
 using Windows.Security.Credentials;
 
-namespace passbolt.Services.CredentialLockerService
+namespace passbolt.Services.CredentialLocker
 {
     public class CredentialLockerService
     {
@@ -119,15 +119,8 @@ namespace passbolt.Services.CredentialLockerService
         /// temp account creation until importation
         /// </summary>
         /// <returns></returns>
-        public async Task CreateAccount()
+        public async Task CreateAccount(AccountMetaData accountMetaData, AccountSecret accountSecret)
         {
-            // Read JSON from file
-            string json = File.ReadAllText("Temp/account_kit.json");
-
-            // Deserialize JSON to object
-            AccountMetaData accountMetaData = JsonConvert.DeserializeObject<AccountMetaData>(json);
-            AccountSecret accountSecret = JsonConvert.DeserializeObject<AccountSecret>(json);
-
             await this.Create("account-metadata", JsonConvert.SerializeObject(accountMetaData));
             await this.Create("account-secret", JsonConvert.SerializeObject(accountSecret));
         }

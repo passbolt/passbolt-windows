@@ -16,10 +16,7 @@ import UserAlreadyLoggedInError from "passbolt-browser-extension/src/all/backgro
 import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
 import CheckPassphraseService from "passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService";
-import CurrentUser from "../models/CurrentUser";
-import Settings from "../models/settings";
 import passphraseStorageService from "passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService";
-import PassboltData from "../models/passboltData";
 
 /**
  * Service related to the login user service

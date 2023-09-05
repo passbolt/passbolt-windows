@@ -13,7 +13,7 @@
  */
 using System;
 using passbolt;
-using passbolt.Services.CredentialLockerService;
+using passbolt.Services.CredentialLocker;
 using passbolt.Services.LocalFolder;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -48,9 +48,6 @@ namespace passbolt_windows_tests
             await LocalFolderService.Instance.InitiateLocalFolder();
             LocalFolderService.Instance.CreateRenderedIndex("index-auth.html", "rendered-auth", "ext_authentication.min.css");
             LocalFolderService.Instance.CreateBackgroundIndex("index-auth.html", "background-auth");
-            await new CredentialLockerService().CreateAccount();
-
-            await new CredentialLockerService().CreateAccount();
 
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)

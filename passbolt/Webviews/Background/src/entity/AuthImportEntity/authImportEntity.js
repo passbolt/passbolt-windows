@@ -52,6 +52,9 @@ class AuthImportEntity extends Entity {
             ],
             "properties": {
                 account_kit: AccountEntity.getSchema(),
+                "passphrase": {
+                    "type": "string",
+                },
             },
         };
 

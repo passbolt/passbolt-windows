@@ -61,6 +61,16 @@ describe('VerifyAccountKitController', () => {
             expect(result).rejects.toThrow("Could not validate entity Account.");
         })
 
+        it('Should return the validated account kit', async () => {
+            expect.assertions(1);
+
+            const accountDto = defaultAccountDto();
+            const accountDtoStringify = JSON.stringify(accountDto);
+            const accountKit = Buffer.from(accountDtoStringify).toString('base64');
+            const result = await verifyAccountKitController.exec(accountKit);
+
+            expect(result).toEqual(accountDto);
+        })
         
         it('Should save account kit into the AuthImportStorageService and persist it', async () => {
             expect.assertions(1);

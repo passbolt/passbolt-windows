@@ -12,7 +12,6 @@
  * @since         0.0.1
  */
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,9 +21,9 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Exceptions;
-using passbolt.Services.WebviewService;
 using passbolt.Utils;
 using Windows.Storage.Streams;
+using passbolt.Services.CredentialLocker;
 
 namespace passbolt.Services.HttpService
 {
@@ -33,6 +32,7 @@ namespace passbolt.Services.HttpService
         private HttpClient httpClient;
         private string trustedDomain = null;
         public string pownedUrl = "https://api.pwnedpasswords.com";
+        private CredentialLockerService credentialLockerService;
 
         /// <summary>
         /// HttpService constructor
@@ -40,6 +40,7 @@ namespace passbolt.Services.HttpService
         public HttpService()
         {
             httpClient = new HttpClient();
+            credentialLockerService = new CredentialLockerService();
         }
 
         /// <summary>
@@ -50,7 +51,12 @@ namespace passbolt.Services.HttpService
         /// <exception cref="UnauthorizedAPICallException"></exception>
         public async void CheckAPICall(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs webviewRequest)
         {
-            await this.GetTrustedDomainFromWebview(sender);
+            if(this.trustedDomain == null)
+            {
+                var metaData = await this.credentialLockerService.GetAccountMetadata();
+                this.trustedDomain = metaData != null ? metaData.domain : null;
+            }
+
             if (!this.isCallToServer(webviewRequest) && !this.isCallToPownedService(webviewRequest))
             {
                 throw new UnauthorizedAPICallException();
@@ -62,7 +68,7 @@ namespace passbolt.Services.HttpService
         /// </summary>
         /// <param name="webviewRequest"></param>
         /// <returns></returns>
-        public bool isCallToServer(CoreWebView2WebResourceRequestedEventArgs webviewRequest) => webviewRequest.Request.Uri.StartsWith(this.trustedDomain);
+        public bool isCallToServer(CoreWebView2WebResourceRequestedEventArgs webviewRequest) => this.trustedDomain != null && webviewRequest.Request.Uri.StartsWith(this.trustedDomain);
 
         /// <summary>
         /// check if http call is made to the powned service
@@ -70,19 +76,6 @@ namespace passbolt.Services.HttpService
         /// <param name="webviewRequest"></param>
         /// <returns></returns>
         public bool isCallToPownedService(CoreWebView2WebResourceRequestedEventArgs webviewRequest) => webviewRequest.Request.Uri.StartsWith(pownedUrl);
-
-        /// <summary>
-        /// Check if trusted domain is set or retrieve it from the webview
-        /// </summary>
-        /// <param name="sender"></param>
-        public async Task GetTrustedDomainFromWebview(CoreWebView2 sender)
-        {
-            if (string.IsNullOrEmpty(trustedDomain))
-            {
-                var backgroundWebviewService = new BackgroundWebviewService(sender);
-                trustedDomain = await backgroundWebviewService.GetTrustedDomain();
-            }
-        }
 
         /// <summary>
         /// Create http request from webview request

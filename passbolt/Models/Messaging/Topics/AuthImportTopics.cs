@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
@@ -18,5 +18,9 @@ namespace passbolt.Models.Messaging.Topics
     public class AuthImportTopics
     {
         public const string VALIDATE_ACCOUNT_KIT = "passbolt.background.verify-account-kit";
+        public const string VERIFY_PASSPHRASE = "passbolt.auth-import.verify-passphrase";
+        public const string IMPORT_ACCOUNT = "passbolt.auth-import.import-account";
+        public const string SAVE_ACCOUNT = "passbolt.background.save-account";
+        public const string IMPORT_SIGN_IN = "passbolt.auth-import.sign-in";
     }
 }

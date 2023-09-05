@@ -29,6 +29,7 @@ const listen = function(worker) {
     const controller = new AuthLogoutController(worker, requestId, apiClientOptions);
     await controller._exec();
   });
+
   /*
    * Retrieve current user for authentication screen.
    *
@@ -37,6 +38,18 @@ const listen = function(worker) {
    * @param account {object} The account from credential locker
    */
   worker.port.on('passbolt.account.set-current', async(requestId, account) => {
+    const controller = new DesktopSetAccountController(worker, requestId, account);
+    await controller._exec();
+  });
+
+  /*
+   * Sign in the user which has imported an account kit
+   *
+   * @listens passbolt.account.get-current
+   * @param requestId {uuid} The request identifier
+   * @param account {object} The account from credential locker
+   */
+  worker.port.on('passbolt.auth-import.sign-in', async(requestId, account) => {
     const controller = new DesktopSetAccountController(worker, requestId, account);
     await controller._exec();
   });

@@ -18,7 +18,7 @@ class AuthImportStorageService {
     /**
     * Stores the account kit import in runtime memory.
     * @param {Object} accountKit
-    * @return {AuthImportEntity}
+    * @return {void}
     */
     static set(authImportEntity) {
         this.authImportEntity = authImportEntity
@@ -26,7 +26,7 @@ class AuthImportStorageService {
 
     /**
      * Return the authImportEntity
-     * @return {void}
+    * @return {AuthImportEntity}
      */
     static get() {
         return this.authImportEntity;
@@ -38,6 +38,17 @@ class AuthImportStorageService {
      */
     static flush() {
         this.authImportEntity = null;
+    }
+
+    /**
+     * Retunr the private key from imported account kit if exist
+     */
+    static findPrivate() {
+        if(!this.authImportEntity?.account_kit) {
+            return null;
+        }
+        const accountKitDto = this.authImportEntity?.account_kit.toDto({user_private_armored_key: true});
+        return {armoredKey: accountKitDto.user_private_armored_key}
     }
 }
 

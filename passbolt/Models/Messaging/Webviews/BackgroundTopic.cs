@@ -13,9 +13,11 @@
  */
 
 using Microsoft.UI.Xaml.Controls;
+using Newtonsoft.Json.Linq;
 using passbolt.Exceptions;
+using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging.Topics;
-using passbolt.Services.CredentialLockerService;
+using passbolt.Services.CredentialLocker;
 using passbolt.Services.DownloadService;
 using passbolt.Services.LocalFolder;
 using passbolt.Services.LocalStorage;
@@ -29,14 +31,13 @@ namespace passbolt.Models.Messaging
     public class BackgroundTopic : WebviewTopic
     {
         private LocalStorageService localStorageService;
-        private BackgroundWebviewService backgroundWebviewService;
         private RenderedWebviewService renderedWebviewService;
         private CredentialLockerService credentialLockerService;
+        private string currentIndex = "index-auth.html";
 
         public BackgroundTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService) : base(background, rendered, localFolderService)
         {
             localStorageService = new LocalStorageService();
-            backgroundWebviewService = new BackgroundWebviewService(background.CoreWebView2);
             renderedWebviewService = new RenderedWebviewService(rendered.CoreWebView2);
             credentialLockerService = new CredentialLockerService();
         }
@@ -53,6 +54,13 @@ namespace passbolt.Models.Messaging
             {
                 case AllowedTopics.BACKGROUND_READY:
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_READY)));
+                    break;
+                case AuthImportTopics.SAVE_ACCOUNT:
+                    this.currentIndex = "index-import.html";
+                    var metaData = SerializationHelper.DeserializeFromJson<AccountMetaData>(((JObject) ipc.message).ToString());
+                    var secrets = SerializationHelper.DeserializeFromJson<AccountSecret>(((JObject)ipc.message).ToString());
+                    await this.credentialLockerService.CreateAccount(metaData, secrets);
+                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(ipc.requestId, "SUCCESS", null))) ;
                     break;
                 case AllowedTopics.BACKGROUND_DOWNLOAD_FILE:
                     var downloadService = new DownloadService();
@@ -73,11 +81,10 @@ namespace passbolt.Models.Messaging
                     await localFolderService.CreateRenderedIndex("index-auth.html", "rendered-auth", "ext_authentication.min.css", accountMetaData.domain);
                     await localFolderService.CreateBackgroundIndex("index-auth.html", "background-auth", accountMetaData.domain);
                     background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-auth.html"));
-                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-auth.html"));
                     break;
                 case AuthenticationTopics.AFTER_LOGIN:
-                    await localFolderService.RemoveFile("Rendered", "index-auth.html");
-                    await localFolderService.RemoveFile("Background", "index-auth.html");
+                    await localFolderService.RemoveFile("Rendered", this.currentIndex);
+                    await localFolderService.RemoveFile("Background", this.currentIndex);
                     await localFolderService.CreateRenderedIndex("index-workspace.html", "rendered-workspace", "ext_app.min.css", accountMetaData.domain);
                     await localFolderService.CreateBackgroundIndex("index-workspace.html", "background-workspace", accountMetaData.domain);
                     background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-workspace.html"));
