@@ -36,9 +36,13 @@ class AppImport extends Component {
         this.state = this.defaultState(props);
     }
 
+    async componentDidMount() {
+        await localStorage.clear() 
+    }
+
     /**
- * Returns the component default state
- */
+     * Returns the component default state
+     */
     defaultState(props) {
         return {
             port: props.port, // The background page communication port

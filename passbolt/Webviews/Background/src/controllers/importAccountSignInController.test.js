@@ -81,7 +81,7 @@ describe('ImportAccountSignInController', () => {
     
             await importAccountSignInController.exec();
             
-            expect(worker.port.emit).toHaveBeenCalledWith(USER_LOGGED_IN);
+            expect(worker.port.emit).toHaveBeenCalledWith(USER_LOGGED_IN, authImportEntity.passphrase);
           })
     });
 })

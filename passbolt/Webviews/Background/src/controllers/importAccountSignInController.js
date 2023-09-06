@@ -63,7 +63,7 @@ class ImportAccountSignInController {
       await loginUserService.checkPassphrase(passphrase)
       await loginUserService.login(passphrase, true)
       //Send message to the UWP's main process to handle specific 'log in' process
-      this.worker.port.emit(USER_LOGGED_IN);
+      this.worker.port.emit(USER_LOGGED_IN, passphrase);
       AuthImportStorageService.flush();
     }
   }

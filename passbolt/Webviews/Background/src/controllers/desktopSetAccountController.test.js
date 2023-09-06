@@ -18,11 +18,10 @@ import DesktopSetAccountController from "./desktopSetAccountController";
 import IPCHandler from "../shared/IPCHandler";
 import {enableFetchMocks} from "jest-fetch-mock";
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
-import {accountKit} from "./desktopAuthenticateController.test.data";
 import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk/storage';
 import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
 import {v4 as uuidv4} from "uuid";
-
+import {accountKit} from "./desktopSetAccountController.test.data";
 
 describe('DesktopSetAccountController', () => {
   let desktopSetAccountController;

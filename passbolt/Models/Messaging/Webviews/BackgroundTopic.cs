@@ -34,12 +34,14 @@ namespace passbolt.Models.Messaging
         private RenderedWebviewService renderedWebviewService;
         private CredentialLockerService credentialLockerService;
         private string currentIndex = "index-auth.html";
+        private string passphrase;
 
         public BackgroundTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService) : base(background, rendered, localFolderService)
         {
-            localStorageService = new LocalStorageService();
-            renderedWebviewService = new RenderedWebviewService(rendered.CoreWebView2);
+            this.SetRenderedWebviewService(rendered);
+            this.InitLocalFolderService();
             credentialLockerService = new CredentialLockerService();
+            passphrase = null;
         }
 
         /// <summary>
@@ -54,6 +56,12 @@ namespace passbolt.Models.Messaging
             {
                 case AllowedTopics.BACKGROUND_READY:
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_READY)));
+                    if(passphrase != null)
+                    {
+                        background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_STORE_PASSPHRASE, passphrase)));
+                        rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-workspace.html"));
+                        passphrase = null;
+                    }
                     break;
                 case AuthImportTopics.SAVE_ACCOUNT:
                     this.currentIndex = "index-import.html";
@@ -76,19 +84,21 @@ namespace passbolt.Models.Messaging
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_CLEAR)));
                     break;
                 case AuthenticationTopics.LOG_OUT:
+                    this.currentIndex = "index-auth.html";
                     await localFolderService.RemoveFile("Rendered", "index-workspace.html");
                     await localFolderService.RemoveFile("Background", "index-workspace.html");
-                    await localFolderService.CreateRenderedIndex("index-auth.html", "rendered-auth", "ext_authentication.min.css", accountMetaData.domain);
-                    await localFolderService.CreateBackgroundIndex("index-auth.html", "background-auth", accountMetaData.domain);
+                    await localFolderService.CreateRenderedIndex(this.currentIndex, "rendered-auth", "ext_authentication.min.css", accountMetaData.domain);
+                    await localFolderService.CreateBackgroundIndex(this.currentIndex, "background-auth", accountMetaData.domain);
                     background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-auth.html"));
+                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-auth.html"));
                     break;
                 case AuthenticationTopics.AFTER_LOGIN:
+                    passphrase = (string) ipc.message;
                     await localFolderService.RemoveFile("Rendered", this.currentIndex);
                     await localFolderService.RemoveFile("Background", this.currentIndex);
                     await localFolderService.CreateRenderedIndex("index-workspace.html", "rendered-workspace", "ext_app.min.css", accountMetaData.domain);
                     await localFolderService.CreateBackgroundIndex("index-workspace.html", "background-workspace", accountMetaData.domain);
                     background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-workspace.html"));
-                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-workspace.html"));
                     break;
                 case ProgressTopics.PROGRESSCLOSEDIALOG:
                 case ProgressTopics.PROGRESSUPDATE:
@@ -108,6 +118,24 @@ namespace passbolt.Models.Messaging
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
                     break;
             }
+        }
+
+        /// <summary>
+        /// Set the rendred webview
+        /// </summary>
+        /// <param name="rendered"></param>
+        public void SetRenderedWebviewService(WebView2 rendered)
+        {
+            renderedWebviewService = new RenderedWebviewService(rendered.CoreWebView2);
+        }
+
+        /// <summary>
+        /// Init the local folder service
+        /// </summary>
+        /// <param name="localFolderService"></param>
+        public void InitLocalFolderService()
+        {
+            localStorageService = new LocalStorageService();
         }
 
     }

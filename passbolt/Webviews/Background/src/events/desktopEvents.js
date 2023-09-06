@@ -15,6 +15,7 @@
 import AuthLogoutController from "../controllers/authLogoutController";
 import User from "passbolt-browser-extension/src/all/background_page/model/user";
 import DesktopSetAccountController from "../controllers/desktopSetAccountController";
+import DesktopPassphraseStorageController from "../controllers/desktopPassphraseStorageController";
 
 
 const listen = function(worker) {
@@ -40,6 +41,18 @@ const listen = function(worker) {
   worker.port.on('passbolt.account.set-current', async(requestId, account) => {
     const controller = new DesktopSetAccountController(worker, requestId, account);
     await controller._exec();
+  });
+
+  /*
+   * Store the passphrase inside the config to remember it.
+   *
+   * @listens passbolt.background.store-passphrase
+   * @param requestId {uuid} The request identifier
+   * @param passphrase {object} the passphrase to store
+   */
+  worker.port.on('passbolt.background.store-passphrase', async(requestId, passphrase) => {
+    const controller = new DesktopPassphraseStorageController(worker, requestId);
+    await controller._exec(passphrase);
   });
 
   /*
