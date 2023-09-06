@@ -12,6 +12,7 @@
  * @since         0.0.1
  */
 
+using System;
 using System.ComponentModel.DataAnnotations;
 using passbolt.Models.Messaging;
 
@@ -25,14 +26,22 @@ namespace passbolt.Models
         {
             this.topic = topic;
             this.message = null;
-            this.requestId = null;
+            this.requestId = Guid.NewGuid().ToString();
             this.status = null;
         }
         public IPC(string topic, string message)
         {
             this.topic = topic;
             this.message = message;
-            this.requestId = null;
+            this.requestId = Guid.NewGuid().ToString();
+            this.status = null;
+        }
+
+        public IPC(string topic, string message, string requestId)
+        {
+            this.topic = topic;
+            this.message = message;
+            this.requestId = requestId;
             this.status = null;
         }
 

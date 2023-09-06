@@ -12,7 +12,7 @@
  * @since         0.0.1
  */
 
-import { LOCALSTORAGE_CLEAR, LOCALSTORAGE_DELETE, LOCALSTORAGE_UPDATE } from "../enumerations/appEventEnumeration";
+import {LOCALSTORAGE_CLEAR, LOCALSTORAGE_DELETE, LOCALSTORAGE_UPDATE} from "../enumerations/appEventEnumeration";
 
 /**
  * Polyfill to match the webview storage with the bext storage
@@ -105,9 +105,7 @@ class StoragePolyfill {
      * @returns 
      */
     onStorageChanges(key, value) {
-        if(key != "_passbolt_data") {
-            window.chrome.webview.postMessage(JSON.stringify({ topic: LOCALSTORAGE_UPDATE, message: {key, value}}));
-        }
+        window.chrome.webview.postMessage(JSON.stringify({ topic: LOCALSTORAGE_UPDATE, message: {key, value}}));
     }
 }
 

@@ -13,6 +13,7 @@
  */
 
 using Microsoft.UI.Xaml.Controls;
+using passbolt.Services.LocalFolder;
 
 namespace passbolt.Models.Messaging
 {
@@ -20,16 +21,18 @@ namespace passbolt.Models.Messaging
     {
         protected WebView2 background { get; set; }
         protected WebView2 rendered { get; set; }
-
+        protected LocalFolderService localFolderService { get; set; }
         public WebviewTopic()
         {
             background = null;
             rendered = null;
+            localFolderService = null;
         }
-        public WebviewTopic(WebView2 _background, WebView2 _rendered)
+        public WebviewTopic(WebView2 _background, WebView2 _rendered, LocalFolderService _localFolderService)
         {
             background = _background;
             rendered = _rendered;
+            localFolderService = _localFolderService;
         }
 
         /// <summary>

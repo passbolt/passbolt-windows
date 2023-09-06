@@ -31,6 +31,18 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         }
 
         [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedMainTopics()
+        {
+            bool error = AllowedTopics.IsTopicNameAllowed(AllowedTopics.ERROR);
+            bool downloadFile = AllowedTopics.IsTopicNameAllowed(AllowedTopics.BACKGROUND_DOWNLOAD_FILE);
+            bool backgroundReady = AllowedTopics.IsTopicNameAllowed(AllowedTopics.BACKGROUND_READY);
+
+            Assert.IsTrue(error);
+            Assert.IsTrue(backgroundReady);
+            Assert.IsTrue(downloadFile);
+        }
+
+        [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedFolderTopics()
         {
             bool findAllFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.FIND_ALL);
@@ -177,15 +189,33 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         }
 
         [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedRbacTopics()
+        {
+            bool findMe = AllowedTopics.IsTopicNameAllowed(RbacTopics.FIND_ME);
+
+            Assert.IsTrue(findMe);
+        }
+
+        [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedAuthenticationTopics()
         {
-            bool afterLogin = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.AFTERLOGIN);
-            bool isAuthenticated = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.ISAUTHENTICATED);
-            bool desktopAuthenticate = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.DESKTOPAUTHENTICATE);
+            bool afterLogin = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.AFTER_LOGIN);
+            bool isAuthenticated = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.IS_AUTHENTICATED);
+            bool desktopAuthenticate = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.DESKTOP_AUTHENTICATE);
+            bool logOut = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.LOG_OUT);
+            bool setServerKey = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.SET_SERVER_KEY);
+            bool getServerKey = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.GET_SERVER_KEY);
+            bool verifyServer = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.VERIFY_SERVER);
+            bool verifyPassphrase = AllowedTopics.IsTopicNameAllowed(AuthenticationTopics.VERIFY_PASSPHRASE);
 
             Assert.IsTrue(afterLogin);
             Assert.IsTrue(isAuthenticated);
             Assert.IsTrue(desktopAuthenticate);
+            Assert.IsTrue(logOut);
+            Assert.IsTrue(setServerKey);
+            Assert.IsTrue(getServerKey);
+            Assert.IsTrue(verifyPassphrase);
+            Assert.IsTrue(verifyServer);
         }
 
         [TestMethod]

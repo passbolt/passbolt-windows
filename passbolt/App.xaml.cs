@@ -12,6 +12,7 @@
  * @since         0.0.1
  */
 
+using passbolt.Services.LocalFolder;
 using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -41,8 +42,13 @@ namespace passbolt
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="e">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
+        protected async override void OnLaunched(LaunchActivatedEventArgs e)
         {
+            await LocalFolderService.Instance.InitiateLocalFolder();
+
+            // To remove
+            //await new CredentialLockerService().CreateAccount();
+
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,

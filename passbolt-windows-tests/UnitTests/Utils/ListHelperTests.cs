@@ -30,10 +30,15 @@ namespace passbolt_windows_tests.UnitTests.Utils
 
             List<string> result = ListHelper.GetClassContantsToList(topics);
 
-            Assert.AreEqual(3, result.Count);
-            CollectionAssert.Contains(result, AuthenticationTopics.DESKTOPAUTHENTICATE);
-            CollectionAssert.Contains(result, AuthenticationTopics.AFTERLOGIN);
-            CollectionAssert.Contains(result, AuthenticationTopics.ISAUTHENTICATED);
+            Assert.AreEqual(8, result.Count);
+            CollectionAssert.Contains(result, AuthenticationTopics.DESKTOP_AUTHENTICATE);
+            CollectionAssert.Contains(result, AuthenticationTopics.AFTER_LOGIN);
+            CollectionAssert.Contains(result, AuthenticationTopics.IS_AUTHENTICATED);
+            CollectionAssert.Contains(result, AuthenticationTopics.LOG_OUT);
+            CollectionAssert.Contains(result, AuthenticationTopics.SET_SERVER_KEY);
+            CollectionAssert.Contains(result, AuthenticationTopics.VERIFY_PASSPHRASE);
+            CollectionAssert.Contains(result, AuthenticationTopics.GET_SERVER_KEY);
+            CollectionAssert.Contains(result, AuthenticationTopics.VERIFY_SERVER);
         }
 
         [TestMethod]

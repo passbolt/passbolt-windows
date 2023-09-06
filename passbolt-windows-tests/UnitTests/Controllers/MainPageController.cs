@@ -26,9 +26,14 @@ using System;
 using passbolt.Utils;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Models.LocalStorage;
-using passbolt.Services.CredentialLockerService;
+using passbolt.Services.CredentialLocker;
 using System.Threading.Tasks;
 using System.Reflection.Metadata;
+using passbolt.Services.NavigationService;
+using static System.Net.WebRequestMethods;
+using System.Linq;
+using System.IO;
+using passbolt.Services.LocalFolder;
 
 namespace passbolt_windows_tests
 {
@@ -44,10 +49,10 @@ namespace passbolt_windows_tests
         private StorageFolder distfolder;
         private string webviewsURLBackground = "";
         private string webviewsURLRendered = "";
-        private string aboutBlank = "about:blank";
         private string attackerUrl = "http://attacker-background.com";
         private string trustedDomain = "";
         private CredentialLockerService credentialLockerService;
+        protected LocalFolderService localFolderService = LocalFolderService.Instance;
 
         [TestInitialize]
         public void TestInitialize()
@@ -59,33 +64,99 @@ namespace passbolt_windows_tests
                 webviewBackground = ReflectionUtil.GetPrivateProperty<WebView2>(page, "webviewBackground");
                 webviewRendered = ReflectionUtil.GetPrivateProperty<WebView2>(page, "webviewRendered");
                 var controller = ReflectionUtil.GetPrivateField<MainController>(page, "mainController");
-                distfolder = ReflectionUtil.GetPrivateField<StorageFolder>(controller, "distfolder");
                 credentialLockerService = ReflectionUtil.GetPrivateField<CredentialLockerService>(controller, "credentialLockerService");
                 mainController = (MockMainController)ReflectionUtil.SetPrivatefield<MainController>(page, "mainController", new MockMainController(webviewRendered, webviewBackground, credentialLockerService));
-                InitialiseWebviewUrl().Wait(5000);
+                InitialiseWebviewUrl().Wait(7000);
             }
         }
 
         [UITestMethod]
-        [Description("As a desktop application I want to launch a rendered webview and do not display a screen")]
+        [Description("As a desktop application I want to launch the rendered with index-auth.html")]
         public void LoadRenderedWebviewTest()
         {
-            // Assert
             Assert.IsNotNull(webviewRendered);
             //Should initialized the webview
-            Assert.AreEqual(aboutBlank, webviewRendered.Source.ToString());
+            Assert.AreEqual(webviewsURLRendered, webviewRendered.Source.ToString());
         }
 
         [UITestMethod]
-        [Description("As a desktop application I want to launch a background webview")]
+        [Description("As a desktop application I want to launch a background webview with index-workspace.html")]
         public void LoadBackgroundWebviewTest()
         {
-            // Assert
-            Assert.IsNotNull(webviewRendered);
+            Assert.IsNotNull(webviewBackground);
             //Should initialized the webview
             Assert.AreEqual(webviewsURLBackground, webviewBackground.Source.ToString());
-            //Should initialized the folderStorage
-            Assert.IsNotNull(distfolder);
+        }
+
+
+        [UITestMethod]
+        [Description("As a desktop application I should not be blocked by CORS when calling API - Should block API which are not trusted")]
+        public void WebResourceRequested_ShouldBlockUntrustedDomain()
+        {
+            var authenticateMessage = "<script>fetch(\"https://www.attacker.com\");</ script>";
+
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync(authenticateMessage);
+            operation.Completed += (info, status) =>
+            {
+                mainController.webView2WebResourceResponse.Equals(null);
+            };
+        }
+
+        [UITestMethod]
+        [Description("As a desktop application I should generate the index files for authentication when application started")]
+        public void CreateIndexAuthFilesOnStartUp()
+        {
+            var distfolder = this.localFolderService.GetWebviewsFolder();
+            distfolder.GetFoldersAsync().Completed += (result, status) =>
+            {
+                var folders = result.GetResults();
+                folders[0].GetFilesAsync().Completed += (files, statusIndex) =>
+                {
+                    var backgroundFiles = files.GetResults();
+                    Assert.AreEqual(1, backgroundFiles.Count);
+                    Assert.AreEqual(backgroundFiles[0].Name, "index-auth.html");
+                };
+
+                folders[1].GetFilesAsync().Completed += (files, statusIndex) =>
+                {
+                    var renderedFiles = files.GetResults();
+                    Assert.AreEqual(1, renderedFiles.Count);
+                    Assert.AreEqual(renderedFiles[0].Name, "index-auth.html");
+                };
+
+                Assert.AreEqual(2, folders.Count);
+                Assert.AreEqual(folders[0].Name, "Background");
+                Assert.AreEqual(folders[1].Name, "Rendered");
+
+            };
+        }
+
+        [UITestMethod]
+        [Description("As a desktop application I should generate the index files for workspace after login")]
+        public void CreateIndexWorkspaceFilesOnLogin()
+        {
+            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("<script>window.chrome.webview.postMessage(JSON.stringify({ topic: 'passbolt.auth.after-login' })</script>");
+            operation.Completed += (info, operationStatus) =>
+            {
+                var distfolder = this.localFolderService.GetWebviewsFolder();
+                distfolder.GetFoldersAsync().Completed += (result, status) =>
+                {
+                    var folders = result.GetResults();
+                    folders[0].GetFilesAsync().Completed += (files, statusIndex) =>
+                    {
+                        var backgroundFiles = files.GetResults();
+                        Assert.AreEqual(1, backgroundFiles.Count);
+                        Assert.AreEqual(backgroundFiles[0].Name, "index-workspace.html");
+                    };
+
+                    folders[1].GetFilesAsync().Completed += (files, statusIndex) =>
+                    {
+                        var renderedFiles = files.GetResults();
+                        Assert.AreEqual(1, renderedFiles.Count);
+                        Assert.AreEqual(renderedFiles[0].Name, "index-workspace.html");
+                    };
+                };
+            };
         }
 
         [UITestMethod]
@@ -107,22 +178,10 @@ namespace passbolt_windows_tests
                     //Should initialized the webview
                     Assert.AreEqual(webviewsURLRendered, webviewRendered.Source.ToString());
                 };
- 
+
             };
         }
 
-        [UITestMethod]
-        [Description("As a desktop application I should not be blocked by CORS when calling API - Should block API which are not trusted")]
-        public void WebResourceRequested_ShouldBlockUntrustedDomain()
-        {
-            var authenticateMessage = "<script>fetch(\"https://www.attacker.com\");</ script>";
-
-            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync(authenticateMessage);
-            operation.Completed += (info, status) =>
-            {
-                mainController.webView2WebResourceResponse.Equals(null);
-            };
-        }
 
         [UITestMethod]
         [Description("As a desktop application I should not be blocked by CORS when calling API")]
@@ -149,7 +208,7 @@ namespace passbolt_windows_tests
             var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync(authenticateMessage);
             operation.Completed += (info, status) =>
             {
-                Assert.AreEqual(mainController.webView2WebResourceResponse.Content,  null);
+                Assert.AreEqual(mainController.webView2WebResourceResponse.Content, null);
                 Assert.AreEqual(mainController.webView2WebResourceResponse.ReasonPhrase, "Option method");
             };
         }
@@ -331,27 +390,54 @@ namespace passbolt_windows_tests
                     Assert.AreEqual("test", result);
                 };
             };
-        }        
-        
+        }
+
         [UITestMethod]
-        [Description("Rendered webview should dynamically authorise API domain in its CSP")]
-        public void ShouldInitCSPFromMainProcess()
+        [Description("As a desktop application I should generate the index files for authentication after logout")]
+        public void CreateIndexAuthFilesOnLogout()
         {
-            var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("var csp = ''; "+
-                "var metaTags = document.getElementsByTagName('meta'); " +
-                "for (var i = 0; i < metaTags.length; i++) { " +
-                "if (metaTags[i].httpEquiv === 'Content-Security-Policy')" +
-                "csp = metaTags[i].content;" +
-                "break;" +  
-                "}" +
-                "return csp;");
-            operation.Completed += (info, status) =>
+            var operationLogin = webviewBackground.CoreWebView2.ExecuteScriptAsync("<script>window.chrome.webview.postMessage(JSON.stringify({ topic: 'passbolt.auth.after-login' })</script>");
+            operationLogin.Completed += (infoLogin, operationLoginStatus) =>
             {
-                var csp = operation.GetResults();
-                string expectedCSP = $"default-src 'self'; script-src 'self'; img-src 'self' {trustedDomain} {webviewsURLRendered};";
-                Assert.AreEqual(expectedCSP, csp);
+
+                var operation = webviewBackground.CoreWebView2.ExecuteScriptAsync("<script>window.chrome.webview.postMessage(JSON.stringify({ topic: 'passbolt.auth.logout' })</script>");
+                operation.Completed += (info, operationStatus) =>
+                {
+                    var distfolder = this.localFolderService.GetWebviewsFolder();
+                    distfolder.GetFoldersAsync().Completed += (result, status) =>
+                    {
+                        var folders = result.GetResults();
+                        folders[0].GetFilesAsync().Completed += (files, statusIndex) =>
+                        {
+                            var backgroundFiles = files.GetResults();
+                            Assert.AreEqual(1, backgroundFiles.Count);
+                            Assert.AreEqual(backgroundFiles[0].Name, "index-auth.html");
+                        };
+
+                        folders[1].GetFilesAsync().Completed += (files, statusIndex) =>
+                        {
+                            var renderedFiles = files.GetResults();
+                            Assert.AreEqual(1, renderedFiles.Count);
+                            Assert.AreEqual(renderedFiles[0].Name, "index-auth.html");
+                        };
+                    };
+                };
             };
         }
+
+
+        [UITestMethod]
+        [Description("As a desktop application I want to launch the rendered with index-import.html when no account exist")]
+        public void LoadBackgroundWebviewWithoutAccountTest()
+        {
+            credentialLockerService.Remove("account-metadata").Wait();
+            mainController.LoadWebviews().Wait();
+            Assert.IsNotNull(webviewRendered);
+            //Should initialized the webview
+            Assert.IsTrue(webviewBackground.Source.ToString().Contains("Background/index-import.html"));
+            Assert.IsTrue(webviewRendered.Source.ToString().Contains("Rendered/index-import.html"));
+        }
+
 
         /// <summary>
         /// Navigation completed with success for testing
@@ -414,11 +500,11 @@ namespace passbolt_windows_tests
         /// </summary>
         public async Task InitialiseWebviewUrl()
         {
-            if(string.IsNullOrEmpty(webviewsURLRendered))
+            if (string.IsNullOrEmpty(webviewsURLRendered))
             {
                 await mainController.GetConfiguredApplication();
-                webviewsURLBackground =  mainController.backgroundUrl + "/Background/index.html";
-                webviewsURLRendered =  mainController.renderedUrl + "/Rendered/index.html";
+                webviewsURLBackground = mainController.backgroundUrl + "/Background/index-auth.html";
+                webviewsURLRendered = mainController.renderedUrl + "/Rendered/index-auth.html";
             }
         }
     }

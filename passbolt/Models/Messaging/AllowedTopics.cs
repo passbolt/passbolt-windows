@@ -12,17 +12,24 @@
  * @since         0.0.1
  */
 
-using System.Collections.Generic;
-using passbolt.Models.Messaging.Topics;
-using passbolt.Utils;
-
+using System.Collections.Generic;
+
+using passbolt.Models.Messaging.Topics;
+
+using passbolt.Utils;
+
+
+
 namespace passbolt.Models.Messaging
 {
     public class AllowedTopics
     {
-        public const string ERROR = "passbolt.error";
+        public const string ERROR = "passbolt.error";
         public const string BACKGROUND_READY = "passbolt.background.is-ready";
-        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR };
+        public const string BACKGROUND_IMPORT = "passbolt.background.import";
+        public const string BACKGROUND_DOWNLOAD_FILE = "passbolt.background.download-file";
+        public const string BACKGROUND_STORE_PASSPHRASE = "passbolt.background.store-passphrase";
+        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR, BACKGROUND_DOWNLOAD_FILE, BACKGROUND_STORE_PASSPHRASE };
         private static List<string> requestIds = new List<string>();
 
         /// <summary>
@@ -31,15 +38,19 @@ namespace passbolt.Models.Messaging
         static AllowedTopics()
         {
             InitTopics();
-        }
+        }
+
         /// <summary>
         /// init topics list with all topics
-        /// </summary>
+        /// </summary>
+
         private static void InitTopics()
         {
-            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AccountRecoveryTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthImportTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(BrowserTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FavoriteTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));
@@ -50,14 +61,17 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(KeyringTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(PownedPasswordTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(PasswordGeneratorTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(PasswordPoliciesTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ProgressTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(RbacTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SecretTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ShareTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(TagTopics)));
-            topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));        }
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
+        }
 
         /// <summary>
         /// Retrieve all allowed topics

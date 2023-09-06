@@ -60,7 +60,7 @@ namespace passbolt.Utils
         private static string SanitizeData(string data)
         {
             string sanitizeData = Regex.Replace(data, @"<script.*?</script>", "", RegexOptions.IgnoreCase);
-            sanitizeData = Regex.Replace(sanitizeData, @"require", "", RegexOptions.IgnoreCase);
+            sanitizeData = Regex.Replace(sanitizeData, @"\brequire\b(?!d)", "", RegexOptions.IgnoreCase);
 
             return sanitizeData;
         }

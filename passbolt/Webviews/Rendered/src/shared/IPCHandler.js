@@ -12,7 +12,7 @@
  * @since         0.0.1
  */
 
-import { v4 as uuidv4 } from "uuid";
+import {v4 as uuidv4} from "uuid";
 
 class IPCHandler {
 
@@ -113,13 +113,23 @@ class IPCHandler {
         let ipc;
 
         if (typeof requestArgs[0] === 'string') {
+            let status, message;
+
+            if (requestArgs[1] === 'SUCCESS' || requestArgs[1] === 'ERROR') {
+                status = requestArgs[1];
+                message = requestArgs.length > 2 ? requestArgs[2] : null;
+            } else {
+                status = null;
+                message = requestArgs[1];
+            }
             ipc = {
                 topic: requestArgs[0],
-                status: requestArgs[1],
-                message: requestArgs.length > 2 ? requestArgs[2] : null
+                status,
+                message
             }
+
         } else {
-            ipc = requestArgs[0];
+            ipc = requestArgs[0]
         }
         window.chrome.webview.postMessage(JSON.stringify(ipc));
     }

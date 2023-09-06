@@ -24,18 +24,5 @@ namespace passbolt.Services.WebviewService
         {
             this.renderedWebview = rendered;
         }
-
-        /// <summary>
-        /// init the rendered webview CSP after initialisation
-        /// </summary>
-        public async void initRenderedCSP(string trustedDomain, string renderedUrl)
-        {
-            var csp = "var metaCSP = document.querySelector('meta[http-equiv=\"Content-Security-Policy\"]');\r\n" +
-                "metaCSP = document.createElement('meta');\r\n" +
-                "metaCSP.setAttribute('http-equiv', 'Content-Security-Policy');\r\n" +
-                "document.head.appendChild(metaCSP);\r\n " +
-                $"metaCSP.setAttribute('content', `default-src 'self'; script-src 'self'; img-src 'self' {trustedDomain} {renderedUrl};`);";
-            await renderedWebview.ExecuteScriptAsync($"{csp}");
-        }
     }
 }

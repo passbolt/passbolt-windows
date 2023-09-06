@@ -126,10 +126,18 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\Authentication\LocalUserManager.cs" />
+    <Compile Include="Models\CredentialLocker\AccountKit.cs" />
+    <Compile Include="Models\CredentialLocker\AccountSecret.cs" />
     <Compile Include="Models\CredentialLocker\ApplicationConfiguration.cs" />
+    <Compile Include="Models\CredentialLocker\AccountMetaData.cs" />
+    <Compile Include="Models\CredentialLocker\SecurityToken.cs" />
+    <Compile Include="Models\Files\DownloadFile.cs" />
     <Compile Include="Models\LocalStorage\PassboltConfig.cs" />
     <Compile Include="Models\LocalStorage\PassboltData.cs" />
     <Compile Include="Models\Messaging\AllowedTopics.cs" />
+    <Compile Include="Models\Messaging\Messaging.cs" />
+    <Compile Include="Models\Messaging\Topics\AuthImportTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\BrowserTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ImportExportTopics.cs" />
     <Compile Include="Models\Messaging\Topics\AccountRecoveryTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ActionLogsTopics.cs" />
@@ -141,9 +149,11 @@
     <Compile Include="Models\Messaging\Topics\KeyringTopics.cs" />
     <Compile Include="Models\Messaging\Topics\LocaleTopics.cs" />
     <Compile Include="Models\Messaging\Topics\LocalStorageTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\PasswordPoliciesTopics.cs" />
     <Compile Include="Models\Messaging\Topics\PownedPasswordTopics.cs" />
     <Compile Include="Models\Messaging\Topics\PasswordGeneratorTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ProgressTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\RbacTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ResourceTopics.cs" />
     <Compile Include="Models\Messaging\Topics\RoleTopics.cs" />
     <Compile Include="Models\Messaging\Topics\SecretTopics.cs" />
@@ -158,12 +168,13 @@
     <Compile Include="Models\User\UserOs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\CredentialLockerService\CredentialLockerService.cs" />
+    <Compile Include="Services\DownloadService\DownloadService.cs" />
     <Compile Include="Services\HttpService\HttpService.cs" />
+    <Compile Include="Services\LocalFolder\LocalFolderService.cs" />
     <Compile Include="Services\LocalStorage\LocalStorageService.cs" />
     <Compile Include="Services\NavigationService\AbstractNavigationService.cs" />
     <Compile Include="Services\NavigationService\BackgroundNavigationService.cs" />
     <Compile Include="Services\NavigationService\RenderedNavigationService.cs" />
-    <Compile Include="Services\WebviewService\BackgroundWebviewService.cs" />
     <Compile Include="Services\WebviewService\RenderedWebviewService.cs" />
     <Compile Include="Utils\ListHelper.cs" />
     <Compile Include="Utils\SerializationHelper.cs" />
@@ -242,31 +253,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
-    <None Include="Webviews\Background\index.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
-    <None Include="Webviews\Background\index.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
-    <None Include="Webviews\Background\dist\background.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
     <None Include="Webviews\Background\jest.config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
-    <None Include="Webviews\Background\src\main.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
-    <None Include="Webviews\Background\src\main.test.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
-    <None Include="Webviews\Rendered\dist\bundle.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
@@ -274,7 +261,43 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
+    <None Include="Webviews\Background\dist\background-import.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="Webviews\Background\dist\background-import.js.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="Webviews\Background\dist\background-auth.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="Webviews\Background\dist\background-auth.js.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="Webviews\Background\dist\background-workspace.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="Webviews\Background\dist\background-workspace.js.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
     <None Include="Webviews\Rendered\dist\locales\de-DE\common.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="Webviews\Rendered\dist\rendered-auth.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="Webviews\Rendered\dist\rendered-import.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="Webviews\Rendered\dist\rendered-workspace.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
@@ -351,14 +374,6 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
     <None Include="Webviews\Rendered\webpack.config.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
-    <None Include="Webviews\Rendered\index.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
-    <None Include="Webviews\Rendered\index.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>

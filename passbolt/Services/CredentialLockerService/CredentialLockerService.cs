@@ -12,21 +12,25 @@
  * @since         0.0.1
  */
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using passbolt.Models.Authentication;
 using passbolt.Models.CredentialLocker;
 using passbolt.Utils;
 using Windows.Security.Credentials;
 
-namespace passbolt.Services.CredentialLockerService
+namespace passbolt.Services.CredentialLocker
 {
     public class CredentialLockerService
     {
         private PasswordVault vault;
         private LocalUserManager localUserManager;
 
-        public CredentialLockerService() {
+        public CredentialLockerService()
+        {
             this.vault = new PasswordVault();
             this.localUserManager = new LocalUserManager();
         }
@@ -50,8 +54,15 @@ namespace passbolt.Services.CredentialLockerService
         /// <returns></returns>
         public async Task<PasswordCredential> Get(string resource)
         {
-            var currentUser = await localUserManager.GetCurrentUser();
-            return vault.Retrieve(resource, currentUser.username);
+            try
+            {
+                var currentUser = await localUserManager.GetCurrentUser();
+                return vault.Retrieve(resource, currentUser.username);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -81,6 +92,37 @@ namespace passbolt.Services.CredentialLockerService
         {
             var credential = await Get("configuration");
             return credential != null ? SerializationHelper.DeserializeFromJson<ApplicationConfiguration>(credential.Password) : null;
+        }
+
+        /// <summary>
+        /// Get the account information from credential locker
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AccountMetaData> GetAccountMetadata()
+        {
+            var metadata = await Get("account-metadata");
+            return metadata != null ? SerializationHelper.DeserializeFromJson<AccountMetaData>(metadata.Password) : null;
+        }
+
+
+        /// <summary>
+        /// Get the account secret from credential locker
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AccountSecret> GetAccountSecret()
+        {
+            var secrets = await Get("account-secret");
+            return secrets != null ? SerializationHelper.DeserializeFromJson<AccountSecret>(secrets.Password) : null;
+        }
+
+        /// <summary>
+        /// temp account creation until importation
+        /// </summary>
+        /// <returns></returns>
+        public async Task CreateAccount(AccountMetaData accountMetaData, AccountSecret accountSecret)
+        {
+            await this.Create("account-metadata", JsonConvert.SerializeObject(accountMetaData));
+            await this.Create("account-secret", JsonConvert.SerializeObject(accountSecret));
         }
     }
 }

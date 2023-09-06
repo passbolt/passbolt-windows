@@ -3,10 +3,25 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'development',
-  entry: './index.js',
+  entry: {
+    'rendered-workspace': './index-workspace.js',
+    'rendered-auth': './index-auth.js',
+    'rendered-import': './index-import.js',
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
+    filename: (chunkData) => {
+      return `${chunkData.chunk.name}.js`;
+    },
+  },
+  resolve: {
+    alias: {
+      'react': path.resolve('./node_modules/react'),
+      'react-dom': path.resolve('./node_modules/react-dom'),
+      'react-router-dom': path.resolve('./node_modules/react-router-dom'),
+      'react-i18next': path.resolve('./node_modules/react-i18next'),
+    },
+    extensions: ["*", ".js", ".jsx"]
   },
   module: {
     rules: [

@@ -29,11 +29,14 @@ namespace passbolt_windows_tests.UnitTests.Services
         [TestMethod]
         public void CanNavigate_WebviewHostUrl_ReturnsTrue()
         {
-           string url = "https://desktop.passbolt.com/Rendered/index.html";
+            string urlAuth = "https://desktop.passbolt.com/Rendered/index-auth.html";
+            string urlWorkspace = "https://desktop.passbolt.com/Rendered/index-workspace.html";
 
-            bool result = RenderedNavigationService.Instance.canNavigate(url);
+            bool resultAuthHtml = RenderedNavigationService.Instance.canNavigate(urlAuth);
+            bool resultWorkspaceHtml = RenderedNavigationService.Instance.canNavigate(urlWorkspace);
 
-            Assert.IsTrue(result);
+            Assert.IsTrue(resultAuthHtml);
+            Assert.IsTrue(resultWorkspaceHtml);
         }
 
         [TestMethod]

@@ -18,8 +18,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Controllers;
 using passbolt.Models.CredentialLocker;
-using passbolt.Services.CredentialLockerService;
+using passbolt.Services.CredentialLocker;
 using passbolt.Services.NavigationService;
+using passbolt.Utils;
 
 namespace passbolt_windows_tests.UnitTests
 {
@@ -53,7 +54,8 @@ namespace passbolt_windows_tests.UnitTests
 
         public override async Task LoadWebviews()
         {
-           await base.LoadWebviews();
+            await credentialLockerService.Create("configuration", SerializationHelper.SerializeToJson(applicationConfiguration));
+            await base.LoadWebviews();
         }
 
         public void DomDialogRequested(CoreWebView2 sender, CoreWebView2ScriptDialogOpeningEventArgs args)

@@ -13,29 +13,35 @@
  */
 
 using Microsoft.UI.Xaml.Controls;
+using Newtonsoft.Json.Linq;
 using passbolt.Exceptions;
+using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging.Topics;
-using passbolt.Services.CredentialLockerService;
+using passbolt.Services.CredentialLocker;
+using passbolt.Services.DownloadService;
+using passbolt.Services.LocalFolder;
 using passbolt.Services.LocalStorage;
 using passbolt.Services.NavigationService;
 using passbolt.Services.WebviewService;
 using passbolt.Utils;
 using System;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
 
 namespace passbolt.Models.Messaging
 {
     public class BackgroundTopic : WebviewTopic
     {
         private LocalStorageService localStorageService;
-        private BackgroundWebviewService backgroundWebviewService;
         private RenderedWebviewService renderedWebviewService;
+        private CredentialLockerService credentialLockerService;
+        private string currentIndex = "index-auth.html";
+        private string passphrase;
 
-        public BackgroundTopic(WebView2 background, WebView2 rendered) : base(background, rendered) {
-            localStorageService = new LocalStorageService();
-            backgroundWebviewService = new BackgroundWebviewService(background.CoreWebView2);
-            renderedWebviewService = new RenderedWebviewService(rendered.CoreWebView2);
+        public BackgroundTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService) : base(background, rendered, localFolderService)
+        {
+            this.SetRenderedWebviewService(rendered);
+            this.InitLocalFolderService();
+            credentialLockerService = new CredentialLockerService();
+            passphrase = null;
         }
 
         /// <summary>
@@ -44,26 +50,55 @@ namespace passbolt.Models.Messaging
         /// <param name="ipc"></param>
         public async override void ProceedMessage(IPC ipc)
         {
+            var accountMetaData = await this.credentialLockerService.GetAccountMetadata();
+
             switch (ipc.topic)
             {
                 case AllowedTopics.BACKGROUND_READY:
-                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AuthenticationTopics.DESKTOPAUTHENTICATE)));
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_READY)));
+                    if(passphrase != null)
+                    {
+                        background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_STORE_PASSPHRASE, passphrase)));
+                        rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-workspace.html"));
+                        passphrase = null;
+                    }
+                    break;
+                case AuthImportTopics.SAVE_ACCOUNT:
+                    this.currentIndex = "index-import.html";
+                    var metaData = SerializationHelper.DeserializeFromJson<AccountMetaData>(((JObject) ipc.message).ToString());
+                    var secrets = SerializationHelper.DeserializeFromJson<AccountSecret>(((JObject)ipc.message).ToString());
+                    await this.credentialLockerService.CreateAccount(metaData, secrets);
+                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(ipc.requestId, "SUCCESS", null))) ;
+                    break;
+                case AllowedTopics.BACKGROUND_DOWNLOAD_FILE:
+                    var downloadService = new DownloadService();
+                    await downloadService.Download(ipc);
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_UPDATE:
-                    var iptopic = new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_UPDATE, SerializationHelper.SerializeToJson(ipc.message));
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_UPDATE, SerializationHelper.SerializeToJson(ipc.message))));
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_DELETE:
-                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_DELETE, (string) ipc.message)));
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_DELETE, (string)ipc.message)));
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_CLEAR:
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_CLEAR)));
                     break;
-                case AuthenticationTopics.AFTERLOGIN:
-                    rendered.Visibility = Visibility.Visible;
-                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index.html"));
-                    localStorageService.InitPassboltData(rendered, SerializationHelper.SerializeToJson(ipc.message));
-                    await this.InitRenderedCSP();
+                case AuthenticationTopics.LOG_OUT:
+                    this.currentIndex = "index-auth.html";
+                    await localFolderService.RemoveFile("Rendered", "index-workspace.html");
+                    await localFolderService.RemoveFile("Background", "index-workspace.html");
+                    await localFolderService.CreateRenderedIndex(this.currentIndex, "rendered-auth", "ext_authentication.min.css", accountMetaData.domain);
+                    await localFolderService.CreateBackgroundIndex(this.currentIndex, "background-auth", accountMetaData.domain);
+                    background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-auth.html"));
+                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-auth.html"));
+                    break;
+                case AuthenticationTopics.AFTER_LOGIN:
+                    passphrase = (string) ipc.message;
+                    await localFolderService.RemoveFile("Rendered", this.currentIndex);
+                    await localFolderService.RemoveFile("Background", this.currentIndex);
+                    await localFolderService.CreateRenderedIndex("index-workspace.html", "rendered-workspace", "ext_app.min.css", accountMetaData.domain);
+                    await localFolderService.CreateBackgroundIndex("index-workspace.html", "background-workspace", accountMetaData.domain);
+                    background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-workspace.html"));
                     break;
                 case ProgressTopics.PROGRESSCLOSEDIALOG:
                 case ProgressTopics.PROGRESSUPDATE:
@@ -86,14 +121,22 @@ namespace passbolt.Models.Messaging
         }
 
         /// <summary>
-        /// init the rendered webview CSP after initialisation
+        /// Set the rendred webview
         /// </summary>
-        private async Task InitRenderedCSP()
+        /// <param name="rendered"></param>
+        public void SetRenderedWebviewService(WebView2 rendered)
         {
-            var credentialLockerService = new CredentialLockerService();
-            var trustedDomain = await this.backgroundWebviewService.GetTrustedDomain();
-            var renderedUrl = (await credentialLockerService.GetApplicationConfiguration()).renderedUrl;
-            this.renderedWebviewService.initRenderedCSP(trustedDomain, renderedUrl);
+            renderedWebviewService = new RenderedWebviewService(rendered.CoreWebView2);
         }
+
+        /// <summary>
+        /// Init the local folder service
+        /// </summary>
+        /// <param name="localFolderService"></param>
+        public void InitLocalFolderService()
+        {
+            localStorageService = new LocalStorageService();
+        }
+
     }
 }

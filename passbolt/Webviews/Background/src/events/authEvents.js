@@ -12,23 +12,104 @@
  * @since         0.0.1
  */
 
+import AuthVerifyServerKeyController from "passbolt-browser-extension/src/all/background_page/controller/auth/authVerifyServerKeyController";
 import DesktopAuthenticateController from "../controllers/desktopAuthenticateController";
+import User from "passbolt-browser-extension/src/all/background_page/model/user";
+import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
+import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
+import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
+import CheckPassphraseController from "passbolt-browser-extension/src/all/background_page/controller/crypto/checkPassphraseController";
 
-const listen = function (worker) {
+const listen = function(worker) {
   /*
-   * Attempt to login the current user.
+   * Authenticate with desktop application
    *
    * @listens passbolt.desktop.authenticate
+   * @param requestId {uuid} The request identifier
    */
-  switch (worker.topic) {
-    case "passbolt.desktop.authenticate":
-      const controller = new DesktopAuthenticateController();
-      controller._exec();
-      break;
-    default:
-      console.log(`Unsupported topic: ${worker.topic}`)
-      break;
-  }
-}
+  worker.port.on('passbolt.auth.login', async(requestId, passphrase) => {
+    const apiClientOptions = await User.getInstance().getApiClientOptions({requireCsrfToken: false});
+    const controller = new DesktopAuthenticateController(worker, requestId, apiClientOptions);
+    await controller._exec(passphrase);
+  });
 
-export const AuthEvents = { listen };
+  /*
+   * Verify the server identity.
+   *
+   * @listens passbolt.auth.verify
+   * @param requestId {uuid} The request identifier
+   */
+  worker.port.on('passbolt.auth.verify-server-key', async requestId => {
+    const user = User.getInstance();
+    const apiClientOptions = await user.getApiClientOptions({requireCsrfToken: false});
+    const userDomain = user.settings.getDomain();
+    const auth = new AuthVerifyServerKeyController(worker, requestId, apiClientOptions, userDomain);
+    await auth._exec();
+  });
+
+  /*
+   * Get the password server key for a given domain.
+   *
+   * @listens passbolt.auth.get-server-key
+   * @param requestId {uuid} The request identifier
+   * @param domain {string} The server's domain
+   */
+  worker.port.on('passbolt.auth.get-server-key', async requestId => {
+    try {
+      const clientOptions = await User.getInstance().getApiClientOptions();
+      const authModel = new AuthModel(clientOptions);
+      const serverKeyDto = await authModel.getServerKey();
+      worker.port.emit(requestId, 'SUCCESS', serverKeyDto);
+    } catch (error) {
+      console.error(error);
+      worker.port.emit(requestId, 'ERROR', error);
+    }
+  });
+
+    /*
+   * Replace the password server key for a given domain.
+   *
+   * @listens passbolt.auth.replace-server-key
+   * @param requestId {uuid} The request identifier
+   */
+    worker.port.on('passbolt.auth.replace-server-key', async requestId => {
+      const apiClientOptions = await User.getInstance().getApiClientOptions();
+      const authModel = new AuthModel(apiClientOptions);
+      const keyring = new Keyring();
+      const domain = Config.read('user.settings.trustedDomain');
+  
+      try {
+        const serverKeyDto = await authModel.getServerKey();
+        await keyring.importServerPublicKey(serverKeyDto.armored_key, domain);
+        worker.port.emit(requestId, 'SUCCESS');
+      } catch (error) {
+        console.error(error);
+        worker.port.emit(requestId, 'ERROR', error);
+      }
+    });
+
+
+  /*
+   * Verify the passphrase
+   *
+   * @listens passbolt.auth.verify-passphrase
+   * @param requestId {uuid} The request identifier
+   * @param passphrase {string} The passphrase to verify
+   */
+  worker.port.on('passbolt.auth.verify-passphrase', async(requestId, passphrase) => {
+    const controller = new CheckPassphraseController(worker, requestId);
+    await controller._exec(passphrase);
+  });
+
+  /*
+   * Redirect the user post login.
+   *
+   * @listens passbolt.auth.post-login-redirect
+   * @param requestId {uuid} The request identifier
+   */
+  worker.port.on('passbolt.auth.post-login-redirect', requestId => {
+    worker.port.emit(requestId, 'SUCCESS');
+  });
+};
+
+export const AuthEvents = {listen};
