@@ -9,7 +9,7 @@
  * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
- * @since         0.0.3
+ * @since         0.3.0
  */
 import {USER_LOGGED_OUT} from "../enumerations/appEventEnumeration";
 import {enableFetchMocks} from "jest-fetch-mock";
