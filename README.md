@@ -1,47 +1,28 @@
-	      ____                  __          ____
-	     / __ \____  _____ ____/ /_  ____  / / /_
-	    / /_/ / __ `/ ___/ ___/ __ \/ __ \/ / __/
-	   / ____/ /_/ (__  |__  ) /_/ / /_/ / / /_
-	  /_/    \__,_/____/____/_.___/\____/_/\__/
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/passbolt/passbolt_styleguide/blob/master/src/img/logo/logo_white.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/passbolt/passbolt_styleguide/blob/master/src/img/logo/logo.svg">
+  <img alt="passbolt-logo" src="https://github.com/passbolt/passbolt_styleguide/blob/master/src/img/logo/logo.svg">
+</picture>
+<br>
+<br>
 
-	Open source password manager for teams
-	(c) 2021 Passbolt SA
-	https://www.passbolt.com
+The open source password manager for teams.
 
-## License
+[![License](https://img.shields.io/github/license/passbolt/passbolt)](LICENSE.txt)
+<br>
 
-Passbolt - Open source password manager for teams
+![Passbolt on desktop, mobile, and cli](https://github.com/passbolt/passbolt-links/blob/main/assets/readme/passbolt-insitu.png)
 
-(c) 2023 Passbolt SA
+# Introducing Passbolt
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
-Public License (AGPL) as published by the Free Software Foundation version 3.
+Passbolt is a security-first, open source password manager for teams. It helps organizations centralize, organize and share passwords and secrets securely.
 
-The name "Passbolt" is a registered trademark of Passbolt SA, and Passbolt SA hereby declines to grant a trademark
-license to "Passbolt" pursuant to the GNU Affero General Public License version 3 Section 7(e), without a separate
-agreement with Passbolt SA.
+What makes passbolt different?
+- **Security:** Passbolt security model features user-owned secret keys and end-to-end encryption. It is audited multiple times annually, and [findings](https://help.passbolt.com/faq/security/code-review) are made public.
+- **Collaboration:** Securely share and audit credentials, with powerful and dependable policies for power users.
+- **Privacy:** Passbolt is headquartered in the EU,:european_union: specifically in Luxembourg. Passbolt doesn't collect personal data or telemetry, and can be deployed in an air-gapped environment.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License along with this program. If not,
-see [GNU Affero General Public License v3](http://www.gnu.org/licenses/agpl-3.0.html).
-
-## About passbolt
-
-Passbolt is an open source password manager for teams. It allows to securely share and store credentials.
-For instance, the wifi password of your office, or the administrator password of a router, or your organisation social
-media account password, all of them can be secured using Passbolt.
-
-You can try a demo of passbolt at [https://demo.passbolt.com](https://demo.passbolt.com).
-
-You will need to install a plugin, you can find a step by step guide in the website
-[help section](https://www.passbolt.com/help/start/firefox)
-
-Or, of course, you can use the code in this repository to build it yourself and run it!
-
-
-## About passbolt desktop app
+# About the desktop app
 
 Passbolt Desktop App is a UWP (Universal Windows Platform) application that provides a modern and flexible way to manage your passwords securely. With Passbolt Desktop App, you can store your passwords and other sensitive information in a centralized location, and you can access them from any Windows 10 device.
 
@@ -49,164 +30,49 @@ The app is built using the UWP platform and it leverages the power of Webview2 t
 
 By using UWP and Webview2, Passbolt Desktop App provides a consistent and seamless user experience across all Windows 10 devices. The app can adapt to the device it's running on, providing a user interface that's optimized for the screen size and input method of the device. With Passbolt Desktop App, you can manage your passwords securely, and you can do it in a way that's flexible and convenient for you.
 
-## Prerequisites
+# Get Started
 
-### Clone the project 
+## Requirements
+- Visual Studio >= 2019 ([download](https://visualstudio.microsoft.com/downloads/))
+- Visual Studio UWP workload
+- Edge ([download](https://developer.microsoft.com/en-us/microsoft-edge/webview2/))
+- Passbolt API >= v4.2.0
+
+## Clone the project 
 
 ```bash
 git clone git@github.com:passbolt/passbolt-windows
 ```
 
-### Build the Rendered webview
+## Configure the API
 
-```bash
-cd passbolt/Webviews/Rendered
-npm ci
-npm run build
+Enable the desktop application support in the API.
+
+If you are running passbolt with docker, set to `true` the environment variable `PASSBOLT_PLUGINS_DESKTOP_ENABLED`
+
+Otherwise, edit your `/etc/passbolt/passbolt.php` to add the following:
+```php
+return [
+  "passbolt" => [
+    "plugins" => [
+      "desktop" => [
+         "enabled" => true
+       ]
+    ]
+  ]
+]
 ```
 
-You can run a watcher to build the application each time you have a change : 
+## Start the application with Visual Studio
 
-``
-npm run build-watch
-`` 
+Start Visual studio and open the project folder.
+Click to the start button in the top menu, et voilà.
 
-### Build the Background webview
+## Trouble shooting
+- I have started the application, visual studio failed when calling API.
+ In case you the API is using a self signed certificate, you need Windows to trust it. Checkout this [documentation](https://learn.microsoft.com/en-us/skype-sdk/sdn/articles/installing-the-trusted-root-certificate).
 
-``
-cd passbolt/Webviews/Background
-npm ci
-npm run build
-``
-
-You can run a watcher to build the application each time you have a change : 
-
-``
-npm run build-watch
-`` 
-
-### Setup visual studio and visual studio code
-
-Before building this application, you need to have the following installed on your machine:
-
-- Visual Studio 2019 or later with the UWP workload. (community edition)
-- Visual Studio Code
-
-Build the dotnet code with the community edition and use VS Code for the javascript.
-
-It is possible that any changes done with Visual studio on the javascript will not appear during the build, it is why it is important to run and update the js code into VSCode.
-
-### Install the webview2 runtime
-
-In case Edge is not install, you will need to install the runtime to launch the Webview2: [Microsoft Edge WebView2 download page](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
-
-### How to define your current user ?
-
-You will need to retrieve the different data to launch the application for the first time. Enter your data into the mock data file : 
-
-``
-passbolt/Webviews/Background/src/data/mockStorage.js
-``
-
-You will have to provide these data : 
-
-``{
-        "domain": string,
-        "user_id": string,
-        "username": string,
-        "first_name": string,
-        "last_name": string,
-        "user_public_armored_key": string,
-        "user_private_armored_key": string,
-        "server_public_armored_key": string,
-        "security_token": {
-			"code": string,
-			"color": string,
-			"textcolor": string
-		},
-}
-``
-
-**Warning** : In case of https for the domain, you have to trust it to make it work. Webview does not allow untrusted certificate.
-
-To find the user id you will need to be connected and open the following url : 
-
-``
-https://<API-URL>/users/me.json
-``
-
-It will return the user id of the current user. 
-
-<u>Note:</u> if you use https, you will have to trust the certificate, without it it will not work
-
-### Trouble shooting
-- I have changed the current user but the last is still present :
-Webview are built with the previous user, it is the reason why you still have the previous user. Rebuild you Background webview with the mocked user.
-- I have started the application, visual studio failed when calling API
- In case of https, it not accept to have an untrusted certificate. You have to trust the certificate of your API.
-
-## Development
-
-During the development, you will need to make changes into the different components. First link your actual browser extension to the Background webview, it will be easier to debug : 
-
-`` 
-cd path-to-your-browser-extension
-npm link
-``
-Then into your background webview : 
-
-``
-cd passbolt/Webviews/Background
-npm link passbolt-browser-extension
-``
-
-<u>Note</u>: Make sure that the version of the browser extension into your package.json match with the browser extension project.
-
-Each time you will make a change on the webviews, you will need to rebuilt them by using the command : 
-
-`` 
-npm run build
-``
-
-or  
-
-`` 
-npm run build-watch
-``
-
-
-## Building the application
-
-To build the application, follow these steps:
-
-1. Clone the repository or download the source code.
-2. Open the solution file `passbolt-windows.sln` in Visual Studio.
-3. In the Solution Explorer, right-click on the project and select "Manage NuGet Packages".
-4. Search for "Microsoft.Web.WebView2" and install it.
-5. Press F5 to build and run the application.
-
-## Packaging the application
-
-### Building with Visual code
-
-To create a package for the application, follow these steps:
-
-1. In Visual Studio, right-click on the project and select "Store" > "Create App Packages".
-2. Follow the wizard to create a package for the app.
-3. The package will be saved to the output directory of your project.
-
-### Building with Command Line
-
-To build the Passbolt Desktop App using the command line, you can use the MSBuild command-line tool, which is included with Visual Studio. Follow these steps to build the app using the command line:
-
-1. Open a command prompt and navigate to the project directory.
-2. Run the following command to build the solution:
-
-``MSBuild /t:Restore;Build /p:Configuration=Release;Platform=x64``
-
-This command restores the NuGet packages and builds the solution in Release mode for the x64 platform.
-
-3. After the build completes, the app package will be available in the `bin\x64\Release` directory.
+# Development
 
 ## Running tests
 
@@ -244,7 +110,3 @@ After the tests complete, you can view the results in Visual Studio or any other
 2. In the Solution Explorer, right-click on the project and select "Manage NuGet Packages".
 3. In the NuGet Package Manager, click on the "Updates" tab to see a list of all available updates for your NuGet packages.
 4. You can use this information to determine if any of your NuGet packages need to be updated.
-
-## Deploying the application
-
-To deploy the application, you can distribute the package file or upload it to the [Microsoft Store](https://docs.microsoft.com/en-us/windows/msix/packaging-tool/create-app-package-with-packaging-tool#step-6-upload-your-package-to-the-store). For more information on deploying UWP apps, refer to the [official documentation](https://docs.microsoft.com/en-us/windows/msix/deploy-uwp-app). 
