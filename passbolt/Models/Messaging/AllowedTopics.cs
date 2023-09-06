@@ -28,7 +28,8 @@ namespace passbolt.Models.Messaging
         public const string BACKGROUND_READY = "passbolt.background.is-ready";
         public const string BACKGROUND_IMPORT = "passbolt.background.import";
         public const string BACKGROUND_DOWNLOAD_FILE = "passbolt.background.download-file";
-        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR, BACKGROUND_DOWNLOAD_FILE };
+        public const string BACKGROUND_STORE_PASSPHRASE = "passbolt.background.store-passphrase";
+        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR, BACKGROUND_DOWNLOAD_FILE, BACKGROUND_STORE_PASSPHRASE };
         private static List<string> requestIds = new List<string>();
 
         /// <summary>

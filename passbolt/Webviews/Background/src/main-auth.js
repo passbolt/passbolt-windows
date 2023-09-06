@@ -33,6 +33,14 @@ export default class MainAuth {
      */
     constructor() {
         this.worker = {port: new IPCHandler()};
+        this.listen();
+    }
+
+    /**
+     * Listen event from the main process using bext listener
+     */
+    async listen() {
+        await localStorage.clear() 
         AuthEvents.listen(this.worker)
         ConfigEvents.listen(this.worker);
         LocaleEvents.listen(this.worker);

@@ -16,7 +16,6 @@ import UserAlreadyLoggedInError from "passbolt-browser-extension/src/all/backgro
 import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
 import CheckPassphraseService from "passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService";
-import passphraseStorageService from "passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService";
 
 /**
  * Service related to the login user service
@@ -61,7 +60,6 @@ class LoginUserService {
       if (!(error instanceof UserAlreadyLoggedInError)) {
         throw error;
       } 
-      await passphraseStorageService.set(passphrase, -1);
     }
   }
 }

@@ -27,7 +27,7 @@ import IPCHandler from "../shared/IPCHandler";
 import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
 import {v4 as uuidv4} from "uuid";
 import {defaultApiClientOptions} from "passbolt-browser-extension/src/all/background_page/service/api/apiClient/apiClientOptions.test.data";
-import { defaultAccountDto } from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
+import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
  
 
 describe('DesktopAuthenticateController', () => {
@@ -112,7 +112,7 @@ describe('DesktopAuthenticateController', () => {
 
         await desktopAuthenticateController.exec(tempPassphrase);
         
-        expect(worker.port.emit).toHaveBeenCalledWith(USER_LOGGED_IN);
+        expect(worker.port.emit).toHaveBeenCalledWith(USER_LOGGED_IN, tempPassphrase);
       })
     });
 

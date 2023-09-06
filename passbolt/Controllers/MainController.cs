@@ -308,9 +308,16 @@ namespace passbolt.Controllers
 
                     Messaging.Send(webviewBackground, "passbolt.account.set-current", new AccountKit(accountMetaData, accountSecret));
                 }
-
+                if(this.backgroundTopic != null)
+                {
+                    this.backgroundTopic.SetRenderedWebviewService(webviewRendered);
+                    this.backgroundTopic.InitLocalFolderService();
+                }
+                else
+                {
+                    this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered, localFolderService);
+                }
                 this.renderedTopic = new RenderedTopic(webviewBackground, webviewRendered, localFolderService);
-                this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered, localFolderService);
             }
         }
 

@@ -30,6 +30,14 @@ export default class MainImport {
      */
     constructor() {
         this.worker = {port: new IPCHandler()};
+        this.listen();
+    }
+
+    /**
+     * Listen event from the main process IPC message
+     */
+    async listen() {
+        await localStorage.clear() 
         AuthImportEvents.listen(this.worker);
         PownedPasswordEvents.listen(this.worker);
     }

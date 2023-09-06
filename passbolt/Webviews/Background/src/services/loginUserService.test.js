@@ -50,15 +50,7 @@ describe("LoginUserService", () => {
             await service.login("secret", true);
             expect(service.authModel.login).toHaveBeenCalledWith("secret", true);
         });
-        
-        it("should handle UserAlreadyLoggedInError correctly", async () => {
-            service.authModel.login.mockImplementationOnce(() => {
-              throw new UserAlreadyLoggedInError();
-            });
-            await service.login("secret", true);
-            expect(passphraseStorageService.set).toHaveBeenCalledWith("secret", -1);
-        });
-        
+    
         it("should handle general error correctly", async () => {
             const error = new Error("General error");
             service.authModel.login.mockImplementationOnce(() => {
