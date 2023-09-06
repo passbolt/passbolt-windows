@@ -105,7 +105,7 @@ In case Edge is not install, you will need to install the runtime to launch the 
 You will need to retrieve the different data to launch the application for the first time. Enter your data into the mock data file : 
 
 ``
-cd passbolt/Webviews/Background/src/data/mockStorage.js
+passbolt/Webviews/Background/src/data/mockStorage.js
 ``
 
 You will have to provide these data : 
@@ -127,15 +127,23 @@ You will have to provide these data :
 }
 ``
 
+**Warning** : In case of https for the domain, you have to trust it to make it work. Webview does not allow untrusted certificate.
+
 To find the user id you will need to be connected and open the following url : 
 
 ``
-https://www.passbolt.local/account/settings.json?api-version=v2
+https://<API-URL>/users/me.json
 ``
 
 It will return the user id of the current user. 
 
 <u>Note:</u> if you use https, you will have to trust the certificate, without it it will not work
+
+### Trouble shooting
+- I have changed the current user but the last is still present :
+Webview are built with the previous user, it is the reason why you still have the previous user. Rebuild you Background webview with the mocked user.
+- I have started the application, visual studio failed when calling API
+ In case of https, it not accept to have an untrusted certificate. You have to trust the certificate of your API.
 
 ## Development
 
