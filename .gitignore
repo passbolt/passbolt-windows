@@ -15,6 +15,5 @@ passbolt-windows-tests/.vs
 passbolt-windows-tests/obj
 passbolt/testEnvironments.json
 
-*.map
 ._.DS_Store
 passbolt/Webviews/Background/coverage/
