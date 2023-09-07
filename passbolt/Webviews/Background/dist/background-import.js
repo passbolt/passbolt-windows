@@ -53243,8 +53243,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var passbolt_browser_extension_src_all_background_page_model_account_accountModel__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-browser-extension/src/all/background_page/model/account/accountModel */ "../../../../passbolt-browser-extension/src/all/background_page/model/account/accountModel.js");
-/* harmony import */ var passbolt_browser_extension_src_all_background_page_model_entity_account_accountEntity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity */ "../../../../passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.js");
-/* harmony import */ var passbolt_browser_extension_src_all_background_page_sdk_storage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! passbolt-browser-extension/src/all/background_page/sdk/storage */ "../../../../passbolt-browser-extension/src/all/background_page/sdk/storage.js");
+/* harmony import */ var passbolt_browser_extension_src_all_background_page_sdk_storage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! passbolt-browser-extension/src/all/background_page/sdk/storage */ "../../../../passbolt-browser-extension/src/all/background_page/sdk/storage.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
@@ -53258,7 +53257,6 @@ __webpack_require__.r(__webpack_exports__);
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.0.1
  */
-
 
 
 
@@ -53281,7 +53279,7 @@ class InitPassboltDataLocalStorageService {
         } catch (error) {
             console.error(error)
         }
-        await passbolt_browser_extension_src_all_background_page_sdk_storage__WEBPACK_IMPORTED_MODULE_2__["default"].init();
+        await passbolt_browser_extension_src_all_background_page_sdk_storage__WEBPACK_IMPORTED_MODULE_1__["default"].init();
     }
 }
 
