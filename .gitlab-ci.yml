@@ -1,0 +1,26 @@
+default:
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
+      - stale_schedule
+
+image: alpine:latest
+
+stages:
+  - build
+  - test
+  - release
+
+include:
+  - local: ".gitlab-ci/jobs/release.yml"
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG
