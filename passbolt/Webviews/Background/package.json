@@ -34,6 +34,7 @@
     "passbolt-styleguide": "^4.3.0-alpha.1",
     "setimmediate": "^1.0.5",
     "stream-browserify": "^3.0.0",
-    "validator": "^13.7.0"
+    "validator": "^13.7.0",
+    "openpgp": "5.2.1"
   }
 }

@@ -55,7 +55,7 @@ class IPCHandler {
                 } else if (event.status) {
                     let args = Array.isArray(event.message) ? [event.status, ...event.message] : [event.status, event.message];
                     listener.callback.apply(this, args);
-                }  else {
+                } else {
                     listener.callback.apply(this, [event.message]);
                 }
                 if (listener.once) {
@@ -121,7 +121,8 @@ class IPCHandler {
 
             if (requestArgs[1] === 'SUCCESS' || requestArgs[1] === 'ERROR') {
                 status = requestArgs[1];
-                message = requestArgs.length > 2 ? requestArgs[2] : null;
+                let body = requestArgs.length > 2 ? requestArgs[2] : null;
+                message = requestArgs[1] === 'ERROR' ? this.mapError(body): body
             } else {
                 status = null;
                 message = requestArgs[1];
@@ -139,13 +140,27 @@ class IPCHandler {
     }
 
     /**
+     * Map the error message to an object
+     * @param {*} error 
+     * @returns the error message as an object
+     */
+    mapError(error) {
+        return {
+            message: error?.message,
+            name: error?.name,
+            details: error?.details,
+            stack: error?.stack,
+        };
+    }
+
+    /**
      * Emit a request to the addon code and expect a response.
      * @param message the message
      * @param args the arguments
      * @return Promise
      */
     request(message, args) {
-        
+
         // Generate a request id that will be used by the addon to answer this request.
         const requestId = uuidv4();
         // Add the requestId to the request parameters.

@@ -18,55 +18,27 @@ import {v4 as uuidv4} from "uuid";
 import VerifyAccountKitController from "./verifyAccountKitController";
 import AuthImportStorageService from "../services/authImportStorageService";
 import AuthImportEntity from "../entity/AuthImportEntity/authImportEntity";
+import { pgpKeys } from "passbolt-browser-extension/test/fixtures/pgpKeys/keys";
+import { defaultData } from "../services/verifyAccountKitService.test.data";
 
 describe('VerifyAccountKitController', () => {
     let verifyAccountKitController;
     let worker;
+    let accountKit;
     let requestId = uuidv4();
+    const accountDto = defaultAccountDto();
 
     beforeEach(async () => {
         worker = { port: new IPCHandler() };
         verifyAccountKitController = new VerifyAccountKitController(worker, requestId);
+        accountKit = await defaultData({
+            message: JSON.stringify(accountDto), privateKey: pgpKeys.ada.private_decrypted
+        });
     });
     describe('VerifyAccountKitController:exec', () => {
-        it('Should validate if the account kit is present', async () => {
-            expect.assertions(1);
-
-            const result = verifyAccountKitController.exec();
-
-            expect(result).rejects.toThrow("The account kit is required.");
-        })
-        
-        it('Should validate if the account kit is base 64 format', async () => {
-            expect.assertions(1);
-
-            const result = verifyAccountKitController.exec("Not a base64");
-
-            expect(result).rejects.toThrow("The account kit should be a base 64 format.");
-        })
-
-        it('Should validate if the account kit is a string', async () => {
-            expect.assertions(1);
-
-            const result = verifyAccountKitController.exec(3);
-
-            expect(result).rejects.toThrow("The account kit should be a string.");
-        })
-
-        it('Should validate account kit with entity', async () => {
-            expect.assertions(1);
-
-            const result = verifyAccountKitController.exec("e30=");
-
-            expect(result).rejects.toThrow("Could not validate entity Account.");
-        })
-
         it('Should return the validated account kit', async () => {
             expect.assertions(1);
 
-            const accountDto = defaultAccountDto();
-            const accountDtoStringify = JSON.stringify(accountDto);
-            const accountKit = Buffer.from(accountDtoStringify).toString('base64');
             const result = await verifyAccountKitController.exec(accountKit);
 
             expect(result).toEqual(accountDto);
@@ -77,11 +49,8 @@ describe('VerifyAccountKitController', () => {
 
             jest.spyOn(AuthImportStorageService, "set")
 
-            const accountDto = defaultAccountDto();
             const expectedResult = new AuthImportEntity({account_kit: accountDto});
-            const accountDtoStringify = JSON.stringify(accountDto);
-            const accountKit = Buffer.from(accountDtoStringify).toString('base64');
-            verifyAccountKitController.exec(accountKit);
+            await verifyAccountKitController.exec(accountKit);
 
             expect(AuthImportStorageService.set).toHaveBeenCalledWith(expectedResult);
         })
