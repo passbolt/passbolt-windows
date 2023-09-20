@@ -24,9 +24,10 @@ using passbolt.Models.Messaging;
 using passbolt.Services.CredentialLocker;
 using passbolt.Services.HttpService;
 using passbolt.Services.LocalFolder;
+using passbolt.Services.Mfa;
 using passbolt.Services.NavigationService;
+using passbolt.Services.WebviewService;
 using passbolt.Utils;
-using Windows.Storage;
 
 namespace passbolt.Controllers
 {
@@ -43,6 +44,8 @@ namespace passbolt.Controllers
         protected RenderedNavigationService renderedNavigationService;
         protected BackgroundNavigationService backgroundNavigationService;
         protected HttpService httpService = new HttpService();
+        protected RenderedWebviewService renderedWebviewService;
+        protected BackgroundWebviewService backgroundWebviewService;
 
         /// <summary>
         /// controller
@@ -102,7 +105,7 @@ namespace passbolt.Controllers
         /// <param name="sender"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public void RenderedNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+        public async Task RenderedNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
             if (webviewRendered == null) { return; }
 
@@ -114,6 +117,17 @@ namespace passbolt.Controllers
             {
                 this.SetWebviewSettings(webviewRendered);
             }
+
+            //Check if the Mfa is completed 
+            if (MfaService.Instance.IsMfaUrls(args.Uri) && MfaService.Instance.HasMfaCompleted(args.Uri))
+            {
+                //Reinit context to remove mfa urls allowed
+                renderedNavigationService.DisallowMfaUrls();
+                // We cancel the redirection 
+                args.Cancel = true;
+                // Redirect to workspace
+                await backgroundTopic.RedirectToWorkspace();
+            }
         }
         /// <summary>
         /// load the background web view
@@ -123,65 +137,31 @@ namespace passbolt.Controllers
             await webviewRendered.EnsureCoreWebView2Async();
             await webviewBackground.EnsureCoreWebView2Async();
 
-            var applicationConfiguration = await this.GetApplicationConfiguration();
-
-            // Init filter to catch all http request from background 
-            webviewBackground.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.XmlHttpRequest);
-
-            string backgroundUrl = applicationConfiguration.backgroundUrl + "/Background";
-            string renderedUrl = applicationConfiguration.renderedUrl + "/Rendered";
-
+            this.renderedWebviewService = new RenderedWebviewService(this.webviewRendered.CoreWebView2);
+            this.backgroundWebviewService = new BackgroundWebviewService(this.webviewBackground.CoreWebView2);
             this.backgroundNavigationService = BackgroundNavigationService.Instance;
             this.renderedNavigationService = RenderedNavigationService.Instance;
 
-            this.backgroundNavigationService.Initialize(applicationConfiguration.backgroundUrl);
-            this.renderedNavigationService.Initialize(applicationConfiguration.renderedUrl);
-            StorageFolder distfolder = this.localFolderService.GetWebviewsFolder();
-            var installedDistFolder = this.localFolderService.GetWebviewsFolderInstallation();
+            this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered, localFolderService, backgroundWebviewService);
 
-            // Set virtual host for each dist
-            webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping("background.dist", installedDistFolder.Path, CoreWebView2HostResourceAccessKind.Allow);
-            webviewRendered.CoreWebView2.SetVirtualHostNameToFolderMapping("rendered.dist", installedDistFolder.Path, CoreWebView2HostResourceAccessKind.Allow);
-
-            // Set virtual host to folder mapping, restrict host access to the randomUrl
-            webviewBackground.CoreWebView2.SetVirtualHostNameToFolderMapping(applicationConfiguration.backgroundUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
-            webviewRendered.CoreWebView2.SetVirtualHostNameToFolderMapping(applicationConfiguration.renderedUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
+            var backgroundUrl = await this.backgroundWebviewService.SetVirtualHost();
+            var renderedUrl = await this.renderedWebviewService.SetVirtualHost();
 
             var indexPage = currentAccountMetaData != null
                 ? "index-auth.html"
                 : "index-import.html";
 
-             webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, indexPage));
-             webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, indexPage));
+            webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, indexPage));
+            webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, indexPage));
+
+            // Init filter to catch all http request from background 
+            webviewBackground.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 
             // Subscribes to the WebResourceRequested event of the background window
             webviewBackground.CoreWebView2.WebResourceRequested += WebResourceRequested;
             // Subscribes to the WebMessageReceived event of the rendered and background window
             webviewBackground.CoreWebView2.WebMessageReceived += WebMessageReceived;
             webviewRendered.CoreWebView2.WebMessageReceived += WebMessageReceived;
-        }
-
-
-        /// <summary>
-        /// Get the application configuration from the credential locker
-        /// </summary>
-        /// <returns></returns>
-        protected virtual async Task<ApplicationConfiguration> GetApplicationConfiguration()
-        {
-            ApplicationConfiguration applicationConfiguration;
-
-            applicationConfiguration = await credentialLockerService.GetApplicationConfiguration();
-            if (applicationConfiguration == null)
-            {
-                applicationConfiguration = new ApplicationConfiguration()
-                {
-                    renderedUrl = GenerateWebviewUrl(),
-                    backgroundUrl = GenerateWebviewUrl()
-                };
-                await credentialLockerService.Create("configuration", SerializationHelper.SerializeToJson(applicationConfiguration));
-            }
-
-            return applicationConfiguration;
         }
 
         /// <summary>
@@ -237,22 +217,25 @@ namespace passbolt.Controllers
         /// <param name="e"></param>
         protected virtual void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
         {
-            //Check if the request is allowed with the trusted domain
             httpService.CheckAPICall(sender, resource);
-            // API does not support OPTIONS method, we need to intercept it and return the correct headers
-            if (resource.Request.Method == HttpMethod.Options.Method)
+            if (resource.ResourceContext == CoreWebView2WebResourceContext.XmlHttpRequest)
             {
-                httpService.ResolveOptionMethod(sender, resource);
-            }
-            else if (httpService.isCallToPownedService(resource))
-            {
-                resource.GetDeferral().Complete();
-            }
-            else
-            {
-                HttpRequestMessage request = httpService.BuildHttpRequest(resource);
-                HttpResponseMessage response = httpService.SendRequest(request).Result;
-                httpService.SendResponseToWebview(sender, resource, response);
+                //Check if the request is allowed with the trusted domain
+                // API does not support OPTIONS method, we need to intercept it and return the correct headers
+                if (resource.Request.Method == HttpMethod.Options.Method)
+                {
+                    httpService.ResolveOptionMethod(sender, resource);
+                }
+                else if (httpService.isCallToPownedService(resource))
+                {
+                    resource.GetDeferral().Complete();
+                }
+                else
+                {
+                    HttpRequestMessage request = httpService.BuildHttpRequest(resource);
+                    HttpResponseMessage response = httpService.SendRequest(request).Result;
+                    httpService.SendResponseToWebview(sender, resource, response);
+                }
             }
         }
 
@@ -300,24 +283,24 @@ namespace passbolt.Controllers
                 await webviewBackground.EnsureCoreWebView2Async();
                 await webviewRendered.EnsureCoreWebView2Async();
 
-                if(backgroundNavigationService?.IsAuthApplication(sender.CoreWebView2.Source) == true)
+                if (backgroundNavigationService?.IsAuthApplication(sender.CoreWebView2.Source) == true
+                    || backgroundNavigationService?.IsWorkspaceFromImportationApplication(sender.CoreWebView2.Source) == true)
                 {
                     var accountMetaData = await this.credentialLockerService.GetAccountMetadata();
                     var accountSecret = await this.credentialLockerService.GetAccountSecret();
-                    var accounkit = (accountMetaData != null && accountSecret != null) ? new AccountKit(accountMetaData, accountSecret) : null;
 
                     Messaging.Send(webviewBackground, "passbolt.account.set-current", new AccountKit(accountMetaData, accountSecret));
                 }
-                if(this.backgroundTopic != null)
+                if (this.backgroundTopic == null && this.backgroundWebviewService != null)
                 {
-                    this.backgroundTopic.SetRenderedWebviewService(webviewRendered);
-                    this.backgroundTopic.InitLocalFolderService();
+                    this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered, localFolderService, backgroundWebviewService);
                 }
-                else
+                //Webview can be not initialized at this step so we wait it
+                if(backgroundNavigationService != null)
                 {
-                    this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered, localFolderService);
+                    backgroundNavigationService.SetPreviousNavigation(sender.CoreWebView2.Source);
                 }
-                this.renderedTopic = new RenderedTopic(webviewBackground, webviewRendered, localFolderService);
+                this.renderedTopic = new RenderedTopic(webviewBackground, webviewRendered, localFolderService, renderedWebviewService);
             }
         }
 
@@ -330,6 +313,7 @@ namespace passbolt.Controllers
         {
             Debug.WriteLine("NavigationCompleted: " + sender.CoreWebView2.Source);
         }
+
         /// <summary>
         /// Retrieve the Corewebview from the sender
         /// </summary>
@@ -356,15 +340,5 @@ namespace passbolt.Controllers
 
             return webviewSender;
         }
-
-        /// <summary>
-        /// generate a random webview URL
-        /// </summary>
-        /// <returns></returns>
-        private string GenerateWebviewUrl()
-        {
-            return Guid.NewGuid().ToString() + ".passbolt.local";
-        }
-
     }
 }

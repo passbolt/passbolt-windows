@@ -39,7 +39,10 @@ namespace passbolt.Services.HttpService
         /// </summary>
         public HttpService()
         {
-            httpClient = new HttpClient();
+            // Create an HttpClientHandler object and set to use default credentials
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.AllowAutoRedirect = false;
+            httpClient = new HttpClient(handler);
             credentialLockerService = new CredentialLockerService();
         }
 

@@ -12,9 +12,11 @@
  * @since         0.0.1
  */
 
+import MfaAuthenticationRequiredError from "passbolt-browser-extension/src/all/background_page/error/mfaAuthenticationRequiredError";
 import UserAlreadyLoggedInError from "passbolt-browser-extension/src/all/background_page/error/userAlreadyLoggedInError";
 import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
+import AuthService from "passbolt-browser-extension/src/all/background_page/service/auth";
 import CheckPassphraseService from "passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService";
 
 /**
@@ -59,7 +61,19 @@ class LoginUserService {
     } catch (error) {
       if (!(error instanceof UserAlreadyLoggedInError)) {
         throw error;
-      } 
+      }
+    }
+  }
+
+  async isMfaRequired() {
+    try {
+      await AuthService.isAuthenticated();
+    } catch (error) {
+      if (error instanceof MfaAuthenticationRequiredError) {
+        return error.details.mfa_providers[0];
+      } else {
+        throw error;
+      }
     }
   }
 }

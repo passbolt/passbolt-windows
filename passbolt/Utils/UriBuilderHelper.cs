@@ -44,5 +44,17 @@ namespace passbolt.Utils
             UriBuilder builder = new UriBuilder(uri);
             return builder.Scheme + "://" + builder.Host;
         }
+
+        /// <summary>
+        /// retrieve the domain for URI
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public static string GetDomainForUri(string url)
+        {
+            Uri uri = new Uri(url);
+            string uriHost = uri.Host;
+            return uriHost;
+        }
     }
 }

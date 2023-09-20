@@ -15,31 +15,30 @@
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
 using passbolt.Exceptions;
+using passbolt.Models.Authentication;
 using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging.Topics;
 using passbolt.Services.CredentialLocker;
 using passbolt.Services.DownloadService;
 using passbolt.Services.LocalFolder;
-using passbolt.Services.LocalStorage;
 using passbolt.Services.NavigationService;
 using passbolt.Services.WebviewService;
 using passbolt.Utils;
 using System;
+using System.Threading.Tasks;
 
 namespace passbolt.Models.Messaging
 {
     public class BackgroundTopic : WebviewTopic
     {
-        private LocalStorageService localStorageService;
-        private RenderedWebviewService renderedWebviewService;
         private CredentialLockerService credentialLockerService;
-        private string currentIndex = "index-auth.html";
+        private string currentIndexBackground = "index-auth.html";
+        private string currentIndexRendered = "index-auth.html";
         private string passphrase;
+        private string pendingRequestId;
 
-        public BackgroundTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService) : base(background, rendered, localFolderService)
+        public BackgroundTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService, BackgroundWebviewService backgroundWebviewService) : base(background, rendered, localFolderService, backgroundWebviewService)
         {
-            this.SetRenderedWebviewService(rendered);
-            this.InitLocalFolderService();
             credentialLockerService = new CredentialLockerService();
             passphrase = null;
         }
@@ -55,20 +54,42 @@ namespace passbolt.Models.Messaging
             switch (ipc.topic)
             {
                 case AllowedTopics.BACKGROUND_READY:
-                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_READY)));
-                    if(passphrase != null)
+                    //It means we have a single navigation of the Background webview
+                    if(this.pendingRequestId != null)
                     {
-                        background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_STORE_PASSPHRASE, passphrase)));
-                        rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-workspace.html"));
-                        passphrase = null;
+                        this.proceedPendingRequest();
+                    }
+                    else
+                    {
+                        //Basic behaviour
+                        rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_READY)));
+                        if (passphrase != null)
+                        {
+                            background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_STORE_PASSPHRASE, passphrase)));
+                            rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-workspace.html"));
+                            passphrase = null;
+                        }
                     }
                     break;
+                case AuthenticationTopics.REQUIRE_MFA:
+                    var message = SerializationHelper.DeserializeFromJson<MfaAuthentication>(((JObject)ipc.message).ToString());
+                    passphrase = message.passphrase;
+
+                    // Allow navigation for MFA authentication
+                    RenderedNavigationService.Instance.AllowMfaUrls(accountMetaData.domain);
+                    rendered.Source = new Uri(accountMetaData.domain + $"/mfa/verify/{message.provider}?redirect=/");
+                    break;
                 case AuthImportTopics.SAVE_ACCOUNT:
-                    this.currentIndex = "index-import.html";
-                    var metaData = SerializationHelper.DeserializeFromJson<AccountMetaData>(((JObject) ipc.message).ToString());
+                    this.currentIndexBackground = "index-auth.html";
+                    this.currentIndexRendered = "index-import.html";
+                    pendingRequestId = SerializationHelper.DeserializeFromJson<RequestId>(((JObject)ipc.message).ToString()).requestId;
+                    var metaData = SerializationHelper.DeserializeFromJson<AccountMetaData>(((JObject)ipc.message).ToString());
                     var secrets = SerializationHelper.DeserializeFromJson<AccountSecret>(((JObject)ipc.message).ToString());
                     await this.credentialLockerService.CreateAccount(metaData, secrets);
-                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(ipc.requestId, "SUCCESS", null))) ;
+                    //We remove previous virtualhost and create a new one based on trusted domain
+                    await this.webviewService.SetVirtualHost();
+                    await localFolderService.CreateBackgroundIndex(this.currentIndexBackground, "background-auth", metaData.domain);
+                    background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-auth.html"));
                     break;
                 case AllowedTopics.BACKGROUND_DOWNLOAD_FILE:
                     var downloadService = new DownloadService();
@@ -84,21 +105,18 @@ namespace passbolt.Models.Messaging
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_CLEAR)));
                     break;
                 case AuthenticationTopics.LOG_OUT:
-                    this.currentIndex = "index-auth.html";
+                    this.currentIndexBackground = "index-auth.html";
+                    this.currentIndexRendered = "index-auth.html";
                     await localFolderService.RemoveFile("Rendered", "index-workspace.html");
                     await localFolderService.RemoveFile("Background", "index-workspace.html");
-                    await localFolderService.CreateRenderedIndex(this.currentIndex, "rendered-auth", "ext_authentication.min.css", accountMetaData.domain);
-                    await localFolderService.CreateBackgroundIndex(this.currentIndex, "background-auth", accountMetaData.domain);
+                    await localFolderService.CreateRenderedIndex(this.currentIndexRendered, "rendered-auth", "ext_authentication.min.css", accountMetaData.domain);
+                    await localFolderService.CreateBackgroundIndex(this.currentIndexBackground, "background-auth", accountMetaData.domain);
                     background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-auth.html"));
                     rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-auth.html"));
                     break;
                 case AuthenticationTopics.AFTER_LOGIN:
-                    passphrase = (string) ipc.message;
-                    await localFolderService.RemoveFile("Rendered", this.currentIndex);
-                    await localFolderService.RemoveFile("Background", this.currentIndex);
-                    await localFolderService.CreateRenderedIndex("index-workspace.html", "rendered-workspace", "ext_app.min.css", accountMetaData.domain);
-                    await localFolderService.CreateBackgroundIndex("index-workspace.html", "background-workspace", accountMetaData.domain);
-                    background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-workspace.html"));
+                    passphrase = (string)ipc.message;
+                    await RedirectToWorkspace();
                     break;
                 case ProgressTopics.PROGRESSCLOSEDIALOG:
                 case ProgressTopics.PROGRESSUPDATE:
@@ -121,22 +139,30 @@ namespace passbolt.Models.Messaging
         }
 
         /// <summary>
-        /// Set the rendred webview
+        /// Create folder for workspace and redirect user to workspace
         /// </summary>
-        /// <param name="rendered"></param>
-        public void SetRenderedWebviewService(WebView2 rendered)
+        /// <param name="accountMeta"></param>
+        public async Task RedirectToWorkspace()
         {
-            renderedWebviewService = new RenderedWebviewService(rendered.CoreWebView2);
+            var accountMetaData = await this.credentialLockerService.GetAccountMetadata();
+            await localFolderService.RemoveFile("Rendered", this.currentIndexRendered);
+            await localFolderService.RemoveFile("Background", this.currentIndexBackground);
+            await localFolderService.CreateRenderedIndex("index-workspace.html", "rendered-workspace", "ext_app.min.css", accountMetaData.domain);
+            await localFolderService.CreateBackgroundIndex("index-workspace.html", "background-workspace", accountMetaData.domain);
+            background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-workspace.html"));
         }
 
         /// <summary>
-        /// Init the local folder service
+        /// Proceed a pending request Id
         /// </summary>
-        /// <param name="localFolderService"></param>
-        public void InitLocalFolderService()
+        public void proceedPendingRequest()
         {
-            localStorageService = new LocalStorageService();
+            AllowedTopics.proceedRequestId(this.pendingRequestId);
+            var icpMessage = new IPC();
+            icpMessage.status = "SUCCESS";
+            icpMessage.topic = this.pendingRequestId;
+            rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(icpMessage));
+            this.pendingRequestId = null;
         }
-
     }
 }

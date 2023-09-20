@@ -13,7 +13,7 @@
  */
 
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
-import {USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
+import {REQUIRE_MFA, USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
 import LoginUserService from "../services/loginUserService";
 
 /**
@@ -61,8 +61,14 @@ class DesktopAuthenticateController {
     const loginUserService = new LoginUserService(this.apiClientOptions);
     await loginUserService.checkPassphrase(passphrase)
     await loginUserService.login(passphrase, true)
-    //Send message to the UWP's main process to handle specific 'log in' process
-    this.worker.port.emit(USER_LOGGED_IN, passphrase);
+    const provider = await loginUserService.isMfaRequired()
+    if(provider) {
+        //Send message to the UWP's main process to handle specific 'require mfa' process
+      this.worker.port.emit(REQUIRE_MFA, {provider, passphrase});
+    } else {
+      //Send message to the UWP's main process to handle specific 'log in' process
+      this.worker.port.emit(USER_LOGGED_IN, passphrase);
+    }
   }
 
 }
