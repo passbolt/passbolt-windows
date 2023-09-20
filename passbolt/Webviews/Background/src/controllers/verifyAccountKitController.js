@@ -16,6 +16,7 @@ import Validator from "validator";
 import AuthImportStorageService from "../services/authImportStorageService";
 import AuthImportEntity from "../entity/AuthImportEntity/authImportEntity";
 import {Buffer} from 'buffer';
+import VerifyAccountKitService from "../services/verifyAccountKitService";
 
 /**
  * Controller related to the verify account kit.
@@ -30,6 +31,7 @@ class VerifyAccountKitController {
     constructor(worker, requestId) {
         this.worker = worker;
         this.requestId = requestId;
+        this.verifyAccountKitService = new VerifyAccountKitService();
     }
 
   /**
@@ -42,7 +44,7 @@ class VerifyAccountKitController {
       const accountKit = await this.exec(encodedAccountKit);
       this.worker.port.emit(this.requestId, 'SUCCESS', accountKit);
     } catch (error) {
-      console.error(error.details)
+      console.error(error)
       this.worker.port.emit(this.requestId, 'ERROR', error);
     }
   }
@@ -53,18 +55,7 @@ class VerifyAccountKitController {
    * @return {Promise<void>}
    */
   async exec(encodedAccountKit) { 
-    if (!encodedAccountKit) {
-        throw new Error("The account kit is required.");
-    }
-    if (typeof encodedAccountKit !== 'string') {
-      throw new TypeError("The account kit should be a string.");
-  }
-    if (!Validator.isBase64(encodedAccountKit)) {
-        throw new TypeError("The account kit should be a base 64 format.");
-    }
-    
-    const accountKitStringify = Buffer.from(encodedAccountKit, "base64").toString();
-    const accountKit = JSON.parse(accountKitStringify)
+    const accountKit = await this.verifyAccountKitService.verify(encodedAccountKit);
     const authAccountEntity = new AuthImportEntity({account_kit: accountKit})
     AuthImportStorageService.set(authAccountEntity)
     return accountKit;
