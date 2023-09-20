@@ -13,7 +13,6 @@
  */
 
 import ImportAccountController from "../controllers/importAccountController";
-import ImportAccountSignInController from "../controllers/importAccountSignInController";
 import VerifyAccountKitController from "../controllers/verifyAccountKitController";
 import VerifyPassphraseController from "../controllers/verifyPassphraseController";
 
@@ -53,18 +52,6 @@ const listen = function (worker) {
     const importAccountController = new ImportAccountController(worker, requestId);
     await importAccountController._exec();
   });
-
-  /*
-   * Save the imported account kit
-   *
-   * @listens passbolt.auth-import.import-account
-   * @param requestId {uuid} The request identifier
-   */
-  worker.port.on('passbolt.auth-import.sign-in', async (requestId) => {
-    const importAccountSignInController = new ImportAccountSignInController(worker, requestId);
-    await importAccountSignInController._exec();
-  });
-
 };
 
 export const AuthImportEvents = { listen };

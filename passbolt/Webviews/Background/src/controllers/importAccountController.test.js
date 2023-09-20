@@ -45,7 +45,7 @@ describe('ImportAccountController', () => {
         jest.spyOn(worker.port,"request").mockImplementation(() => jest.fn());   
         await importAccountController.exec();
 
-        expect(worker.port.request).toHaveBeenCalledWith(SAVE_ACCOUNT, accountDto);
+        expect(worker.port.request).toHaveBeenCalledWith(SAVE_ACCOUNT, {...accountDto, requestId});
       })
     });
   })

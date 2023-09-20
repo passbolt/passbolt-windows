@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -126,6 +126,7 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\Authentication\LocalUserManager.cs" />
+    <Compile Include="Models\Authentication\MfaAuthentication.cs" />
     <Compile Include="Models\CredentialLocker\AccountKit.cs" />
     <Compile Include="Models\CredentialLocker\AccountSecret.cs" />
     <Compile Include="Models\CredentialLocker\ApplicationConfiguration.cs" />
@@ -172,9 +173,11 @@
     <Compile Include="Services\HttpService\HttpService.cs" />
     <Compile Include="Services\LocalFolder\LocalFolderService.cs" />
     <Compile Include="Services\LocalStorage\LocalStorageService.cs" />
+    <Compile Include="Services\MfaService\MfaService.cs" />
     <Compile Include="Services\NavigationService\AbstractNavigationService.cs" />
     <Compile Include="Services\NavigationService\BackgroundNavigationService.cs" />
     <Compile Include="Services\NavigationService\RenderedNavigationService.cs" />
+    <Compile Include="Services\WebviewService\BackgroundWebviewService.cs" />
     <Compile Include="Services\WebviewService\RenderedWebviewService.cs" />
     <Compile Include="Utils\ListHelper.cs" />
     <Compile Include="Utils\SerializationHelper.cs" />
@@ -245,6 +248,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\WebviewService\WebviewService.cs" />
     <None Include="Webviews\Background\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -433,7 +437,9 @@
       <Version>4.3.4</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Compile Include="Models\Messaging\RequestId.cs" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

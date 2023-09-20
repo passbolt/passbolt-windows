@@ -20,6 +20,9 @@ namespace passbolt.Services.NavigationService
     public class BackgroundNavigationService : AbstractNavigationService
     {
         private static readonly BackgroundNavigationService instance = new BackgroundNavigationService();
+        private static readonly string mfaUrls = "/mfa/verify/(duo|totp|yubikey)\\?redirect=/";
+        private string trustedDomain;
+        private string previousNavigation;
 
         public static BackgroundNavigationService Instance { get => instance; }
 
@@ -37,12 +40,32 @@ namespace passbolt.Services.NavigationService
         }
 
         /// <summary>
+        /// Set the previous navigation
+        /// </summary>
+        /// <param name="url"></param>
+        public void SetPreviousNavigation(string url)
+        {
+            this.previousNavigation = url;
+        }
+
+        /// <summary>
         /// Check if background webview is running the authentication file
         /// </summary>
         /// <returns></returns>
         public bool IsAuthApplication(string url)
         {
             return url == $"https://{this.currentUrl}/Background/index-auth.html";
+        }
+      
+        /// <summary>
+        /// Check navigation history to verify if workspace loading comes from importation
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public bool IsWorkspaceFromImportationApplication(string url)
+        {
+            return this.previousNavigation != null && this.previousNavigation.Contains("/Background/index-import.html")
+                && url == $"https://{this.currentUrl}/Background/index-workspace.html";
         }
     }
 }

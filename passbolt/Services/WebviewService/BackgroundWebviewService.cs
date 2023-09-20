@@ -9,45 +9,44 @@
 * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
 * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
 * @link          https://www.passbolt.com Passbolt(tm)
-* @since         0.0.2
+* @since         0.4.0
 */
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Services.NavigationService;
+using System.Threading.Tasks;
 using Windows.Storage;
 
 namespace passbolt.Services.WebviewService
 {
-    public class RenderedWebviewService: WebviewService
+    public class BackgroundWebviewService: WebviewService
     {
-        private RenderedNavigationService renderedNavigationService;
+        private BackgroundNavigationService backgroundNavigationService;
 
-        public RenderedWebviewService(CoreWebView2 rendered): base(rendered)
+        public BackgroundWebviewService(CoreWebView2 background): base(background)
         {
-            this.renderedNavigationService = RenderedNavigationService.Instance;
+            this.backgroundNavigationService = BackgroundNavigationService.Instance;
         }
 
         /// <summary>
-        /// Set the virtual host for the rendered webview
+        /// Set the virtual host for the background webview
         /// </summary>
         /// <returns></returns>
         public async override Task<string> SetVirtualHost()
         {
             this.RemoveVirtualHost();
             var applicationConfiguration = await this.GetApplicationConfiguration();
-            string backgroundUrl = applicationConfiguration.renderedUrl + "/Rendered";
+            string backgroundUrl = applicationConfiguration.backgroundUrl + "/Background";
 
-            this.renderedNavigationService.Initialize(applicationConfiguration.renderedUrl);
+            this.backgroundNavigationService.Initialize(applicationConfiguration.backgroundUrl);
             StorageFolder distfolder = this.localFolderService.GetWebviewsFolder();
             var installedDistFolder = this.localFolderService.GetWebviewsFolderInstallation();
 
             // Set virtual host for each dist
-            webview.SetVirtualHostNameToFolderMapping("rendered.dist", installedDistFolder.Path, CoreWebView2HostResourceAccessKind.Allow);
-            currentHost = applicationConfiguration.renderedUrl;
+            webview.SetVirtualHostNameToFolderMapping("background.dist", installedDistFolder.Path, CoreWebView2HostResourceAccessKind.Allow);
+            currentHost = applicationConfiguration.backgroundUrl;
             // Set virtual host to folder mapping, restrict host access to the randomUrl
-            webview.SetVirtualHostNameToFolderMapping(applicationConfiguration.renderedUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
+            webview.SetVirtualHostNameToFolderMapping(applicationConfiguration.backgroundUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
 
             return backgroundUrl;
         }

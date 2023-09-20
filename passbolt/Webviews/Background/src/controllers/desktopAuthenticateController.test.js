@@ -12,7 +12,7 @@
  * @since         0.0.1
  */
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
-import {USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
+import {REQUIRE_MFA, USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
 import DesktopAuthenticateController from "./desktopAuthenticateController";
 import InitPassboltDataLocalStorageService from "../services/initPassboltDataLocalStorageService";
 import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
@@ -28,6 +28,8 @@ import AccountEntity from "passbolt-browser-extension/src/all/background_page/mo
 import {v4 as uuidv4} from "uuid";
 import {defaultApiClientOptions} from "passbolt-browser-extension/src/all/background_page/service/api/apiClient/apiClientOptions.test.data";
 import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
+import AuthService from "passbolt-browser-extension/src/all/background_page/service/auth";
+import MfaAuthenticationRequiredError from "passbolt-browser-extension/src/all/background_page/error/mfaAuthenticationRequiredError";
  
 
 describe('DesktopAuthenticateController', () => {
@@ -49,33 +51,9 @@ describe('DesktopAuthenticateController', () => {
 
     mockFindPrivate.mockImplementation(() => new ExternalGpgKeyEntity({armored_key: accountDto.user_private_armored_key}));
     desktopAuthenticateController = new DesktopAuthenticateController(worker, requestId, defaultApiClientOptions());
+    jest.spyOn(AuthService, "isAuthenticated").mockImplementation(() => true);
   });
   describe('DesktopAuthenticateController', () => {
-    describe('DesktopAuthenticateController:_exec', () => {
-      it('Should post message with USER_LOGGED_IN topic if exec succeeds and return config', async () => {
-        expect.assertions(2);
-
-        jest.spyOn(worker.port, 'emit');
-        jest.spyOn(desktopAuthenticateController, 'exec').mockResolvedValue(jest.fn());
-        await desktopAuthenticateController._exec(worker);
-
-        expect(desktopAuthenticateController.exec).toHaveBeenCalled();
-        expect(worker.port.emit).toHaveBeenCalledWith(requestId, 'SUCCESS');
-      });
-      
-
-      it('Should post message with ERROR topic and error message if exec fails', async () => {
-        expect.assertions(2);
-
-        jest.spyOn(worker.port, 'emit');
-        const error = new Error('Some error');
-        jest.spyOn(desktopAuthenticateController, 'exec').mockRejectedValue(error);
-        await desktopAuthenticateController._exec(worker);
-
-        expect(desktopAuthenticateController.exec).toHaveBeenCalled();
-        expect(worker.port.emit).toHaveBeenCalledWith(requestId, 'ERROR', error);
-      });
-    });
     describe('DesktopAuthenticateController:exec', () => {
       it('Should initiate configuration', async () => {
         expect.assertions(1);
@@ -113,6 +91,27 @@ describe('DesktopAuthenticateController', () => {
         await desktopAuthenticateController.exec(tempPassphrase);
         
         expect(worker.port.emit).toHaveBeenCalledWith(USER_LOGGED_IN, tempPassphrase);
+      })
+
+      it('Should send event to main process if mfa is required sign-in', async () => {
+        expect.assertions(1);
+
+        const passphrase = "admin@passbolt.com";
+        const provider = "totp";
+
+        jest.spyOn(AuthService, "isAuthenticated").mockImplementation(() => {throw new MfaAuthenticationRequiredError(null,
+          {
+            mfa_providers: [provider]
+          }
+        )});
+        jest.spyOn(worker.port, 'emit');
+
+        await desktopAuthenticateController.exec(passphrase);
+        
+        expect(worker.port.emit).toHaveBeenCalledWith(REQUIRE_MFA, {
+          passphrase,
+          provider
+        });
       })
     });
 
