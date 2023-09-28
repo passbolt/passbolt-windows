@@ -40,6 +40,7 @@ import {UserEvents} from "passbolt-browser-extension/src/all/background_page/eve
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
 import {DesktopEvents} from './events/desktopEvents';
 import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk/storage';
+import {MfaEvents} from 'passbolt-browser-extension/src/all/background_page/event/mfaEvents';
 
 /**
  * Represents the main workspace class that sets up an event listener for the `message` event.
@@ -67,6 +68,7 @@ export default class MainWorkspace {
         ImportResourcesEvents.listen(this.worker);
         KeyringEvents.listen(this.worker);
         LocaleEvents.listen(this.worker);
+        MfaEvents.listen(this.worker);
         OrganizationSettingsEvents.listen(this.worker);
         PownedPasswordEvents.listen(this.worker);
         ResourceTypeEvents.listen(this.worker);
