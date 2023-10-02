@@ -20,21 +20,23 @@ import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk
  * Service related to the storage service
  */
 class InitPassboltDataLocalStorageService {
-    /**
-     * init the passbolt configuration storage
-     */
-    async initPassboltData(accountData) {
-        try {
-            // The local storage needs to be initialized with an empty object prior adding account into it
-            // Should be moved to the accountModel
-            localStorage.setItem("_passbolt_data", JSON.stringify({}))
-            const accountModel = new AccountModel();
-            await accountModel.add(accountData);
-        } catch (error) {
-            console.error(error)
-        }
-        await LocalStorage.init();
+  /**
+   * init the passbolt configuration storage
+   */
+  async initPassboltData(accountData) {
+    try {
+      /*
+       * The local storage needs to be initialized with an empty object prior adding account into it
+       * Should be moved to the accountModel
+       */
+      localStorage.setItem("_passbolt_data", JSON.stringify({}));
+      const accountModel = new AccountModel();
+      await accountModel.add(accountData);
+    } catch (error) {
+      console.error(error);
     }
+    await LocalStorage.init();
+  }
 }
 
 export default InitPassboltDataLocalStorageService;

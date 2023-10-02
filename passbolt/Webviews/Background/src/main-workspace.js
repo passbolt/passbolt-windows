@@ -47,51 +47,50 @@ import {MfaEvents} from 'passbolt-browser-extension/src/all/background_page/even
  * @class
  */
 export default class MainWorkspace {
+  worker = null;
 
-    worker = null;
+  /**
+   * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
+   * @constructor
+   */
+  constructor() {
+    this.initStorage();
+    this.worker = {port: new IPCHandler()};
+    ActionLogEvents.listen(this.worker);
+    CommentEvents.listen(this.worker);
+    ConfigEvents.listen(this.worker);
+    DesktopEvents.listen(this.worker);
+    ExportResourcesEvents.listen(this.worker);
+    FavoriteEvents.listen(this.worker);
+    FolderEvents.listen(this.worker);
+    GroupEvents.listen(this.worker);
+    ImportResourcesEvents.listen(this.worker);
+    KeyringEvents.listen(this.worker);
+    LocaleEvents.listen(this.worker);
+    MfaEvents.listen(this.worker);
+    OrganizationSettingsEvents.listen(this.worker);
+    PownedPasswordEvents.listen(this.worker);
+    ResourceTypeEvents.listen(this.worker);
+    RoleEvents.listen(this.worker);
+    SecretEvents.listen(this.worker);
+    ShareEvents.listen(this.worker);
+    TagEvents.listen(this.worker);
+  }
 
-    /**
-     * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
-     * @constructor
-     */
-    constructor() {
-        this.initStorage();
-        this.worker = {port: new IPCHandler()};
-        ActionLogEvents.listen(this.worker);
-        CommentEvents.listen(this.worker);
-        ConfigEvents.listen(this.worker);
-        DesktopEvents.listen(this.worker);
-        ExportResourcesEvents.listen(this.worker);
-        FavoriteEvents.listen(this.worker);
-        FolderEvents.listen(this.worker);
-        GroupEvents.listen(this.worker);
-        ImportResourcesEvents.listen(this.worker);
-        KeyringEvents.listen(this.worker);
-        LocaleEvents.listen(this.worker);
-        MfaEvents.listen(this.worker);
-        OrganizationSettingsEvents.listen(this.worker);
-        PownedPasswordEvents.listen(this.worker);
-        ResourceTypeEvents.listen(this.worker);
-        RoleEvents.listen(this.worker);
-        SecretEvents.listen(this.worker);
-        ShareEvents.listen(this.worker);
-        TagEvents.listen(this.worker);
-    }
-
-    /**
-     * init the local storage with the account data
-     */
-    async initStorage() {
-        await LocalStorage.init();
-        await Config.init();
-        // check supported types
-        const account = await GetLegacyAccountService.get({role: true});
-        AccountRecoveryEvents.listen(this.worker, account);
-        UserEvents.listen(this.worker, null, account)
-        RbacEvents.listen(this.worker, account);
-        ResourceEvents.listen(this.worker, null, account);
-        PasswordPoliciesEvents.listen(this.worker, null, account);
-        window.chrome.webview.postMessage(JSON.stringify({ topic: BACKGROUND_READY }));
-    }
+  /**
+   * init the local storage with the account data
+   */
+  async initStorage() {
+    await LocalStorage.init();
+    await Config.init();
+    // check supported types
+    const account = await GetLegacyAccountService.get({role: true});
+    AccountRecoveryEvents.listen(this.worker, account);
+    UserEvents.listen(this.worker, null, account);
+    RbacEvents.listen(this.worker, account);
+    ResourceEvents.listen(this.worker, null, account);
+    PasswordPoliciesEvents.listen(this.worker, null, account);
+    window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));
+  }
 }
 

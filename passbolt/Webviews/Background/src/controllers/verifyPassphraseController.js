@@ -18,17 +18,16 @@ import CheckPassphraseService from "passbolt-browser-extension/src/all/backgroun
 /**
  * Controller related to the verify passphrase.
  */
-class VerifyPassphraseController { 
-
-   /**
+class VerifyPassphraseController {
+  /**
    * verifyPassphraseController constructor.
    * @param {Worker} worker
    * @param {Object} accountKit
    */
-    constructor(worker, requestId) {
-        this.worker = worker;
-        this.requestId = requestId;
-    }
+  constructor(worker, requestId) {
+    this.worker = worker;
+    this.requestId = requestId;
+  }
 
   /**
    * Wrapper of exec function to run.
@@ -40,7 +39,7 @@ class VerifyPassphraseController {
       await this.exec(passphrase);
       this.worker.port.emit(this.requestId, 'SUCCESS');
     } catch (error) {
-      console.error(error)
+      console.error(error);
       this.worker.port.emit(this.requestId, 'ERROR', error);
     }
   }
@@ -50,19 +49,19 @@ class VerifyPassphraseController {
    * @param {string} passphrase to verify
    * @return {Promise<void>}
    */
-  async exec(passphrase) { 
+  async exec(passphrase) {
     if (!passphrase) {
-        throw new Error("The passphrase is required.");
+      throw new Error("The passphrase is required.");
     }
     if (typeof passphrase !== "string") {
       throw new TypeError("The passphrase should be a string.");
     }
-    
+
     const checkPassphraseService = new CheckPassphraseService(AuthImportStorageService);
     await checkPassphraseService.checkPassphrase(passphrase);
     const authAccountEntity = AuthImportStorageService.get();
     authAccountEntity.passphrase = passphrase;
-    AuthImportStorageService.set(authAccountEntity)
+    AuthImportStorageService.set(authAccountEntity);
   }
 }
 

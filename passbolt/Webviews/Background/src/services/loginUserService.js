@@ -23,10 +23,9 @@ import CheckPassphraseService from "passbolt-browser-extension/src/all/backgroun
  * Service related to the login user service
  */
 class LoginUserService {
-
   /**
    * constructor for the login user service
-   * @param {ApiClientOptions} apiClientOptions 
+   * @param {ApiClientOptions} apiClientOptions
    */
   constructor(apiClientOptions) {
     this.authModel = new AuthModel(apiClientOptions);
@@ -35,7 +34,7 @@ class LoginUserService {
 
   /**
    * check passphrase validity
-   * @param {string} passphrase 
+   * @param {string} passphrase
    */
   async checkPassphrase(passphrase) {
     if (typeof passphrase === "undefined") {
@@ -52,8 +51,8 @@ class LoginUserService {
 
   /**
    * sign in the user with backend
-   * @param {string} passphrase 
-   * @param {boolean} rememberMe 
+   * @param {string} passphrase
+   * @param {boolean} rememberMe
    */
   async login(passphrase, rememberMe) {
     try {

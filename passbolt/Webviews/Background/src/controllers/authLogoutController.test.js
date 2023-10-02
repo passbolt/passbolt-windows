@@ -19,10 +19,9 @@ import AuthLogoutController from "./authLogoutController";
 import {defaultApiClientOptions} from 'passbolt-browser-extension/src/all/background_page/service/api/apiClient/apiClientOptions.test.data';
 
 describe('AuthLogoutController', () => {
-  let authLogoutController;
-  let worker;
+  let authLogoutController, worker;
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     enableFetchMocks();
     worker = {port: new IPCHandler()};
     jest.spyOn(AuthModel.prototype, 'logout').mockResolvedValue();
@@ -30,17 +29,17 @@ describe('AuthLogoutController', () => {
   });
   describe('AuthLogoutController', () => {
     describe('AuthLogoutController:exec', () => {
-      it('Should call logout from AuthModel', async () => {
+      it('Should call logout from AuthModel', async() => {
         expect.assertions(1);
 
-        jest.spyOn(authLogoutController.authModel, "logout")
-        
+        jest.spyOn(authLogoutController.authModel, "logout");
+
         await authLogoutController.exec();
 
-        expect(authLogoutController.authModel.logout).toHaveBeenCalled()
-      })
+        expect(authLogoutController.authModel.logout).toHaveBeenCalled();
+      });
 
-      it('Should post message with USER_LOGGED_OUT topic if logout succeed', async () => {
+      it('Should post message with USER_LOGGED_OUT topic if logout succeed', async() => {
         expect.assertions(1);
 
         jest.spyOn(worker.port, 'emit');
@@ -49,5 +48,5 @@ describe('AuthLogoutController', () => {
         expect(worker.port.emit).toHaveBeenCalledWith(USER_LOGGED_OUT);
       });
     });
-  })
-})  
+  });
+});

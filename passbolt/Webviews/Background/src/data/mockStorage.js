@@ -1,4 +1,3 @@
-
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
@@ -16,12 +15,12 @@
 //This is a mock for the first iteration, change it with the bext to adapt your nee
 
 export const accountDto = {
-    "domain": "https://www.passbolt.local",
-    "user_id": "6b97f765-f1bd-4f1c-9cc5-f03bbb591a66",
-    "username": "admin@passbolt.com",
-    "first_name": "Admin",
-    "last_name": "admin",
-    "user_public_armored_key": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n" +
+  "domain": "https://www.passbolt.local",
+  "user_id": "6b97f765-f1bd-4f1c-9cc5-f03bbb591a66",
+  "username": "admin@passbolt.com",
+  "first_name": "Admin",
+  "last_name": "admin",
+  "user_public_armored_key": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n" +
     "\n" +
     "mQINBFY06pcBEADjYRuq05Zatu4qYtXmexbrwtUdakNJJHPlWxcusohdTLUmSXrt\n" +
     "7LegXBE3OjvV9HbdBQfbpjitFp8eJw5krYQmh1+w/UYjb5Jy/A7ma3oawzbVwNpL\n" +
@@ -73,7 +72,7 @@ export const accountDto = {
     "FYNCFtV1fw==\n" +
     "=amwR\n" +
     "-----END PGP PUBLIC KEY BLOCK-----",
-    "user_private_armored_key": "-----BEGIN PGP PRIVATE KEY BLOCK-----\n" +
+  "user_private_armored_key": "-----BEGIN PGP PRIVATE KEY BLOCK-----\n" +
     "\n" +
     "lQdGBFY06pcBEADjYRuq05Zatu4qYtXmexbrwtUdakNJJHPlWxcusohdTLUmSXrt\n" +
     "7LegXBE3OjvV9HbdBQfbpjitFp8eJw5krYQmh1+w/UYjb5Jy/A7ma3oawzbVwNpL\n" +
@@ -180,9 +179,9 @@ export const accountDto = {
     "hJlLvgC/iaG65UE88qwiJu2mk9x6fRMmhMecbyQ1rZo4HxWDQhbVdX8=\n" +
     "=/G+C\n" +
     "-----END PGP PRIVATE KEY BLOCK-----",
-    "server_public_armored_key": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmQGNBGQlllkBDAC7XH4etRHGDoiT7tLpPBGGKpuiWg7XrezrEIAtXLxGs3PO58dF\n0Xu5MmIxhqY5kbtPT1Muw8sqPt\/U9LM90buLwgbvB2bl5kly0zkpXj7lMjxVLFyL\nNpgLcW7WdAs1mv1qy5obD6vpLyVxnKyaqNbf0iYu3NVl7vg9ZuTdvXIgEgoNMSEK\nwqK2DD3zufqcAo+921OnDP4+i8t933jfmfzPhW2WaORhY8KY5yJos12zO9u6MtR3\nSyr7HhMRMcn8sUOZf6XjK+OHr9U\/ct3mVYYlLEsdF1O2mAsV1JRHKr8RKh90pVPD\nV8Fh9GoqeMzhOUcGOXPBnsVwdbaatFTexn7Z5347O2zqSGmw1KEQ\/16d7D0s3vI6\nbX1YfcZ8CbE7JghM2zRtLcg5Jkp2QrdHKwzlzkGRvgEwDGoYQsstLZtuR4S2q5dA\nqQ0XpzLVBR\/T9paWeujPQDvZZNgi6VXE\/SmYZteAK6PQiBgNUYYmgviE9cT3mClR\nATlecU8++tsHA9UAEQEAAbQvUGFzc2JvbHQgZGVmYXVsdCB1c2VyIDxwYXNzYm9s\ndEB5b3VyZG9tYWluLmNvbT6JAc4EEwEKADgWIQQ0+YNKvx\/BmKborpviPzu6MPTY\nAAUCZCWWWQIbAwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRDiPzu6MPTYADR7\nC\/9+9t5RCXK1DAJSif+zAmV1Og33s1qKsFLSr3n9AQ2xdnJibDdwQ+UOFMUjBJ\/4\nG6UbNdmvLLbrappuJVVOhsSLnwUpLRPryhmM+wUlFppr1B3B9rkleNaZMKDARTxc\nQRpaOgkgWl1WjJV3AFwKkEr5xy1iNsDR1Xkms\/QXJcdkhcVLburDFF8PJpjCnVm\/\nwGdRleh4SpiADP6lYB1oNg40TzH3E4hF4ST3NmpW8HebQmGliwGgGCjfsjCbZnMB\nZVhxX\/fruoL2c5r1XSU41bMedhXf0viLUna\/fp\/Io2Yo8KLo6Y3ATn6FpYh+kcai\nqcLUMmB8hVfCfd8Fe+nGXVzLtqC2+2vomavAjeFk2GTyWuhiu6ZYremzsmSc5Vam\nSimptcDmhGF6H5u5wNvtSTiXXBHCAl48IqvfAS+btrAv87voKop0q7rnUbhkK5Zw\nDi6k5P3dhLEoKwPThbdnXaCGftXPY1RlZ8Q9OqjH4DPsEtD+JIuujTP1w\/F5XNaZ\nIqq5AY0EZCWWWQEMAKpP8Mj9PKyE6ltO0Rkpr18\/GSWiYSp8ejIl6EcvNiP6qokq\nfdIms4NqNhAP6kvErpadlE61uttfCA6goi7YZLeuz\/AdLW7Js\/YanPo81F2qJBMW\nt2fzjFQ3RO6FRylG2ibmsxHgyS\/MVqc5HPJPORhyV8PV\/KDTARJUjhH4oBfxESrn\nqvR1efywtFkc4hn\/t3stXaqooWlYorgZKORQKNE8PE7HMfJ9FXZFf+38uxqrb9TS\nYnhy3Al2B6LzNdavhL\/IkxFIGE6Dru+mtoDn9Kmh9l7Nl7\/tAgyqiNMGHs0gl4+X\neFtwGpKCt+H7+kvsPs\/Vt5pYgTyHdiFUhJXwUQNq+nier52ouWe2ou0rNtLMIJQN\n6CF4NbK7AXckW1OkEoeWj6RY3O6SfYXne+ZqA2kApOoqqS\/ZIlZZml8cgS0iVbD6\nNOtJlOg6a6+OdRZtvjbv9dKPwtrEx\/MENrbgaMYksK7h5fE7GYb\/ZGQwhYJsPnvm\ngWjyB4T7ahNfT0e4kQARAQABiQG2BBgBCgAgFiEENPmDSr8fwZim6K6b4j87ujD0\n2AAFAmQlllkCGwwACgkQ4j87ujD02AA2igv+LAS4Qq6hfbchE9ov1ARGesrx2Uyf\nMsur6FMU8oa4owtCFgUoVYMj3uSL21nlivLIxUsGvf0XtLrLyVkiRa2hPpbNSYxs\nV3wiRgLa64ccP6+UkcTkhCf9Hhps7t8vQ8dgMAl3zYKuXgwQ0HPL04SVebFfB4HG\n4y2I1p9\/wHDgK4dw9WjnYJ8GC2X\/fllM8zZZUhNxfJMEx0VJC4HtNzQYasUJOCcd\n2Y7JM4X4\/XP1DHtW4vkDyumSEKbfASiw9wVKm\/RhErcKzFy9wMk9QTe3DpbWWgnH\n8SuwhkiulvEOAbPBpnexBCibqIrxNq0fduPA7okG7GHAoHc0z\/H76VztZrTuFPzl\nNlXslYowE\/uCgbsDtqYHXFm\/LptJNSanR2CAKOsxArx7SytFFF4qYWSECUI60gy0\nvw8lSWw\/uL\/Hri+Q5oEr8vT6hWF\/3aVm8cGon+Gw00vvv2VW0hvFxKkCa1470z2M\nWfI4g3Q3GW5s\/ZE7W4re15jQWU2TJ4Amhxao\n=cCXV\n-----END PGP PUBLIC KEY BLOCK-----\n",
-    "security_token": { "code": "YUL", "color": "#FF9800", "textcolor": "#000000", },
+  "server_public_armored_key": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmQGNBGQlllkBDAC7XH4etRHGDoiT7tLpPBGGKpuiWg7XrezrEIAtXLxGs3PO58dF\n0Xu5MmIxhqY5kbtPT1Muw8sqPt\/U9LM90buLwgbvB2bl5kly0zkpXj7lMjxVLFyL\nNpgLcW7WdAs1mv1qy5obD6vpLyVxnKyaqNbf0iYu3NVl7vg9ZuTdvXIgEgoNMSEK\nwqK2DD3zufqcAo+921OnDP4+i8t933jfmfzPhW2WaORhY8KY5yJos12zO9u6MtR3\nSyr7HhMRMcn8sUOZf6XjK+OHr9U\/ct3mVYYlLEsdF1O2mAsV1JRHKr8RKh90pVPD\nV8Fh9GoqeMzhOUcGOXPBnsVwdbaatFTexn7Z5347O2zqSGmw1KEQ\/16d7D0s3vI6\nbX1YfcZ8CbE7JghM2zRtLcg5Jkp2QrdHKwzlzkGRvgEwDGoYQsstLZtuR4S2q5dA\nqQ0XpzLVBR\/T9paWeujPQDvZZNgi6VXE\/SmYZteAK6PQiBgNUYYmgviE9cT3mClR\nATlecU8++tsHA9UAEQEAAbQvUGFzc2JvbHQgZGVmYXVsdCB1c2VyIDxwYXNzYm9s\ndEB5b3VyZG9tYWluLmNvbT6JAc4EEwEKADgWIQQ0+YNKvx\/BmKborpviPzu6MPTY\nAAUCZCWWWQIbAwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgAAKCRDiPzu6MPTYADR7\nC\/9+9t5RCXK1DAJSif+zAmV1Og33s1qKsFLSr3n9AQ2xdnJibDdwQ+UOFMUjBJ\/4\nG6UbNdmvLLbrappuJVVOhsSLnwUpLRPryhmM+wUlFppr1B3B9rkleNaZMKDARTxc\nQRpaOgkgWl1WjJV3AFwKkEr5xy1iNsDR1Xkms\/QXJcdkhcVLburDFF8PJpjCnVm\/\nwGdRleh4SpiADP6lYB1oNg40TzH3E4hF4ST3NmpW8HebQmGliwGgGCjfsjCbZnMB\nZVhxX\/fruoL2c5r1XSU41bMedhXf0viLUna\/fp\/Io2Yo8KLo6Y3ATn6FpYh+kcai\nqcLUMmB8hVfCfd8Fe+nGXVzLtqC2+2vomavAjeFk2GTyWuhiu6ZYremzsmSc5Vam\nSimptcDmhGF6H5u5wNvtSTiXXBHCAl48IqvfAS+btrAv87voKop0q7rnUbhkK5Zw\nDi6k5P3dhLEoKwPThbdnXaCGftXPY1RlZ8Q9OqjH4DPsEtD+JIuujTP1w\/F5XNaZ\nIqq5AY0EZCWWWQEMAKpP8Mj9PKyE6ltO0Rkpr18\/GSWiYSp8ejIl6EcvNiP6qokq\nfdIms4NqNhAP6kvErpadlE61uttfCA6goi7YZLeuz\/AdLW7Js\/YanPo81F2qJBMW\nt2fzjFQ3RO6FRylG2ibmsxHgyS\/MVqc5HPJPORhyV8PV\/KDTARJUjhH4oBfxESrn\nqvR1efywtFkc4hn\/t3stXaqooWlYorgZKORQKNE8PE7HMfJ9FXZFf+38uxqrb9TS\nYnhy3Al2B6LzNdavhL\/IkxFIGE6Dru+mtoDn9Kmh9l7Nl7\/tAgyqiNMGHs0gl4+X\neFtwGpKCt+H7+kvsPs\/Vt5pYgTyHdiFUhJXwUQNq+nier52ouWe2ou0rNtLMIJQN\n6CF4NbK7AXckW1OkEoeWj6RY3O6SfYXne+ZqA2kApOoqqS\/ZIlZZml8cgS0iVbD6\nNOtJlOg6a6+OdRZtvjbv9dKPwtrEx\/MENrbgaMYksK7h5fE7GYb\/ZGQwhYJsPnvm\ngWjyB4T7ahNfT0e4kQARAQABiQG2BBgBCgAgFiEENPmDSr8fwZim6K6b4j87ujD0\n2AAFAmQlllkCGwwACgkQ4j87ujD02AA2igv+LAS4Qq6hfbchE9ov1ARGesrx2Uyf\nMsur6FMU8oa4owtCFgUoVYMj3uSL21nlivLIxUsGvf0XtLrLyVkiRa2hPpbNSYxs\nV3wiRgLa64ccP6+UkcTkhCf9Hhps7t8vQ8dgMAl3zYKuXgwQ0HPL04SVebFfB4HG\n4y2I1p9\/wHDgK4dw9WjnYJ8GC2X\/fllM8zZZUhNxfJMEx0VJC4HtNzQYasUJOCcd\n2Y7JM4X4\/XP1DHtW4vkDyumSEKbfASiw9wVKm\/RhErcKzFy9wMk9QTe3DpbWWgnH\n8SuwhkiulvEOAbPBpnexBCibqIrxNq0fduPA7okG7GHAoHc0z\/H76VztZrTuFPzl\nNlXslYowE\/uCgbsDtqYHXFm\/LptJNSanR2CAKOsxArx7SytFFF4qYWSECUI60gy0\nvw8lSWw\/uL\/Hri+Q5oEr8vT6hWF\/3aVm8cGon+Gw00vvv2VW0hvFxKkCa1470z2M\nWfI4g3Q3GW5s\/ZE7W4re15jQWU2TJ4Amhxao\n=cCXV\n-----END PGP PUBLIC KEY BLOCK-----\n",
+  "security_token": {"code": "YUL", "color": "#FF9800", "textcolor": "#000000",},
 
-}
+};
 
-export const tempPassphrase = "admin@passbolt.com"
+export const tempPassphrase = "admin@passbolt.com";

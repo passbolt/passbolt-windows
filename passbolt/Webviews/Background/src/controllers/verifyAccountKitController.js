@@ -12,27 +12,24 @@
  * @since         0.3.0
  */
 
-import Validator from "validator";
 import AuthImportStorageService from "../services/authImportStorageService";
 import AuthImportEntity from "../entity/AuthImportEntity/authImportEntity";
-import {Buffer} from 'buffer';
 import VerifyAccountKitService from "../services/verifyAccountKitService";
 
 /**
  * Controller related to the verify account kit.
  */
-class VerifyAccountKitController { 
-
-   /**
+class VerifyAccountKitController {
+  /**
    * VerifyAccountKitController constructor.
    * @param {Worker} worker
    * @param {Object} accountKit
    */
-    constructor(worker, requestId) {
-        this.worker = worker;
-        this.requestId = requestId;
-        this.verifyAccountKitService = new VerifyAccountKitService();
-    }
+  constructor(worker, requestId) {
+    this.worker = worker;
+    this.requestId = requestId;
+    this.verifyAccountKitService = new VerifyAccountKitService();
+  }
 
   /**
    * Wrapper of exec function to run.
@@ -44,7 +41,7 @@ class VerifyAccountKitController {
       const accountKit = await this.exec(encodedAccountKit);
       this.worker.port.emit(this.requestId, 'SUCCESS', accountKit);
     } catch (error) {
-      console.error(error)
+      console.error(error);
       this.worker.port.emit(this.requestId, 'ERROR', error);
     }
   }
@@ -54,10 +51,10 @@ class VerifyAccountKitController {
    * @param {Object} encodedAccountKit the account kit to import
    * @return {Promise<void>}
    */
-  async exec(encodedAccountKit) { 
+  async exec(encodedAccountKit) {
     const accountKit = await this.verifyAccountKitService.verify(encodedAccountKit);
-    const authAccountEntity = new AuthImportEntity({account_kit: accountKit})
-    AuthImportStorageService.set(authAccountEntity)
+    const authAccountEntity = new AuthImportEntity({account_kit: accountKit});
+    AuthImportStorageService.set(authAccountEntity);
     return accountKit;
   }
 }

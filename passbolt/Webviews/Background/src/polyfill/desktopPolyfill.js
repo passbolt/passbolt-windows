@@ -14,7 +14,7 @@
 
 
 /**
- * Init desktop variable 
+ * Init desktop variable
  */
 
 window.chrome.desktop = true;

@@ -13,46 +13,43 @@
  */
 
 class WebviewStorage {
-
-    constructor() { }
-
-    get storage() {
-        return {
-            local: {
-                get: this.getStorage,
-                set: function (key, value) {
-                    localStorage.setItem(key, value);
-                },
-                remove: function (key) {
-                    localStorage.removeItem(key);
-                },
-                clear: function () {
-                    localStorage.clear();
-                },
-            },
-            onChanged: {
-                addListener: function (callback) {
-                    window.addEventListener("storage", (event) => {
-                        const changes = {}
-                        const key = event.key;
-                        try {
-                            changes[key] = { newValue: JSON.parse(event.newValue) }
-                        } catch {
-                            changes[key] = { newValue: event.newValue }
-                        }
-                        callback(changes)
-                    });
-                }
+  get storage() {
+    return {
+      local: {
+        get: this.getStorage,
+        set: function(key, value) {
+          localStorage.setItem(key, value);
+        },
+        remove: function(key) {
+          localStorage.removeItem(key);
+        },
+        clear: function() {
+          localStorage.clear();
+        },
+      },
+      onChanged: {
+        addListener: function(callback) {
+          window.addEventListener("storage", event => {
+            const changes = {};
+            const key = event.key;
+            try {
+              changes[key] = {newValue: JSON.parse(event.newValue)};
+            } catch {
+              changes[key] = {newValue: event.newValue};
             }
+            callback(changes);
+          });
         }
-    }
+      }
+    };
+  }
 
-    async getStorage(key) {
-        const value = localStorage.getItem(key);
-        return {
-            [key]: JSON.parse(value)
-        };
-    }
+  async getStorage(key) {
+    const value = localStorage.getItem(key);
+    return {
+      [key]: JSON.parse(value)
+    };
+  }
 }
 
 export default WebviewStorage;

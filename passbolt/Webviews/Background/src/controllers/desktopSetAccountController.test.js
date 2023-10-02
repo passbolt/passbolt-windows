@@ -24,19 +24,18 @@ import {v4 as uuidv4} from "uuid";
 import {accountKit} from "./desktopSetAccountController.test.data";
 
 describe('DesktopSetAccountController', () => {
-  let desktopSetAccountController;
-  let worker;
-  let requestId = uuidv4();
+  let desktopSetAccountController, worker;
+  const requestId = uuidv4();
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     enableFetchMocks();
-    worker = { port: new IPCHandler() };
+    worker = {port: new IPCHandler()};
     jest.spyOn(AuthModel.prototype, 'logout').mockResolvedValue();
     desktopSetAccountController = new DesktopSetAccountController(worker, requestId, JSON.stringify(accountKit));
   });
   describe('DesktopSetAccountController', () => {
     describe('DesktopSetAccountController:_exec', () => {
-      it('Should call exec function', async () => {
+      it('Should call exec function', async() => {
         expect.assertions(2);
 
         jest.spyOn(worker.port, 'emit');
@@ -49,7 +48,7 @@ describe('DesktopSetAccountController', () => {
       });
 
 
-      it('Should post message with ERROR topic and error message if exec fails', async () => {
+      it('Should post message with ERROR topic and error message if exec fails', async() => {
         expect.assertions(2);
 
         jest.spyOn(worker.port, 'emit');
@@ -62,35 +61,35 @@ describe('DesktopSetAccountController', () => {
       });
     });
     describe('DesktopSetAccountController:exec', () => {
-      it('Should init storage with the account kit', async () => {
+      it('Should init storage with the account kit', async() => {
         expect.assertions(2);
         jest.spyOn(LocalStorage, "init");
         localStorage.removeItem("_passbolt_data");
 
         await desktopSetAccountController.exec();
-        const passboltData = JSON.parse(localStorage.getItem("_passbolt_data"))
+        const passboltData = JSON.parse(localStorage.getItem("_passbolt_data"));
 
-        expect(passboltData.config['user.settings.trustedDomain']).toEqual(defaultAccountDto().domain)
-        expect(LocalStorage.init).toHaveBeenCalled()
-      })
+        expect(passboltData.config['user.settings.trustedDomain']).toEqual(defaultAccountDto().domain);
+        expect(LocalStorage.init).toHaveBeenCalled();
+      });
 
-      it('Should init config with the account kit', async () => {
+      it('Should init config with the account kit', async() => {
         expect.assertions(1);
         jest.spyOn(Config, "init");
 
         await desktopSetAccountController.exec();
 
-        expect(Config.init).toHaveBeenCalled()
-      })
+        expect(Config.init).toHaveBeenCalled();
+      });
 
-      it('Should send topic background ready to main process', async () => {
+      it('Should send topic background ready to main process', async() => {
         expect.assertions(1);
         jest.spyOn(worker.port, 'emit');
 
         await desktopSetAccountController.exec();
 
         expect(worker.port.emit).toHaveBeenCalledWith(BACKGROUND_READY);
-      })
+      });
     });
-  })
-})  
+  });
+});

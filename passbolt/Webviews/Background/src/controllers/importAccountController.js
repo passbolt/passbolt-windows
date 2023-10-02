@@ -17,41 +17,40 @@ import {SAVE_ACCOUNT} from "../enumerations/appEventEnumeration";
 import AuthImportStorageService from "../services/authImportStorageService";
 
 class ImportAccountController {
-    /**
-     * ImportAccountController constructor
-     * @param {Worker} worker
-     * @param {string} requestId uuid
-     */
-    constructor(worker, requestId) {
-      this.worker = worker;
-      this.requestId = requestId;
-    }
-  
-    /**
-     * Wrapper of exec function to run it with worker.
-     * @return {Promise<void>}
-     */
-    async _exec() {
-      try {
-        await this.exec();
-        this.worker.port.emit(this.requestId, 'SUCCESS');
-      } catch (error) {
-        console.error(error);
-        this.worker.port.emit(this.requestId, 'ERROR', error);
-      }
-    }
-  
-    /**
-     * Attemps to save the account kit into the credential locker.
-     * @return {Promise<void>}
-     */
-    async exec() {
-      const authImportAccount = AuthImportStorageService.get();
-      const accountKit = authImportAccount.account_kit.toDto(AccountEntity.ALL_CONTAIN_OPTIONS);
-      //We include the pending requestId to inform Rendered Webview when Auth background is UP and continue flow
-      await this.worker.port.request(SAVE_ACCOUNT, {...accountKit, requestId: this.requestId});
+  /**
+   * ImportAccountController constructor
+   * @param {Worker} worker
+   * @param {string} requestId uuid
+   */
+  constructor(worker, requestId) {
+    this.worker = worker;
+    this.requestId = requestId;
+  }
+
+  /**
+   * Wrapper of exec function to run it with worker.
+   * @return {Promise<void>}
+   */
+  async _exec() {
+    try {
+      await this.exec();
+      this.worker.port.emit(this.requestId, 'SUCCESS');
+    } catch (error) {
+      console.error(error);
+      this.worker.port.emit(this.requestId, 'ERROR', error);
     }
   }
-  
-  export default ImportAccountController;
-  
+
+  /**
+   * Attemps to save the account kit into the credential locker.
+   * @return {Promise<void>}
+   */
+  async exec() {
+    const authImportAccount = AuthImportStorageService.get();
+    const accountKit = authImportAccount.account_kit.toDto(AccountEntity.ALL_CONTAIN_OPTIONS);
+    //We include the pending requestId to inform Rendered Webview when Auth background is UP and continue flow
+    await this.worker.port.request(SAVE_ACCOUNT, {...accountKit, requestId: this.requestId});
+  }
+}
+
+export default ImportAccountController;

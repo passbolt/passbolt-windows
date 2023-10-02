@@ -15,18 +15,18 @@
 import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
 
 export const accountKit = {
-    accountMetaData: {
-        domain: defaultAccountDto().domain,
-        user_id: defaultAccountDto().user_id,
-        username: defaultAccountDto().username,
-        first_name: defaultAccountDto().first_name,
-        last_name: defaultAccountDto().last_name,
-        security_token: defaultAccountDto().security_token,
-        server_public_armored_key: defaultAccountDto().server_public_armored_key,
-        user_public_armored_key: defaultAccountDto().user_public_armored_key
-    },
-    accountSecret: {
-        userId: defaultAccountDto().userId,
-        user_private_armored_key: defaultAccountDto().user_private_armored_key
-    }
-}
+  accountMetaData: {
+    domain: defaultAccountDto().domain,
+    user_id: defaultAccountDto().user_id,
+    username: defaultAccountDto().username,
+    first_name: defaultAccountDto().first_name,
+    last_name: defaultAccountDto().last_name,
+    security_token: defaultAccountDto().security_token,
+    server_public_armored_key: defaultAccountDto().server_public_armored_key,
+    user_public_armored_key: defaultAccountDto().user_public_armored_key
+  },
+  accountSecret: {
+    userId: defaultAccountDto().userId,
+    user_private_armored_key: defaultAccountDto().user_private_armored_key
+  }
+};

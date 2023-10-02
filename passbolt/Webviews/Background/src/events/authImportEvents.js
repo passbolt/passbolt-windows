@@ -17,7 +17,7 @@ import VerifyAccountKitController from "../controllers/verifyAccountKitControlle
 import VerifyPassphraseController from "../controllers/verifyPassphraseController";
 
 
-const listen = function (worker) {
+const listen = function(worker) {
   /*
    * Verify imported account kit
    *
@@ -25,7 +25,7 @@ const listen = function (worker) {
    * @param requestId {uuid} The request identifier
    * @param accountKit {object} The account to verify
    */
-  worker.port.on('passbolt.background.verify-account-kit', async (requestId, accountKit) => {
+  worker.port.on('passbolt.background.verify-account-kit', async(requestId, accountKit) => {
     const exportController = new VerifyAccountKitController(worker, requestId);
     await exportController._exec(accountKit);
   });
@@ -37,7 +37,7 @@ const listen = function (worker) {
    * @param requestId {uuid} The request identifier
    * @param passphrase {string} The passphrase to verify
    */
-  worker.port.on('passbolt.auth-import.verify-passphrase', async (requestId, passphrase) => {
+  worker.port.on('passbolt.auth-import.verify-passphrase', async(requestId, passphrase) => {
     const verifyPassphraseController = new VerifyPassphraseController(worker, requestId);
     await verifyPassphraseController._exec(passphrase);
   });
@@ -48,10 +48,10 @@ const listen = function (worker) {
    * @listens passbolt.auth-import.import-account
    * @param requestId {uuid} The request identifier
    */
-  worker.port.on('passbolt.auth-import.import-account', async (requestId) => {
+  worker.port.on('passbolt.auth-import.import-account', async requestId => {
     const importAccountController = new ImportAccountController(worker, requestId);
     await importAccountController._exec();
   });
 };
 
-export const AuthImportEvents = { listen };
+export const AuthImportEvents = {listen};

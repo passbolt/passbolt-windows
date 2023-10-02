@@ -13,7 +13,7 @@
  */
 
 export const resourceToExport = {
-    folders_ids: [],
-    format: "csv-1password",
-    resources_ids: ['0f2b3f78-0f99-46ce-b110-b98bb35e7c6c']
-}
+  folders_ids: [],
+  format: "csv-1password",
+  resources_ids: ['0f2b3f78-0f99-46ce-b110-b98bb35e7c6c']
+};

@@ -14,7 +14,7 @@
 
 import {signedMessage} from "passbolt-browser-extension/src/all/background_page/service/crypto/verifyMessageSign.test.data";
 
-export const defaultData = async (data = {}) => {
-    const signedAccountKit = await signedMessage(data);
-    return Buffer.from(signedAccountKit).toString('base64');
-}
+export const defaultData = async(data = {}) => {
+  const signedAccountKit = await signedMessage(data);
+  return Buffer.from(signedAccountKit).toString('base64');
+};

@@ -56,7 +56,6 @@ import MfaContextProvider from "passbolt-styleguide/src/react-extension/contexts
  * The passbolt application served by the desktop.
  */
 class AppWorkspace extends Component {
-
   /**
    * Wait passbolt data to be send to rendered webview
    */
@@ -76,7 +75,7 @@ class AppWorkspace extends Component {
       <RenderedWebview port={this.props.port}>
         {this.isReady() && <ExtAppContextProvider port={this.props.port} storage={this.props.storage}>
           <AppContext.Consumer>
-            {appContext =>
+            {() =>
               <TranslationProvider loadingPath="https://rendered.dist/Rendered/dist/locales/{{lng}}/{{ns}}.json">
                 <RbacContextProvider>
                   <AccountRecoveryUserContextProvider accountRecoveryUserService={accountRecoveryUserService}>

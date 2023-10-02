@@ -40,7 +40,7 @@ describe('IPCHandler', () => {
       expect(ipcHandler._listeners[topic][0].callback).toBe(mockCallback);
       expect(ipcHandler._listeners[topic][0].once).toBeFalsy();
     });
-  })
+  });
 
   describe("IPCHandler:once", () => {
     it('should add a listener that only triggers once when once is called', () => {
@@ -53,52 +53,51 @@ describe('IPCHandler', () => {
       expect(ipcHandler._listeners[topic][0].callback).toBe(mockCallback);
       expect(ipcHandler._listeners[topic][0].once).toBeTruthy();
     });
-  })
+  });
 
   describe("IPCHandler:emit", () => {
-    it('should emit function sends message via postMessage', async () => {
+    it('should emit function sends message via postMessage', async() => {
       expect.assertions(1);
-      
+
       await ipcHandler.emit(topic, successTopic.status, successTopic.message);
 
       expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify(successTopic));
     });
 
-  
-    it('should correctly form ipc for topic and message', async () => {
+
+    it('should correctly form ipc for topic and message', async() => {
       expect.assertions(1);
 
       await ipcHandler.emit(topic, successTopic.message);
-  
+
       expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({
-        topic,
+        topic: topic,
         status: null,
         message: successTopic.message,
       }));
     });
-  
-    it('should pass the raw requestArgs if the first argument is not a string', async () => {
+
+    it('should pass the raw requestArgs if the first argument is not a string', async() => {
       expect.assertions(1);
 
-      const data = { some: 'data' };
+      const data = {some: 'data'};
       await ipcHandler.emit(data);
 
       expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify(data));
     });
 
-    it('should correctly form ipc for topic and SUCCESS status', async () => {
+    it('should correctly form ipc for topic and SUCCESS status', async() => {
       expect.assertions(1);
 
       await ipcHandler.emit(topic, 'SUCCESS');
 
       expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({
-        topic,
+        topic: topic,
         status: 'SUCCESS',
         message: null
       }));
     });
-  
-  })
+  });
 
   describe("IPCHandler:request", () => {
     it('should request function emits request and registers one-time listener for response', () => {
@@ -113,53 +112,52 @@ describe('IPCHandler', () => {
       expect(ipcHandler._listeners[requestId][0].once).toBeTruthy();
       expect(spy).toHaveBeenCalled();
     });
-    it('should request generates a requestId and adds it to the request parameters', async () => {
+    it('should request generates a requestId and adds it to the request parameters', async() => {
       expect.assertions(1);
 
       const mockCallback = jest.fn();
       const mockCallbackArgs = ['testArg1', 'testArg2'];
       const spy = jest.spyOn(ipcHandler, '_addListener');
 
-      ipcHandler.request({ message: topic }, mockCallback, ...mockCallbackArgs);
-      const requestId = Object.keys(ipcHandler._listeners)[0]
+      ipcHandler.request({message: topic}, mockCallback, ...mockCallbackArgs);
+      const requestId = Object.keys(ipcHandler._listeners)[0];
 
       expect(spy).toHaveBeenCalledWith(requestId, expect.any(Function), true);
     });
 
 
-    it('should request resolve in case of status is success', async () => {
+    it('should request resolve in case of status is success', async() => {
       expect.assertions(1);
 
-      const promise = ipcHandler.request({ message: topic });
+      const promise = ipcHandler.request({message: topic});
       const requestId = Object.keys(ipcHandler._listeners)[0];
-      ipcHandler._onMessage({ data: { topic: requestId, status: successTopic.status, message: successTopic.message } });
+      ipcHandler._onMessage({data: {topic: requestId, status: successTopic.status, message: successTopic.message}});
 
       expect(await promise).toBe(successTopic.message);
     });
 
-    it('should request reject in case of status is error', async () => {
+    it('should request reject in case of status is error', async() => {
       expect.assertions(1);
 
-      const promise = ipcHandler.request({ message: topic });
+      const promise = ipcHandler.request({message: topic});
       const requestId = Object.keys(ipcHandler._listeners)[0];
 
-      ipcHandler._onMessage({ data: { topic: requestId, status: errorTopic.status, message: errorTopic.message } });
+      ipcHandler._onMessage({data: {topic: requestId, status: errorTopic.status, message: errorTopic.message}});
 
       try {
-        await promise
+        await promise;
       } catch (error) {
-        expect(error).toEqual(errorTopic.message)
+        expect(error).toEqual(errorTopic.message);
       }
-
     });
-  })
+  });
 
   describe("IPCHandler:initListener", () => {
     it('should register a message topic listener on chrome.webview with initListener', () => {
       expect.assertions(1);
       expect(window.chrome.webview.addEventListener).toHaveBeenCalledWith("message", expect.any(Function));
     });
-  })
+  });
 
   describe("IPCHandler:_onMessage", () => {
     it('_onMessage triggers registered callbacks with correct arguments', () => {
@@ -181,8 +179,7 @@ describe('IPCHandler', () => {
 
       expect(ipcHandler._listeners[topic]).toBeUndefined();
     });
-
-  })
+  });
 
   describe("IPCHandler:_addListener", () => {
     it('_addListener adds listener object to listeners', () => {
@@ -195,6 +192,6 @@ describe('IPCHandler', () => {
       expect(ipcHandler._listeners[topic][0].callback).toBe(mockCallback);
       expect(ipcHandler._listeners[topic][0].once).toBeFalsy();
     });
-  })
+  });
 });
 

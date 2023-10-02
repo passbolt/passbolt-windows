@@ -1,0 +1,75 @@
+rendered-tests:
+  allow_failure: true
+  extends: .rules
+  stage: test
+  image: node:16
+  coverage: /Lines\s* [:] ([\d\.]+)%/
+  script:
+    - cd passbolt/Webviews/Rendered
+    - npm install
+    - npm run test:coverage
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+
+rendered-linter:
+  allow_failure: true
+  stage: test
+  image: node:16
+  extends: .rules
+  script:
+    - cd passbolt/Webviews/Rendered
+    - npm install
+    - npm run eslint
+
+rendered-audit:
+  allow_failure: true
+  extends: .rules
+  stage: test
+  image: node:16
+  script:
+    - cd passbolt/Webviews/Rendered
+    - npm audit
+
+background-tests:
+  allow_failure: true
+  extends: .rules
+  stage: test
+  image: node:16
+  coverage: /Lines\s* [:] ([\d\.]+)%/
+  script:
+    - cd passbolt/Webviews/Background
+    - npm install
+    - npm run test:coverage
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+
+background-linter:
+  allow_failure: true
+  stage: test
+  image: node:16
+  extends: .rules
+  script:
+    - cd passbolt/Webviews/Background
+    - npm install
+    - npm run eslint
+
+background-audit:
+  allow_failure: true
+  extends: .rules
+  stage: test
+  image: node:16
+  script:
+    - cd passbolt/Webviews/Background
+    - npm audit

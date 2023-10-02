@@ -15,7 +15,6 @@
 import Validator from "validator";
 import VerifyMessageService from "passbolt-browser-extension/src/all/background_page/service/crypto/verifyMessageSign";
 import AuthImportEntity from "../entity/AuthImportEntity/authImportEntity";
-import AuthImportStorageService from "./authImportStorageService";
 import {Buffer} from 'buffer';
 import {OpenpgpAssertion} from "passbolt-browser-extension/src/all/background_page/utils/openpgp/openpgpAssertions";
 
@@ -23,39 +22,39 @@ import {OpenpgpAssertion} from "passbolt-browser-extension/src/all/background_pa
  * Service related to the verify account kit service
  */
 class VerifyAccountKitService {
-    /**
-     * verify the account kit uploaded
-     * @param {string} base64SignedAccountKit 
-     * @throws {Error} If the base64SignedAccountKit is missing
-     * @throws {TypeError} If the base64SignedAccountKit is not a string
-     * @throws {TypeError} If the base64SignedAccountKit is not a valid base64 message
-     * @throws {TypeError} If the base64 message doesn't contain a valid gpg message
-     * @throws {TypeError} If the message is not a valid json string
-     * @throws {TypeError} If the json string is not a valid account kit entity
-     * @throws {Error} If the account kit cannot be verified
-     */
-    async verify(base64SignedAccountKit) {
-        if (!base64SignedAccountKit) {
-            throw new Error("The account kit is required.");
-        }
-        if (typeof base64SignedAccountKit !== 'string') {
-            throw new TypeError("The account kit should be a string.");
-        }
-        if (!Validator.isBase64(base64SignedAccountKit)) {
-            throw new TypeError("The account kit should be a base 64 format.");
-        }
-        const accountKitStringify = Buffer.from(base64SignedAccountKit, "base64").toString();
-        //Read the armoredMessage
-        const signedMessage = await OpenpgpAssertion.readMessageOrFail(accountKitStringify)
-        //Extract message as text
-        const accountKit = JSON.parse(signedMessage.getText())
-        //Validate account throw the entity
-        new AuthImportEntity({account_kit: accountKit})
-        //Check pgp signature
-        const verificationKeys = await OpenpgpAssertion.readAllKeysOrFail([accountKit["user_public_armored_key"]]);
-        await VerifyMessageService.verify(signedMessage, verificationKeys)
-        return accountKit;
+  /**
+   * verify the account kit uploaded
+   * @param {string} base64SignedAccountKit
+   * @throws {Error} If the base64SignedAccountKit is missing
+   * @throws {TypeError} If the base64SignedAccountKit is not a string
+   * @throws {TypeError} If the base64SignedAccountKit is not a valid base64 message
+   * @throws {TypeError} If the base64 message doesn't contain a valid gpg message
+   * @throws {TypeError} If the message is not a valid json string
+   * @throws {TypeError} If the json string is not a valid account kit entity
+   * @throws {Error} If the account kit cannot be verified
+   */
+  async verify(base64SignedAccountKit) {
+    if (!base64SignedAccountKit) {
+      throw new Error("The account kit is required.");
     }
+    if (typeof base64SignedAccountKit !== 'string') {
+      throw new TypeError("The account kit should be a string.");
+    }
+    if (!Validator.isBase64(base64SignedAccountKit)) {
+      throw new TypeError("The account kit should be a base 64 format.");
+    }
+    const accountKitStringify = Buffer.from(base64SignedAccountKit, "base64").toString();
+    //Read the armoredMessage
+    const signedMessage = await OpenpgpAssertion.readMessageOrFail(accountKitStringify);
+    //Extract message as text
+    const accountKit = JSON.parse(signedMessage.getText());
+    //Validate account throw the entity
+    new AuthImportEntity({account_kit: accountKit});
+    //Check pgp signature
+    const verificationKeys = await OpenpgpAssertion.readAllKeysOrFail([accountKit["user_public_armored_key"]]);
+    await VerifyMessageService.verify(signedMessage, verificationKeys);
+    return accountKit;
+  }
 }
 
 export default VerifyAccountKitService;

@@ -30,24 +30,23 @@ import {defaultApiClientOptions} from "passbolt-browser-extension/src/all/backgr
 import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
 import AuthService from "passbolt-browser-extension/src/all/background_page/service/auth";
 import MfaAuthenticationRequiredError from "passbolt-browser-extension/src/all/background_page/error/mfaAuthenticationRequiredError";
- 
+
 
 describe('DesktopAuthenticateController', () => {
-  let desktopAuthenticateController;
-  let worker;
-  let requestId = uuidv4();
+  let desktopAuthenticateController, worker;
+  const requestId = uuidv4();
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     enableFetchMocks();
     worker = {port: new IPCHandler()};
-    jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(defaultAccountDto()));    
-    fetch.doMockIf(/users\/csrf-token.json/, () =>  mockApiResponse("csrf-token"))
+    jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(defaultAccountDto()));
+    fetch.doMockIf(/users\/csrf-token.json/, () =>  mockApiResponse("csrf-token"));
     jest.spyOn(AuthModel.prototype, 'login').mockResolvedValue();
 
     const mockFindPrivate = jest.spyOn(Keyring.prototype, "findPrivate");
 
-    const initPassboltDataLocalStorageService = new InitPassboltDataLocalStorageService(); 
-    await initPassboltDataLocalStorageService.initPassboltData(defaultAccountDto()); 
+    const initPassboltDataLocalStorageService = new InitPassboltDataLocalStorageService();
+    await initPassboltDataLocalStorageService.initPassboltData(defaultAccountDto());
 
     mockFindPrivate.mockImplementation(() => new ExternalGpgKeyEntity({armored_key: accountDto.user_private_armored_key}));
     desktopAuthenticateController = new DesktopAuthenticateController(worker, requestId, defaultApiClientOptions());
@@ -55,65 +54,66 @@ describe('DesktopAuthenticateController', () => {
   });
   describe('DesktopAuthenticateController', () => {
     describe('DesktopAuthenticateController:exec', () => {
-      it('Should initiate configuration', async () => {
+      it('Should initiate configuration', async() => {
         expect.assertions(1);
 
-        jest.spyOn(Config, "init")
-        
+        jest.spyOn(Config, "init");
+
         await desktopAuthenticateController.exec(tempPassphrase);
 
         expect(Config.init).toHaveBeenCalled();
-      })
+      });
 
-      it('Should check and validate the passphrase', async () => {        
+      it('Should check and validate the passphrase', async() => {
         expect.assertions(1);
-        jest.spyOn(LoginUserService.prototype, "checkPassphrase")
+        jest.spyOn(LoginUserService.prototype, "checkPassphrase");
 
         await desktopAuthenticateController.exec(tempPassphrase);
 
         expect(LoginUserService.prototype.checkPassphrase).toHaveBeenCalledWith(tempPassphrase);
-      })
+      });
 
-      it('Should login and persist the passphrase', async () => {
+      it('Should login and persist the passphrase', async() => {
         expect.assertions(1);
-        jest.spyOn(LoginUserService.prototype, "login")
+        jest.spyOn(LoginUserService.prototype, "login");
 
         await desktopAuthenticateController.exec(tempPassphrase);
-        
-        expect(LoginUserService.prototype.login).toHaveBeenCalledWith(tempPassphrase, true);
-      })
 
-      it('Should send event to main process after sign-in', async () => {
+        expect(LoginUserService.prototype.login).toHaveBeenCalledWith(tempPassphrase, true);
+      });
+
+      it('Should send event to main process after sign-in', async() => {
         expect.assertions(1);
 
         jest.spyOn(worker.port, 'emit');
 
         await desktopAuthenticateController.exec(tempPassphrase);
-        
-        expect(worker.port.emit).toHaveBeenCalledWith(USER_LOGGED_IN, tempPassphrase);
-      })
 
-      it('Should send event to main process if mfa is required sign-in', async () => {
+        expect(worker.port.emit).toHaveBeenCalledWith(USER_LOGGED_IN, tempPassphrase);
+      });
+
+      it('Should send event to main process if mfa is required sign-in', async() => {
         expect.assertions(1);
 
         const passphrase = "admin@passbolt.com";
         const provider = "totp";
 
-        jest.spyOn(AuthService, "isAuthenticated").mockImplementation(() => {throw new MfaAuthenticationRequiredError(null,
-          {
-            mfa_providers: [provider]
-          }
-        )});
+        jest.spyOn(AuthService, "isAuthenticated").mockImplementation(() => {
+          throw new MfaAuthenticationRequiredError(null,
+            {
+              mfa_providers: [provider]
+            }
+          );
+        });
         jest.spyOn(worker.port, 'emit');
 
         await desktopAuthenticateController.exec(passphrase);
-        
+
         expect(worker.port.emit).toHaveBeenCalledWith(REQUIRE_MFA, {
           passphrase,
           provider
         });
-      })
+      });
     });
-
-  })
-})  
+  });
+});

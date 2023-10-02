@@ -17,7 +17,6 @@ import PropTypes from "prop-types";
 
 
 class RenderedWebview extends React.Component {
-
   /**
    * Default constructor
    */
@@ -28,8 +27,8 @@ class RenderedWebview extends React.Component {
   }
 
   /**
- * Returns the default component state
- */
+   * Returns the default component state
+   */
   get defaultState() {
     return {
       isReady: false,
@@ -59,33 +58,32 @@ class RenderedWebview extends React.Component {
 
   /**
    * handle the localstorage updates
-   * @param {object} data 
+   * @param {object} data
    */
   handleLocalStorageUpdate(requestId, data) {
     try {
-      const { key, value } = JSON.parse(data)
+      const {key, value} = JSON.parse(data);
       localStorage.setItem(key, value);
-      window.dispatchEvent(new StorageEvent('storage', { key, newValue: value }));
-    } catch(ex) {
-      console.log(ex)
+      window.dispatchEvent(new StorageEvent('storage', {key: key, newValue: value}));
+    } catch (ex) {
+      console.log(ex);
     }
-
   }
 
   /**
    * handle the localstorage clear
    */
   handleLocalStorageClear() {
-    localStorage.clear(key, value)
+    localStorage.clear();
   }
 
   /**
    * handle the localstorage deletion
-   * @param {object} data 
+   * @param {object} data
    */
   handleLocalStorageDelete(data) {
-    const { key } = JSON.parse(data)
-    localStorage.removeItem(key)
+    const {key} = JSON.parse(data);
+    localStorage.removeItem(key);
   }
 
   /**
@@ -103,6 +101,7 @@ class RenderedWebview extends React.Component {
 
 RenderedWebview.propTypes = {
   port: PropTypes.any, // The application port
+  children: PropTypes.any, // The component children
 };
 
 export default RenderedWebview;

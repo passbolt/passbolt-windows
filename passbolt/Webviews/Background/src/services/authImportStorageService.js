@@ -12,44 +12,42 @@
  * @since         0.3.0
  */
 
-import AuthImportEntity from "../entity/AuthImportEntity/authImportEntity";
-
 class AuthImportStorageService {
-    /**
-    * Stores the account kit import in runtime memory.
-    * @param {Object} accountKit
-    * @return {void}
-    */
-    static set(authImportEntity) {
-        this.authImportEntity = authImportEntity
-    }
+  /**
+   * Stores the account kit import in runtime memory.
+   * @param {Object} accountKit
+   * @return {void}
+   */
+  static set(authImportEntity) {
+    this.authImportEntity = authImportEntity;
+  }
 
-    /**
-     * Return the authImportEntity
-    * @return {AuthImportEntity}
-     */
-    static get() {
-        return this.authImportEntity;
-    }
+  /**
+   * Return the authImportEntity
+   * @return {AuthImportEntity}
+   */
+  static get() {
+    return this.authImportEntity;
+  }
 
-    /**
-     * Return the authImportEntity
-     * @return {void}
-     */
-    static flush() {
-        this.authImportEntity = null;
-    }
+  /**
+   * Return the authImportEntity
+   * @return {void}
+   */
+  static flush() {
+    this.authImportEntity = null;
+  }
 
-    /**
-     * Retunr the private key from imported account kit if exist
-     */
-    static findPrivate() {
-        if(!this.authImportEntity?.account_kit) {
-            return null;
-        }
-        const accountKitDto = this.authImportEntity?.account_kit.toDto({user_private_armored_key: true});
-        return {armoredKey: accountKitDto.user_private_armored_key}
+  /**
+   * Retunr the private key from imported account kit if exist
+   */
+  static findPrivate() {
+    if (!this.authImportEntity?.account_kit) {
+      return null;
     }
+    const accountKitDto = this.authImportEntity?.account_kit.toDto({user_private_armored_key: true});
+    return {armoredKey: accountKitDto.user_private_armored_key};
+  }
 }
 
 export default AuthImportStorageService;

@@ -14,7 +14,7 @@
 
 import ExportResourcesFileService from "../services/exportResourcesFilesService";
 
-class ExportResourcesFileDesktopController { 
+class ExportResourcesFileDesktopController {
   /**
    * ExportResourcesFileController constructor
    * @param {Worker} worker
@@ -37,7 +37,7 @@ class ExportResourcesFileDesktopController {
     } catch (error) {
       console.error(error);
       this.worker.port.emit(this.requestId, 'ERROR', error);
-    } 
+    }
   }
 }
 

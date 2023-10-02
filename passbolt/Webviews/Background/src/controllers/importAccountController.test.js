@@ -19,35 +19,33 @@ import {v4 as uuidv4} from "uuid";
 import ImportAccountController from "./importAccountController";
 import AuthImportStorageService from "../services/authImportStorageService";
 import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
-import { authImportDefault } from "./importAccountSignInController.test.data";
-import { SAVE_ACCOUNT } from "../enumerations/appEventEnumeration";
+import {authImportDefault} from "./importAccountSignInController.test.data";
+import {SAVE_ACCOUNT} from "../enumerations/appEventEnumeration";
 
 
 describe('ImportAccountController', () => {
-  let importAccountController;
-  let worker;
-  let accountDto;
-  let requestId = uuidv4();
-  let authImportEntity = authImportDefault();
+  let importAccountController, worker, accountDto;
+  const requestId = uuidv4();
+  const authImportEntity = authImportDefault();
 
-  beforeEach(async () => {
+  beforeEach(async() => {
     enableFetchMocks();
-    worker = { port: new IPCHandler() };
+    worker = {port: new IPCHandler()};
     AuthImportStorageService.set(authImportEntity);
     accountDto = authImportEntity.account_kit.toDto(AccountEntity.ALL_CONTAIN_OPTIONS);
     importAccountController = new ImportAccountController(worker, requestId, JSON.stringify(accountKit));
   });
   describe('ImportAccountController', () => {
     describe('ImportAccountController:exec', () => {
-      it('Should request the main process to save account kit into the credential locker', async () => {
+      it('Should request the main process to save account kit into the credential locker', async() => {
         expect.assertions(1);
 
-        jest.spyOn(worker.port,"request").mockImplementation(() => jest.fn());   
+        jest.spyOn(worker.port, "request").mockImplementation(() => jest.fn());
         await importAccountController.exec();
 
         expect(worker.port.request).toHaveBeenCalledWith(SAVE_ACCOUNT, {...accountDto, requestId});
-      })
+      });
     });
-  })
-})  
+  });
+});
 
