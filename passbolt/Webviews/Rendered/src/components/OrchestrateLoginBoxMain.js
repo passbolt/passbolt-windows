@@ -19,7 +19,7 @@ import LoadingSpinner from "passbolt-styleguide/src/react-extension/components/C
 import {AuthenticationLoginWorkflowStates, withAuthenticationLoginContext} from "passbolt-styleguide/src/react-extension/contexts/Authentication/AuthenticationLoginContext";
 import {withAppContext} from "passbolt-styleguide/src/shared/context/AppContext/AppContext";
 import React, {Component} from "react";
-import Login from "passbolt-styleguide/src/react-extension/components/AuthenticationLogin/Login/Login"
+import Login from "passbolt-styleguide/src/react-extension/components/AuthenticationLogin/Login/Login";
 import {Trans, withTranslation} from "react-i18next";
 
 /**
@@ -58,7 +58,7 @@ class OrchestrateLoginBoxMain extends Component {
       case AuthenticationLoginWorkflowStates.UNEXPECTED_ERROR:
         return <DisplayUnexpectedError
           error={this.props.authenticationLoginContext.error}
-        />
+        />;
       case AuthenticationLoginWorkflowStates.LOADING:
         return <LoadingSpinner/>;
     }

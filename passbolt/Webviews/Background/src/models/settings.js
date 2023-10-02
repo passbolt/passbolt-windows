@@ -13,13 +13,12 @@
  */
 
 export default class Settings {
-
-    constructor(passboltData) {
-        this.config =  {
-            "user.settings.securityToken.code": passboltData?.config["user.settings.securityToken.code"],
-            "user.settings.securityToken.color": passboltData?.config["user.settings.securityToken.color"],
-            "user.settings.securityToken.textColor": passboltData?.config["user.settings.securityToken.textColor"],
-            "user.settings.trustedDomain": passboltData?.config["user.settings.trustedDomain"],
-        }
-    }
+  constructor(passboltData) {
+    this.config =  {
+      "user.settings.securityToken.code": passboltData?.config["user.settings.securityToken.code"],
+      "user.settings.securityToken.color": passboltData?.config["user.settings.securityToken.color"],
+      "user.settings.securityToken.textColor": passboltData?.config["user.settings.securityToken.textColor"],
+      "user.settings.trustedDomain": passboltData?.config["user.settings.trustedDomain"],
+    };
+  }
 }

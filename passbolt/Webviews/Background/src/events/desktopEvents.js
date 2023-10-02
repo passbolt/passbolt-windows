@@ -25,7 +25,7 @@ const listen = function(worker) {
    * @listens passbolt.auth.logout
    * @param requestId {uuid} The request identifier
    */
-  worker.port.on('passbolt.auth.logout', async(requestId) => {
+  worker.port.on('passbolt.auth.logout', async requestId => {
     const apiClientOptions = await User.getInstance().getApiClientOptions();
     const controller = new AuthLogoutController(worker, requestId, apiClientOptions);
     await controller._exec();

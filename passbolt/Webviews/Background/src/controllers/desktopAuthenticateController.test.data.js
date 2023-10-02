@@ -16,31 +16,30 @@ import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_p
 
 export const legacyResult = {
   domain: defaultAccountDto().domain
-}
+};
 
 export const passboltData = {
   "debug": false,
-  "log": { "console": false, "level": 0 }, 
-  "user.firstname": defaultAccountDto().first_name, 
-  "user.id": defaultAccountDto().user_id, 
-  "user.lastname": defaultAccountDto().last_name, 
-  "user.settings.securityToken.code": defaultAccountDto().security_token.code, 
-  "user.settings.securityToken.color": defaultAccountDto().security_token.color, 
-  "user.settings.securityToken.textColor": defaultAccountDto().security_token.textcolor, 
-  "user.settings.trustedDomain": defaultAccountDto().domain, 
+  "log": {"console": false, "level": 0},
+  "user.firstname": defaultAccountDto().first_name,
+  "user.id": defaultAccountDto().user_id,
+  "user.lastname": defaultAccountDto().last_name,
+  "user.settings.securityToken.code": defaultAccountDto().security_token.code,
+  "user.settings.securityToken.color": defaultAccountDto().security_token.color,
+  "user.settings.securityToken.textColor": defaultAccountDto().security_token.textcolor,
+  "user.settings.trustedDomain": defaultAccountDto().domain,
   "user.username": defaultAccountDto().username
-}
+};
 
 
 export const userConfig = {
   "config": {
-    "user.firstname": defaultAccountDto().first_name, 
-    "user.lastname": defaultAccountDto().last_name, 
+    "user.firstname": defaultAccountDto().first_name,
+    "user.lastname": defaultAccountDto().last_name,
     "user.username": defaultAccountDto().username,
-    "user.settings.trustedDomain": defaultAccountDto().domain, 
+    "user.settings.trustedDomain": defaultAccountDto().domain,
     "user.settings.securityToken.code": "YUL",
     "user.settings.securityToken.color": "#FF9800",
     "user.settings.securityToken.textColor": "#000000",
-    "user.settings.trustedDomain": "https://www.passbolt.local",
   }
-}
+};

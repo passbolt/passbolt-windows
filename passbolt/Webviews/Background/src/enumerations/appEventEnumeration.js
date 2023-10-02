@@ -13,7 +13,7 @@
  */
 
 export const USER_LOGGED_IN = "passbolt.auth.after-login";
-export const USER_LOGGED_OUT = "passbolt.auth.logout"
+export const USER_LOGGED_OUT = "passbolt.auth.logout";
 export const BACKGROUND_READY = "passbolt.background.is-ready";
 export const BACKGROUND_IMPORT = "passbolt.background.import";
 export const ERROR = "passbolt.error";

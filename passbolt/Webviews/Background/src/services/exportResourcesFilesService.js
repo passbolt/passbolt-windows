@@ -17,7 +17,7 @@ import ExportResourcesFileController from "passbolt-browser-extension/src/all/ba
 import ExportResourcesFileEntity from "passbolt-browser-extension/src/all/background_page/model/entity/export/exportResourcesFileEntity";
 import ProgressService from "passbolt-browser-extension/src/all/background_page/service/progress/progressService";
 import User from "passbolt-browser-extension/src/all/background_page/model/user";
-import { DOWNLOAD_FILE } from "../enumerations/appEventEnumeration";
+import {DOWNLOAD_FILE} from "../enumerations/appEventEnumeration";
 import FileService from "passbolt-browser-extension/src/all/background_page/service/file/fileService";
 
 const INITIAL_PROGRESS_GOAL = 100;
@@ -28,7 +28,7 @@ const INITIAL_PROGRESS_GOAL = 100;
 class ExportResourcesFileService {
   /**
    * constructor for the login user service
-   * @param {ApiClientOptions} apiClientOptions 
+   * @param {ApiClientOptions} apiClientOptions
    */
   constructor(worker, apiClientOptions) {
     this.worker = worker;
@@ -68,9 +68,9 @@ class ExportResourcesFileService {
     const filename = `passbolt-export-${date}.${exportEntity.fileType}`;
     const mimeType = this.exportResoucesFileController.getMimeType(exportEntity.fileType);
 
-    const blobFile = new Blob([exportEntity.file], { type: mimeType });
-    const dataUrl = await FileService.blobToDataURL(blobFile);
-    window.chrome.webview.postMessage(JSON.stringify({ topic: DOWNLOAD_FILE, message: { content: dataUrl, filename } }));
+    const blobFile = new Blob([exportEntity.file], {type: mimeType});
+    const content = await FileService.blobToDataURL(blobFile);
+    window.chrome.webview.postMessage(JSON.stringify({topic: DOWNLOAD_FILE, message: {content, filename}}));
   }
 }
 

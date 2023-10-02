@@ -13,8 +13,7 @@
  */
 
 export default class PassboltData {
-
-    constructor(currentUser, settings) {
-        this.config = Object.assign({}, currentUser.config, settings.config);
-    }
+  constructor(currentUser, settings) {
+    this.config = Object.assign({}, currentUser.config, settings.config);
+  }
 }

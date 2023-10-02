@@ -40,7 +40,7 @@ import {DesktopEvents} from "./events/desktopEvents";
 import {ExportResourcesEvents} from "./events/exportResourcesEvents";
 import {UserEvents} from "passbolt-browser-extension/src/all/background_page/event/userEvents";
 import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
-import { PasswordPoliciesEvents } from "passbolt-browser-extension/src/all/background_page/event/passwordPoliciesEvents";
+import {PasswordPoliciesEvents} from "passbolt-browser-extension/src/all/background_page/event/passwordPoliciesEvents";
 
 describe("Main workspace class", () => {
   const ipcDataMock = {
@@ -53,23 +53,23 @@ describe("Main workspace class", () => {
   beforeEach(() => {
     window.chrome.webview.addEventListener = jest.fn((event, callback) => {
       if (event === "message") {
-        callback(ipcDataMock)
+        callback(ipcDataMock);
       }
-    })
-    localStorage.setItem('_passbolt_data', JSON.stringify(accountDto))
-    jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(accountDto).toDto());    
+    });
+    localStorage.setItem('_passbolt_data', JSON.stringify(accountDto));
+    jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(accountDto).toDto());
     main = new Main(window.chrome.webview);
-  })
+  });
 
   afterEach(() => {
     // Cleanup mocks
     jest.resetAllMocks();
   });
 
-  it('should listen to the browser extension events', async () => {
+  it('should listen to the browser extension events', async() => {
     expect.assertions(22);
 
-    jest.spyOn(AccountRecoveryEvents, "listen")
+    jest.spyOn(AccountRecoveryEvents, "listen");
     jest.spyOn(ActionLogEvents, "listen");
     jest.spyOn(CommentEvents, "listen");
     jest.spyOn(ConfigEvents, "listen");
@@ -120,14 +120,14 @@ describe("Main workspace class", () => {
     expect(UserEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
   });
 
-  it('should not initialize the local storage if user exist and post a message', async () => {
+  it('should not initialize the local storage if user exist and post a message', async() => {
     expect.assertions(2);
 
-    jest.spyOn(window.chrome.storage.local, "set")
+    jest.spyOn(window.chrome.storage.local, "set");
     await main.initStorage();
 
     expect(window.chrome.storage.local.set).not.toHaveBeenCalled();
-    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: BACKGROUND_READY }));
+    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({topic: BACKGROUND_READY}));
   });
 
   it('should send an event when localstorage is updated', () => {
@@ -135,25 +135,25 @@ describe("Main workspace class", () => {
 
     const key = "test";
     const value = "with jest";
-    window.chrome.storage.local.set(key, value)
+    window.chrome.storage.local.set(key, value);
 
-    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: LOCALSTORAGE_UPDATE, message: {key, value} }));
+    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({topic: LOCALSTORAGE_UPDATE, message: {key, value}}));
   });
 
   it('should send an event when localstorage is delete', () => {
     expect.assertions(1);
 
     const key = "test-delete";
-    window.chrome.storage.local.remove(key)
+    window.chrome.storage.local.remove(key);
 
-    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: LOCALSTORAGE_DELETE, message: key }));
+    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({topic: LOCALSTORAGE_DELETE, message: key}));
   });
 
   it('should send an event when localstorage is cleared', () => {
     expect.assertions(1);
 
-    window.chrome.storage.local.clear()
+    window.chrome.storage.local.clear();
 
-    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({ topic: LOCALSTORAGE_CLEAR }));
+    expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({topic: LOCALSTORAGE_CLEAR}));
   });
 });

@@ -15,153 +15,151 @@
 import {v4 as uuidv4} from "uuid";
 
 class IPCHandler {
+  constructor() {
+    this._listeners = {};
+    this.initListener();
+  }
 
-    constructor() {
-        this._listeners = {};
-        this.initListener();
-    }
-
-    /**
-     * Init listener
-     * @private
-     */
-    initListener() {
-        window.chrome.webview.addEventListener("message", (event) => {
-            this._onMessage(event);
-        });
-    }
+  /**
+   * Init listener
+   * @private
+   */
+  initListener() {
+    window.chrome.webview.addEventListener("message", event => {
+      this._onMessage(event);
+    });
+  }
 
 
-    /**
-     * When a message is received on the ICP channel
-     * Triggers all the callback associated with that message name
-     *
-     * @param json
-     * @private
-     */
-    _onMessage(json) {
-        const event = json.data;
-        const eventName = event.topic ? event.topic : event.requestId;
-        if (Array.isArray(this._listeners[eventName])) {
-            const listeners = this._listeners[eventName];
-            for (let i = 0; i < listeners.length; i++) {
-                const listener = listeners[i];
-                if (event.requestId) {
-                    listener.callback.apply(this, [event.requestId, event.message]);
-                } else if (event.status) {
-                    listener.callback.apply(this, [event.status, event.message]);
-                } else {
-                    listener.callback.apply(this, [event.message]);
-                }
-                if (listener.once) {
-                    this._listeners[eventName].splice(i, 1);
-                    // delete the listener if empty array
-                    if (this._listeners[eventName].length === 0) {
-                        delete this._listeners[eventName];
-                    }
-                    i--; // jump back since i++ is the new i
-                }
-            }
-        }
-    }
-
-    /**
-     * Add listener for a message name on the current IPC Channel
-     *
-     * @param name string
-     * @param callback function
-     * @param once bool
-     * @private
-     */
-    _addListener(name, callback, once) {
-        if (!Array.isArray(this._listeners[name])) {
-            this._listeners[name] = [];
-        }
-        this._listeners[name].push({
-            name: name,
-            callback: callback,
-            once: once
-        });
-    }
-
-    /**
-     * On message name triggers a callback
-     *
-     * @param name
-     * @param callback
-     */
-    on(name, callback) {
-        this._addListener(name, callback, false);
-    }
-
-    /**
-     * On message name triggers a callback only once,
-     * e.g. remove the listener once the message has been received
-     *
-     * @param name
-     * @param callback
-     */
-    once(name, callback) {
-        this._addListener(name, callback, true);
-    }
-
-    /**
-     * Emit a message to the addon code
-     * @param requestArgs the arguments
-     */
-    async emit(...requestArgs) {
-        let ipc;
-
-        if (typeof requestArgs[0] === 'string') {
-            let status, message;
-
-            if (requestArgs[1] === 'SUCCESS' || requestArgs[1] === 'ERROR') {
-                status = requestArgs[1];
-                message = requestArgs.length > 2 ? requestArgs[2] : null;
-            } else {
-                status = null;
-                message = requestArgs[1];
-            }
-            ipc = {
-                topic: requestArgs[0],
-                status,
-                message
-            }
-
+  /**
+   * When a message is received on the ICP channel
+   * Triggers all the callback associated with that message name
+   *
+   * @param json
+   * @private
+   */
+  _onMessage(json) {
+    const event = json.data;
+    const eventName = event.topic ? event.topic : event.requestId;
+    if (Array.isArray(this._listeners[eventName])) {
+      const listeners = this._listeners[eventName];
+      for (let i = 0; i < listeners.length; i++) {
+        const listener = listeners[i];
+        if (event.requestId) {
+          listener.callback.apply(this, [event.requestId, event.message]);
+        } else if (event.status) {
+          listener.callback.apply(this, [event.status, event.message]);
         } else {
-            ipc = requestArgs[0]
+          listener.callback.apply(this, [event.message]);
         }
-        window.chrome.webview.postMessage(JSON.stringify(ipc));
+        if (listener.once) {
+          this._listeners[eventName].splice(i, 1);
+          // delete the listener if empty array
+          if (this._listeners[eventName].length === 0) {
+            delete this._listeners[eventName];
+          }
+          i--; // jump back since i++ is the new i
+        }
+      }
     }
+  }
 
-    /**
-     * Emit a request to the addon code and expect a response.
-     * @param message the message
-     * @param args the arguments
-     * @return Promise
-     */
-    request(message, ...args) {
-        // Generate a request id that will be used by the addon to answer this request.
-        const requestId = uuidv4();
-        // Add the requestId to the request parameters.
-        const requestArgs = [{ topic: message, requestId, message: args }];
-        // The promise that is return when you call passbolt.request.
-        return new Promise((resolve, reject) => {
-            /*
-             * Observe when the request has been completed.
-             * Or if a progress notification is sent.
-             */
-            this.once(requestId, (status, ...callbackArgs) => {
-                if (status === 'SUCCESS') {
-                    resolve.apply(null, callbackArgs);
-                } else if (status === 'ERROR') {
-                    reject.apply(null, callbackArgs);
-                }
-            });
-            // Emit the message to the addon-code.
-            this.emit.apply(this, requestArgs);
-        });
+  /**
+   * Add listener for a message name on the current IPC Channel
+   *
+   * @param name string
+   * @param callback function
+   * @param once bool
+   * @private
+   */
+  _addListener(name, callback, once) {
+    if (!Array.isArray(this._listeners[name])) {
+      this._listeners[name] = [];
     }
+    this._listeners[name].push({
+      name: name,
+      callback: callback,
+      once: once
+    });
+  }
+
+  /**
+   * On message name triggers a callback
+   *
+   * @param name
+   * @param callback
+   */
+  on(name, callback) {
+    this._addListener(name, callback, false);
+  }
+
+  /**
+   * On message name triggers a callback only once,
+   * e.g. remove the listener once the message has been received
+   *
+   * @param name
+   * @param callback
+   */
+  once(name, callback) {
+    this._addListener(name, callback, true);
+  }
+
+  /**
+   * Emit a message to the addon code
+   * @param requestArgs the arguments
+   */
+  async emit(...requestArgs) {
+    let ipc;
+
+    if (typeof requestArgs[0] === 'string') {
+      let status, message;
+
+      if (requestArgs[1] === 'SUCCESS' || requestArgs[1] === 'ERROR') {
+        status = requestArgs[1];
+        message = requestArgs.length > 2 ? requestArgs[2] : null;
+      } else {
+        status = null;
+        message = requestArgs[1];
+      }
+      ipc = {
+        topic: requestArgs[0],
+        status: status,
+        message: message
+      };
+    } else {
+      ipc = requestArgs[0];
+    }
+    window.chrome.webview.postMessage(JSON.stringify(ipc));
+  }
+
+  /**
+   * Emit a request to the addon code and expect a response.
+   * @param message the message
+   * @param args the arguments
+   * @return Promise
+   */
+  request(message, ...args) {
+    // Generate a request id that will be used by the addon to answer this request.
+    const requestId = uuidv4();
+    // Add the requestId to the request parameters.
+    const requestArgs = [{topic: message, requestId: requestId, message: args}];
+    // The promise that is return when you call passbolt.request.
+    return new Promise((resolve, reject) => {
+      /*
+       * Observe when the request has been completed.
+       * Or if a progress notification is sent.
+       */
+      this.once(requestId, (status, ...callbackArgs) => {
+        if (status === 'SUCCESS') {
+          resolve.apply(null, callbackArgs);
+        } else if (status === 'ERROR') {
+          reject.apply(null, callbackArgs);
+        }
+      });
+      // Emit the message to the addon-code.
+      this.emit.apply(this, requestArgs);
+    });
+  }
 }
 
 export default IPCHandler;

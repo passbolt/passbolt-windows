@@ -12,28 +12,27 @@
  * @since         0.3.0
  */
 
-import { PownedPasswordEvents } from "passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents";
+import {PownedPasswordEvents} from "passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents";
 import {AuthImportEvents} from "./events/authImportEvents";
 import Main from "./main-import";
 
 describe("Main import class", () => {
-
   let main;
 
   beforeEach(() => {
     main = new Main(window.chrome.webview);
-  })
+  });
 
   afterEach(() => {
     // Cleanup mocks
     jest.resetAllMocks();
   });
 
-  it('should listen to the browser extension events', async () => {
+  it('should listen to the browser extension events', async() => {
     expect.assertions(2);
 
-    jest.spyOn(AuthImportEvents, "listen")
-    jest.spyOn(PownedPasswordEvents, "listen")
+    jest.spyOn(AuthImportEvents, "listen");
+    jest.spyOn(PownedPasswordEvents, "listen");
 
     main = new Main();
 

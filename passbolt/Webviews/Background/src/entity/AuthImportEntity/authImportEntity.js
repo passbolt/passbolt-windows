@@ -19,61 +19,61 @@ import EntitySchema from "passbolt-styleguide/src/shared/models/entity/abstract/
 const ENTITY_NAME = "AuthImportEntity";
 
 class AuthImportEntity extends Entity {
-    /**
-     * Setup entity constructor
-     *
-     * @param {Object} accountKit account kit
-     * @param {Object} options.
-     * @throws EntityValidationError if the dto cannot be converted into an entity
-     */
-    constructor(authImportEntity) {
-        super(EntitySchema.validate(
-            AuthImportEntity.ENTITY_NAME,
-            authImportEntity,
-            AuthImportEntity.getSchema()
-        ));
+  /**
+   * Setup entity constructor
+   *
+   * @param {Object} accountKit account kit
+   * @param {Object} options.
+   * @throws EntityValidationError if the dto cannot be converted into an entity
+   */
+  constructor(authImportEntity) {
+    super(EntitySchema.validate(
+      AuthImportEntity.ENTITY_NAME,
+      authImportEntity,
+      AuthImportEntity.getSchema()
+    ));
 
-        // Associations
-        if (this._props.account_kit) {
-            this.account_kit = new AccountEntity(this._props.account_kit);
-            delete this._props.account_kit;
-        }
+    // Associations
+    if (this._props.account_kit) {
+      this.account_kit = new AccountEntity(this._props.account_kit);
+      delete this._props.account_kit;
     }
+  }
 
-    /**
-     * Get entity schema
-     * @returns {Object} schema
-     */
-    static getSchema() {
-        const schema = {
-            "type": "object",
-            "required": [
-                "account_kit",
-            ],
-            "properties": {
-                account_kit: AccountEntity.getSchema(),
-                "passphrase": {
-                    "type": "string",
-                },
-            },
-        };
+  /**
+   * Get entity schema
+   * @returns {Object} schema
+   */
+  static getSchema() {
+    const schema = {
+      "type": "object",
+      "required": [
+        "account_kit",
+      ],
+      "properties": {
+        account_kit: AccountEntity.getSchema(),
+        "passphrase": {
+          "type": "string",
+        },
+      },
+    };
 
-        return schema;
-    }
+    return schema;
+  }
 
-    /*
-     * ==================================================
-     * Static properties getters
-     * ==================================================
-     */
+  /*
+   * ==================================================
+   * Static properties getters
+   * ==================================================
+   */
 
-    /**
-     * AuthImportEntity.ENTITY_NAME
-     * @returns {string}
-     */
-    static get ENTITY_NAME() {
-        return ENTITY_NAME;
-    }
+  /**
+   * AuthImportEntity.ENTITY_NAME
+   * @returns {string}
+   */
+  static get ENTITY_NAME() {
+    return ENTITY_NAME;
+  }
 }
 
 export default AuthImportEntity;
