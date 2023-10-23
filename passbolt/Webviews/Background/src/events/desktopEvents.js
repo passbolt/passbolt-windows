@@ -16,6 +16,7 @@ import AuthLogoutController from "../controllers/authLogoutController";
 import User from "passbolt-browser-extension/src/all/background_page/model/user";
 import DesktopSetAccountController from "../controllers/desktopSetAccountController";
 import DesktopPassphraseStorageController from "../controllers/desktopPassphraseStorageController";
+import DesktopRenderedIsReadyController from "../controllers/desktopRenderedIsReadyController";
 
 
 const listen = function(worker) {
@@ -66,6 +67,17 @@ const listen = function(worker) {
     const controller = new DesktopSetAccountController(worker, requestId, account);
     await controller._exec();
   });
+
+  /*
+   * Listen to rendered when the webview is up to refresh csrf token
+   *
+   * @listens passbolt.rendered.is-ready
+   * @param requestId {uuid} The request identifier
+   */
+  worker.port.on('passbolt.rendered.is-ready', async requestId => {
+    const controller = new DesktopRenderedIsReadyController(worker, requestId);
+    await controller._exec();
+  });  
 };
 
 export const DesktopEvents = {listen};
