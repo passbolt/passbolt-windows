@@ -19,8 +19,6 @@ import AuthModel from "passbolt-browser-extension/src/all/background_page/model/
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
 import CheckPassphraseController from "passbolt-browser-extension/src/all/background_page/controller/crypto/checkPassphraseController";
-import AuthLogoutController from "../controllers/authLogoutController";
-import AuthVerifyServerKeyDesktopController from "../controllers/authVerifyServerKeyDesktopController";
 
 const listen = function(worker) {
   /*
@@ -45,7 +43,7 @@ const listen = function(worker) {
     const user = User.getInstance();
     const apiClientOptions = await user.getApiClientOptions({requireCsrfToken: false});
     const userDomain = user.settings.getDomain();
-    const auth = new AuthVerifyServerKeyDesktopController(worker, requestId, apiClientOptions, userDomain);
+    const auth = new AuthVerifyServerKeyController(worker, requestId, apiClientOptions, userDomain);
     await auth._exec();
   });
 
