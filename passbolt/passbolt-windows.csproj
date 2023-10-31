@@ -167,6 +167,8 @@
     <Compile Include="Models\Messaging\IPC.cs" />
     <Compile Include="Models\Messaging\Webviews\RenderedTopic.cs" />
     <Compile Include="Models\Messaging\Webviews\WebviewTopic.cs" />
+    <Compile Include="Models\Rbac\ControlFunction.cs" />
+    <Compile Include="Models\Rbac\UiAction.cs" />
     <Compile Include="Models\User\UserOs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\CredentialLockerService\CredentialLockerService.cs" />
@@ -178,6 +180,7 @@
     <Compile Include="Services\NavigationService\AbstractNavigationService.cs" />
     <Compile Include="Services\NavigationService\BackgroundNavigationService.cs" />
     <Compile Include="Services\NavigationService\RenderedNavigationService.cs" />
+    <Compile Include="Services\RbacService\RbacService.cs" />
     <Compile Include="Services\WebviewService\BackgroundWebviewService.cs" />
     <Compile Include="Services\WebviewService\RenderedWebviewService.cs" />
     <Compile Include="Utils\ListHelper.cs" />

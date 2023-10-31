@@ -134,6 +134,8 @@ class IPCHandler {
     } else {
       ipc = requestArgs[0];
     }
+    console.log(ipc)
+
     window.chrome.webview.postMessage(JSON.stringify(ipc));
   }
 

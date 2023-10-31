@@ -32,6 +32,8 @@ namespace passbolt.Models.Messaging
         public const string RENDERED_READY = "passbolt.rendered.is-ready";
         private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR, BACKGROUND_DOWNLOAD_FILE, BACKGROUND_STORE_PASSPHRASE, RENDERED_READY };
         private static List<string> requestIds = new List<string>();
+        private static Dictionary<string, string> pendingRequests = new Dictionary<string, string>();
+
 
         /// <summary>
         /// static constructor for AllowedTopics
@@ -96,6 +98,25 @@ namespace passbolt.Models.Messaging
         }
 
         /// <summary>
+        /// Add a pending requests to the list to allow the callback
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public static void AddPendingRequest(string key, string value) => pendingRequests.Add(key, value);
+
+        /// <summary>
+        /// Return value per key
+        /// </summary>
+        /// <param name="key"></param>
+        public static string GetPendingRequest(string key) => pendingRequests.GetValueOrDefault(key);
+
+        /// <summary>
+        /// Check if list has pending value
+        /// </summary>
+        /// <param name="key"></param>
+        public static bool HasPendingRequest(string key) => pendingRequests.ContainsKey(key);
+
+        /// <summary>
         /// Check if topic exist
         /// </summary>
         /// <returns></returns>
@@ -110,5 +131,11 @@ namespace passbolt.Models.Messaging
         /// <param name="requestId"></param>
         /// <returns></returns>
         public static bool proceedRequestId(string requestId) => requestIds.Remove(requestId);
+
+        /// <summary>
+        /// Remove a pending requests 
+        /// </summary>
+        /// <param name="key"></param>
+        public static bool RemovePendingRequest(string key) => pendingRequests.Remove(key);
     }
 }

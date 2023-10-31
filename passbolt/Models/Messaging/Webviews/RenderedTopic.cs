@@ -75,7 +75,13 @@ namespace passbolt.Models.Messaging
             else if (topics.Contains(ipc.topic))
             {
                 AllowedTopics.AddRequestId(ipc.requestId);
-            } 
+            }
+
+            if (ipc.topic == RbacTopics.FIND_ME)
+            {
+                //We intercept the requestId and save it to map the response
+                AllowedTopics.AddPendingRequest(ipc.requestId, RbacTopics.FIND_ME);
+            }
 
 
             background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
