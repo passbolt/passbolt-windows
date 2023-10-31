@@ -39,11 +39,14 @@ namespace passbolt.Models.Messaging
         private string currentIndexRendered = "index-auth.html";
         private string passphrase;
         private string pendingRequestId;
+        private RbacService rbacService;
+
 
         public BackgroundTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService, BackgroundWebviewService backgroundWebviewService) : base(background, rendered, localFolderService, backgroundWebviewService)
         {
             credentialLockerService = new CredentialLockerService();
             passphrase = null;
+            this.rbacService = new RbacService();
         }
 
         /// <summary>
@@ -182,9 +185,8 @@ namespace passbolt.Models.Messaging
         {
             if (topic == RbacTopics.FIND_ME)
             {
-                var rbacService = new RbacService();
                 var controls = SerializationHelper.DeserializeFromJson<List<ControlFunction>>(((JArray)ipc.message).ToString());
-                rbacService.AddDesktopRbac(controls);
+                this.rbacService.AddDesktopRbac(controls);
                 ipc.message = controls;
             }
         }
