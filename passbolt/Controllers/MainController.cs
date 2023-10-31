@@ -141,8 +141,6 @@ namespace passbolt.Controllers
             this.backgroundWebviewService = new BackgroundWebviewService(this.webviewBackground.CoreWebView2);
             this.backgroundNavigationService = BackgroundNavigationService.Instance;
             this.renderedNavigationService = RenderedNavigationService.Instance;
-            webviewRendered.CoreWebView2.OpenDevToolsWindow();
-            webviewBackground.CoreWebView2.OpenDevToolsWindow();
 
             this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered, localFolderService, backgroundWebviewService);
 
