@@ -12,8 +12,8 @@
  * @since         0.3.0
  */
 
-import { PownedPasswordEvents } from 'passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents';
-import { AuthImportEvents } from './events/authImportEvents';
+import {PownedPasswordEvents} from 'passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents';
+import {AuthImportEvents} from './events/authImportEvents';
 import IPCHandler from './shared/IPCHandler';
 
 /**
@@ -21,25 +21,24 @@ import IPCHandler from './shared/IPCHandler';
  * @class
  */
 export default class MainImport {
+  worker = null;
 
-    worker = null;
+  /**
+   * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
+   * @constructor
+   */
+  constructor() {
+    this.worker = {port: new IPCHandler()};
+    this.listen();
+  }
 
-    /**
-     * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
-     * @constructor
-     */
-    constructor() {
-        this.worker = {port: new IPCHandler()};
-        this.listen();
-    }
-
-    /**
-     * Listen event from the main process IPC message
-     */
-    async listen() {
-        await localStorage.clear() 
-        AuthImportEvents.listen(this.worker);
-        PownedPasswordEvents.listen(this.worker);
-    }
+  /**
+   * Listen event from the main process IPC message
+   */
+  async listen() {
+    await localStorage.clear();
+    AuthImportEvents.listen(this.worker);
+    PownedPasswordEvents.listen(this.worker);
+  }
 }
 

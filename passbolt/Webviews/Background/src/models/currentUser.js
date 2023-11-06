@@ -13,12 +13,11 @@
  */
 
 export default class CurrentUser {
-
-    constructor(passboltData) {
-        this.config =  {
-            "user.username": passboltData?.config["user.username"],
-            "user.lastname": passboltData?.config["user.lastname"],
-            "user.firstname": passboltData?.config["user.firstname"],
-        }
-    }
+  constructor(passboltData) {
+    this.config =  {
+      "user.username": passboltData?.config["user.username"],
+      "user.lastname": passboltData?.config["user.lastname"],
+      "user.firstname": passboltData?.config["user.firstname"],
+    };
+  }
 }

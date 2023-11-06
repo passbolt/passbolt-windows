@@ -28,10 +28,10 @@ describe("Main authentication class", () => {
     jest.resetAllMocks();
   });
 
-  it('should listen to the browser extension events', async () => {
+  it('should listen to the browser extension events', async() => {
     expect.assertions(5);
 
-    jest.spyOn(AuthEvents, "listen")
+    jest.spyOn(AuthEvents, "listen");
     jest.spyOn(ConfigEvents, "listen");
     jest.spyOn(DesktopEvents, "listen");
     jest.spyOn(LocaleEvents, "listen");

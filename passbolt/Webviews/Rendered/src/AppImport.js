@@ -12,7 +12,7 @@
  * @since         0.3.0
  */
 
-import React, { Component } from "react";
+import React, {Component} from "react";
 import PropTypes from "prop-types";
 import {BrowserRouter as Router, Route, Switch} from "react-router-dom";
 import AppContext from "passbolt-styleguide/src/shared/context/AppContext/AppContext";
@@ -21,79 +21,79 @@ import Footer from "passbolt-styleguide/src/react-extension/components/Common/Fo
 import OrchestrateAccountKitImportation from "passbolt-styleguide/src/react-extension/components/Desktop/OrchestrateAccountKitImportation/OrchestrateAccountKitImportation";
 import ImportAccountKitContextProvider from "passbolt-styleguide/src/react-extension/contexts/Desktop/ImportAccountKitContext";
 import RenderedWebview from "./components/RenderedWebview";
-import {version} from '../package.json'; 
+import {version} from '../package.json';
 
 /**
  * The import application
  */
 class AppImport extends Component {
-    /**
-     * Default constructor
-     * @param props The component props
-     */
-    constructor(props) {
-        super(props);
-        this.state = this.defaultState(props);
-    }
+  /**
+   * Default constructor
+   * @param props The component props
+   */
+  constructor(props) {
+    super(props);
+    this.state = this.defaultState(props);
+  }
 
-    async componentDidMount() {
-        await localStorage.clear() 
-    }
+  async componentDidMount() {
+    await localStorage.clear();
+  }
 
-    /**
-     * Returns the component default state
-     */
-    defaultState(props) {
-        return {
-            port: props.port, // The background page communication port
-            storage: props.storage, // The storage
-            siteSettings: {
-                version,
-                url: ""
-            },
-        };
-    }
+  /**
+   * Returns the component default state
+   */
+  defaultState(props) {
+    return {
+      port: props.port, // The background page communication port
+      storage: props.storage, // The storage
+      siteSettings: {
+        version: version,
+        url: ""
+      },
+    };
+  }
 
 
-    /**
-     * Renders the component
-     */
-    render() {
-        return (
-            <RenderedWebview port={this.props.port}>
-                <AppContext.Provider value={this.state}>
-                    <TranslationProvider loadingPath="https://rendered.dist/Rendered/dist/locales/{{lng}}/{{ns}}.json">
-                        <Router>
-                            <div id="container" className="container page login">
-                                <div className="content">
-                                    <div className="header">
-                                        <div className="logo"><span className="visually-hidden">Passbolt</span></div>
-                                    </div>
-                                    <div className="login-form">
-                                        <Switch>
-                                            <Route path={[
-                                                "/",
-                                            ]}>
-                                                <ImportAccountKitContextProvider>
-                                                    <OrchestrateAccountKitImportation />
-                                                </ImportAccountKitContextProvider>
-                                            </Route>
-                                        </Switch>
-                                    </div>
-                                </div>
-                            </div>
-                            <Footer />
-                        </Router>
-                    </TranslationProvider>
-                </AppContext.Provider>
-            </RenderedWebview>
-        );
-    }
+  /**
+   * Renders the component
+   */
+  render() {
+    return (
+      <RenderedWebview port={this.props.port}>
+        <AppContext.Provider value={this.state}>
+          <TranslationProvider loadingPath="https://rendered.dist/Rendered/dist/locales/{{lng}}/{{ns}}.json">
+            <Router>
+              <div id="container" className="container page login">
+                <div className="content">
+                  <div className="header">
+                    <div className="logo"><span className="visually-hidden">Passbolt</span></div>
+                  </div>
+                  <div className="login-form">
+                    <Switch>
+                      <Route path={[
+                        "/",
+                      ]}>
+                        <ImportAccountKitContextProvider>
+                          <OrchestrateAccountKitImportation />
+                        </ImportAccountKitContextProvider>
+                      </Route>
+                    </Switch>
+                  </div>
+                </div>
+              </div>
+              <Footer />
+            </Router>
+          </TranslationProvider>
+        </AppContext.Provider>
+      </RenderedWebview>
+    );
+  }
 }
 
 AppImport.propTypes = {
-    port: PropTypes.object,
-    storage: PropTypes.object,
+  port: PropTypes.object,
+  storage: PropTypes.object,
 };
 
 export default AppImport;

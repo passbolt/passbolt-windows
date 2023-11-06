@@ -13,22 +13,22 @@
  */
 export const topic = 'testEvent';
 
-export let requestId = "f9409915-97a5-4c65-a126-ace5ec4a4339";
+export const requestId = "f9409915-97a5-4c65-a126-ace5ec4a4339";
 
 export const successTopic = {
-    topic,
-    status: 'SUCCESS',
-    message: 'success message'
-}
+  topic: topic,
+  status: 'SUCCESS',
+  message: 'success message'
+};
 
 export const errorTopic = {
-    topic,
-    status: 'ERROR',
-    message: 'error message'
-}
+  topic: topic,
+  status: 'ERROR',
+  message: 'error message'
+};
 
 export function buildMessage(topic, requestId) {
-    let data = Object.assign({}, topic)
-    data.requestId = requestId;
-    return {data}
+  const data = Object.assign({}, topic);
+  data.requestId = requestId;
+  return {data};
 }

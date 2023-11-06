@@ -12,7 +12,7 @@
  * @since         0.0.1
  */
 
-(function () {
+(function() {
   class Stylesheet {
     constructor() {
       this.init();
@@ -22,11 +22,11 @@
       await this.updateStylesWithUserPreferences();
       this.handleStorageChange = this.handleStorageChange.bind(this);
 
-      addEventListener("storage", (event) => {
-        const changes = {}
+      addEventListener("storage", event => {
+        const changes = {};
         const key = event.key;
-        changes[key] = event.newValue
-        this.handleStorageChange(changes)
+        changes[key] = event.newValue;
+        this.handleStorageChange(changes);
       });
     }
 
@@ -47,7 +47,7 @@
       return {
         [key]: JSON.parse(value)
       };
-    };
+    }
 
     getLinkTag() {
       let link = document.querySelector("#stylesheet");
@@ -76,13 +76,13 @@
     }
 
     async getLocalStorage() {
-      return this.getStorage(["_passbolt_data"])
+      return this.getStorage(["_passbolt_data"]);
     }
 
     async getTheme() {
       if (await this.isThemeDefined()) {
         const storageData = await this.getLocalStorage();
-        const { _passbolt_data: { config } } = storageData;
+        const {_passbolt_data: {config}} = storageData;
         return config["user.settings.theme"];
       }
 
@@ -97,7 +97,7 @@
         return false;
       }
 
-      const { _passbolt_data: { config } } = storageData;
+      const {_passbolt_data: {config}} = storageData;
       const keyExists = config && "user.settings.theme" in config;
       return keyExists && this.isValidTheme(config["user.settings.theme"]);
     }

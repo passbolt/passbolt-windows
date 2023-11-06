@@ -13,16 +13,43 @@
 */
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
+using passbolt.Services.NavigationService;
+using Windows.Storage;
 
 namespace passbolt.Services.WebviewService
 {
-    public class RenderedWebviewService
+    public class RenderedWebviewService: WebviewService
     {
-        private CoreWebView2 renderedWebview;
-        public RenderedWebviewService(CoreWebView2 rendered)
+        private RenderedNavigationService renderedNavigationService;
+
+        public RenderedWebviewService(CoreWebView2 rendered): base(rendered)
         {
-            this.renderedWebview = rendered;
+            this.renderedNavigationService = RenderedNavigationService.Instance;
+        }
+
+        /// <summary>
+        /// Set the virtual host for the rendered webview
+        /// </summary>
+        /// <returns></returns>
+        public async override Task<string> SetVirtualHost()
+        {
+            this.RemoveVirtualHost();
+            var applicationConfiguration = await this.GetApplicationConfiguration();
+            string backgroundUrl = applicationConfiguration.renderedUrl + "/Rendered";
+
+            this.renderedNavigationService.Initialize(applicationConfiguration.renderedUrl);
+            StorageFolder distfolder = this.localFolderService.GetWebviewsFolder();
+            var installedDistFolder = this.localFolderService.GetWebviewsFolderInstallation();
+
+            // Set virtual host for each dist
+            webview.SetVirtualHostNameToFolderMapping("rendered.dist", installedDistFolder.Path, CoreWebView2HostResourceAccessKind.Allow);
+            currentHost = applicationConfiguration.renderedUrl;
+            // Set virtual host to folder mapping, restrict host access to the randomUrl
+            webview.SetVirtualHostNameToFolderMapping(applicationConfiguration.renderedUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
+
+            return backgroundUrl;
         }
     }
 }

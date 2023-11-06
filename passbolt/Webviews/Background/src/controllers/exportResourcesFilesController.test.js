@@ -17,43 +17,42 @@ import ExportResourcesFileDesktopController from "./exportResourcesFilesControll
 import {defaultApiClientOptions} from "passbolt-browser-extension/src/all/background_page/service/api/apiClient/apiClientOptions.test.data";
 
 beforeEach(() => {
-    jest.resetModules();
-    jest.clearAllMocks();
+  jest.resetModules();
+  jest.clearAllMocks();
 });
 
 describe('ExportResourcesFileDesktopController', () => {
   let exportResourcesFileDesktopController;
 
-  beforeEach(() => { 
+  beforeEach(() => {
     const worker = {
-        port: {
-          emit: jest.fn()
-        }
+      port: {
+        emit: jest.fn()
+      }
     };
     exportResourcesFileDesktopController = new ExportResourcesFileDesktopController(worker, defaultApiClientOptions(), null);
-  })
+  });
 
   describe('ExportResourcesFileDesktopController:exec', () => {
-    it('calls download and emits SUCCESS if no error occurs', async () => {
+    it('calls download and emits SUCCESS if no error occurs', async() => {
       jest.spyOn(exportResourcesFileDesktopController.exportResourcesFilesService, "download").mockImplementation(() => Promise.resolve());
       jest.spyOn(exportResourcesFileDesktopController.worker.port, "emit");
       await exportResourcesFileDesktopController.exec(resourceToExport);
-      
+
       expect(exportResourcesFileDesktopController.exportResourcesFilesService.download).toHaveBeenCalledWith(resourceToExport);
       expect(exportResourcesFileDesktopController.worker.port.emit).toHaveBeenCalledWith(null, 'SUCCESS');
     });
-  
-    it('closes progressService and emits ERROR when an error occurs', async () => {
+
+    it('closes progressService and emits ERROR when an error occurs', async() => {
       const error = new Error('Test error');
       jest.spyOn(exportResourcesFileDesktopController.exportResourcesFilesService, "download").mockImplementation(() => {
         throw error;
       });
-  
+
       await exportResourcesFileDesktopController.exec(resourceToExport);
-      
+
       expect(exportResourcesFileDesktopController.worker.port.emit).toHaveBeenCalledWith(null, 'ERROR', error);
     });
   });
 });
-  
-  
+

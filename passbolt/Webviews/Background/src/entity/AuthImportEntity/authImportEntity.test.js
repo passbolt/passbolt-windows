@@ -18,17 +18,17 @@ import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_p
 import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
 
 describe("AuthImportEntity", () => {
-    describe("AuthImportEntity:constructor", () => {
-      it("schema must validate", () => {
-        EntitySchema.validateSchema(AuthImportEntity.ENTITY_NAME, AuthImportEntity.getSchema());
-      });
-  
-      it("constructor works if valid minimal DTO is provided", () => {
-        expect.assertions(1);
+  describe("AuthImportEntity:constructor", () => {
+    it("schema must validate", () => {
+      EntitySchema.validateSchema(AuthImportEntity.ENTITY_NAME, AuthImportEntity.getSchema());
+    });
 
-        const dto = defaultAccountDto();
-        const entity = new AuthImportEntity({account_kit: dto});
-        expect(entity.account_kit).toEqual(new AccountEntity(dto));
-      });
+    it("constructor works if valid minimal DTO is provided", () => {
+      expect.assertions(1);
+
+      const dto = defaultAccountDto();
+      const entity = new AuthImportEntity({account_kit: dto});
+      expect(entity.account_kit).toEqual(new AccountEntity(dto));
+    });
   });
 });

@@ -19,5 +19,5 @@ import MockAlarms from "passbolt-browser-extension/test/mocks/mockAlarms";
  */
 
 if (!window.chrome.alarms) {
-    window.chrome.alarms = new MockAlarms()
-} 
+  window.chrome.alarms = new MockAlarms();
+}

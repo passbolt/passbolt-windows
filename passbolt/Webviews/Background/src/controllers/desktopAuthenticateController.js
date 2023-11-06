@@ -13,24 +13,22 @@
  */
 
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
-import {USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
+import {REQUIRE_MFA, USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
 import LoginUserService from "../services/loginUserService";
 
 /**
  * Controller related to the desktop authentication
  */
 class DesktopAuthenticateController {
-
-    /**
+  /**
    * DesktopAuthenticateController constructor
    * @param {Worker} worker
    */
-    constructor(worker, requestId, apiClientOptions) {
-      this.worker = worker;
-      this.requestId = requestId;
-      this.apiClientOptions = apiClientOptions;
-    }
-  
+  constructor(worker, requestId, apiClientOptions) {
+    this.worker = worker;
+    this.requestId = requestId;
+    this.apiClientOptions = apiClientOptions;
+  }
 
   /**
    * Wrapper of exec function to run.
@@ -42,7 +40,7 @@ class DesktopAuthenticateController {
       await this.exec(passphrase);
       this.worker.port.emit(this.requestId, 'SUCCESS');
     } catch (error) {
-      console.error(error)
+      console.error(error);
       this.worker.port.emit(this.requestId, 'ERROR', error);
     }
   }
@@ -59,12 +57,17 @@ class DesktopAuthenticateController {
     //Need to reinit configuration as we launch a new application
     await Config.init();
     const loginUserService = new LoginUserService(this.apiClientOptions);
-    await loginUserService.checkPassphrase(passphrase)
-    await loginUserService.login(passphrase, true)
-    //Send message to the UWP's main process to handle specific 'log in' process
-    this.worker.port.emit(USER_LOGGED_IN, passphrase);
+    await loginUserService.checkPassphrase(passphrase);
+    await loginUserService.login(passphrase, true);
+    const provider = await loginUserService.isMfaRequired();
+    if (provider) {
+      //Send message to the UWP's main process to handle specific 'require mfa' process
+      this.worker.port.emit(REQUIRE_MFA, {provider, passphrase});
+    } else {
+      //Send message to the UWP's main process to handle specific 'log in' process
+      this.worker.port.emit(USER_LOGGED_IN, passphrase);
+    }
   }
-
 }
 
 export default DesktopAuthenticateController;

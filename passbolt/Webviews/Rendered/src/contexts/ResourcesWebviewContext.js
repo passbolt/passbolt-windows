@@ -19,40 +19,34 @@ import React from "react";
 import PropTypes from "prop-types";
 
 class ResourcesWebviewContext extends React.Component {
-
-  /**
-   * Default constructor
-   */
-  constructor(props) {
-    super(props);
-  }
-  
   componentDidMount() {
     // Add event listener to watch for changes in the localStorage
     window.addEventListener('storage', this.handleLocalStorageChange);
   }
-    
+
   componentWillUnmount() {
     // Remove event listener when component is unmounted
     window.removeEventListener('storage', this.handleLocalStorageChange);
   }
-  
-  /**
-   * handle localeStorage changes
-   * @param {*} event 
-   */
-  handleLocalStorageChange = async (event) => {
-    // Handle the localStorage change here
-    // You can access the changed data through event.newValue and event.key
-    if(event.key === "resources" && this.props.resourceWorkspaceContext.filter.type === ResourceWorkspaceFilterTypes.NONE) {
-      this.props.history.push({pathname: '/app/passwords', state: {filter: {type: ResourceWorkspaceFilterTypes.ALL}}});
-    }
-  }
 
   /**
-  * Render the component
-  * @return {JSX}
-  */
+   * handle localeStorage changes
+   * @param {*} event
+   */
+  handleLocalStorageChange = async event => {
+    /*
+     * Handle the localStorage change here
+     * You can access the changed data through event.newValue and event.key
+     */
+    if (event.key === "resources" && this.props.resourceWorkspaceContext.filter.type === ResourceWorkspaceFilterTypes.NONE) {
+      this.props.history.push({pathname: '/app/passwords', state: {filter: {type: ResourceWorkspaceFilterTypes.ALL}}});
+    }
+  };
+
+  /**
+   * Render the component
+   * @return {JSX}
+   */
   render() {
     return null;
   }

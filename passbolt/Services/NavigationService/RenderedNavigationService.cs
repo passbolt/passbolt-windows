@@ -12,6 +12,7 @@
  * @since         0.0.1
  */
 
+using passbolt.Services.Mfa;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -40,7 +41,26 @@ namespace passbolt.Services.NavigationService
             new Regex($"^https://{currentUrl}/(?:app/groups/(view|edit)/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
             new Regex($"^https://{currentUrl}/(?:app/users/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
             new Regex($"^https://{currentUrl}/app/users$"),
+            new Regex($"^https://{currentUrl}/app/settings/mfa(?:#)?$"),
             };
+        }
+
+        /// <summary>
+        /// Allow navigation to the API for MFA urls
+        /// </summary>
+        /// <param name="url"></param>
+        public void AllowMfaUrls(string trustedDomain)
+        {
+            var mfaUrls = MfaService.Instance.InitMfaUrls(trustedDomain);
+            base.allowedUrls.AddRange(mfaUrls);
+        }
+
+        /// <summary>
+        /// Disable navigation to extra urls which and not the rendered URL
+        /// </summary>
+        public void DisallowMfaUrls()
+        {
+            this.Initialize(this.currentUrl);
         }
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "background-webview",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Background webview2 for passbolt dekstop windows",
   "license": "AGPL-3.0",
   "copyright": "Copyright 2022 Passbolt SA",
@@ -11,14 +11,21 @@
     "build": "webpack",
     "build-watch": "webpack --watch",
     "eslint": "eslint -c .eslintrc.json --ext js src",
+    "eslint-fix": "eslint -c .eslintrc.json --ext js --fix src",
     "test": "jest",
     "test:unit": "jest --no-cache ./src/",
     "test:coverage": "jest --no-cache ./src/ --coverage"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.22.15",
     "@babel/plugin-transform-runtime": "^7.21.4",
     "@babel/preset-env": "^7.21.5",
     "clean-webpack-plugin": "^4.0.0",
+    "eslint": "^8.50.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-jest": "^27.4.0",
+    "eslint-plugin-no-unsanitized": "^4.0.2",
+    "eslint-plugin-react": "^7.33.2",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
     "jest-fetch-mock": "^3.0.3",
@@ -29,9 +36,11 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
+    "@babel/preset-react": "^7.22.15",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
-    "passbolt-styleguide": "^4.3.0-alpha.1",
+    "openpgp": "5.2.1",
+    "passbolt-styleguide": "^4.4.0",
     "setimmediate": "^1.0.5",
     "stream-browserify": "^3.0.0",
     "validator": "^13.7.0"

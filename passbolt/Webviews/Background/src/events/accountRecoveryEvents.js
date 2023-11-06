@@ -20,7 +20,6 @@ import AccountRecoveryValidateOrganizationPrivateKeyController from "passbolt-br
 
 // Account recovery has been build to avoid to load AppEvents and load events that we do not need into the desktop app
 const listen = function(worker, account) {
-
   worker.port.on('passbolt.account-recovery.get-organization-policy', async requestId => {
     const apiClientOptions = await User.getInstance().getApiClientOptions();
     const controller = new GetOrganizationPolicyController(worker, requestId, apiClientOptions);

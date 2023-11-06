@@ -66,27 +66,27 @@ const listen = function(worker) {
     }
   });
 
-    /*
+  /*
    * Replace the password server key for a given domain.
    *
    * @listens passbolt.auth.replace-server-key
    * @param requestId {uuid} The request identifier
    */
-    worker.port.on('passbolt.auth.replace-server-key', async requestId => {
-      const apiClientOptions = await User.getInstance().getApiClientOptions();
-      const authModel = new AuthModel(apiClientOptions);
-      const keyring = new Keyring();
-      const domain = Config.read('user.settings.trustedDomain');
-  
-      try {
-        const serverKeyDto = await authModel.getServerKey();
-        await keyring.importServerPublicKey(serverKeyDto.armored_key, domain);
-        worker.port.emit(requestId, 'SUCCESS');
-      } catch (error) {
-        console.error(error);
-        worker.port.emit(requestId, 'ERROR', error);
-      }
-    });
+  worker.port.on('passbolt.auth.replace-server-key', async requestId => {
+    const apiClientOptions = await User.getInstance().getApiClientOptions();
+    const authModel = new AuthModel(apiClientOptions);
+    const keyring = new Keyring();
+    const domain = Config.read('user.settings.trustedDomain');
+
+    try {
+      const serverKeyDto = await authModel.getServerKey();
+      await keyring.importServerPublicKey(serverKeyDto.armored_key, domain);
+      worker.port.emit(requestId, 'SUCCESS');
+    } catch (error) {
+      console.error(error);
+      worker.port.emit(requestId, 'ERROR', error);
+    }
+  });
 
 
   /*

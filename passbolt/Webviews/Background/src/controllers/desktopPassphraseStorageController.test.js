@@ -18,27 +18,27 @@ import DesktopPassphraseStorageController from "./desktopPassphraseStorageContro
 import PassphraseStorageService from "passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService";
 
 describe('DesktopPassphraseStorageController', () => {
-    let desktopPassphraseStorageController;
-    let worker;
-    let requestId = uuidv4();
+  let desktopPassphraseStorageController, worker;
+  const requestId = uuidv4();
 
-    beforeEach(async () => {
-        worker = { port: new IPCHandler() };
-        desktopPassphraseStorageController = new DesktopPassphraseStorageController(worker, requestId);
+  beforeEach(async() => {
+    worker = {port: new IPCHandler()};
+    desktopPassphraseStorageController = new DesktopPassphraseStorageController(worker, requestId);
+  });
+
+  describe('DesktopPassphraseStorageController:exec', () => {
+    it('Should save the passphrase in memory', async() => {
+      expect.assertions(1);
+
+      jest.spyOn(PassphraseStorageService, "set");
+      const passphrase = "ada@passbolt.com";
+      await desktopPassphraseStorageController.exec(passphrase);
+
+      expect(PassphraseStorageService.set).toHaveBeenCalledWith(passphrase, -1);
     });
-    describe('DesktopPassphraseStorageController:exec', () => {
-        it('Should save the passphrase in memory', async () => {
-            expect.assertions(1);
 
-            jest.spyOn(PassphraseStorageService, "set")
-            const passphrase = "ada@passbolt.com"
-            await desktopPassphraseStorageController.exec(passphrase);
-
-            expect(PassphraseStorageService.set).toHaveBeenCalledWith(passphrase, -1);
-        })
-
-        it("should throw an error if checkPassphrase is called with non-string argument", async () => {
-            await expect(desktopPassphraseStorageController.exec(12345)).rejects.toThrow("The passphrase should be a string.");
-        });
+    it("should throw an error if checkPassphrase is called with non-string argument", async() => {
+      await expect(desktopPassphraseStorageController.exec(12345)).rejects.toThrow("The passphrase should be a string.");
     });
-})
+  });
+});

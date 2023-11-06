@@ -24,28 +24,27 @@ import {DesktopEvents} from './events/desktopEvents';
  * @class
  */
 export default class MainAuth {
+  worker = null;
 
-    worker = null;
+  /**
+   * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
+   * @constructor
+   */
+  constructor() {
+    this.worker = {port: new IPCHandler()};
+    this.listen();
+  }
 
-    /**
-     * Creates an instance of `Main` and sets up an event listener for the `message` event on the given `webview`.
-     * @constructor
-     */
-    constructor() {
-        this.worker = {port: new IPCHandler()};
-        this.listen();
-    }
-
-    /**
-     * Listen event from the main process using bext listener
-     */
-    async listen() {
-        await localStorage.clear() 
-        AuthEvents.listen(this.worker)
-        ConfigEvents.listen(this.worker);
-        LocaleEvents.listen(this.worker);
-        DesktopEvents.listen(this.worker);
-        OrganizationSettingsEvents.listen(this.worker);
-    }
+  /**
+   * Listen event from the main process using bext listener
+   */
+  async listen() {
+    await localStorage.clear();
+    AuthEvents.listen(this.worker);
+    ConfigEvents.listen(this.worker);
+    LocaleEvents.listen(this.worker);
+    DesktopEvents.listen(this.worker);
+    OrganizationSettingsEvents.listen(this.worker);
+  }
 }
 

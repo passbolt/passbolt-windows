@@ -21,17 +21,15 @@ import AccountEntity from "passbolt-browser-extension/src/all/background_page/mo
  * Controller related to the desktop account
  */
 class DesktopSetAccountController {
-
-    /**
+  /**
    * DesktopAuthenticateController constructor
    * @param {Worker} worker
    */
-    constructor(worker, requestId, accountKit) {
-      this.worker = worker;
-      this.requestId = requestId;
-      this.accountKit = accountKit;
-    }
-  
+  constructor(worker, requestId, accountKit) {
+    this.worker = worker;
+    this.requestId = requestId;
+    this.accountKit = accountKit;
+  }
 
   /**
    * Wrapper of exec function to run.
@@ -42,12 +40,12 @@ class DesktopSetAccountController {
       await this.exec();
       this.worker.port.emit(this.requestId, 'SUCCESS');
     } catch (error) {
-      console.error(error)
+      console.error(error);
       this.worker.port.emit(this.requestId, 'ERROR', error);
     }
   }
 
-  /**s
+  /**
    * Attemps to sign in the current user.
    * @return {Promise<void>}
    */
@@ -60,7 +58,6 @@ class DesktopSetAccountController {
     //Call the main process
     this.worker.port.emit(BACKGROUND_READY);
   }
-
 }
 
 export default DesktopSetAccountController;

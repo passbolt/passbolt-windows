@@ -12,19 +12,20 @@
  * @since         0.0.1
  */
 
+import MfaAuthenticationRequiredError from "passbolt-browser-extension/src/all/background_page/error/mfaAuthenticationRequiredError";
 import UserAlreadyLoggedInError from "passbolt-browser-extension/src/all/background_page/error/userAlreadyLoggedInError";
 import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
+import AuthService from "passbolt-browser-extension/src/all/background_page/service/auth";
 import CheckPassphraseService from "passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService";
 
 /**
  * Service related to the login user service
  */
 class LoginUserService {
-
   /**
    * constructor for the login user service
-   * @param {ApiClientOptions} apiClientOptions 
+   * @param {ApiClientOptions} apiClientOptions
    */
   constructor(apiClientOptions) {
     this.authModel = new AuthModel(apiClientOptions);
@@ -33,7 +34,7 @@ class LoginUserService {
 
   /**
    * check passphrase validity
-   * @param {string} passphrase 
+   * @param {string} passphrase
    */
   async checkPassphrase(passphrase) {
     if (typeof passphrase === "undefined") {
@@ -50,8 +51,8 @@ class LoginUserService {
 
   /**
    * sign in the user with backend
-   * @param {string} passphrase 
-   * @param {boolean} rememberMe 
+   * @param {string} passphrase
+   * @param {boolean} rememberMe
    */
   async login(passphrase, rememberMe) {
     try {
@@ -59,7 +60,19 @@ class LoginUserService {
     } catch (error) {
       if (!(error instanceof UserAlreadyLoggedInError)) {
         throw error;
-      } 
+      }
+    }
+  }
+
+  async isMfaRequired() {
+    try {
+      await AuthService.isAuthenticated();
+    } catch (error) {
+      if (error instanceof MfaAuthenticationRequiredError) {
+        return error.details.mfa_providers[0];
+      } else {
+        throw error;
+      }
     }
   }
 }
