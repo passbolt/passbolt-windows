@@ -15,7 +15,6 @@
 import IPCHandler from './shared/IPCHandler';
 import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
-import {LocaleEvents} from "passbolt-browser-extension/src/all/background_page/event/localeEvents";
 import {RoleEvents} from 'passbolt-browser-extension/src/all/background_page/event/roleEvents';
 import {ResourceTypeEvents} from 'passbolt-browser-extension/src/all/background_page/event/resourceTypeEvents';
 import {ResourceEvents} from 'passbolt-browser-extension/src/all/background_page/event/resourceEvents';
@@ -25,7 +24,6 @@ import {SecretEvents} from 'passbolt-browser-extension/src/all/background_page/e
 import {ShareEvents} from 'passbolt-browser-extension/src/all/background_page/event/shareEvents';
 import {CommentEvents} from 'passbolt-browser-extension/src/all/background_page/event/commentEvents';
 import {ActionLogEvents} from 'passbolt-browser-extension/src/all/background_page/event/actionLogEvents';
-import {KeyringEvents} from 'passbolt-browser-extension/src/all/background_page/event/keyringEvents';
 import {TagEvents} from 'passbolt-browser-extension/src/all/background_page/event/tagEvents';
 import {FavoriteEvents} from 'passbolt-browser-extension/src/all/background_page/event/favoriteEvents';
 import {PasswordPoliciesEvents} from 'passbolt-browser-extension/src/all/background_page/event/passwordPoliciesEvents';
@@ -36,11 +34,16 @@ import {ExportResourcesEvents} from './events/exportResourcesEvents';
 import {RbacEvents} from './events/rbacEvents';
 import {BACKGROUND_READY} from './enumerations/appEventEnumeration';
 import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
-import {UserEvents} from "passbolt-browser-extension/src/all/background_page/event/userEvents";
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
 import {DesktopEvents} from './events/desktopEvents';
 import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk/storage';
 import {MfaEvents} from 'passbolt-browser-extension/src/all/background_page/event/mfaEvents';
+import {ThemeEvents} from './events/themeEvents';
+import {UserEvents} from './events/userEvents';
+import {AuthEvents} from './events/authEvents';
+import {UserPassphrasePolicies} from './events/userPassphrasePolicies';
+import {KeyringEvents} from './events/keyringEvents';
+import {LocaleEvents} from './events/localeEvents';
 
 /**
  * Represents the main workspace class that sets up an event listener for the `message` event.
@@ -57,24 +60,24 @@ export default class MainWorkspace {
     this.initStorage();
     this.worker = {port: new IPCHandler()};
     ActionLogEvents.listen(this.worker);
+    AuthEvents.listen(this.worker);
     CommentEvents.listen(this.worker);
     ConfigEvents.listen(this.worker);
     DesktopEvents.listen(this.worker);
-    ExportResourcesEvents.listen(this.worker);
     FavoriteEvents.listen(this.worker);
     FolderEvents.listen(this.worker);
     GroupEvents.listen(this.worker);
     ImportResourcesEvents.listen(this.worker);
-    KeyringEvents.listen(this.worker);
     LocaleEvents.listen(this.worker);
     MfaEvents.listen(this.worker);
     OrganizationSettingsEvents.listen(this.worker);
     PownedPasswordEvents.listen(this.worker);
     ResourceTypeEvents.listen(this.worker);
     RoleEvents.listen(this.worker);
-    SecretEvents.listen(this.worker);
     ShareEvents.listen(this.worker);
     TagEvents.listen(this.worker);
+    ThemeEvents.listen(this.worker);
+    UserPassphrasePolicies.listen(this.worker);
   }
 
   /**
@@ -82,15 +85,17 @@ export default class MainWorkspace {
    */
   async initStorage() {
     await LocalStorage.init();
-    await Config.init();
-    // check supported types
+    await Config.init();  
     const account = await GetLegacyAccountService.get({role: true});
     AccountRecoveryEvents.listen(this.worker, account);
+    ExportResourcesEvents.listen(this.worker, account);
+    KeyringEvents.listen(this.worker, null, account);
     UserEvents.listen(this.worker, null, account);
     RbacEvents.listen(this.worker, account);
     ResourceEvents.listen(this.worker, null, account);
+    SecretEvents.listen(this.worker, null, account);
     PasswordPoliciesEvents.listen(this.worker, null, account);
-    window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));
+    window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));  
   }
 }
 

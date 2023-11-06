@@ -51,6 +51,8 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ShareTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(TagTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ThemeTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
             topics.Add(AllowedTopics.RENDERED_READY);
         }

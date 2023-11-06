@@ -27,7 +27,6 @@ import {CommentEvents} from "passbolt-browser-extension/src/all/background_page/
 import {ActionLogEvents} from "passbolt-browser-extension/src/all/background_page/event/actionLogEvents";
 import {accountDto} from "./data/mockStorage";
 import {BACKGROUND_READY, LOCALSTORAGE_CLEAR, LOCALSTORAGE_DELETE, LOCALSTORAGE_UPDATE} from "./enumerations/appEventEnumeration";
-import {KeyringEvents} from "passbolt-browser-extension/src/all/background_page/event/keyringEvents";
 import {ShareEvents} from "passbolt-browser-extension/src/all/background_page/event/shareEvents";
 import {FavoriteEvents} from "passbolt-browser-extension/src/all/background_page/event/favoriteEvents";
 import {TagEvents} from "passbolt-browser-extension/src/all/background_page/event/tagEvents";
@@ -38,9 +37,13 @@ import {AccountRecoveryEvents} from "./events/accountRecoveryEvents";
 import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
 import {DesktopEvents} from "./events/desktopEvents";
 import {ExportResourcesEvents} from "./events/exportResourcesEvents";
-import {UserEvents} from "passbolt-browser-extension/src/all/background_page/event/userEvents";
 import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
 import {PasswordPoliciesEvents} from "passbolt-browser-extension/src/all/background_page/event/passwordPoliciesEvents";
+import {UserPassphrasePolicies} from "./events/userPassphrasePolicies";
+import {ThemeEvents} from "./events/themeEvents";
+import {AuthEvents} from "./events/authEvents";
+import {KeyringEvents} from "./events/keyringEvents";
+import {UserEvents} from "./events/userEvents";
 
 describe("Main workspace class", () => {
   const ipcDataMock = {
@@ -67,10 +70,11 @@ describe("Main workspace class", () => {
   });
 
   it('should listen to the browser extension events', async() => {
-    expect.assertions(22);
+    expect.assertions(25);
 
     jest.spyOn(AccountRecoveryEvents, "listen");
     jest.spyOn(ActionLogEvents, "listen");
+    jest.spyOn(AuthEvents, "listen");
     jest.spyOn(CommentEvents, "listen");
     jest.spyOn(ConfigEvents, "listen");
     jest.spyOn(DesktopEvents, "listen");
@@ -91,6 +95,8 @@ describe("Main workspace class", () => {
     jest.spyOn(SecretEvents, "listen");
     jest.spyOn(ShareEvents, "listen");
     jest.spyOn(TagEvents, "listen");
+    jest.spyOn(ThemeEvents, "listen");
+    jest.spyOn(UserPassphrasePolicies, "listen");
     jest.spyOn(UserEvents, "listen");
 
     main = new Main();
@@ -98,15 +104,16 @@ describe("Main workspace class", () => {
 
     expect(AccountRecoveryEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
     expect(ActionLogEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(AuthEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(CommentEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(DesktopEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(ExportResourcesEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ExportResourcesEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
     expect(FavoriteEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(FolderEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(GroupEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(ImportResourcesEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(KeyringEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(KeyringEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(PasswordPoliciesEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
@@ -114,9 +121,11 @@ describe("Main workspace class", () => {
     expect(ResourceEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(RbacEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
     expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(TagEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ThemeEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(UserPassphrasePolicies.listen).toHaveBeenCalledWith(main.worker);
     expect(UserEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
   });
 

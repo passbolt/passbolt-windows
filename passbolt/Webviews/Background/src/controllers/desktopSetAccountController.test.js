@@ -90,6 +90,23 @@ describe('DesktopSetAccountController', () => {
 
         expect(worker.port.emit).toHaveBeenCalledWith(BACKGROUND_READY);
       });
+
+      it('Should set the locale if dto include it', async() => {
+        expect.assertions(1);
+
+        await desktopSetAccountController.exec();
+        const passboltData = JSON.parse(localStorage.getItem("_passbolt_data"));
+
+        expect(passboltData.config['user.settings.locale']).toEqual("fr-FR");
+      });
+      
+      it('Should set the theme if dto include it', async() => {
+        expect.assertions(1);
+
+        await desktopSetAccountController.exec();
+
+        expect(passboltData.config['user.settings.theme']).toEqual("solarized_light");
+      });
     });
   });
 });

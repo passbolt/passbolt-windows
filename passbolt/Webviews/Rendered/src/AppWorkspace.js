@@ -51,7 +51,9 @@ import RenderedWebview from "./components/RenderedWebview";
 import ResourcesWebviewContext from "./contexts/ResourcesWebviewContext";
 import PasswordPoliciesContext from "passbolt-styleguide/src/shared/context/PasswordPoliciesContext/PasswordPoliciesContext";
 import MfaContextProvider from "passbolt-styleguide/src/react-extension/contexts/MFAContext";
-
+import UserPassphrasePoliciesContextProvider from "passbolt-styleguide/src/react-extension/contexts/UserPassphrasePoliciesContext";
+import HandlePassphraseEntryEvents
+  from "passbolt-styleguide/src/react-extension/components/AuthenticationPassphrase/HandlePassphraseEntryEvents/HandlePassphraseEntryEvents";
 /**
  * The passbolt application served by the desktop.
  */
@@ -94,6 +96,8 @@ class AppWorkspace extends Component {
                                     <HandleFolderMoveStrategyEvents />
                                     <HandleProgressEvents />
                                     <HandleSessionExpired />
+                                    <HandlePassphraseEntryEvents/>
+
                                     <Router>
                                       <NavigationContextProvider>
                                         <Switch>
@@ -106,6 +110,7 @@ class AppWorkspace extends Component {
                                             <ResourceWorkspaceContextProvider>
                                               <ResourcePasswordGeneratorContextProvider>
                                                 <ManageDialogs />
+                                                <ManageWorkflows />
                                                 <ManageContextualMenu />
                                                 <ManageAnnouncements />
                                                 <DragContextProvider>
@@ -147,16 +152,18 @@ class AppWorkspace extends Component {
                                           {/* User settings workspace */}
                                           <Route path={"/app/settings"}>
                                             <UserSettingsContextProvider>
-                                              <ManageDialogs />
-                                              <ManageAnnouncements />
-                                              <div id="container" className="page settings">
-                                                <div id="app" className="app ready" tabIndex="1000">
-                                                  <div className="header first">
-                                                    <DisplayMainMenu />
+                                              <UserPassphrasePoliciesContextProvider>
+                                                <ManageDialogs />
+                                                <ManageAnnouncements />
+                                                <div id="container" className="page settings">
+                                                  <div id="app" className="app ready" tabIndex="1000">
+                                                    <div className="header first">
+                                                      <DisplayMainMenu />
+                                                    </div>
+                                                    <DisplayUserSettingsWorkspace />
                                                   </div>
-                                                  <DisplayUserSettingsWorkspace />
                                                 </div>
-                                              </div>
+                                              </UserPassphrasePoliciesContextProvider>
                                             </UserSettingsContextProvider>
                                           </Route>
                                           {/* Fallback */}

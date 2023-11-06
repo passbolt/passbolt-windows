@@ -29,11 +29,14 @@ namespace passbolt.Models.Messaging
         public const string BACKGROUND_IMPORT = "passbolt.background.import";
         public const string BACKGROUND_DOWNLOAD_FILE = "passbolt.background.download-file";
         public const string BACKGROUND_STORE_PASSPHRASE = "passbolt.background.store-passphrase";
+        public const string BACKGROUND_SET_THEME = "passbolt.background.set-theme";
+        public const string BACKGROUND_SET_SECURITY_TOKEN = "passbolt.background.set-security-token";
+        public const string BACKGROUND_SET_LOCALE = "passbolt.background.set-locale";
         public const string RENDERED_READY = "passbolt.rendered.is-ready";
-        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR, BACKGROUND_DOWNLOAD_FILE, BACKGROUND_STORE_PASSPHRASE, RENDERED_READY };
+
+        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR, BACKGROUND_DOWNLOAD_FILE, BACKGROUND_STORE_PASSPHRASE, BACKGROUND_SET_THEME, BACKGROUND_SET_SECURITY_TOKEN, BACKGROUND_SET_LOCALE, RENDERED_READY };
         private static List<string> requestIds = new List<string>();
         private static Dictionary<string, string> pendingRequests = new Dictionary<string, string>();
-
 
         /// <summary>
         /// static constructor for AllowedTopics
@@ -74,6 +77,7 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ShareTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(TagTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ThemeTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
         }
 

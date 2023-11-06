@@ -13,6 +13,7 @@
  */
 
 using Microsoft.UI.Xaml.Controls;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using passbolt.Exceptions;
 using passbolt.Models.Authentication;
@@ -77,6 +78,18 @@ namespace passbolt.Models.Messaging
                         }
                     }
                     break;
+                case AllowedTopics.BACKGROUND_SET_THEME:
+                    accountMetaData.theme = (string) ipc.message;
+                    await this.credentialLockerService.Create("account-metaData", JsonConvert.SerializeObject(accountMetaData));
+                    break;
+                case AllowedTopics.BACKGROUND_SET_LOCALE:
+                    accountMetaData.locale = (string)ipc.message;
+                    await this.credentialLockerService.Create("account-metaData", JsonConvert.SerializeObject(accountMetaData));
+                    break;
+                case AllowedTopics.BACKGROUND_SET_SECURITY_TOKEN:
+                    accountMetaData.securityToken = SerializationHelper.DeserializeFromJson<SecurityToken>(((JObject)ipc.message).ToString());
+                    await this.credentialLockerService.Create("account-metaData", JsonConvert.SerializeObject(accountMetaData));
+                    break;
                 case AuthenticationTopics.REQUIRE_MFA:
                     var message = SerializationHelper.DeserializeFromJson<MfaAuthentication>(((JObject)ipc.message).ToString());
                     passphrase = message.passphrase;
@@ -124,6 +137,7 @@ namespace passbolt.Models.Messaging
                     passphrase = (string)ipc.message;
                     await RedirectToWorkspace();
                     break;
+                case SecretTopics.PASSPHRASE_REQUEST:
                 case ProgressTopics.PROGRESSCLOSEDIALOG:
                 case ProgressTopics.PROGRESSUPDATE:
                 case ProgressTopics.PROGRESSUPDATEGOALS:

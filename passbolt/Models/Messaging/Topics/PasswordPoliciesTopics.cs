@@ -18,5 +18,6 @@ namespace passbolt.Models.Messaging.Topics
         public const string POLICIES_GET = "passbolt.password-policies.get";
         public const string POLICIES_SAVE = "passbolt.password-policies.save";
         public const string POLICIES_GET_ADMIN_SETTINGS = "passbolt.password-policies.get-admin-settings";
+        public const string POLICIES_GET_USER_SETTINGS = "passbolt.user-passphrase-policies.find";
     }
 }

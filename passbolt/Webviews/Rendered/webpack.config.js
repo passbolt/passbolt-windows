@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ReplaceInFileWebpackPlugin = require('replace-in-file-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -42,7 +43,15 @@ module.exports = {
         { from: 'node_modules/passbolt-styleguide/build/css/themes', to: 'themes'},
         { from: 'node_modules/passbolt-styleguide/src/fonts', to: 'fonts'},
       ]
-    })
+    }),
+    new ReplaceInFileWebpackPlugin([{
+      dir: 'dist',
+      files: ['rendered-workspace.js'],
+      rules: [{
+          search: '/webAccessibleResources/',
+          replace: 'https://rendered.dist/Rendered/'
+      }]
+  }]),
   ],
   devtool: "inline-source-map"
 };

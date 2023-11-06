@@ -30,9 +30,9 @@ class ExportResourcesFileService {
    * constructor for the login user service
    * @param {ApiClientOptions} apiClientOptions
    */
-  constructor(worker, apiClientOptions) {
+  constructor(worker, apiClientOptions, account) {
     this.worker = worker;
-    this.exportResoucesFileController = new ExportResourcesFileController(worker, apiClientOptions);
+    this.exportResoucesFileController = new ExportResourcesFileController(worker, apiClientOptions, account);
     this.progressService = new ProgressService(this.worker, i18n.t("Exporting ..."));
   }
 
