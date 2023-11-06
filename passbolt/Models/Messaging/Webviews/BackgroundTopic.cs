@@ -19,13 +19,16 @@ using passbolt.Exceptions;
 using passbolt.Models.Authentication;
 using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging.Topics;
+using passbolt.Models.Rbac;
 using passbolt.Services.CredentialLocker;
 using passbolt.Services.DownloadService;
 using passbolt.Services.LocalFolder;
 using passbolt.Services.NavigationService;
+using passbolt.Services.RbacService;
 using passbolt.Services.WebviewService;
 using passbolt.Utils;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace passbolt.Models.Messaging
@@ -37,11 +40,14 @@ namespace passbolt.Models.Messaging
         private string currentIndexRendered = "index-auth.html";
         private string passphrase;
         private string pendingRequestId;
+        private RbacService rbacService;
+
 
         public BackgroundTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService, BackgroundWebviewService backgroundWebviewService) : base(background, rendered, localFolderService, backgroundWebviewService)
         {
             credentialLockerService = new CredentialLockerService();
             passphrase = null;
+            this.rbacService = new RbacService();
         }
 
         /// <summary>
@@ -146,6 +152,11 @@ namespace passbolt.Models.Messaging
                     if (!AllowedTopics.proceedRequestId(ipc.topic))
                     {
                         throw new UnauthorizedTopicException("Rendered webview");
+                    } else if (AllowedTopics.HasPendingRequest(ipc.topic))
+                    {
+                        var value = AllowedTopics.GetPendingRequest(ipc.topic);
+                        this.mapResponse(ipc, value);
+                        AllowedTopics.RemovePendingRequest(ipc.topic);
                     }
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
                     break;
@@ -177,6 +188,21 @@ namespace passbolt.Models.Messaging
             icpMessage.topic = this.pendingRequestId;
             rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(icpMessage));
             this.pendingRequestId = null;
+        }
+
+        /// <summary>
+        /// Map the response from the background webview
+        /// </summary>
+        /// <param name="ipc"></param>
+        /// <returns></returns>
+        public void mapResponse(IPC ipc, string topic)
+        {
+            if (topic == RbacTopics.FIND_ME)
+            {
+                var controls = SerializationHelper.DeserializeFromJson<List<ControlFunction>>(((JArray)ipc.message).ToString());
+                this.rbacService.AddDesktopRbac(controls);
+                ipc.message = controls;
+            }
         }
     }
 }
