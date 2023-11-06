@@ -132,6 +132,7 @@
     <Compile Include="Models\CredentialLocker\ApplicationConfiguration.cs" />
     <Compile Include="Models\CredentialLocker\AccountMetaData.cs" />
     <Compile Include="Models\CredentialLocker\SecurityToken.cs" />
+    <Compile Include="Models\CredentialLocker\Theme.cs" />
     <Compile Include="Models\Files\DownloadFile.cs" />
     <Compile Include="Models\LocalStorage\PassboltConfig.cs" />
     <Compile Include="Models\LocalStorage\PassboltData.cs" />
@@ -162,6 +163,7 @@
     <Compile Include="Models\Messaging\Topics\SettingTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ShareTopics.cs" />
     <Compile Include="Models\Messaging\Topics\TagTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\ThemeTopics.cs" />
     <Compile Include="Models\Messaging\Topics\UserTopics.cs" />
     <Compile Include="Models\Messaging\Webviews\BackgroundTopic.cs" />
     <Compile Include="Models\Messaging\IPC.cs" />

@@ -24,5 +24,7 @@ namespace passbolt.Models.Messaging.Topics
         public const string DELETE_DRY_RUN = "passbolt.users.delete-dry-run";
         public const string DELETE = "passbolt.users.delete";
         public const string RESEND_INVITE = "passbolt.users.resend-invite";
+        public const string UPDATE_SECURITY_TOKEN = "passbolt.users.update-security-token";
+        public const string UPDATE_PRIVATE_KEY = "passbolt.user.update-private-key";
     }
 }

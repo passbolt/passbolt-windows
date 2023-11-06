@@ -23,7 +23,9 @@ export const accountKit = {
     last_name: defaultAccountDto().last_name,
     security_token: defaultAccountDto().security_token,
     server_public_armored_key: defaultAccountDto().server_public_armored_key,
-    user_public_armored_key: defaultAccountDto().user_public_armored_key
+    user_public_armored_key: defaultAccountDto().user_public_armored_key,
+    theme: "solarized_light",
+    locale: "fr-FR"
   },
   accountSecret: {
     userId: defaultAccountDto().userId,
