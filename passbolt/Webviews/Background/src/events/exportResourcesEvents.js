@@ -15,7 +15,7 @@
 import ExportResourcesFileController from "../controllers/exportResourcesFilesController";
 import User from "passbolt-browser-extension/src/all/background_page/model/user";
 
-const listen = function(worker) {
+const listen = function(worker, account) {
   /*
    * Export resources to file
    *
@@ -26,7 +26,7 @@ const listen = function(worker) {
    */
   worker.port.on('passbolt.export-resources.export-to-file', async(requestId, exportResourcesFileDto) => {
     const apiClientOptions = await User.getInstance().getApiClientOptions();
-    const exportController = new ExportResourcesFileController(worker, apiClientOptions, requestId);
+    const exportController = new ExportResourcesFileController(worker, apiClientOptions, requestId, account);
     await exportController.exec(exportResourcesFileDto);
   });
 };

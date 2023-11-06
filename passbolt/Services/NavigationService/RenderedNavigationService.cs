@@ -41,7 +41,7 @@ namespace passbolt.Services.NavigationService
             new Regex($"^https://{currentUrl}/(?:app/groups/(view|edit)/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
             new Regex($"^https://{currentUrl}/(?:app/users/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
             new Regex($"^https://{currentUrl}/app/users$"),
-            new Regex($"^https://{currentUrl}/app/settings/mfa(?:#)?$"),
+            new Regex($"^https://{currentUrl}/app/settings/(mfa|profile|passphrase|keys|security-token|theme)"),
             };
         }
 

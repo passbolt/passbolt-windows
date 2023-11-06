@@ -19,6 +19,7 @@ import {resourceToExport} from "./exportResourcesFilesService.test.data";
 import FileService from "passbolt-browser-extension/src/all/background_page/service/file/fileService";
 import ExportResourcesFileEntity from "passbolt-browser-extension/src/all/background_page/model/entity/export/exportResourcesFileEntity";
 import {DOWNLOAD_FILE} from "../enumerations/appEventEnumeration";
+import {accountDto} from "../data/mockStorage";
 
 // Reset the modules before each test.
 beforeEach(() => {
@@ -30,7 +31,7 @@ describe('ExportResourcesFileService', () => {
   let exportResourcesFileService, exportEntity;
 
   beforeEach(() => {
-    exportResourcesFileService = new ExportResourcesFileService(null, defaultApiClientOptions());
+    exportResourcesFileService = new ExportResourcesFileService(null, defaultApiClientOptions(), accountDto);
     exportEntity = new ExportResourcesFileEntity(resourceToExport);
     jest.spyOn(User, "getInstance").mockImplementation(() => ({get: () => ({id: 1})}));
     jest.spyOn(exportResourcesFileService.progressService, "start").mockImplementation(() => {});

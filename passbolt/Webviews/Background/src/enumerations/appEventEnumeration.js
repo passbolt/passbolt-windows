@@ -23,4 +23,6 @@ export const LOCALSTORAGE_CLEAR = "passbolt.background.localstorage-clear";
 export const DOWNLOAD_FILE = "passbolt.background.download-file";
 export const SAVE_ACCOUNT = "passbolt.background.save-account";
 export const REQUIRE_MFA = "passbolt.auth.redirect-to-mfa";
-
+export const UPDATE_THEME = "passbolt.background.set-theme";
+export const UPDATE_SECURITY_TOKEN = "passbolt.background.set-security-token";
+export const UPDATE_LOCALE = "passbolt.background.set-locale";
