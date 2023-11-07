@@ -74,7 +74,6 @@ export default class MainWorkspace {
     PownedPasswordEvents.listen(this.worker);
     ResourceTypeEvents.listen(this.worker);
     RoleEvents.listen(this.worker);
-    ShareEvents.listen(this.worker);
     TagEvents.listen(this.worker);
     ThemeEvents.listen(this.worker);
     UserPassphrasePolicies.listen(this.worker);
@@ -94,6 +93,7 @@ export default class MainWorkspace {
     RbacEvents.listen(this.worker, account);
     ResourceEvents.listen(this.worker, null, account);
     SecretEvents.listen(this.worker, null, account);
+    ShareEvents.listen(this.worker, null, account);
     PasswordPoliciesEvents.listen(this.worker, null, account);
     window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));  
   }
