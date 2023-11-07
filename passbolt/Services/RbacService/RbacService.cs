@@ -1,7 +1,3 @@
-﻿
-
-using passbolt.Models.Rbac;
-using System.Collections.Generic;
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
@@ -16,6 +12,13 @@ using System.Collections.Generic;
  * @since         0.5.0
  */
 
+using passbolt.Models.Rbac;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.PortableExecutable;
+using System.Xml.Linq;
+
 namespace passbolt.Services.RbacService
 {
     public class RbacService
@@ -28,24 +31,38 @@ namespace passbolt.Services.RbacService
         /// <returns></returns>
         public void AddDesktopRbac(List<ControlFunction> controls)
         {
-            controls.Add(new ControlFunction
+            this.AddOrUpdateDesktopRbac(controls, "Administration.viewWorkspace", "Deny");
+            this.AddOrUpdateDesktopRbac(controls, "Duo.configuration", "Deny");
+            this.AddOrUpdateDesktopRbac(controls, "Avatar.upload", "Deny");
+            this.AddOrUpdateDesktopRbac(controls, "Mobile.transfer", "Deny");
+        }
+
+        /// <summary>
+        /// Add or Update entry to desktop configuration
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="uiActionName"></param>
+        /// <param name="control"></param>
+        public void AddOrUpdateDesktopRbac(List<ControlFunction> controls, string uiActionName, string control)
+        {
+            // First, try to find an existing ControlFunction with the specified UiAction name.
+            var existingControl = controls.FirstOrDefault(cf => cf.UiAction != null && cf.UiAction.Name == uiActionName);
+
+            // If it exists, update the 'Control' property.
+            if (existingControl != null)
             {
-                Control = "Deny",
-                ForeignModel = "UiAction",
-                UiAction = new UiAction { Name = "Administration.viewWorkspace" }
-            });
-            controls.Add(new ControlFunction
+                existingControl.Control = control;
+            }
+            else
             {
-                Control = "Deny",
-                ForeignModel = "UiAction",
-                UiAction = new UiAction { Name = "Duo.configuration" }
-            });
-            controls.Add(new ControlFunction
-            {
-                Control = "Deny",
-                ForeignModel = "UiAction",
-                UiAction = new UiAction { Name = "Avatar.upload" }
-            });
+                // If it does not exist, add a new ControlFunction object to the list.
+                controls.Add(new ControlFunction
+                {
+                    Control = control,
+                    ForeignModel = "UiAction",
+                    UiAction = new UiAction { Name = uiActionName }
+                });
+            }
         }
     }
 }
