@@ -66,15 +66,12 @@ export default class MainWorkspace {
     DesktopEvents.listen(this.worker);
     FavoriteEvents.listen(this.worker);
     FolderEvents.listen(this.worker);
-    GroupEvents.listen(this.worker);
-    ImportResourcesEvents.listen(this.worker);
     LocaleEvents.listen(this.worker);
     MfaEvents.listen(this.worker);
     OrganizationSettingsEvents.listen(this.worker);
     PownedPasswordEvents.listen(this.worker);
     ResourceTypeEvents.listen(this.worker);
     RoleEvents.listen(this.worker);
-    ShareEvents.listen(this.worker);
     TagEvents.listen(this.worker);
     ThemeEvents.listen(this.worker);
     UserPassphrasePolicies.listen(this.worker);
@@ -89,11 +86,14 @@ export default class MainWorkspace {
     const account = await GetLegacyAccountService.get({role: true});
     AccountRecoveryEvents.listen(this.worker, account);
     ExportResourcesEvents.listen(this.worker, account);
+    GroupEvents.listen(this.worker, null, account);
+    ImportResourcesEvents.listen(this.worker, null, account);
     KeyringEvents.listen(this.worker, null, account);
     UserEvents.listen(this.worker, null, account);
     RbacEvents.listen(this.worker, account);
     ResourceEvents.listen(this.worker, null, account);
     SecretEvents.listen(this.worker, null, account);
+    ShareEvents.listen(this.worker, null, account);
     PasswordPoliciesEvents.listen(this.worker, null, account);
     window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));  
   }
