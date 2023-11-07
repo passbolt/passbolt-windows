@@ -1,8 +1,4 @@
-﻿
-
-using passbolt.Models.Rbac;
-using System.Collections.Generic;
-/**
+﻿/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
@@ -15,6 +11,9 @@ using System.Collections.Generic;
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.5.0
  */
+
+using passbolt.Models.Rbac;
+using System.Collections.Generic;
 
 namespace passbolt.Services.RbacService
 {
