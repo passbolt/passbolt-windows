@@ -66,8 +66,6 @@ export default class MainWorkspace {
     DesktopEvents.listen(this.worker);
     FavoriteEvents.listen(this.worker);
     FolderEvents.listen(this.worker);
-    GroupEvents.listen(this.worker);
-    ImportResourcesEvents.listen(this.worker);
     LocaleEvents.listen(this.worker);
     MfaEvents.listen(this.worker);
     OrganizationSettingsEvents.listen(this.worker);
@@ -88,6 +86,8 @@ export default class MainWorkspace {
     const account = await GetLegacyAccountService.get({role: true});
     AccountRecoveryEvents.listen(this.worker, account);
     ExportResourcesEvents.listen(this.worker, account);
+    GroupEvents.listen(this.worker, null, account);
+    ImportResourcesEvents.listen(this.worker, null, account);
     KeyringEvents.listen(this.worker, null, account);
     UserEvents.listen(this.worker, null, account);
     RbacEvents.listen(this.worker, account);
