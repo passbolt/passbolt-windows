@@ -12,9 +12,12 @@
  * @since         0.0.1
  */
 
+using passbolt.Models;
 using passbolt.Services.Mfa;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace passbolt.Services.NavigationService
 {
@@ -61,6 +64,18 @@ namespace passbolt.Services.NavigationService
         public void DisallowMfaUrls()
         {
             this.Initialize(this.currentUrl);
+        }
+
+
+        /// <summary>
+        /// Check if webview can open browser to passbolt URI
+        /// </summary>
+        public async Task CanOpenBrowser(string url)
+        {
+            if (url.StartsWith("https://help.passbolt.com/") || url.StartsWith("https://www.passbolt.com/"))
+            {
+                await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+            }
         }
     }
 }
