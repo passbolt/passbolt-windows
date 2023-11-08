@@ -35780,12 +35780,12 @@ class EntitySchema {
    */
   static validatePropTypeNumber(propName, prop, propSchema) {
     const validationError = new _entityValidationError__WEBPACK_IMPORTED_MODULE_0__["default"](`Could not validate property ${propName}.`);
-    if (propSchema.gte) {
+    if (typeof(propSchema.gte) === 'number') {
       if (!EntitySchema.isGreaterThanOrEqual(prop, propSchema.gte)) {
         validationError.addError(propName, 'gte', `The ${propName} should be greater or equal to ${propSchema.gte}.`);
       }
     }
-    if (propSchema.lte) {
+    if (typeof(propSchema.lte) === 'number') {
       if (!EntitySchema.isLesserThanOrEqual(prop, propSchema.lte)) {
         validationError.addError(propName, 'lte', `The ${propName} should be lesser or equal to ${propSchema.lte}.`);
       }
@@ -47996,6 +47996,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "LOCALSTORAGE_UPDATE": () => (/* binding */ LOCALSTORAGE_UPDATE),
 /* harmony export */   "REQUIRE_MFA": () => (/* binding */ REQUIRE_MFA),
 /* harmony export */   "SAVE_ACCOUNT": () => (/* binding */ SAVE_ACCOUNT),
+/* harmony export */   "UPDATE_LOCALE": () => (/* binding */ UPDATE_LOCALE),
+/* harmony export */   "UPDATE_SECURITY_TOKEN": () => (/* binding */ UPDATE_SECURITY_TOKEN),
+/* harmony export */   "UPDATE_THEME": () => (/* binding */ UPDATE_THEME),
 /* harmony export */   "USER_LOGGED_IN": () => (/* binding */ USER_LOGGED_IN),
 /* harmony export */   "USER_LOGGED_OUT": () => (/* binding */ USER_LOGGED_OUT)
 /* harmony export */ });
@@ -48024,7 +48027,9 @@ const LOCALSTORAGE_CLEAR = "passbolt.background.localstorage-clear";
 const DOWNLOAD_FILE = "passbolt.background.download-file";
 const SAVE_ACCOUNT = "passbolt.background.save-account";
 const REQUIRE_MFA = "passbolt.auth.redirect-to-mfa";
-
+const UPDATE_THEME = "passbolt.background.set-theme";
+const UPDATE_SECURITY_TOKEN = "passbolt.background.set-security-token";
+const UPDATE_LOCALE = "passbolt.background.set-locale";
 
 
 /***/ }),
@@ -48594,7 +48599,6 @@ class IPCHandler {
   initListener() {
     window.chrome.webview.addEventListener("message", event => {
       if (event) {
-        console.log(event)
         this._onMessage(event);
       }
     });
@@ -48701,6 +48705,7 @@ class IPCHandler {
     } else {
       ipc = requestArgs[0];
     }
+
     window.chrome.webview.postMessage(JSON.stringify(ipc));
   }
 
@@ -52880,7 +52885,7 @@ PERFORMANCE OF THIS SOFTWARE.
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"background-webview","version":"0.4.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","eslint":"eslint -c .eslintrc.json --ext js src","eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","text-encoding-utf-8":"^1.0.2","webpack":"^5.75.0","webpack-cli":"^5.0.1"},"dependencies":{"@babel/preset-react":"^7.22.15","buffer":"^6.0.3","crypto-browserify":"^3.12.0","openpgp":"5.2.1","passbolt-styleguide":"^4.3.0-alpha.1","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
+module.exports = JSON.parse('{"name":"background-webview","version":"0.5.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","eslint":"eslint -c .eslintrc.json --ext js src","eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","text-encoding-utf-8":"^1.0.2","webpack":"^5.75.0","webpack-cli":"^5.0.1"},"dependencies":{"@babel/preset-react":"^7.22.15","buffer":"^6.0.3","crypto-browserify":"^3.12.0","openpgp":"5.2.1","passbolt-styleguide":"^4.4.0","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
 
 /***/ })
 
