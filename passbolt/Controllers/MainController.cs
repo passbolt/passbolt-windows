@@ -193,6 +193,10 @@ namespace passbolt.Controllers
         /// </summary>
         public virtual void NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
         {
+            if(sender.Source == webviewRendered.Source.AbsoluteUri)
+            {
+                this.renderedNavigationService.CanOpenBrowser(args.Uri);
+            }
             args.Handled = true;
         }
 
