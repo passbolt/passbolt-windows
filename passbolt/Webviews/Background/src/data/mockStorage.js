@@ -15,6 +15,7 @@
 //This is a mock for the first iteration, change it with the bext to adapt your nee
 
 export const accountDto = {
+  "id": "6b97f765-f1bd-4f1c-9cc5-f03bbb591a66",
   "domain": "https://www.passbolt.local",
   "user_id": "6b97f765-f1bd-4f1c-9cc5-f03bbb591a66",
   "username": "admin@passbolt.com",

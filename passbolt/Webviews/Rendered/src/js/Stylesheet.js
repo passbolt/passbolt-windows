@@ -66,11 +66,19 @@
     }
 
     handleStorageChange(changes) {
-      if (changes?._passbolt_data?.newValue?.config) {
-        const config = changes._passbolt_data.newValue.config;
-        if (config && this.theme !== config["user.settings.theme"] && this.isValidTheme(config["user.settings.theme"])) {
-          this.theme = config["user.settings.theme"];
-          this.updateStylesWithUserPreferences();
+      if (changes?._passbolt_data) {
+        let newValue;
+        try {
+          newValue = JSON.parse(changes?._passbolt_data);
+        } catch (error) {
+          console.error(error);
+        }
+        if (newValue?.config) {
+          const config = newValue?.config;
+          if (config && this.theme !== config["user.settings.theme"] && this.isValidTheme(config["user.settings.theme"])) {
+            this.theme = config["user.settings.theme"];
+            this.updateStylesWithUserPreferences();
+          }
         }
       }
     }

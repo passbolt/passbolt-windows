@@ -38,7 +38,8 @@ describe("Main authentication class", () => {
     jest.spyOn(OrganizationSettingsEvents, "listen");
 
     main = new Main();
-
+    await main.listen();
+    
     expect(AuthEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(DesktopEvents.listen).toHaveBeenCalledWith(main.worker);

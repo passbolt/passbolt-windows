@@ -8,14 +8,14 @@
 
   <Identity
     Name="7a57bbf2-aa18-46c4-a24d-67165674edc0"
-    Publisher="CN=pierre"
-    Version="1.0.0.0" />
+    Publisher="CN=Passbolt"
+    Version="0.5.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="7a57bbf2-aa18-46c4-a24d-67165674edc0" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>passbolt</DisplayName>
-    <PublisherDisplayName>pierre</PublisherDisplayName>
+    <DisplayName>Passbolt</DisplayName>
+    <PublisherDisplayName>Passbolt</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -39,6 +39,7 @@
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:LockScreen BadgeLogo="Assets\StoreLogo.png"/>
       </uap:VisualElements>
     </Application>
   </Applications>

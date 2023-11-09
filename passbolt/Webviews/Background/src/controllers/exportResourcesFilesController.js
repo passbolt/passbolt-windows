@@ -20,10 +20,10 @@ class ExportResourcesFileDesktopController {
    * @param {Worker} worker
    * @param {ApiClientOptions} clientOptions
    */
-  constructor(worker, clientOptions, requestId) {
+  constructor(worker, clientOptions, requestId, account) {
     this.worker = worker;
     this.requestId = requestId;
-    this.exportResourcesFilesService = new ExportResourcesFileService(worker, clientOptions);
+    this.exportResourcesFilesService = new ExportResourcesFileService(worker, clientOptions, account);
   }
 
   /**

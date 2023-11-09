@@ -35,6 +35,7 @@ describe("Main import class", () => {
     jest.spyOn(PownedPasswordEvents, "listen");
 
     main = new Main();
+    await main.listen();
 
     expect(AuthImportEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(PownedPasswordEvents.listen).toHaveBeenCalledWith(main.worker);

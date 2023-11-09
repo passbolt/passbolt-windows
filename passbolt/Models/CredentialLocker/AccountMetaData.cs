@@ -38,5 +38,7 @@ namespace passbolt.Models.CredentialLocker
         public string serverPublicArmoredKey { get; set; }
         [JsonProperty("user_public_armored_key")]
         public string userPublicArmoredKey { get; set; }
+        public string theme { get; set; }
+        public string locale { get; set; }
     }
 }

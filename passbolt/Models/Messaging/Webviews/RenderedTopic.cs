@@ -51,6 +51,8 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ShareTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(TagTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ThemeTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
             topics.Add(AllowedTopics.RENDERED_READY);
         }
@@ -75,7 +77,13 @@ namespace passbolt.Models.Messaging
             else if (topics.Contains(ipc.topic))
             {
                 AllowedTopics.AddRequestId(ipc.requestId);
-            } 
+            }
+
+            if (ipc.topic == RbacTopics.FIND_ME)
+            {
+                //We intercept the requestId and save it to map the response
+                AllowedTopics.AddPendingRequest(ipc.requestId, RbacTopics.FIND_ME);
+            }
 
 
             background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));

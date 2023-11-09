@@ -12,9 +12,12 @@
  * @since         0.0.1
  */
 
+using passbolt.Models;
 using passbolt.Services.Mfa;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace passbolt.Services.NavigationService
 {
@@ -41,7 +44,7 @@ namespace passbolt.Services.NavigationService
             new Regex($"^https://{currentUrl}/(?:app/groups/(view|edit)/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
             new Regex($"^https://{currentUrl}/(?:app/users/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
             new Regex($"^https://{currentUrl}/app/users$"),
-            new Regex($"^https://{currentUrl}/app/settings/mfa(?:#)?$"),
+            new Regex($"^https://{currentUrl}/app/settings/(mfa|profile|passphrase|keys|security-token|theme)"),
             };
         }
 
@@ -61,6 +64,18 @@ namespace passbolt.Services.NavigationService
         public void DisallowMfaUrls()
         {
             this.Initialize(this.currentUrl);
+        }
+
+
+        /// <summary>
+        /// Check if webview can open browser to passbolt URI
+        /// </summary>
+        public async Task CanOpenBrowser(string url)
+        {
+            if (url.StartsWith("https://help.passbolt.com/") || url.StartsWith("https://www.passbolt.com/"))
+            {
+                await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+            }
         }
     }
 }
