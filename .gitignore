@@ -2,7 +2,7 @@
 passbolt/Webviews/.DS_Store
 
 .DS_Store
-/passbolt/bin/x64/Debug
+/passbolt/bin
 /passbolt/obj
 /.vs
 /.idea
@@ -17,3 +17,11 @@ passbolt/testEnvironments.json
 
 ._.DS_Store
 passbolt/Webviews/Background/coverage/
+
+*.user
+/passbolt/AppPackages
+/passbolt/BundleArtifacts
+
+*.pfx
+Package.StoreAssociation.xml
+
