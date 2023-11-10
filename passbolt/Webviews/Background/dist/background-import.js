@@ -48529,16 +48529,18 @@ class VerifyAccountKitService {
    * @throws {Error} If the account kit cannot be verified
    */
   async verify(base64SignedAccountKit) {
+    console.log(base64SignedAccountKit)
     if (!base64SignedAccountKit) {
       throw new Error("The account kit is required.");
     }
     if (typeof base64SignedAccountKit !== 'string') {
       throw new TypeError("The account kit should be a string.");
     }
-    if (!validator__WEBPACK_IMPORTED_MODULE_4___default().isBase64(base64SignedAccountKit)) {
+    let trimedBase64 = base64SignedAccountKit.trim();
+    if (!validator__WEBPACK_IMPORTED_MODULE_4___default().isBase64(trimedBase64)) {
       throw new TypeError("The account kit should be a base 64 format.");
     }
-    const accountKitStringify = buffer__WEBPACK_IMPORTED_MODULE_2__.Buffer.from(base64SignedAccountKit, "base64").toString();
+    const accountKitStringify = buffer__WEBPACK_IMPORTED_MODULE_2__.Buffer.from(trimedBase64, "base64").toString();
     //Read the armoredMessage
     const signedMessage = await passbolt_browser_extension_src_all_background_page_utils_openpgp_openpgpAssertions__WEBPACK_IMPORTED_MODULE_3__.OpenpgpAssertion.readMessageOrFail(accountKitStringify);
     //Extract message as text

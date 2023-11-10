@@ -34,16 +34,18 @@ class VerifyAccountKitService {
    * @throws {Error} If the account kit cannot be verified
    */
   async verify(base64SignedAccountKit) {
+    console.log(base64SignedAccountKit)
     if (!base64SignedAccountKit) {
       throw new Error("The account kit is required.");
     }
     if (typeof base64SignedAccountKit !== 'string') {
       throw new TypeError("The account kit should be a string.");
     }
-    if (!Validator.isBase64(base64SignedAccountKit)) {
+    let trimedBase64 = base64SignedAccountKit.trim();
+    if (!Validator.isBase64(trimedBase64)) {
       throw new TypeError("The account kit should be a base 64 format.");
     }
-    const accountKitStringify = Buffer.from(base64SignedAccountKit, "base64").toString();
+    const accountKitStringify = Buffer.from(trimedBase64, "base64").toString();
     //Read the armoredMessage
     const signedMessage = await OpenpgpAssertion.readMessageOrFail(accountKitStringify);
     //Extract message as text
