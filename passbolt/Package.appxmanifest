@@ -7,8 +7,8 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="7a57bbf2-aa18-46c4-a24d-67165674edc0"
-    Publisher="CN=Passbolt"
+    Name="Passbolt.Passbolt"
+    Publisher="CN=741D8DC2-3150-4E31-91A8-695906ECE6D2"
     Version="0.5.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="7a57bbf2-aa18-46c4-a24d-67165674edc0" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
@@ -32,14 +32,13 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="passbolt.App">
       <uap:VisualElements
-        DisplayName="passbolt"
+        DisplayName="Passbolt"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="passbolt"
+        Description="Passbolt - Open source password manager"
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png"/>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
-        <uap:LockScreen BadgeLogo="Assets\StoreLogo.png"/>
+        <uap:SplashScreen Image="Assets\SplashScreen.png"/>
       </uap:VisualElements>
     </Application>
   </Applications>
