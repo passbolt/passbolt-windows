@@ -36,6 +36,7 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
+    "@babel/core": "^7.23.3",
     "@babel/preset-react": "^7.22.15",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
