@@ -34,7 +34,6 @@ class VerifyAccountKitService {
    * @throws {Error} If the account kit cannot be verified
    */
   async verify(base64SignedAccountKit) {
-    console.log(base64SignedAccountKit)
     if (!base64SignedAccountKit) {
       throw new Error("The account kit is required.");
     }
