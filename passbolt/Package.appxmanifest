@@ -46,5 +46,6 @@
   <Capabilities>
     <Capability Name="internetClient" />
     <uap:Capability Name="userAccountInformation"/>
+    <Capability Name="privateNetworkClientServer"/>
   </Capabilities>
 </Package>
