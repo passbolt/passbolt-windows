@@ -18,14 +18,14 @@ rendered-tests:
         path: coverage/cobertura-coverage.xml
 
 rendered-linter:
-  allow_failure: true
+  allow_failure: false
   stage: test
   image: node:16
   extends: .rules
   script:
     - cd passbolt/Webviews/Rendered
     - npm install
-    - npm run eslint
+    - npm run lint
 
 rendered-audit:
   allow_failure: true
@@ -56,14 +56,14 @@ background-tests:
         path: coverage/cobertura-coverage.xml
 
 background-linter:
-  allow_failure: true
+  allow_failure: false
   stage: test
   image: node:16
   extends: .rules
   script:
     - cd passbolt/Webviews/Background
     - npm install
-    - npm run eslint
+    - npm run lint
 
 background-audit:
   allow_failure: true

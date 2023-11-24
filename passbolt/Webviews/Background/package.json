@@ -10,8 +10,10 @@
   "scripts": {
     "build": "webpack",
     "build-watch": "webpack --watch",
-    "eslint": "eslint -c .eslintrc.json --ext js src",
-    "eslint-fix": "eslint -c .eslintrc.json --ext js --fix src",
+    "lint": "npm run lint:lockfile && npm run lint:eslint",
+    "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts npm --allowed-schemes \"https:\" --empty-hostname false",
+    "lint:eslint": "eslint -c .eslintrc.json --ext js src",
+    "lint:eslint-fix": "eslint -c .eslintrc.json --ext js --fix src",
     "test": "jest",
     "test:unit": "jest --no-cache ./src/",
     "test:coverage": "jest --no-cache ./src/ --coverage"
@@ -31,6 +33,7 @@
     "jest-fetch-mock": "^3.0.3",
     "jest-junit": "^15.0.0",
     "jest-webextension-mock": "^3.8.9",
+    "lockfile-lint": "^4.12.1",
     "text-encoding-utf-8": "^1.0.2",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1"
