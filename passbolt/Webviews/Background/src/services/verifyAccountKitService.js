@@ -40,7 +40,7 @@ class VerifyAccountKitService {
     if (typeof base64SignedAccountKit !== 'string') {
       throw new TypeError("The account kit should be a string.");
     }
-    let trimedBase64 = base64SignedAccountKit.trim();
+    const trimedBase64 = base64SignedAccountKit.trim();
     if (!Validator.isBase64(trimedBase64)) {
       throw new TypeError("The account kit should be a base 64 format.");
     }

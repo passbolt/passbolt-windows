@@ -28,6 +28,6 @@ const listen = function(worker) {
     const controller = new SaveUserPassphrasePoliciesController(worker, requestId, apiClientOptions);
     await controller._exec(userPassphrasePoliciesDto);
   });
-}
+};
 
 export const UserPassphrasePolicies = {listen};

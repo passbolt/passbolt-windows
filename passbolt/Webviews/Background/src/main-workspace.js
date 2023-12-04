@@ -82,7 +82,7 @@ export default class MainWorkspace {
    */
   async initStorage() {
     await LocalStorage.init();
-    await Config.init();  
+    await Config.init();
     const account = await GetLegacyAccountService.get({role: true});
     AccountRecoveryEvents.listen(this.worker, account);
     ExportResourcesEvents.listen(this.worker, account);
@@ -95,7 +95,7 @@ export default class MainWorkspace {
     SecretEvents.listen(this.worker, null, account);
     ShareEvents.listen(this.worker, null, account);
     PasswordPoliciesEvents.listen(this.worker, null, account);
-    window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));  
+    window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));
   }
 }
 

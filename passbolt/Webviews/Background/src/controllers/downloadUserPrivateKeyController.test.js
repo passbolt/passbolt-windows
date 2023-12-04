@@ -48,10 +48,11 @@ describe("DownloadUserPrivateKeyController", () => {
     const privateKey = keyring.findPrivate().armoredKey;
     const blobFile = new Blob([privateKey], {type: MIME_TYPE_TEXT_PLAIN});
     const content = await FileService.blobToDataURL(blobFile);
+    const filename = PRIVATE_KEY_FILENAME;
 
     await controller.exec();
 
-    expect(worker.port.emit).toHaveBeenCalledWith(DOWNLOAD_FILE, {content, filename: PRIVATE_KEY_FILENAME});
+    expect(worker.port.emit).toHaveBeenCalledWith(DOWNLOAD_FILE, {content, filename});
     expect(controller.getPassphraseService.requestPassphrase).toHaveBeenCalledTimes(1);
   });
 

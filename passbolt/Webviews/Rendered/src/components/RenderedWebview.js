@@ -65,9 +65,9 @@ class RenderedWebview extends React.Component {
       const {key, value} = JSON.parse(data);
       localStorage.setItem(key, value);
 
-      if(key === "resources" && !this.state.isReady) {
+      if (key === "resources" && !this.state.isReady) {
         this.props.port.request("passbolt.rendered.is-ready");
-        this.setState({isReady: true})
+        this.setState({isReady: true});
       }
       window.dispatchEvent(new StorageEvent('storage', {key: key, newValue: value}));
     } catch (ex) {

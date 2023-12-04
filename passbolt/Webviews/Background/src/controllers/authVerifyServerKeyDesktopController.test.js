@@ -16,39 +16,39 @@ import {defaultApiClientOptions} from "passbolt-browser-extension/src/all/backgr
 import AuthVerifyServerKeyDesktopController from "./authVerifyServerKeyDesktopController";
 
 describe('AuthVerifyServerKeyDesktopController.test', () => {
-    let authVerifyServerKeyDesktopController;
-  
-    beforeEach(() => {
-      const worker = {
-        port: {
-          emit: jest.fn()
-        }
-      };
-      authVerifyServerKeyDesktopController = new AuthVerifyServerKeyDesktopController(worker, null, defaultApiClientOptions(), "https://passbolt.com");
-    });
-  
-    describe('ExportResourcesFileDesktopController:exec', () => {
-      it('Should call authVerifyServerKeyController from bext', async() => {
-        jest.spyOn(authVerifyServerKeyDesktopController.authVerifyServerKeyController, "exec").mockImplementation(() => Promise.resolve());
-        await authVerifyServerKeyDesktopController.exec();
-  
-        expect(authVerifyServerKeyDesktopController.authVerifyServerKeyController.exec).toHaveBeenCalled();
-      });
-  
-      it('Should logout the user and retry', async() => {
-        let call = 0;
-        jest.spyOn(authVerifyServerKeyDesktopController.authVerifyServerKeyController, "exec").mockImplementation(() => {
-            if (call++ === 0) {
-                throw new Error('x-gpgauth-authenticated should be set to false during the verify stage');
-            }
-            return Promise.resolve();
-        });
-        jest.spyOn(authVerifyServerKeyDesktopController.authModel, "logout").mockImplementation(() => Promise.resolve());
+  let authVerifyServerKeyDesktopController;
 
-        await authVerifyServerKeyDesktopController.exec();
-  
-        expect(authVerifyServerKeyDesktopController.authVerifyServerKeyController.exec).toHaveBeenCalledTimes(2);;
-        expect(authVerifyServerKeyDesktopController.authModel.logout).toHaveBeenCalledTimes(1);;
+  beforeEach(() => {
+    const worker = {
+      port: {
+        emit: jest.fn()
+      }
+    };
+    authVerifyServerKeyDesktopController = new AuthVerifyServerKeyDesktopController(worker, null, defaultApiClientOptions(), "https://passbolt.com");
+  });
+
+  describe('ExportResourcesFileDesktopController:exec', () => {
+    it('Should call authVerifyServerKeyController from bext', async() => {
+      jest.spyOn(authVerifyServerKeyDesktopController.authVerifyServerKeyController, "exec").mockImplementation(() => Promise.resolve());
+      await authVerifyServerKeyDesktopController.exec();
+
+      expect(authVerifyServerKeyDesktopController.authVerifyServerKeyController.exec).toHaveBeenCalled();
+    });
+
+    it('Should logout the user and retry', async() => {
+      let call = 0;
+      jest.spyOn(authVerifyServerKeyDesktopController.authVerifyServerKeyController, "exec").mockImplementation(() => {
+        if (call++ === 0) {
+          throw new Error('x-gpgauth-authenticated should be set to false during the verify stage');
+        }
+        return Promise.resolve();
       });
+      jest.spyOn(authVerifyServerKeyDesktopController.authModel, "logout").mockImplementation(() => Promise.resolve());
+
+      await authVerifyServerKeyDesktopController.exec();
+
+      expect(authVerifyServerKeyDesktopController.authVerifyServerKeyController.exec).toHaveBeenCalledTimes(2);
+      expect(authVerifyServerKeyDesktopController.authModel.logout).toHaveBeenCalledTimes(1);
     });
   });
+});

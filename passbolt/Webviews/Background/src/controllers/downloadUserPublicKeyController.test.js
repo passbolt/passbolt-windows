@@ -48,10 +48,11 @@ describe("DownloadUserPublicKeyController", () => {
     const publicKeyArmored = await privateKey.toPublic().armor();
     const blobFile = new Blob([publicKeyArmored], {type: MIME_TYPE_TEXT_PLAIN});
     const content = await FileService.blobToDataURL(blobFile);
+    const filename = PUBLIC_KEY_FILENAME;
 
     await controller.exec();
 
-    expect(worker.port.emit).toHaveBeenCalledWith(DOWNLOAD_FILE, {content, filename: PUBLIC_KEY_FILENAME});
+    expect(worker.port.emit).toHaveBeenCalledWith(DOWNLOAD_FILE, {content, filename});
   });
 
   it(`Should throw an exception if the user's private key can't be found`, async() => {
