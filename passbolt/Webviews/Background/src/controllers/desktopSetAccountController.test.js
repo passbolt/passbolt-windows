@@ -99,11 +99,12 @@ describe('DesktopSetAccountController', () => {
 
         expect(passboltData.config['user.settings.locale']).toEqual("fr-FR");
       });
-      
+
       it('Should set the theme if dto include it', async() => {
         expect.assertions(1);
 
         await desktopSetAccountController.exec();
+        const passboltData = JSON.parse(localStorage.getItem("_passbolt_data"));
 
         expect(passboltData.config['user.settings.theme']).toEqual("solarized_light");
       });

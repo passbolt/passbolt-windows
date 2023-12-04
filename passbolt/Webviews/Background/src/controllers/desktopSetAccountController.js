@@ -56,10 +56,10 @@ class DesktopSetAccountController {
     this.initPassboltDataLocalStorageService = new InitPassboltDataLocalStorageService();
     await this.initPassboltDataLocalStorageService.initPassboltData(accountDto);
     await Config.init();
-    if(kit.accountMetaData?.theme) {
+    if (kit.accountMetaData?.theme) {
       Config.write('user.settings.theme', kit.accountMetaData.theme);
     }
-    if(kit.accountMetaData?.locale) {
+    if (kit.accountMetaData?.locale) {
       Config.write('user.settings.locale', kit.accountMetaData.locale);
     }
     //Call the main process

@@ -21,7 +21,7 @@ import SecurityTokenEntity from "passbolt-browser-extension/src/all/background_p
 import AvatarUpdateEntity from "passbolt-browser-extension/src/all/background_page/model/entity/avatar/update/avatarUpdateEntity";
 import UpdateUserLocalStorageController from "passbolt-browser-extension/src/all/background_page/controller/user/updateUserLocalStorageController";
 import GetOrFindLoggedInUserController from "passbolt-browser-extension/src/all/background_page/controller/user/getOrFindLoggedInUserController";
-import {UPDATE_LOCALE, UPDATE_SECURITY_TOKEN} from "../enumerations/appEventEnumeration";
+import {UPDATE_SECURITY_TOKEN} from "../enumerations/appEventEnumeration";
 import UpdatePrivateKeyController from "../controllers/updatePrivateKeyController";
 
 const listen = function(worker, _, account) {
@@ -122,7 +122,7 @@ const listen = function(worker, _, account) {
 
       const userModel = new UserModel(clientOptions, account);
       const avatarUpdateEntity = AvatarUpdateEntity.createFromFileBase64(avatarBase64UpdateDto);
-      
+
       const updatedUser = await userModel.updateAvatar(userId, avatarUpdateEntity, true);
       worker.port.emit(requestId, 'SUCCESS', updatedUser);
     } catch (error) {

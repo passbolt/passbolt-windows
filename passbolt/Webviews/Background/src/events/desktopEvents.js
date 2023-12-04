@@ -77,7 +77,7 @@ const listen = function(worker) {
   worker.port.on('passbolt.rendered.is-ready', async requestId => {
     const controller = new DesktopRenderedIsReadyController(worker, requestId);
     await controller._exec();
-  });  
+  });
 };
 
 export const DesktopEvents = {listen};

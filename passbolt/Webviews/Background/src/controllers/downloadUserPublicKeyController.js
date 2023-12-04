@@ -64,7 +64,9 @@ class DownloadUserPublicKeyController {
 
     const blobFile = new Blob([publicKeyArmored], {type: MIME_TYPE_TEXT_PLAIN});
     const content = await FileService.blobToDataURL(blobFile);
-    this.worker.port.emit(DOWNLOAD_FILE, {content, filename: PUBLIC_KEY_FILENAME});
+    const filename = PUBLIC_KEY_FILENAME;
+
+    this.worker.port.emit(DOWNLOAD_FILE, {content, filename});
   }
 }
 
