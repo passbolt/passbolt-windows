@@ -18,7 +18,6 @@ rendered-tests:
         path: coverage/cobertura-coverage.xml
 
 rendered-linter:
-  allow_failure: false
   stage: test
   image: node:16
   extends: .rules
@@ -56,7 +55,6 @@ background-tests:
         path: coverage/cobertura-coverage.xml
 
 background-linter:
-  allow_failure: false
   stage: test
   image: node:16
   extends: .rules
