@@ -147,6 +147,7 @@ class IPCHandler {
     return {
       message: error?.message,
       name: error?.name,
+      code: error?.code,
       details: error?.details,
       stack: error?.stack,
     };
