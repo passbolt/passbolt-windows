@@ -44,6 +44,8 @@ import {ThemeEvents} from "./events/themeEvents";
 import {AuthEvents} from "./events/authEvents";
 import {KeyringEvents} from "./events/keyringEvents";
 import {UserEvents} from "./events/userEvents";
+import AuthenticationEventController from "passbolt-browser-extension/src/all/background_page/controller/auth/authenticationEventController";
+import StartLoopAuthSessionCheckService from "passbolt-browser-extension/src/all/background_page/service/auth/startLoopAuthSessionCheckService";
 
 describe("Main workspace class", () => {
   const ipcDataMock = {
@@ -164,5 +166,17 @@ describe("Main workspace class", () => {
     window.chrome.storage.local.clear();
 
     expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({topic: LOCALSTORAGE_CLEAR}));
+  });
+
+  it('should listen to authentication event and start loop authentication service', () => {
+    expect.assertions(2);
+
+    jest.spyOn(AuthenticationEventController.prototype, "startListen");
+    jest.spyOn(StartLoopAuthSessionCheckService.prototype, "exec");
+
+    main = new Main();
+
+    expect(AuthenticationEventController.prototype.startListen).toHaveBeenCalled();
+    expect(StartLoopAuthSessionCheckService.prototype.exec).toHaveBeenCalled();
   });
 });

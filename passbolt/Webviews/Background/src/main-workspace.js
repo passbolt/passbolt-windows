@@ -44,6 +44,9 @@ import {AuthEvents} from './events/authEvents';
 import {UserPassphrasePolicies} from './events/userPassphrasePolicies';
 import {KeyringEvents} from './events/keyringEvents';
 import {LocaleEvents} from './events/localeEvents';
+import AuthenticationEventController from 'passbolt-browser-extension/src/all/background_page/controller/auth/authenticationEventController';
+import StartLoopAuthSessionCheckService from 'passbolt-browser-extension/src/all/background_page/service/auth/startLoopAuthSessionCheckService';
+import GpgAuth from 'passbolt-browser-extension/src/all/background_page/model/gpgauth';
 
 /**
  * Represents the main workspace class that sets up an event listener for the `message` event.
@@ -59,6 +62,13 @@ export default class MainWorkspace {
   constructor() {
     this.initStorage();
     this.worker = {port: new IPCHandler()};
+        
+    // Start session check: Needed to display the session expired on the screen
+    const authenticationEventController = new AuthenticationEventController(this.worker);
+    authenticationEventController.startListen();
+    const startLoopAuthSessionCheckService = new StartLoopAuthSessionCheckService(new GpgAuth());
+    startLoopAuthSessionCheckService.exec();
+
     ActionLogEvents.listen(this.worker);
     AuthEvents.listen(this.worker);
     CommentEvents.listen(this.worker);
@@ -98,4 +108,3 @@ export default class MainWorkspace {
     window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));
   }
 }
-

@@ -142,6 +142,7 @@ namespace passbolt.Models.Messaging
                 case ProgressTopics.PROGRESSUPDATE:
                 case ProgressTopics.PROGRESSUPDATEGOALS:
                 case ProgressTopics.PROGRESSOPENDIALOG:
+                case AllowedTopics.BACKGROUND_AFTER_LOGOUT:
                     if (ipc.requestId != null)
                     {
                         AllowedTopics.AddRequestId(ipc.requestId);
