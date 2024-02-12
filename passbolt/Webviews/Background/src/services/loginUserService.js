@@ -64,6 +64,9 @@ class LoginUserService {
     }
   }
 
+  /**
+   * check if mfa is required
+   */
   async isMfaRequired() {
     try {
       await AuthService.isAuthenticated();

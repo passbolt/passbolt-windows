@@ -129,6 +129,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\MainController.cs" />
+    <Compile Include="Exceptions\MissingCookieException.cs" />
     <Compile Include="Exceptions\UnauthorizedAPICallException.cs" />
     <Compile Include="Exceptions\UnauthorizedTopicException.cs" />
     <Compile Include="MainPage.xaml.cs">
@@ -136,6 +137,7 @@
     </Compile>
     <Compile Include="Models\Authentication\LocalUserManager.cs" />
     <Compile Include="Models\Authentication\MfaAuthentication.cs" />
+    <Compile Include="Models\Cookies\CookiesManager.cs" />
     <Compile Include="Models\CredentialLocker\AccountKit.cs" />
     <Compile Include="Models\CredentialLocker\AccountSecret.cs" />
     <Compile Include="Models\CredentialLocker\ApplicationConfiguration.cs" />

@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using passbolt.Exceptions;
 using passbolt.Models.Authentication;
+using passbolt.Models.Cookies;
 using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging.Topics;
 using passbolt.Models.Rbac;
@@ -41,13 +42,14 @@ namespace passbolt.Models.Messaging
         private string passphrase;
         private string pendingRequestId;
         private RbacService rbacService;
-
+        private CookiesManager cookiesManager;
 
         public BackgroundTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService, BackgroundWebviewService backgroundWebviewService) : base(background, rendered, localFolderService, backgroundWebviewService)
         {
             credentialLockerService = new CredentialLockerService();
             passphrase = null;
             this.rbacService = new RbacService();
+            cookiesManager = CookiesManager.Instance;
         }
 
         /// <summary>
@@ -77,6 +79,14 @@ namespace passbolt.Models.Messaging
                             passphrase = null;
                         }
                     }
+                    break;
+                case AllowedTopics.BACKGROUND_GET_COOKIE:
+                    string cookie = cookiesManager.getCookie((string)ipc.message);
+                    var response = new IPC();
+                    response.message = cookie;
+                    response.status = "SUCCESS";
+                    response.topic = ipc.requestId;
+                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(response));
                     break;
                 case AllowedTopics.BACKGROUND_SET_THEME:
                     accountMetaData.theme = (string) ipc.message;
