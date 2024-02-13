@@ -21,6 +21,7 @@ using Microsoft.Web.WebView2.Core;
 using passbolt.Models;
 using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging;
+using passbolt.Models.Messaging.Topics;
 using passbolt.Services.CredentialLocker;
 using passbolt.Services.HttpService;
 using passbolt.Services.LocalFolder;
