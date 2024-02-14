@@ -24,6 +24,8 @@ using passbolt.Exceptions;
 using passbolt.Utils;
 using Windows.Storage.Streams;
 using passbolt.Services.CredentialLocker;
+using passbolt.Models.Cookies;
+using System;
 
 namespace passbolt.Services.HttpService
 {
@@ -33,6 +35,7 @@ namespace passbolt.Services.HttpService
         private string trustedDomain = null;
         public string pownedUrl = "https://api.pwnedpasswords.com";
         private CredentialLockerService credentialLockerService;
+        private CookiesManager cookiesManager;
 
         /// <summary>
         /// HttpService constructor
@@ -44,6 +47,7 @@ namespace passbolt.Services.HttpService
             handler.AllowAutoRedirect = false;
             httpClient = new HttpClient(handler);
             credentialLockerService = new CredentialLockerService();
+            cookiesManager = CookiesManager.Instance;
         }
 
         /// <summary>
@@ -170,7 +174,13 @@ namespace passbolt.Services.HttpService
             // Add cors headers to avoid cors issue
             this.AddCorsHeaders(sender, response);
 
-            List<string> headers = response.Headers.Select(h => $"{h.Key}: {string.Join(",", h.Value)}").ToList();
+            //Split headers entries per line 
+            List<string> headers = response.Headers
+                .SelectMany(h => h.Value.Select(value => $"{h.Key}: {value}"))                                             
+                .ToList();
+
+            List<string> cookies = extractCookieFromHeader(headers);
+            addCookiesToManager(cookies);
 
             // Create Webview2 response
             CoreWebView2WebResourceResponse webView2WebResourceResponse = sender.Environment.CreateWebResourceResponse(
@@ -180,6 +190,34 @@ namespace passbolt.Services.HttpService
                 string.Join('\n', headers));
 
             resource.Response = webView2WebResourceResponse;
+        }
+
+        /// <summary>
+        /// Extract the cookies from the response headers   
+        /// </summary>
+        /// <param name="headers"></param>
+        private List<string> extractCookieFromHeader(List<string> headers)
+        {
+            var setCookieHeaders = headers
+            .Where(header => header.StartsWith("Set-Cookie:", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+            return setCookieHeaders.Any() ? setCookieHeaders : null;
+        }
+
+        /// <summary>
+        /// the headers list of cookies
+        /// </summary>
+        /// <param name="cookies"></param>
+        private void addCookiesToManager(List<string> cookies)
+        {
+            if (cookies != null)
+            {
+                foreach (var cookie in cookies)
+                {
+                    cookiesManager.addCookie(cookie);
+                }
+            }
         }
     }
 }
