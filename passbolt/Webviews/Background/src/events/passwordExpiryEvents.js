@@ -12,11 +12,11 @@
  * @since         0.6.0
  */
 
-import FindPasswordExpirySettingsController from "passbolt-browser-extension/src/all/background_page/controller/passwordExpiry/findPasswordExpirySettingsController";
+import GetOrFindPasswordExpirySettingsController from "passbolt-browser-extension/src/all/background_page/controller/passwordExpiry/getOrFindPasswordExpirySettingsController";
 
 const listen = function(worker, apiClientOptions, account) {
   worker.port.on('passbolt.password-expiry.get-or-find', async(requestId) => {
-    const controller = new FindPasswordExpirySettingsController(worker, requestId, account, apiClientOptions);
+    const controller = new GetOrFindPasswordExpirySettingsController(worker, requestId, account, apiClientOptions);
     await controller._exec();
   });
 };
