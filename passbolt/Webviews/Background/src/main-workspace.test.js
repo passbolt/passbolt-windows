@@ -48,6 +48,7 @@ import StartLoopAuthSessionCheckService from "passbolt-browser-extension/src/all
 import {PasswordExpiryEvents} from "./events/passwordExpiryEvents";
 import User from 'passbolt-browser-extension/src/all/background_page/model/user';
 import {LocaleEvents} from "./events/localeEvents";
+import MockExtension from "passbolt-browser-extension/test/mocks/mockExtension";
 
 describe("Main workspace class", () => {
   const ipcDataMock = {
@@ -57,7 +58,7 @@ describe("Main workspace class", () => {
   };
   let main;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     window.chrome.webview.addEventListener = jest.fn((event, callback) => {
       if (event === "message") {
         callback(ipcDataMock);
@@ -65,6 +66,7 @@ describe("Main workspace class", () => {
     });
 
     localStorage.setItem('_passbolt_data', JSON.stringify(accountDto));
+    await MockExtension.withConfiguredAccount(); //curent user is ada with her private set in the keyring
     jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(accountDto).toDto());
     jest.spyOn(User, "getInstance").mockImplementation(() => ({getApiClientOptions: () => null}));
     main = new Main(window.chrome.webview);
