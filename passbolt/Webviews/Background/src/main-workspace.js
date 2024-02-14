@@ -47,6 +47,8 @@ import {LocaleEvents} from './events/localeEvents';
 import AuthenticationEventController from 'passbolt-browser-extension/src/all/background_page/controller/auth/authenticationEventController';
 import StartLoopAuthSessionCheckService from 'passbolt-browser-extension/src/all/background_page/service/auth/startLoopAuthSessionCheckService';
 import GpgAuth from 'passbolt-browser-extension/src/all/background_page/model/gpgauth';
+import User from 'passbolt-browser-extension/src/all/background_page/model/user';
+import {PasswordExpiryEvents} from './events/passwordExpiryEvents';
 
 /**
  * Represents the main workspace class that sets up an event listener for the `message` event.
@@ -93,6 +95,7 @@ export default class MainWorkspace {
   async initStorage() {
     await LocalStorage.init();
     await Config.init();
+    const apiClientOptions = await User.getInstance().getApiClientOptions();
     const account = await GetLegacyAccountService.get({role: true});
     AccountRecoveryEvents.listen(this.worker, account);
     ExportResourcesEvents.listen(this.worker, account);
@@ -101,10 +104,12 @@ export default class MainWorkspace {
     KeyringEvents.listen(this.worker, null, account);
     UserEvents.listen(this.worker, null, account);
     RbacEvents.listen(this.worker, account);
-    ResourceEvents.listen(this.worker, null, account);
+    ResourceEvents.listen(this.worker, apiClientOptions, account);
     SecretEvents.listen(this.worker, null, account);
     ShareEvents.listen(this.worker, null, account);
-    PasswordPoliciesEvents.listen(this.worker, null, account);
-    window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));
+    PasswordExpiryEvents.listen(this.worker, apiClientOptions, account);
+    PasswordPoliciesEvents.listen(this.worker, apiClientOptions, account);
+    UserPassphrasePolicies.listen(this.worker);
+    window.chrome.webview.postMessage(JSON.stringify({ topic: BACKGROUND_READY }));
   }
 }

@@ -164,6 +164,7 @@
     <Compile Include="Models\Messaging\Topics\LocalStorageTopics.cs" />
     <Compile Include="Models\Messaging\Topics\MfaTopics.cs" />
     <Compile Include="Models\Messaging\Topics\PasswordPoliciesTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\PasswordExpiryTopics.cs" />
     <Compile Include="Models\Messaging\Topics\PownedPasswordTopics.cs" />
     <Compile Include="Models\Messaging\Topics\PasswordGeneratorTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ProgressTopics.cs" />
