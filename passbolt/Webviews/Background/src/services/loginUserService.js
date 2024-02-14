@@ -66,6 +66,7 @@ class LoginUserService {
 
   /**
    * check if mfa is required
+   * @returns {Promise<void>} 
    */
   async isMfaRequired() {
     try {
