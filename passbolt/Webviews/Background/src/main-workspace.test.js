@@ -16,7 +16,6 @@ import Main from "./main-workspace";
 
 import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
-import {LocaleEvents} from "passbolt-browser-extension/src/all/background_page/event/localeEvents";
 import {RoleEvents} from "passbolt-browser-extension/src/all/background_page/event/roleEvents";
 import {ResourceTypeEvents} from "passbolt-browser-extension/src/all/background_page/event/resourceTypeEvents";
 import {ResourceEvents} from "passbolt-browser-extension/src/all/background_page/event/resourceEvents";
@@ -46,6 +45,9 @@ import {KeyringEvents} from "./events/keyringEvents";
 import {UserEvents} from "./events/userEvents";
 import AuthenticationEventController from "passbolt-browser-extension/src/all/background_page/controller/auth/authenticationEventController";
 import StartLoopAuthSessionCheckService from "passbolt-browser-extension/src/all/background_page/service/auth/startLoopAuthSessionCheckService";
+import {PasswordExpiryEvents} from "./events/passwordExpiryEvents";
+import User from 'passbolt-browser-extension/src/all/background_page/model/user';
+import {LocaleEvents} from "./events/localeEvents";
 
 describe("Main workspace class", () => {
   const ipcDataMock = {
@@ -61,8 +63,10 @@ describe("Main workspace class", () => {
         callback(ipcDataMock);
       }
     });
+
     localStorage.setItem('_passbolt_data', JSON.stringify(accountDto));
     jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(accountDto).toDto());
+    jest.spyOn(User, "getInstance").mockImplementation(() => ({getApiClientOptions: () => null}));
     main = new Main(window.chrome.webview);
   });
 
@@ -72,7 +76,7 @@ describe("Main workspace class", () => {
   });
 
   it('should listen to the browser extension events', async() => {
-    expect.assertions(25);
+    expect.assertions(26);
 
     jest.spyOn(AccountRecoveryEvents, "listen");
     jest.spyOn(ActionLogEvents, "listen");
@@ -88,6 +92,7 @@ describe("Main workspace class", () => {
     jest.spyOn(KeyringEvents, "listen");
     jest.spyOn(LocaleEvents, "listen");
     jest.spyOn(OrganizationSettingsEvents, "listen");
+    jest.spyOn(PasswordExpiryEvents, "listen");
     jest.spyOn(PasswordPoliciesEvents, "listen");
     jest.spyOn(PownedPasswordEvents, "listen");
     jest.spyOn(RbacEvents, "listen");
@@ -113,18 +118,19 @@ describe("Main workspace class", () => {
     expect(ExportResourcesEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
     expect(FavoriteEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(FolderEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(GroupEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(ImportResourcesEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(GroupEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
+    expect(ImportResourcesEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(KeyringEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(PasswordExpiryEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(PasswordPoliciesEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(PownedPasswordEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(ResourceEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(RbacEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
     expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
-    expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(TagEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(ThemeEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(UserPassphrasePolicies.listen).toHaveBeenCalledWith(main.worker);

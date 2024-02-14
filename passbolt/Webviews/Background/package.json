@@ -43,7 +43,7 @@
     "@babel/preset-react": "^7.22.15",
     "buffer": "^6.0.3",
     "openpgp": "5.2.1",
-    "passbolt-styleguide": "^4.5.0-alpha.2",
+    "passbolt-styleguide": "4.5.4",
     "setimmediate": "^1.0.5",
     "stream-browserify": "^3.0.0",
     "validator": "^13.7.0"
