@@ -26,5 +26,6 @@ namespace passbolt.Models.Messaging.Topics
         public const string REMOVE_TOTP = "passbolt.mfa-setup.remove-provider";
         public const string VERIFY_TOTP_CODE = "passbolt.mfa-setup.verify-totp-code";
         public const string VERIFY_YUBIKEY_CODE = "passbolt.mfa-setup.verify-yubikey-code";
+        public const string GET_MFA_SETUP_TOTP_CODE = "passbolt.mfa-setup.get-totp-code";
     }
 }
