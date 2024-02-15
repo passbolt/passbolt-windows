@@ -15,6 +15,7 @@
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
 import {REQUIRE_MFA, USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
 import LoginUserService from "../services/loginUserService";
+import OrganizationSettingsModel from "passbolt-browser-extension/src/all/background_page/model/organizationSettings/organizationSettingsModel";
 
 /**
  * Controller related to the desktop authentication
@@ -58,6 +59,9 @@ class DesktopAuthenticateController {
     await Config.init();
     const loginUserService = new LoginUserService(this.apiClientOptions);
     await loginUserService.checkPassphrase(passphrase);
+    //Used to retrieve the crsf token to the API, it allows to be sure to load it to each case
+    const organizationSettingsModel = new OrganizationSettingsModel(this.apiClientOptions);
+    await organizationSettingsModel.getOrFind(true)
     await loginUserService.login(passphrase, true);
     const provider = await loginUserService.isMfaRequired();
     if (provider) {
