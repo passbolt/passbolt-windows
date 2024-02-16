@@ -18,7 +18,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - PB-29125 As an administrator I should not see the control function AllowIfGroupManagerInOneGroup on the UI
 - PB-29862 - Desktop app - I should not see the desktop app export
 - PB-29110 As a desktop application I should be logout when the session has expired
-- PB-25496 - As a desktop anonymous user I can sign using Duo
 
 ### Fixed
 - PB-25865 As a signed-in user I can autofill credentials using input and change events
