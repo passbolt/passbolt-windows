@@ -9,7 +9,7 @@
   <Identity
     Name="Passbolt.Passbolt"
     Publisher="CN=741D8DC2-3150-4E31-91A8-695906ECE6D2"
-    Version="0.5.0.0" />
+    Version="0.6.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="7a57bbf2-aa18-46c4-a24d-67165674edc0" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
