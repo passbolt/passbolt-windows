@@ -1,6 +1,6 @@
 {
   "name": "rendered-webview",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Rendered webview2 for passbolt desktop windows",
   "license": "AGPL-3.0",
   "copyright": "Copyright 2022 Passbolt SA",
