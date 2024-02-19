@@ -40,20 +40,21 @@ class VerifyAccountKitService {
     if (typeof base64SignedAccountKit !== 'string') {
       throw new TypeError("The account kit should be a string.");
     }
-    let trimedBase64 = base64SignedAccountKit.trim();
+    const trimedBase64 = base64SignedAccountKit.trim();
     if (!Validator.isBase64(trimedBase64)) {
       throw new TypeError("The account kit should be a base 64 format.");
     }
     const accountKitStringify = Buffer.from(trimedBase64, "base64").toString();
     //Read the armoredMessage
-    const signedMessage = await OpenpgpAssertion.readMessageOrFail(accountKitStringify);
+    const signedMessage = await OpenpgpAssertion.readClearMessageOrFail(accountKitStringify);
     //Extract message as text
     const accountKit = JSON.parse(signedMessage.getText());
+
     //Validate account throw the entity
     new AuthImportEntity({account_kit: accountKit});
     //Check pgp signature
     const verificationKeys = await OpenpgpAssertion.readAllKeysOrFail([accountKit["user_public_armored_key"]]);
-    await VerifyMessageService.verify(signedMessage, verificationKeys);
+    await VerifyMessageService.verifyClearMessage(signedMessage, verificationKeys);
     return accountKit;
   }
 }

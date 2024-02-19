@@ -67,7 +67,10 @@ class DownloadUserPrivateKeyController {
 
     const blobFile = new Blob([privateKey], {type: MIME_TYPE_TEXT_PLAIN});
     const content = await FileService.blobToDataURL(blobFile);
-    this.worker.port.emit(DOWNLOAD_FILE, {content, filename: PRIVATE_KEY_FILENAME});
+    //Fix Unexpected mix of shorthand and non-shorthand properties
+    const filename = PRIVATE_KEY_FILENAME;
+
+    this.worker.port.emit(DOWNLOAD_FILE, {content, filename});
   }
 }
 

@@ -21,6 +21,7 @@ using Microsoft.Web.WebView2.Core;
 using passbolt.Models;
 using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging;
+using passbolt.Models.Messaging.Topics;
 using passbolt.Services.CredentialLocker;
 using passbolt.Services.HttpService;
 using passbolt.Services.LocalFolder;
@@ -210,6 +211,12 @@ namespace passbolt.Controllers
         {
             if (navigationService != null && !navigationService.canNavigate(args.Uri))
             {
+                //When session is expired we are redirected to the API
+                //To avoid this we catch the navigation and replicate the behaviour done during logout
+                if(args.Uri.EndsWith("/auth/login"))
+                {
+                    backgroundTopic.ProceedMessage(new IPC(AuthenticationTopics.LOG_OUT));
+                }
                 args.Cancel = true;
             }
         }

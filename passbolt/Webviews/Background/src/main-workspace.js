@@ -44,6 +44,11 @@ import {AuthEvents} from './events/authEvents';
 import {UserPassphrasePolicies} from './events/userPassphrasePolicies';
 import {KeyringEvents} from './events/keyringEvents';
 import {LocaleEvents} from './events/localeEvents';
+import AuthenticationEventController from 'passbolt-browser-extension/src/all/background_page/controller/auth/authenticationEventController';
+import StartLoopAuthSessionCheckService from 'passbolt-browser-extension/src/all/background_page/service/auth/startLoopAuthSessionCheckService';
+import GpgAuth from 'passbolt-browser-extension/src/all/background_page/model/gpgauth';
+import User from 'passbolt-browser-extension/src/all/background_page/model/user';
+import {PasswordExpiryEvents} from './events/passwordExpiryEvents';
 
 /**
  * Represents the main workspace class that sets up an event listener for the `message` event.
@@ -57,24 +62,24 @@ export default class MainWorkspace {
    * @constructor
    */
   constructor() {
-    this.initStorage();
-    this.worker = {port: new IPCHandler()};
-    ActionLogEvents.listen(this.worker);
-    AuthEvents.listen(this.worker);
-    CommentEvents.listen(this.worker);
-    ConfigEvents.listen(this.worker);
-    DesktopEvents.listen(this.worker);
-    FavoriteEvents.listen(this.worker);
-    FolderEvents.listen(this.worker);
-    LocaleEvents.listen(this.worker);
-    MfaEvents.listen(this.worker);
-    OrganizationSettingsEvents.listen(this.worker);
-    PownedPasswordEvents.listen(this.worker);
-    ResourceTypeEvents.listen(this.worker);
-    RoleEvents.listen(this.worker);
-    TagEvents.listen(this.worker);
-    ThemeEvents.listen(this.worker);
-    UserPassphrasePolicies.listen(this.worker);
+    this.initWorkspace();
+  }
+
+  /**
+   * init the workspace storage and events
+   */
+  async initWorkspace() {
+    await this.initStorage();
+    this.worker = { port: new IPCHandler() };
+    this.auth = new GpgAuth();
+
+    // Start session check: Needed to display the session expired on the screen
+    const authenticationEventController = new AuthenticationEventController(this.worker);
+    authenticationEventController.startListen();
+    const startLoopAuthSessionCheckService = new StartLoopAuthSessionCheckService(this.auth);
+    startLoopAuthSessionCheckService.exec();
+
+    await this.listenToEvents()
   }
 
   /**
@@ -82,20 +87,44 @@ export default class MainWorkspace {
    */
   async initStorage() {
     await LocalStorage.init();
-    await Config.init();  
-    const account = await GetLegacyAccountService.get({role: true});
+    await Config.init();
+  }
+
+  /**
+   * init the listeners for events
+   */
+  async listenToEvents() {
+    const apiClientOptions = await User.getInstance().getApiClientOptions()
+    const account = await GetLegacyAccountService.get({ role: true });
+
+    AuthEvents.listen(this.worker);
     AccountRecoveryEvents.listen(this.worker, account);
+    ActionLogEvents.listen(this.worker, apiClientOptions);
+    CommentEvents.listen(this.worker);
+    ConfigEvents.listen(this.worker);
+    DesktopEvents.listen(this.worker);
     ExportResourcesEvents.listen(this.worker, account);
-    GroupEvents.listen(this.worker, null, account);
-    ImportResourcesEvents.listen(this.worker, null, account);
+    FavoriteEvents.listen(this.worker, apiClientOptions, account);
+    FolderEvents.listen(this.worker, apiClientOptions, account);
+    GroupEvents.listen(this.worker, apiClientOptions, account);
+    ImportResourcesEvents.listen(this.worker, apiClientOptions, account);
     KeyringEvents.listen(this.worker, null, account);
+    LocaleEvents.listen(this.worker);
+    MfaEvents.listen(this.worker, apiClientOptions);
+    OrganizationSettingsEvents.listen(this.worker);
+    PownedPasswordEvents.listen(this.worker);
     UserEvents.listen(this.worker, null, account);
     RbacEvents.listen(this.worker, account);
-    ResourceEvents.listen(this.worker, null, account);
-    SecretEvents.listen(this.worker, null, account);
-    ShareEvents.listen(this.worker, null, account);
-    PasswordPoliciesEvents.listen(this.worker, null, account);
-    window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));  
+    ResourceEvents.listen(this.worker, apiClientOptions, account);
+    ResourceTypeEvents.listen(this.worker, apiClientOptions);
+    RoleEvents.listen(this.worker, apiClientOptions);
+    SecretEvents.listen(this.worker, apiClientOptions, account);
+    ShareEvents.listen(this.worker, apiClientOptions, account);
+    TagEvents.listen(this.worker, apiClientOptions, account);
+    ThemeEvents.listen(this.worker);
+    PasswordExpiryEvents.listen(this.worker, apiClientOptions, account);
+    PasswordPoliciesEvents.listen(this.worker, apiClientOptions, account);
+    UserPassphrasePolicies.listen(this.worker);
+    window.chrome.webview.postMessage(JSON.stringify({ topic: BACKGROUND_READY }));
   }
 }
-

@@ -54,6 +54,7 @@ import MfaContextProvider from "passbolt-styleguide/src/react-extension/contexts
 import UserPassphrasePoliciesContextProvider from "passbolt-styleguide/src/react-extension/contexts/UserPassphrasePoliciesContext";
 import HandlePassphraseEntryEvents
   from "passbolt-styleguide/src/react-extension/components/AuthenticationPassphrase/HandlePassphraseEntryEvents/HandlePassphraseEntryEvents";
+import PasswordExpirySettingsContextProvider from "passbolt-styleguide/src/react-extension/contexts/PasswordExpirySettingsContext";
 /**
  * The passbolt application served by the desktop.
  */
@@ -107,25 +108,27 @@ class AppWorkspace extends Component {
                                             "/app/passwords/view/:selectedResourceId",
                                             "/app/passwords",
                                           ]}>
-                                            <ResourceWorkspaceContextProvider>
-                                              <ResourcePasswordGeneratorContextProvider>
-                                                <ManageDialogs />
-                                                <ManageWorkflows />
-                                                <ManageContextualMenu />
-                                                <ManageAnnouncements />
-                                                <DragContextProvider>
-                                                  <div id="container" className="page password">
-                                                    <div id="app" className="app ready" tabIndex="1000">
-                                                      <div className="header first">
-                                                        <DisplayMainMenu />
+                                            <PasswordExpirySettingsContextProvider>
+                                              <ResourceWorkspaceContextProvider>
+                                                <ResourcePasswordGeneratorContextProvider>
+                                                  <ManageDialogs />
+                                                  <ManageWorkflows />
+                                                  <ManageContextualMenu />
+                                                  <ManageAnnouncements />
+                                                  <DragContextProvider>
+                                                    <div id="container" className="page password">
+                                                      <div id="app" className="app ready" tabIndex="1000">
+                                                        <div className="header first">
+                                                          <DisplayMainMenu />
+                                                        </div>
+                                                        <ResourcesWebviewContext />
+                                                        <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
                                                       </div>
-                                                      <ResourcesWebviewContext />
-                                                      <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
                                                     </div>
-                                                  </div>
-                                                </DragContextProvider>
-                                              </ResourcePasswordGeneratorContextProvider>
-                                            </ResourceWorkspaceContextProvider>
+                                                  </DragContextProvider>
+                                                </ResourcePasswordGeneratorContextProvider>
+                                              </ResourceWorkspaceContextProvider>
+                                            </PasswordExpirySettingsContextProvider>
                                           </Route>
                                           {/* Users workspace */}
                                           <Route path={[

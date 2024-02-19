@@ -80,7 +80,8 @@ class UpdatePrivateKeyController {
 
     const blobFile = new Blob([userPrivateArmoredKey], {type: "text/plain"});
     const content = await FileService.blobToDataURL(blobFile);
-    this.worker.port.emit(DOWNLOAD_FILE, {content, filename: RECOVERY_KIT_FILENAME});
+    const filename = RECOVERY_KIT_FILENAME;
+    this.worker.port.emit(DOWNLOAD_FILE, {content, filename});
   }
 
   /**

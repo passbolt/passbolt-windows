@@ -47,7 +47,7 @@ class DesktopRenderedIsReadyController {
    * @return {Promise<void>}
    */
   async exec() {
-    //Refresh csrf token 
+    //Refresh csrf token
     await User.getInstance().retrieveAndStoreCsrfToken();
   }
 }

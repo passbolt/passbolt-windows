@@ -17,6 +17,7 @@ import './src/polyfill/desktopPolyfill';
 import './src/polyfill/storagePolyfill';
 import './src/polyfill/runtimePolyfill';
 import './src/polyfill/alarmPolyfill';
+import './src/polyfill/cookiePolyfill';
 import Main from "./src/main-auth";
 
 

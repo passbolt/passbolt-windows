@@ -129,6 +129,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\MainController.cs" />
+    <Compile Include="Exceptions\MissingCookieException.cs" />
     <Compile Include="Exceptions\UnauthorizedAPICallException.cs" />
     <Compile Include="Exceptions\UnauthorizedTopicException.cs" />
     <Compile Include="MainPage.xaml.cs">
@@ -136,6 +137,7 @@
     </Compile>
     <Compile Include="Models\Authentication\LocalUserManager.cs" />
     <Compile Include="Models\Authentication\MfaAuthentication.cs" />
+    <Compile Include="Models\Cookies\CookiesManager.cs" />
     <Compile Include="Models\CredentialLocker\AccountKit.cs" />
     <Compile Include="Models\CredentialLocker\AccountSecret.cs" />
     <Compile Include="Models\CredentialLocker\ApplicationConfiguration.cs" />
@@ -162,6 +164,7 @@
     <Compile Include="Models\Messaging\Topics\LocalStorageTopics.cs" />
     <Compile Include="Models\Messaging\Topics\MfaTopics.cs" />
     <Compile Include="Models\Messaging\Topics\PasswordPoliciesTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\PasswordExpiryTopics.cs" />
     <Compile Include="Models\Messaging\Topics\PownedPasswordTopics.cs" />
     <Compile Include="Models\Messaging\Topics\PasswordGeneratorTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ProgressTopics.cs" />
@@ -445,7 +448,7 @@
       <Version>3.0.2</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>9.0.1</Version>
+      <Version>13.0.3</Version>
     </PackageReference>
     <PackageReference Include="System.Net.Http">
       <Version>4.3.4</Version>
