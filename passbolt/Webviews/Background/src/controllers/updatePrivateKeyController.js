@@ -18,7 +18,7 @@ import FileService from "passbolt-browser-extension/src/all/background_page/serv
 import OrganizationSettingsModel from "passbolt-browser-extension/src/all/background_page/model/organizationSettings/organizationSettingsModel";
 import SsoDataStorage from "passbolt-browser-extension/src/all/background_page/service/indexedDB_storage/ssoDataStorage";
 import SsoKitServerPartModel from "passbolt-browser-extension/src/all/background_page/model/sso/ssoKitServerPartModel";
-import PassboltApiFetchError from "passbolt-browser-extension/src/all/background_page/error/passboltApiFetchError";
+import PassboltApiFetchError from "passbolt-styleguide/src/shared/error/passboltApiFetchError";
 import GenerateSsoKitService from "passbolt-browser-extension/src/all/background_page/service/sso/generateSsoKitService";
 import {DOWNLOAD_FILE} from "../enumerations/appEventEnumeration";
 
