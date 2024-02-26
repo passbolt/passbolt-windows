@@ -12,12 +12,14 @@
  * @since         0.3.0
  */
 
-
+import './src/polyfill/browserPolyfill';
 import './src/polyfill/desktopPolyfill';
 import './src/polyfill/storagePolyfill';
 import './src/polyfill/runtimePolyfill';
 import './src/polyfill/alarmPolyfill';
 import './src/polyfill/cookiePolyfill';
+import './src/polyfill/scriptingPolyfill';
+import './src/polyfill/sessionStoragePolyfill';
 import Main from "./src/main-import";
 
 
