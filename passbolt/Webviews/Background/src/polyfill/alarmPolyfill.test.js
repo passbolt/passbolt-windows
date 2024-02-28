@@ -101,19 +101,20 @@ describe("Alarm Polyfill class", () => {
 
   describe("::clear", () => {
     it('should clear an existing alarm', async() => {
-      expect.assertions(1);
+      expect.assertions(2);
 
       await alarms.create(alarmName, {periodInMinutes: 10, delayInMinutes: 1});
       await alarms.clear(alarmName);
       const alarm = await alarms.get(alarmName);
 
       expect(alarm).toBeNull();
+      expect(alarms._timeouts[alarm]).toBeUndefined();
     });
   });
 
   describe("::clearAll", () => {
     it('should clear all existing alarms', async() => {
-      expect.assertions(1);
+      expect.assertions(2);
 
       await alarms.create('testAlarm1', {periodInMinutes: 10, delayInMinutes: 1});
       await alarms.create('testAlarm2', {periodInMinutes: 20, delayInMinutes: 2});
@@ -121,6 +122,7 @@ describe("Alarm Polyfill class", () => {
       const allAlarms = await alarms.getAll();
 
       expect(allAlarms.length).toBe(0);
+      expect(alarms._timeouts).toEqual({});
     });
   });
 });

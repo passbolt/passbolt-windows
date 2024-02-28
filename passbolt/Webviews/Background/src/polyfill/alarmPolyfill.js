@@ -65,6 +65,8 @@ export default class AlarmsPolyfill {
    * @param {string} alarmName - The name of the alarm.
    */
   async clear(alarmName) {
+    clearTimeout(this._timeouts[alarmName])
+    delete this._timeouts[alarmName];
     delete this._registeredAlarms[alarmName];
   }
 
@@ -72,6 +74,10 @@ export default class AlarmsPolyfill {
    * Clear all alarms.
    */
   async clearAll() {
+    for (const timeoutId of Object.values(this._timeouts)) {
+      clearTimeout(timeoutId);
+    }
+    this._timeouts = {};
     this._registeredAlarms = {};
   }
 }
