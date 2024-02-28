@@ -15,9 +15,9 @@
 import AlarmsPolyfill from "./alarmPolyfill";
 
 describe("Alarm Polyfill class", () => {
-  let callback;
-  let alarms;
-  let alarmName = "testAlarm"
+  let callback,
+    alarms;
+  const alarmName = "testAlarm";
 
   beforeEach(() => {
     alarms = new AlarmsPolyfill();
@@ -29,11 +29,11 @@ describe("Alarm Polyfill class", () => {
     alarms.onAlarm.removeListener(callback);
   });
 
-  describe("::create", ()=> {
-    it('should create an alarm with delayInMinutes option', async () => {
+  describe("::create", () => {
+    it('should create an alarm with delayInMinutes option', async() => {
       expect.assertions(4);
-  
-      await alarms.create(alarmName, { periodInMinutes: 10, delayInMinutes: 1 });
+
+      await alarms.create(alarmName, {periodInMinutes: 10, delayInMinutes: 1});
       const alarm = await alarms.get(alarmName);
       expect(alarm).not.toBeNull();
       expect(alarm.name).toEqual(alarmName);
@@ -41,10 +41,10 @@ describe("Alarm Polyfill class", () => {
       expect(alarm.scheduledTime).toBeGreaterThanOrEqual(Date.now());
     });
 
-    it('should create an alarm with when option', async () => {
+    it('should create an alarm with when option', async() => {
       expect.assertions(4);
 
-      await alarms.create(alarmName, { periodInMinutes: 10, when: 10 });
+      await alarms.create(alarmName, {periodInMinutes: 10, when: 10});
 
       const alarm = await alarms.get(alarmName);
 
@@ -53,36 +53,36 @@ describe("Alarm Polyfill class", () => {
       expect(alarm.periodInMinutes).toEqual(10);
       expect(alarm.scheduledTime).toEqual(10);
     });
-  })
+  });
 
 
-  
-  describe("::get", ()=> {
-    it('should retrieve an existing alarm', async () => {
+
+  describe("::get", () => {
+    it('should retrieve an existing alarm', async() => {
       expect.assertions(2);
 
-      await alarms.create(alarmName, { periodInMinutes: 10, delayInMinutes: 1 });
+      await alarms.create(alarmName, {periodInMinutes: 10, delayInMinutes: 1});
       const alarm = await alarms.get(alarmName);
 
       expect(alarm).not.toBeNull();
       expect(alarm.name).toEqual(alarmName);
     });
 
-    it('should not retrieve a non existing alarm', async () => {
+    it('should not retrieve a non existing alarm', async() => {
       expect.assertions(1);
 
       const alarm = await alarms.get(alarmName);
 
       expect(alarm).toBeNull();
     });
-  })
+  });
 
-  describe("::getAll", ()=> {
-    it('should retrieve all existing alarm', async () => {
+  describe("::getAll", () => {
+    it('should retrieve all existing alarm', async() => {
       expect.assertions(3);
 
-      await alarms.create('testAlarm1', { periodInMinutes: 10, delayInMinutes: 1 });
-      await alarms.create('testAlarm2', { periodInMinutes: 20, delayInMinutes: 2 });
+      await alarms.create('testAlarm1', {periodInMinutes: 10, delayInMinutes: 1});
+      await alarms.create('testAlarm2', {periodInMinutes: 20, delayInMinutes: 2});
       const allAlarms = await alarms.getAll();
 
       expect(allAlarms.length).toEqual(2);
@@ -90,37 +90,37 @@ describe("Alarm Polyfill class", () => {
       expect(allAlarms[1].name).toEqual('testAlarm2');
     });
 
-    it('should not retrieve a non existing alarm', async () => {
+    it('should not retrieve a non existing alarm', async() => {
       expect.assertions(1);
 
       const allAlarms = await alarms.getAll(alarmName);
 
       expect(allAlarms).toEqual([]);
     });
-  })
+  });
 
-  describe("::clear", ()=> {
-    it('should clear an existing alarm', async () => {
+  describe("::clear", () => {
+    it('should clear an existing alarm', async() => {
       expect.assertions(1);
 
-      await alarms.create(alarmName, { periodInMinutes: 10, delayInMinutes: 1 });
+      await alarms.create(alarmName, {periodInMinutes: 10, delayInMinutes: 1});
       await alarms.clear(alarmName);
       const alarm = await alarms.get(alarmName);
 
       expect(alarm).toBeNull();
     });
-  })
+  });
 
-  describe("::clearAll", ()=> {
-    it('should clear all existing alarms', async () => {
+  describe("::clearAll", () => {
+    it('should clear all existing alarms', async() => {
       expect.assertions(1);
 
-      await alarms.create('testAlarm1', { periodInMinutes: 10, delayInMinutes: 1 });
-      await alarms.create('testAlarm2', { periodInMinutes: 20, delayInMinutes: 2 });
+      await alarms.create('testAlarm1', {periodInMinutes: 10, delayInMinutes: 1});
+      await alarms.create('testAlarm2', {periodInMinutes: 20, delayInMinutes: 2});
       await alarms.clearAll();
       const allAlarms = await alarms.getAll();
 
       expect(allAlarms.length).toBe(0);
     });
-  })
+  });
 });
