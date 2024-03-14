@@ -52,7 +52,8 @@ namespace passbolt.Models.Cookies
             {
                 return value;
             }
-            throw new MissingCookieException();
+            //Avoid crash should be replace by logging file
+            return null;
         }
     }
 }
