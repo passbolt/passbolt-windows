@@ -100,7 +100,7 @@ export default class MainWorkspace {
     AuthEvents.listen(this.worker);
     AccountRecoveryEvents.listen(this.worker, account);
     ActionLogEvents.listen(this.worker, apiClientOptions);
-    CommentEvents.listen(this.worker);
+    CommentEvents.listen(this.worker, apiClientOptions);
     ConfigEvents.listen(this.worker);
     DesktopEvents.listen(this.worker);
     ExportResourcesEvents.listen(this.worker, account);
