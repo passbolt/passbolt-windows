@@ -39,19 +39,36 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'node_modules/passbolt-styleguide/src/locales', to: 'locales' },
+        { 
+          from: 'node_modules/passbolt-styleguide/src/locales/**/*.json',
+          to({ absoluteFilename }) {
+
+            // Extract the locale from the absoluteFilename
+            const locale = absoluteFilename.match(/node_modules\\passbolt-styleguide\\src\\locales\\([a-zA-Z-]+)\\.+/)[1];
+            // Construct the new path using the extracted locale
+            const newPath = `locales/passbolt-${locale}/common.json`;
+            // Return the new path to avoid UWP to interpret it as a locale for the all apps and move the JS to UWP usage which we do not want
+            return newPath;
+          },
+        },        
         { from: 'node_modules/passbolt-styleguide/build/css/themes', to: 'themes'},
         { from: 'node_modules/passbolt-styleguide/src/fonts', to: 'fonts'},
       ]
     }),
     new ReplaceInFileWebpackPlugin([{
       dir: 'dist',
-      files: ['rendered-workspace.js'],
-      rules: [{
+      files: ['rendered-workspace.js', 'rendered-auth.js', 'rendered-import.js'],
+      rules: [
+        {
           search: '/webAccessibleResources/',
           replace: 'https://rendered.dist/Rendered/'
-      }]
-  }]),
+        },
+        {
+          search: 'https://rendered.dist/Rendered/dist/locales/{{lng}}/',
+          replace: 'https://rendered.dist/Rendered/dist/locales/passbolt-{{lng}}/'
+        },
+      ]
+    }]),
   ],
   devtool: "inline-source-map"
 };
