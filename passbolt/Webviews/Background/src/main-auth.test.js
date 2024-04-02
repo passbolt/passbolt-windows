@@ -17,7 +17,7 @@ import Main from "./main-auth";
 import {AuthEvents} from "./events/authEvents";
 import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
-import {LocaleEvents} from "passbolt-browser-extension/src/all/background_page/event/localeEvents";
+import {LocaleEvents} from "./events/localeEvents";
 import {DesktopEvents} from "./events/desktopEvents";
 
 describe("Main authentication class", () => {

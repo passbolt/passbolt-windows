@@ -20,8 +20,6 @@ namespace passbolt.Services.NavigationService
     public class BackgroundNavigationService : AbstractNavigationService
     {
         private static readonly BackgroundNavigationService instance = new BackgroundNavigationService();
-        private static readonly string mfaUrls = "/mfa/verify/(duo|totp|yubikey)\\?redirect=/";
-        private string trustedDomain;
         private string previousNavigation;
 
         public static BackgroundNavigationService Instance { get => instance; }
