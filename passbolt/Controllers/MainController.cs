@@ -39,6 +39,7 @@ namespace passbolt.Controllers
         private WebView2 webviewRendered;
         private WebView2 webviewBackground;
         private AccountMetaData currentAccountMetaData;
+        private Regex validateUUIDRegex = new Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$");
         private string blankPage = "about:blank";
         protected LocalFolderService localFolderService = LocalFolderService.Instance;
         protected CredentialLockerService credentialLockerService;
@@ -266,8 +267,7 @@ namespace passbolt.Controllers
             IPC ipc = SerializationHelper.DeserializeFromJson<IPC>(message);
 
             //Validate requestId to be an uuid
-            Regex validateUUIDRegex = new Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$");
-            if(ipc.requestId != null && !validateUUIDRegex.IsMatch(ipc.requestId))
+            if(ipc.requestId != null && !this.validateUUIDRegex.IsMatch(ipc.requestId))
             {
                 throw new UnauthorizedTopicException(ipc.topic);
             }
