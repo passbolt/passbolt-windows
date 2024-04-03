@@ -30,6 +30,7 @@ namespace passbolt.Services.NavigationService
                     return true;
                 }
             }
+
             return false;
         }
     }

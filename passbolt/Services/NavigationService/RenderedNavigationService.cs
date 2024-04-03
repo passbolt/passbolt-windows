@@ -31,20 +31,19 @@ namespace passbolt.Services.NavigationService
 
         public void Initialize(string currentUrl)
         {
-            this.currentUrl = currentUrl;
-
-            string pattern = $"^https://{this.currentUrl}/Rendered/(index-import\\.html|index-auth\\.html|index-workspace\\.html)$";
+            //Check the url validity before settings
+            this.currentUrl = Regex.Escape(currentUrl);
 
             base.allowedUrls = new List<Regex>()
         {
-            new Regex(@pattern),
-            new Regex($"^https://{currentUrl}/(?:app/passwords/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
-            new Regex($"^https://{currentUrl}/app/passwords$"),
-            new Regex($"^https://{currentUrl}/(?:app/folders/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
-            new Regex($"^https://{currentUrl}/(?:app/groups/(view|edit)/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
-            new Regex($"^https://{currentUrl}/(?:app/users/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
-            new Regex($"^https://{currentUrl}/app/users$"),
-            new Regex($"^https://{currentUrl}/app/settings/(mfa|profile|passphrase|keys|security-token|theme)"),
+            new Regex($"^https://{this.currentUrl}/Rendered/(index-import\\.html|index-auth\\.html|index-workspace\\.html)$"),
+            new Regex($"^https://{this.currentUrl}/(?:app/passwords/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{this.currentUrl}/app/passwords$"),
+            new Regex($"^https://{this.currentUrl}/(?:app/folders/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{this.currentUrl}/(?:app/groups/(view|edit)/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{this.currentUrl}/(?:app/users/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{this.currentUrl}/app/users$"),
+            new Regex($"^https://{this.currentUrl}/app/settings/(mfa|profile|passphrase|keys|security-token|theme)"),
             };
         }
 
