@@ -28,12 +28,12 @@ namespace passbolt.Services.NavigationService
 
         public void Initialize(string currentUrl)
         {
-            this.currentUrl = currentUrl;
-            string pattern = $"^https://{this.currentUrl}/Background/(index-import\\.html|index-auth\\.html|index-workspace\\.html)$";
+            //Check the url validity before settings
+            this.currentUrl = Regex.Escape(currentUrl);
 
             base.allowedUrls = new List<Regex>()
                 {
-                    new Regex(@pattern),
+                    new Regex($"^https://{this.currentUrl}/Background/(index-import\\.html|index-auth\\.html|index-workspace\\.html)$"),
                 };
         }
 
