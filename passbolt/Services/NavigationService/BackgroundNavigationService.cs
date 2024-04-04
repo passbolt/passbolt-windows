@@ -26,14 +26,15 @@ namespace passbolt.Services.NavigationService
 
         public BackgroundNavigationService() { }
 
-        public void Initialize(string currentUrl)
+        public void Initialize(string url)
         {
             //Check the url validity before settings
-            this.currentUrl = Regex.Escape(currentUrl);
+            this.trustedUrl = url;
+            var escaptedUrl = Regex.Escape(url);
 
             base.allowedUrls = new List<Regex>()
                 {
-                    new Regex($"^https://{this.currentUrl}/Background/(index-import\\.html|index-auth\\.html|index-workspace\\.html)$"),
+                    new Regex($"^https://{escaptedUrl}/Background/(index-import\\.html|index-auth\\.html|index-workspace\\.html)$"),
                 };
         }
 
@@ -52,7 +53,7 @@ namespace passbolt.Services.NavigationService
         /// <returns></returns>
         public bool IsAuthApplication(string url)
         {
-            return url == $"https://{this.currentUrl}/Background/index-auth.html";
+            return url == $"https://{this.trustedUrl}/Background/index-auth.html";
         }
       
         /// <summary>
@@ -63,7 +64,7 @@ namespace passbolt.Services.NavigationService
         public bool IsWorkspaceFromImportationApplication(string url)
         {
             return this.previousNavigation != null && this.previousNavigation.Contains("/Background/index-import.html")
-                && url == $"https://{this.currentUrl}/Background/index-workspace.html";
+                && url == $"https://{this.trustedUrl}/Background/index-workspace.html";
         }
     }
 }

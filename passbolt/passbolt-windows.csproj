@@ -194,7 +194,6 @@
     <Compile Include="Services\MfaService\MfaService.cs" />
     <Compile Include="Services\NavigationService\AbstractNavigationService.cs" />
     <Compile Include="Services\NavigationService\BackgroundNavigationService.cs" />
-    <Compile Include="Services\NavigationService\ParseAppUrlService.cs" />
     <Compile Include="Services\NavigationService\RenderedNavigationService.cs" />
     <Compile Include="Services\RbacService\RbacService.cs" />
     <Compile Include="Services\WebviewService\BackgroundWebviewService.cs" />
