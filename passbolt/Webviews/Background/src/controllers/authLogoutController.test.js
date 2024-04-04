@@ -16,7 +16,7 @@ import {enableFetchMocks} from "jest-fetch-mock";
 import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import IPCHandler from "../shared/IPCHandler";
 import AuthLogoutController from "./authLogoutController";
-import {defaultApiClientOptions} from 'passbolt-browser-extension/src/all/background_page/service/api/apiClient/apiClientOptions.test.data';
+import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
 
 describe('AuthLogoutController', () => {
   let authLogoutController, worker;

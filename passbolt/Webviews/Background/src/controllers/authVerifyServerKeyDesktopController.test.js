@@ -12,7 +12,7 @@
  * @since         0.3.0
  */
 
-import {defaultApiClientOptions} from "passbolt-browser-extension/src/all/background_page/service/api/apiClient/apiClientOptions.test.data";
+import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
 import AuthVerifyServerKeyDesktopController from "./authVerifyServerKeyDesktopController";
 
 describe('AuthVerifyServerKeyDesktopController.test', () => {

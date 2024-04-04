@@ -1,5 +1,4 @@
 rendered-tests:
-  allow_failure: true
   extends: .rules
   stage: test
   image: node:16
@@ -11,11 +10,10 @@ rendered-tests:
   artifacts:
     when: always
     reports:
-      junit:
-        - junit.xml
+      junit: passbolt/Webviews/Rendered/junit.xml
       coverage_report:
         coverage_format: cobertura
-        path: coverage/cobertura-coverage.xml
+        path: passbolt/Webviews/Rendered/coverage/cobertura-coverage.xml
 
 rendered-linter:
   stage: test
@@ -36,23 +34,21 @@ rendered-audit:
     - npm audit
 
 background-tests:
-  allow_failure: true
   extends: .rules
   stage: test
   image: node:16
   coverage: /Lines\s* [:] ([\d\.]+)%/
   script:
     - cd passbolt/Webviews/Background
-    - npm install
+    - npm i
     - npm run test:coverage
   artifacts:
     when: always
     reports:
-      junit:
-        - junit.xml
+      junit: passbolt/Webviews/Background/junit.xml
       coverage_report:
         coverage_format: cobertura
-        path: coverage/cobertura-coverage.xml
+        path: passbolt/Webviews/Background/coverage/cobertura-coverage.xml
 
 background-linter:
   stage: test

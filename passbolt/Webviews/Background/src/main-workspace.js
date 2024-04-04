@@ -70,7 +70,7 @@ export default class MainWorkspace {
    */
   async initWorkspace() {
     await this.initStorage();
-    this.worker = { port: new IPCHandler() };
+    this.worker = {port: new IPCHandler()};
     this.auth = new GpgAuth();
 
     // Start session check: Needed to display the session expired on the screen
@@ -79,7 +79,7 @@ export default class MainWorkspace {
     const startLoopAuthSessionCheckService = new StartLoopAuthSessionCheckService(this.auth);
     startLoopAuthSessionCheckService.exec();
 
-    await this.listenToEvents()
+    await this.listenToEvents();
   }
 
   /**
@@ -94,9 +94,8 @@ export default class MainWorkspace {
    * init the listeners for events
    */
   async listenToEvents() {
-    const apiClientOptions = await User.getInstance().getApiClientOptions()
-    const account = await GetLegacyAccountService.get({ role: true });
-
+    const apiClientOptions = await User.getInstance().getApiClientOptions();
+    const account = await GetLegacyAccountService.get({role: true});
     AuthEvents.listen(this.worker);
     AccountRecoveryEvents.listen(this.worker, account);
     ActionLogEvents.listen(this.worker, apiClientOptions);
@@ -125,6 +124,6 @@ export default class MainWorkspace {
     PasswordExpiryEvents.listen(this.worker, apiClientOptions, account);
     PasswordPoliciesEvents.listen(this.worker, apiClientOptions, account);
     UserPassphrasePolicies.listen(this.worker);
-    window.chrome.webview.postMessage(JSON.stringify({ topic: BACKGROUND_READY }));
+    window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));
   }
 }

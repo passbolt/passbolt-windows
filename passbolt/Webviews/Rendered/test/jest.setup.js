@@ -9,16 +9,23 @@
  * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
- * @since         0.6.0
+ * @since         1.0.0
  */
 
-import GetOrFindPasswordExpirySettingsController from "passbolt-browser-extension/src/all/background_page/controller/passwordExpiry/getOrFindPasswordExpirySettingsController";
+global.TextEncoder = require('text-encoding-utf-8').TextEncoder;
+global.TextDecoder = require('text-encoding-utf-8').TextDecoder;
+global.fetch = require('node-fetch');
 
-const listen = function(worker, apiClientOptions, account) {
-  worker.port.on('passbolt.password-expiry.get-or-find', async requestId => {
-    const controller = new GetOrFindPasswordExpirySettingsController(worker, requestId, account, apiClientOptions);
-    await controller._exec();
-  });
-};
+if (!window.chrome) {
+  window.chrome = {}
+} 
 
-export const PasswordExpiryEvents = {listen};
+window.chrome.webview = {
+  postMessage: jest.fn(),
+  addEventListener: jest.fn((event, callback) => {
+    if (event === "message") {
+      callback()
+    }
+  })  
+}
+

@@ -14,7 +14,7 @@
 
 import User from "passbolt-browser-extension/src/all/background_page/model/user";
 import ExportResourcesFileService from "./exportResourcesFilesService";
-import {defaultApiClientOptions} from "passbolt-browser-extension/src/all/background_page/service/api/apiClient/apiClientOptions.test.data";
+import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
 import {resourceToExport} from "./exportResourcesFilesService.test.data";
 import FileService from "passbolt-browser-extension/src/all/background_page/service/file/fileService";
 import ExportResourcesFileEntity from "passbolt-browser-extension/src/all/background_page/model/entity/export/exportResourcesFileEntity";
