@@ -18,21 +18,21 @@ import IPCHandler from "../shared/IPCHandler";
  * Polyfill to match the cookie manager with the bext cookies API
  */
 class CookiePolyfill {
-    constructor() {
-        this.port = new IPCHandler();
-    }
+  constructor() {
+    this.port = new IPCHandler();
+  }
 
-    /**
-     * Get a cookie value from window. This cookie should not be protected
-     * @param {Object} cookie represent the cookie name and url to search
-     * @return {Promise<string>} return the cookie value
-     */
-    async get(cookie) {
-        const cookieValue = await this.port.request("passbolt.background.get-cookie", cookie.name);
-        return {
-            value: cookieValue
-        }
-    }
+  /**
+   * Get a cookie value from window. This cookie should not be protected
+   * @param {Object} cookie represent the cookie name and url to search
+   * @return {Promise<string>} return the cookie value
+   */
+  async get(cookie) {
+    const cookieValue = await this.port.request("passbolt.background.get-cookie", cookie.name);
+    return {
+      value: cookieValue
+    };
+  }
 }
 
 window.chrome.cookies = new CookiePolyfill();

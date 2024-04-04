@@ -18,7 +18,6 @@ jest.mock('passbolt-browser-extension/src/all/background_page/model/auth/authMod
 jest.mock('passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService');
 jest.mock('passbolt-browser-extension/src/all/background_page/model/keyring');
 jest.mock('passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService');
-jest.mock('../models/CurrentUser');
 
 describe("LoginUserService", () => {
   let service;

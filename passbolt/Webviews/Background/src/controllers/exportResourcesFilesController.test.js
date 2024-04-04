@@ -15,7 +15,7 @@
 import {accountDto} from "../data/mockStorage";
 import {resourceToExport} from "../services/exportResourcesFilesService.test.data";
 import ExportResourcesFileDesktopController from "./exportResourcesFilesController";
-import {defaultApiClientOptions} from "passbolt-browser-extension/src/all/background_page/service/api/apiClient/apiClientOptions.test.data";
+import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
 
 beforeEach(() => {
   jest.resetModules();
