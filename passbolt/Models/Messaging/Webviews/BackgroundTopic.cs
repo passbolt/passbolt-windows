@@ -75,7 +75,7 @@ namespace passbolt.Models.Messaging
                         if (passphrase != null)
                         {
                             background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_STORE_PASSPHRASE, passphrase)));
-                            rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-workspace.html"));
+                            rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.trustedUrl, "/Rendered/index-workspace.html"));
                             passphrase = null;
                         }
                     }
@@ -116,9 +116,9 @@ namespace passbolt.Models.Messaging
                     var secrets = SerializationHelper.DeserializeFromJson<AccountSecret>(((JObject)ipc.message).ToString());
                     await this.credentialLockerService.CreateAccount(metaData, secrets);
                     //We remove previous virtualhost and create a new one based on trusted domain
-                    await this.webviewService.SetVirtualHost();
+                    var backgroundUrl = await this.webviewService.SetVirtualHost();
                     await localFolderService.CreateBackgroundIndex(this.currentIndexBackground, "background-auth", metaData.domain);
-                    background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-auth.html"));
+                    background.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, "/index-auth.html"));
                     break;
                 case AllowedTopics.BACKGROUND_DOWNLOAD_FILE:
                     var downloadService = new DownloadService();
@@ -140,8 +140,8 @@ namespace passbolt.Models.Messaging
                     await localFolderService.RemoveFile("Background", "index-workspace.html");
                     await localFolderService.CreateRenderedIndex(this.currentIndexRendered, "rendered-auth", "ext_authentication.min.css", accountMetaData.domain);
                     await localFolderService.CreateBackgroundIndex(this.currentIndexBackground, "background-auth", accountMetaData.domain);
-                    background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-auth.html"));
-                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.currentUrl, "/Rendered/index-auth.html"));
+                    background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.trustedUrl, "/Background/index-auth.html"));
+                    rendered.Source = new Uri(UriBuilderHelper.BuildHostUri(RenderedNavigationService.Instance.trustedUrl, "/Rendered/index-auth.html"));
                     break;
                 case AuthenticationTopics.AFTER_LOGIN:
                     passphrase = (string)ipc.message;
@@ -181,11 +181,13 @@ namespace passbolt.Models.Messaging
         public async Task RedirectToWorkspace()
         {
             var accountMetaData = await this.credentialLockerService.GetAccountMetadata();
+
             await localFolderService.RemoveFile("Rendered", this.currentIndexRendered);
             await localFolderService.RemoveFile("Background", this.currentIndexBackground);
             await localFolderService.CreateRenderedIndex("index-workspace.html", "rendered-workspace", "ext_app.min.css", accountMetaData.domain);
             await localFolderService.CreateBackgroundIndex("index-workspace.html", "background-workspace", accountMetaData.domain);
-            background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.currentUrl, "/Background/index-workspace.html"));
+            var configuration = await credentialLockerService.GetApplicationConfiguration();
+            background.Source = new Uri(UriBuilderHelper.BuildHostUri(configuration.backgroundUrl, "/Background/index-workspace.html"));
         }
 
         /// <summary>
