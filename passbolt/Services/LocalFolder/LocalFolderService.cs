@@ -13,6 +13,7 @@
 */
 
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.Storage;
@@ -108,17 +109,19 @@ namespace passbolt.Services.LocalFolder
         /// <param name="script"></param>
         private string GetRenderedCSP(string script, string trustedDomain)
         {
+            string cspAllowedUrlOnTrustedDomain = this.getCspAllowedUrlOnTrustedDomain(trustedDomain);
+
             var imgSrc = "img-src https://rendered.dist/Rendered/img/";
             string csp;
             if (script == "rendered-auth")
             {
-                csp = $"{imgSrc} {trustedDomain}; connect-src https://rendered.dist/Rendered/dist/locales/;";
+                csp = $"{imgSrc} {cspAllowedUrlOnTrustedDomain}; connect-src https://rendered.dist/Rendered/dist/locales/;";
             }
             else if (script == "rendered-workspace")
             {
                 //Data: used for the totp scan image
                 //Blob: used for the import OTP image (resources) 
-                csp = $"{imgSrc} {trustedDomain} data: blob: ; connect-src https://rendered.dist/Rendered/dist/locales/;";
+                csp = $"{imgSrc} {cspAllowedUrlOnTrustedDomain} data: blob: ; connect-src https://rendered.dist/Rendered/dist/locales/;";
             }
             else
             {
@@ -138,6 +141,8 @@ namespace passbolt.Services.LocalFolder
         /// <param name="script"></param>
         private string GetBackgroundCSP(string script, string trustedDomain)
         {
+            string cspAllowedUrlOnTrustedDomain = this.getCspAllowedUrlOnTrustedDomain(trustedDomain);
+
             var csp = "";
             //We allow for all apps to retrieve the locales by the fetch instance
             var connectSrc = $"connect-src https://background.dist/Background/dist/locales/";
@@ -145,11 +150,11 @@ namespace passbolt.Services.LocalFolder
             if (script == "background-auth")
             {
                 //We does not need the pwned password for the authentication process
-                csp = $"{connectSrc} {trustedDomain};";
+                csp = $"{connectSrc} {cspAllowedUrlOnTrustedDomain};";
             }
             else if (script == "background-workspace")
             {
-                csp = $"{connectSrc} {trustedDomain}  https://api.pwnedpasswords.com;";
+                csp = $"{connectSrc} {cspAllowedUrlOnTrustedDomain}  https://api.pwnedpasswords.com;";
             }
             else if (script == "background-import")
             {
@@ -193,6 +198,22 @@ namespace passbolt.Services.LocalFolder
               $@"<body> <script src=""https://background.dist/Background/dist/{script}.js""></script> </body></html>";
 
             await FileIO.WriteTextAsync(indexFile, content);
+        }
+
+        /// <summary>
+        /// Add a slash in case the trusted domain does not contain it for CSP
+        /// </summary>
+        /// <param name="trustedDomain"></param>
+        /// <returns></returns>
+        public string getCspAllowedUrlOnTrustedDomain(string trustedDomain)
+        {
+            string cspAllowedUrlOnTrustedDomain = null;
+            if (trustedDomain != null)
+            {
+                cspAllowedUrlOnTrustedDomain = Regex.Replace(trustedDomain, @"([^\/]{1})$", "$1/");
+            }
+
+            return cspAllowedUrlOnTrustedDomain;
         }
     }
 }
