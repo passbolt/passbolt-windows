@@ -25,6 +25,8 @@ namespace passbolt.Services.LocalFolder
         private StorageFolder webviewsFolder;
         private StorageFolder webviewsFolderInstallation;
         private string webviewsFolderName = "Webviews";
+        private string commonCSP = "default-src 'none'; form-action 'none';";
+
         private LocalFolderService() { }
 
         private static readonly LocalFolderService instance = new LocalFolderService();
@@ -100,16 +102,77 @@ namespace passbolt.Services.LocalFolder
         }
 
         /// <summary>
+        /// Get the rendered csp content
+        /// </summary>
+        /// <param name="trustedDomain"></param>
+        /// <param name="script"></param>
+        private string GetRenderedCSP(string script, string trustedDomain)
+        {
+            var imgSrc = "img-src https://rendered.dist/Rendered/img/";
+            string csp;
+            if (script == "rendered-auth")
+            {
+                csp = $"{imgSrc} {trustedDomain}; connect-src https://rendered.dist/Rendered/dist/locales/;";
+            }
+            else if (script == "rendered-workspace")
+            {
+                //Data: used for the totp scan image
+                //Blob: used for the import OTP image (resources) 
+                csp = $"{imgSrc} {trustedDomain} data: blob: ; connect-src https://rendered.dist/Rendered/dist/locales/;";
+            }
+            else
+            {
+                //locales are missing during the import process
+                csp = $"{imgSrc}; ";
+            }
+
+            // return the common csp with specific by apps
+            return $@"<meta http-equiv=""Content-Security-Policy"" content=""{this.commonCSP} script-src https://rendered.dist/Rendered/; style-src https://rendered.dist/Rendered/dist/themes/; font-src https://rendered.dist/Rendered/fonts/; {csp}"" />";
+        }
+
+
+        /// <summary>
+        /// Get the background csp content
+        /// </summary>
+        /// <param name="trustedDomain"></param>
+        /// <param name="script"></param>
+        private string GetBackgroundCSP(string script, string trustedDomain)
+        {
+            var csp = "";
+            //We allow for all apps to retrieve the locales by the fetch instance
+            var connectSrc = $"connect-src https://background.dist/Background/dist/locales/";
+
+            if (script == "background-auth")
+            {
+                //We does not need the pwned password for the authentication process
+                csp = $"{connectSrc} {trustedDomain};";
+            }
+            else if (script == "background-workspace")
+            {
+                csp = $"{connectSrc} {trustedDomain}  https://api.pwnedpasswords.com;";
+            }
+            else if (script == "background-import")
+            {
+                //We does not know the trusted domain during importation
+                csp = $"{connectSrc};";
+            }
+
+            // return the common csp with specific by apps
+            return $@"<meta http-equiv=""Content-Security-Policy"" content=""{this.commonCSP} script-src https://background.dist/Background/; {csp}"" />";
+        }
+
+        /// <summary>
         /// Create index file for rendered
         /// </summary>
         /// <param name="name"></param>
         /// <param name="script"></param>
         /// <returns></returns>
-        public async Task CreateRenderedIndex(string name, string script, string stylesheet, string csp = null)
+        public async Task CreateRenderedIndex(string name, string script, string stylesheet, string trustedDomain = null)
         {
+            var csp = this.GetRenderedCSP(script, trustedDomain);
             StorageFile indexFile = await this.CreateFile("Rendered", name);
             var content = "<!DOCTYPE html> <html> <head>  <meta charset=\"UTF-8\"> " +
-              $@"<meta http-equiv=""Content-Security-Policy"" default-src 'self'; script-src 'self'; img-src 'self' {csp}; />" +
+             csp +
               $@"<script id=""stylesheet-manager"" data-file={stylesheet} src=""https://rendered.dist/Rendered/src/js/stylesheet.js""></script></head>" +
               $@"<body> <script src=""https://rendered.dist/Rendered/dist/{script}.js""></script> </body></html>";
             await FileIO.WriteTextAsync(indexFile, content);
@@ -121,12 +184,13 @@ namespace passbolt.Services.LocalFolder
         /// <param name="name"></param>
         /// <param name="script"></param>
         /// <returns></returns>
-        public async Task CreateBackgroundIndex(string name, string script, string csp = null)
+        public async Task CreateBackgroundIndex(string name, string script, string trustedDomain = null)
         {
+            var csp = this.GetBackgroundCSP(script, trustedDomain);
             StorageFile indexFile = await this.CreateFile("Background", name);
-            var content = "<!DOCTYPE html><html> <head>  <meta charset=\"UTF-8\"> " +
-              (csp != null ? $"<meta http-equiv=\"Content-Security-Policy\" default-src 'self' ${csp} https://api.pwnedpasswords.com; script-src 'self' /></head>" : "") +
-              $@"<body><script src=""https://background.dist/Background/dist/{script}.js""></script></body></html>";
+            var content = "<!DOCTYPE html> <html> <head>  <meta charset=\"UTF-8\"> " +
+              csp +
+              $@"<body> <script src=""https://background.dist/Background/dist/{script}.js""></script> </body></html>";
 
             await FileIO.WriteTextAsync(indexFile, content);
         }

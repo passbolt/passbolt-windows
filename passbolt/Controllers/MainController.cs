@@ -15,9 +15,11 @@
 using System;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using passbolt.Exceptions;
 using passbolt.Models;
 using passbolt.Models.CredentialLocker;
 using passbolt.Models.Messaging;
@@ -37,6 +39,7 @@ namespace passbolt.Controllers
         private WebView2 webviewRendered;
         private WebView2 webviewBackground;
         private AccountMetaData currentAccountMetaData;
+        private Regex validateUUIDRegex = new Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$");
         private string blankPage = "about:blank";
         protected LocalFolderService localFolderService = LocalFolderService.Instance;
         protected CredentialLockerService credentialLockerService;
@@ -262,6 +265,12 @@ namespace passbolt.Controllers
 
             if (webviewSender == null || message == null) return;
             IPC ipc = SerializationHelper.DeserializeFromJson<IPC>(message);
+
+            //Validate requestId to be an uuid
+            if(ipc.requestId != null && !this.validateUUIDRegex.IsMatch(ipc.requestId))
+            {
+                throw new UnauthorizedTopicException(ipc.topic);
+            }
 
             //Checks if we have data before going futher
             if (string.IsNullOrEmpty(ipc.topic) || !AllowedTopics.IsTopicNameAllowed(ipc.topic))
