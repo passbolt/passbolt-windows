@@ -25,3 +25,5 @@ passbolt/Webviews/Background/coverage/
 *.pfx
 Package.StoreAssociation.xml
 
+passbolt/Webviews/Background/junit.xml 
+passbolt/Webviews/Rendered/junit.xml 

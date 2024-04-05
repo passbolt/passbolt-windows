@@ -26,7 +26,7 @@ import LoginUserService from "../services/loginUserService";
 import IPCHandler from "../shared/IPCHandler";
 import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
 import {v4 as uuidv4} from "uuid";
-import {defaultApiClientOptions} from "passbolt-browser-extension/src/all/background_page/service/api/apiClient/apiClientOptions.test.data";
+import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
 import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
 import AuthService from "passbolt-browser-extension/src/all/background_page/service/auth";
 import MfaAuthenticationRequiredError from "passbolt-browser-extension/src/all/background_page/error/mfaAuthenticationRequiredError";

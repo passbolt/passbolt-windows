@@ -61,7 +61,7 @@ class DesktopAuthenticateController {
     await loginUserService.checkPassphrase(passphrase);
     //Used to retrieve the crsf token to the API, it allows to be sure to load it to each case
     const organizationSettingsModel = new OrganizationSettingsModel(this.apiClientOptions);
-    await organizationSettingsModel.getOrFind(true)
+    await organizationSettingsModel.getOrFind(true);
     await loginUserService.login(passphrase, true);
     const provider = await loginUserService.isMfaRequired();
     if (provider) {

@@ -37,7 +37,7 @@ namespace passbolt.Services.WebviewService
         {
             this.RemoveVirtualHost();
             var applicationConfiguration = await this.GetApplicationConfiguration();
-            string backgroundUrl = applicationConfiguration.renderedUrl + "/Rendered";
+            string renderedUrl = applicationConfiguration.renderedUrl + "/Rendered";
 
             this.renderedNavigationService.Initialize(applicationConfiguration.renderedUrl);
             StorageFolder distfolder = this.localFolderService.GetWebviewsFolder();
@@ -49,7 +49,7 @@ namespace passbolt.Services.WebviewService
             // Set virtual host to folder mapping, restrict host access to the randomUrl
             webview.SetVirtualHostNameToFolderMapping(applicationConfiguration.renderedUrl, distfolder.Path, CoreWebView2HostResourceAccessKind.DenyCors);
 
-            return backgroundUrl;
+            return renderedUrl;
         }
     }
 }

@@ -1,8 +1,9 @@
 import "./polyfill/chromePolyfill"
-import "../src/polyfill/desktopPolyfill"
 import "../src/polyfill/alarmPolyfill"
+import "../src/polyfill/desktopPolyfill"
 import "../src/polyfill/runtimePolyfill"
 import "../src/polyfill/storagePolyfill"
+import "../src/polyfill/sessionStoragePolyfill"
 
 global.TextEncoder = require('text-encoding-utf-8').TextEncoder;
 global.TextDecoder = require('text-encoding-utf-8').TextDecoder;
@@ -24,3 +25,4 @@ window.chrome.runtime = {
 };
 
 global.chrome = window.chrome;
+global.browser = window.chrome;
