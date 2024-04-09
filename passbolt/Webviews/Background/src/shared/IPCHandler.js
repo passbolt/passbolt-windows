@@ -144,13 +144,21 @@ class IPCHandler {
    * @returns the error message as an object
    */
   mapError(error) {
-    return {
-      message: error?.message,
-      name: error?.name,
-      code: error?.code,
-      details: error?.details,
-      stack: error?.stack,
-    };
+    let ipcError;
+    try {
+      //We test if the error inherit from Error and have access to toJSON method
+      ipcError = error.toJSON()
+    } catch {
+      //In case toJSON method does not exist we fallback to send the error as a JS Object through IPC
+      ipcError = {
+        message: error?.message,
+        name: error?.name,
+        code: error?.code,
+        details: error?.details,
+        stack: error?.stack,
+      };
+    }
+    return ipcError;
   }
 
   /**
