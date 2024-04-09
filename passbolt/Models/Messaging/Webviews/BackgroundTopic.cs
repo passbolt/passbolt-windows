@@ -90,15 +90,20 @@ namespace passbolt.Models.Messaging
                     break;
                 case AllowedTopics.BACKGROUND_SET_THEME:
                     accountMetaData.theme = (string) ipc.message;
-                    await this.credentialLockerService.Create("account-metaData", JsonConvert.SerializeObject(accountMetaData));
+                    await this.credentialLockerService.Create("account-metadata", JsonConvert.SerializeObject(accountMetaData));
                     break;
                 case AllowedTopics.BACKGROUND_SET_LOCALE:
                     accountMetaData.locale = (string)ipc.message;
-                    await this.credentialLockerService.Create("account-metaData", JsonConvert.SerializeObject(accountMetaData));
+                    await this.credentialLockerService.Create("account-metadata", JsonConvert.SerializeObject(accountMetaData));
                     break;
                 case AllowedTopics.BACKGROUND_SET_SECURITY_TOKEN:
                     accountMetaData.securityToken = SerializationHelper.DeserializeFromJson<SecurityToken>(((JObject)ipc.message).ToString());
-                    await this.credentialLockerService.Create("account-metaData", JsonConvert.SerializeObject(accountMetaData));
+                    await this.credentialLockerService.Create("account-metadata", JsonConvert.SerializeObject(accountMetaData));
+                    break;
+                case AllowedTopics.BACKGROUND_ROTATE_KEY:
+                    var accountSecret = await this.credentialLockerService.GetAccountSecret();
+                    accountSecret.userPrivateArmoredKey = (string)ipc.message;
+                    await this.credentialLockerService.Create("account-secret", JsonConvert.SerializeObject(accountSecret));
                     break;
                 case AuthenticationTopics.REQUIRE_MFA:
                     var message = SerializationHelper.DeserializeFromJson<MfaAuthentication>(((JObject)ipc.message).ToString());
