@@ -124,9 +124,14 @@ class IPCHandler {
         message = requestArgs[1] === 'ERROR' ? this.mapError(body) : body;
       } else {
         status = null;
-        message = requestArgs[1];
+        /*
+         * We can have more than one message so we send the array without the first item dedicated to topic
+         * In case we do not have more we send the last args
+         */
+        message = requestArgs.length > 2 ? requestArgs.slice(1) : requestArgs[1];
       }
       ipc = {
+        //Index 0 is dedicated to topic IPC
         topic: requestArgs[0],
         status: status,
         message: message
@@ -147,7 +152,7 @@ class IPCHandler {
     let ipcError;
     try {
       //We test if the error inherit from Error and have access to toJSON method
-      ipcError = error.toJSON()
+      ipcError = error.toJSON();
     } catch {
       //In case toJSON method does not exist we fallback to send the error as a JS Object through IPC
       ipcError = {

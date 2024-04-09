@@ -50,7 +50,8 @@ class IPCHandler {
         } else if (event.status) {
           listener.callback.apply(this, [event.status, event.message]);
         } else {
-          listener.callback.apply(this, [event.message]);
+          const message = Array.isArray(event.message) ? event.message : [event.message];
+          listener.callback.apply(this, message);
         }
         if (listener.once) {
           this._listeners[eventName].splice(i, 1);
