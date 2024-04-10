@@ -23302,6 +23302,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "LOCALSTORAGE_DELETE": () => (/* binding */ LOCALSTORAGE_DELETE),
 /* harmony export */   "LOCALSTORAGE_UPDATE": () => (/* binding */ LOCALSTORAGE_UPDATE),
 /* harmony export */   "REQUIRE_MFA": () => (/* binding */ REQUIRE_MFA),
+/* harmony export */   "ROTATE_KEY": () => (/* binding */ ROTATE_KEY),
 /* harmony export */   "SAVE_ACCOUNT": () => (/* binding */ SAVE_ACCOUNT),
 /* harmony export */   "UPDATE_LOCALE": () => (/* binding */ UPDATE_LOCALE),
 /* harmony export */   "UPDATE_SECURITY_TOKEN": () => (/* binding */ UPDATE_SECURITY_TOKEN),
@@ -23337,6 +23338,7 @@ const REQUIRE_MFA = "passbolt.auth.redirect-to-mfa";
 const UPDATE_THEME = "passbolt.background.set-theme";
 const UPDATE_SECURITY_TOKEN = "passbolt.background.set-security-token";
 const UPDATE_LOCALE = "passbolt.background.set-locale";
+const ROTATE_KEY = "passbolt.background.rotate-private-key";
 
 
 /***/ }),
@@ -24260,9 +24262,14 @@ class IPCHandler {
         message = requestArgs[1] === 'ERROR' ? this.mapError(body) : body;
       } else {
         status = null;
-        message = requestArgs[1];
+        /*
+         * We can have more than one message so we send the array without the first item dedicated to topic
+         * In case we do not have more we send the last args
+         */
+        message = requestArgs.length > 2 ? requestArgs.slice(1) : requestArgs[1];
       }
       ipc = {
+        //Index 0 is dedicated to topic IPC
         topic: requestArgs[0],
         status: status,
         message: message
@@ -24280,13 +24287,21 @@ class IPCHandler {
    * @returns the error message as an object
    */
   mapError(error) {
-    return {
-      message: error?.message,
-      name: error?.name,
-      code: error?.code,
-      details: error?.details,
-      stack: error?.stack,
-    };
+    let ipcError;
+    try {
+      //We test if the error inherit from Error and have access to toJSON method
+      ipcError = error.toJSON();
+    } catch {
+      //In case toJSON method does not exist we fallback to send the error as a JS Object through IPC
+      ipcError = {
+        message: error?.message,
+        name: error?.name,
+        code: error?.code,
+        details: error?.details,
+        stack: error?.stack,
+      };
+    }
+    return ipcError;
   }
 
   /**
