@@ -16,7 +16,6 @@ import i18n from "passbolt-browser-extension/src/all/background_page/sdk/i18n";
 import ExportResourcesFileController from "passbolt-browser-extension/src/all/background_page/controller/export/exportResourcesFileController";
 import ExportResourcesFileEntity from "passbolt-browser-extension/src/all/background_page/model/entity/export/exportResourcesFileEntity";
 import ProgressService from "passbolt-browser-extension/src/all/background_page/service/progress/progressService";
-import User from "passbolt-browser-extension/src/all/background_page/model/user";
 import {DOWNLOAD_FILE} from "../enumerations/appEventEnumeration";
 import FileService from "passbolt-browser-extension/src/all/background_page/service/file/fileService";
 
@@ -41,13 +40,12 @@ class ExportResourcesFileService {
    * @return {Promise}
    */
   async download(exportResourcesFileDto) {
-    const userId = User.getInstance()?.get().id;
     try {
       this.progressService.start(INITIAL_PROGRESS_GOAL, i18n.t("Generate file"));
       const exportEntity = new ExportResourcesFileEntity(exportResourcesFileDto);
       await this.exportResoucesFileController.prepareExportContent(exportEntity);
       const privateKey = await this.exportResoucesFileController.getPrivateKey();
-      await this.exportResoucesFileController.decryptSecrets(exportEntity, userId, privateKey);
+      await this.exportResoucesFileController.decryptSecrets(exportEntity, privateKey);
       await this.exportResoucesFileController.export(exportEntity);
       await this.generateBlob(exportEntity);
       await this.progressService.finishStep(i18n.t('Done'), true);

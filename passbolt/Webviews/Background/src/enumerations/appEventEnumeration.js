@@ -26,3 +26,4 @@ export const REQUIRE_MFA = "passbolt.auth.redirect-to-mfa";
 export const UPDATE_THEME = "passbolt.background.set-theme";
 export const UPDATE_SECURITY_TOKEN = "passbolt.background.set-security-token";
 export const UPDATE_LOCALE = "passbolt.background.set-locale";
+export const ROTATE_KEY = "passbolt.background.rotate-private-key";

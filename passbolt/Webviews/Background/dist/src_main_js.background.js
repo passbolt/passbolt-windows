@@ -53,7 +53,6 @@ class DesktopAuthenticateController {
       await this.exec();
       window.chrome.webview.postMessage(JSON.stringify({ topic: _enumerations_appEventEnumeration__WEBPACK_IMPORTED_MODULE_4__.USER_LOGGED_IN }));
     } catch (error) {
-      console.log(error)
       window.chrome.webview.postMessage(JSON.stringify({ topic: _enumerations_appEventEnumeration__WEBPACK_IMPORTED_MODULE_4__.ERROR, message: error }));
     }
   }

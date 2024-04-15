@@ -162,8 +162,7 @@ const listen = function(worker, _, account) {
    * @param newPassphrase {string} The new passphrase
    */
   worker.port.on('passbolt.user.update-private-key', async(requestId, oldPassphrase, newPassphrase) => {
-    const apiClientOptions = await User.getInstance().getApiClientOptions();
-    const controller = new UpdatePrivateKeyController(worker, requestId, apiClientOptions);
+    const controller = new UpdatePrivateKeyController(worker, requestId);
     await controller._exec(oldPassphrase, newPassphrase);
   });
 

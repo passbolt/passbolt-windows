@@ -20,22 +20,21 @@ namespace passbolt.Services.NavigationService
     public class BackgroundNavigationService : AbstractNavigationService
     {
         private static readonly BackgroundNavigationService instance = new BackgroundNavigationService();
-        private static readonly string mfaUrls = "/mfa/verify/(duo|totp|yubikey)\\?redirect=/";
-        private string trustedDomain;
         private string previousNavigation;
 
         public static BackgroundNavigationService Instance { get => instance; }
 
         public BackgroundNavigationService() { }
 
-        public void Initialize(string currentUrl)
+        public void Initialize(string url)
         {
-            this.currentUrl = currentUrl;
-            string pattern = $"^https://{this.currentUrl}/Background/(index-import\\.html|index-auth\\.html|index-workspace\\.html)$";
+            //Check the url validity before settings
+            this.trustedUrl = url;
+            var escaptedUrl = Regex.Escape(url);
 
             base.allowedUrls = new List<Regex>()
                 {
-                    new Regex(@pattern),
+                    new Regex($"^https://{escaptedUrl}/Background/(index-import\\.html|index-auth\\.html|index-workspace\\.html)$"),
                 };
         }
 
@@ -54,7 +53,7 @@ namespace passbolt.Services.NavigationService
         /// <returns></returns>
         public bool IsAuthApplication(string url)
         {
-            return url == $"https://{this.currentUrl}/Background/index-auth.html";
+            return url == $"https://{this.trustedUrl}/Background/index-auth.html";
         }
       
         /// <summary>
@@ -65,7 +64,7 @@ namespace passbolt.Services.NavigationService
         public bool IsWorkspaceFromImportationApplication(string url)
         {
             return this.previousNavigation != null && this.previousNavigation.Contains("/Background/index-import.html")
-                && url == $"https://{this.currentUrl}/Background/index-workspace.html";
+                && url == $"https://{this.trustedUrl}/Background/index-workspace.html";
         }
     }
 }

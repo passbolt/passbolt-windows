@@ -12,6 +12,6 @@
  * @since         0.7.0
  */
 
-import SessionStoragePolyfill from"passbolt-browser-extension/src/all/common/polyfill/sessionStoragePolyfill";
+import SessionStoragePolyfill from "passbolt-browser-extension/src/all/common/polyfill/sessionStoragePolyfill";
 
 window.chrome.storage.session = new SessionStoragePolyfill();

@@ -29,22 +29,22 @@ namespace passbolt.Services.NavigationService
 
         public static RenderedNavigationService Instance { get => instance; }
 
-        public void Initialize(string currentUrl)
+        public void Initialize(string url)
         {
-            this.currentUrl = currentUrl;
-
-            string pattern = $"^https://{this.currentUrl}/Rendered/(index-import\\.html|index-auth\\.html|index-workspace\\.html)$";
+            //Check the url validity before settings
+            this.trustedUrl = url;
+            var escaptedUrl = Regex.Escape(url);
 
             base.allowedUrls = new List<Regex>()
         {
-            new Regex(@pattern),
-            new Regex($"^https://{currentUrl}/(?:app/passwords/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
-            new Regex($"^https://{currentUrl}/app/passwords$"),
-            new Regex($"^https://{currentUrl}/(?:app/folders/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
-            new Regex($"^https://{currentUrl}/(?:app/groups/(view|edit)/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
-            new Regex($"^https://{currentUrl}/(?:app/users/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
-            new Regex($"^https://{currentUrl}/app/users$"),
-            new Regex($"^https://{currentUrl}/app/settings/(mfa|profile|passphrase|keys|security-token|theme)"),
+            new Regex($"^https://{escaptedUrl}/Rendered/(index-import\\.html|index-auth\\.html|index-workspace\\.html)$"),
+            new Regex($"^https://{escaptedUrl}/(?:app/passwords/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{escaptedUrl}/app/passwords$"),
+            new Regex($"^https://{escaptedUrl}/(?:app/folders/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{escaptedUrl}/(?:app/groups/(view|edit)/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{escaptedUrl}/(?:app/users/view/[0-9a-fA-F]{{8}}-[0-9a-fA-F]{{4}}-[1-5][0-9a-fA-F]{{3}}-[89abAB][0-9a-fA-F]{{3}}-[0-9a-fA-F]{{12}})(?:#)?$"),
+            new Regex($"^https://{escaptedUrl}/app/users$"),
+            new Regex($"^https://{escaptedUrl}/app/settings/(mfa|profile|passphrase|keys|security-token|theme|account-recovery)"),
             };
         }
 
@@ -63,7 +63,7 @@ namespace passbolt.Services.NavigationService
         /// </summary>
         public void DisallowMfaUrls()
         {
-            this.Initialize(this.currentUrl);
+            this.Initialize(this.trustedUrl);
         }
 
 
