@@ -36,7 +36,9 @@ namespace passbolt.Services.RbacService
             this.AddOrUpdateDesktopRbac(controls, "Avatar.upload", "Deny");
             this.AddOrUpdateDesktopRbac(controls, "Mobile.transfer", "Deny");
             this.AddOrUpdateDesktopRbac(controls, "Desktop.transfer", "Deny");
+            this.AddOrUpdateDesktopRbac(controls, "Profil.accountRecovery", "Deny");
         }
+
 
         /// <summary>
         /// Add or Update entry to desktop configuration

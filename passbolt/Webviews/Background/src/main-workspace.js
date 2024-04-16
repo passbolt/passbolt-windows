@@ -38,6 +38,7 @@ import {Config} from "passbolt-browser-extension/src/all/background_page/model/c
 import {DesktopEvents} from './events/desktopEvents';
 import LocalStorage from 'passbolt-browser-extension/src/all/background_page/sdk/storage';
 import {MfaEvents} from 'passbolt-browser-extension/src/all/background_page/event/mfaEvents';
+import {MultiFactorAuthenticationEvents} from 'passbolt-browser-extension/src/all/background_page/event/multiFactorAuthenticationEvents';
 import {ThemeEvents} from './events/themeEvents';
 import {UserEvents} from './events/userEvents';
 import {AuthEvents} from './events/authEvents';
@@ -110,6 +111,7 @@ export default class MainWorkspace {
     KeyringEvents.listen(this.worker, null, account);
     LocaleEvents.listen(this.worker);
     MfaEvents.listen(this.worker, apiClientOptions);
+    MultiFactorAuthenticationEvents.listen(this.worker, apiClientOptions);
     OrganizationSettingsEvents.listen(this.worker);
     PownedPasswordEvents.listen(this.worker);
     UserEvents.listen(this.worker, null, account);

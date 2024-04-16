@@ -50,6 +50,7 @@ import User from 'passbolt-browser-extension/src/all/background_page/model/user'
 import {LocaleEvents} from "./events/localeEvents";
 import MockExtension from "passbolt-browser-extension/test/mocks/mockExtension";
 import {MfaEvents} from "passbolt-browser-extension/src/all/background_page/event/mfaEvents";
+import {MultiFactorAuthenticationEvents} from "passbolt-browser-extension/src/all/background_page/event/multiFactorAuthenticationEvents";
 
 describe("Main workspace class", () => {
   const ipcDataMock = {
@@ -79,7 +80,7 @@ describe("Main workspace class", () => {
   });
 
   it('should listen to the browser extension events', async() => {
-    expect.assertions(28);
+    expect.assertions(29);
 
     jest.spyOn(AccountRecoveryEvents, "listen");
     jest.spyOn(ActionLogEvents, "listen");
@@ -95,6 +96,7 @@ describe("Main workspace class", () => {
     jest.spyOn(KeyringEvents, "listen");
     jest.spyOn(LocaleEvents, "listen");
     jest.spyOn(MfaEvents, "listen");
+    jest.spyOn(MultiFactorAuthenticationEvents, "listen");
     jest.spyOn(OrganizationSettingsEvents, "listen");
     jest.spyOn(PasswordExpiryEvents, "listen");
     jest.spyOn(PasswordPoliciesEvents, "listen");
@@ -126,6 +128,7 @@ describe("Main workspace class", () => {
     expect(KeyringEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(MfaEvents.listen).toHaveBeenCalledWith(main.worker, null);
+    expect(MultiFactorAuthenticationEvents.listen).toHaveBeenCalledWith(main.worker, null);
     expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(PasswordExpiryEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(PasswordPoliciesEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
