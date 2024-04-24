@@ -17,6 +17,7 @@ import IPCHandler from "./src/shared/IPCHandler";
 import React from "react";
 import ReactDOM from "react-dom";
 import WebviewStorage from "./src/shared/WebviewStorage";
+import "./src/polyfill/dragAndDropPolyfill"
 
 export async function main() {
     // Port connection
