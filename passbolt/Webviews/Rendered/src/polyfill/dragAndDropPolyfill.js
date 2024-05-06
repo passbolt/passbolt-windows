@@ -39,7 +39,7 @@ class DragAndDropPolyfill {
     const draggableElement = this.findDraggableAncestor(event.target);
 
     /*
-     *  Override the existing functionality and update state for dragging
+     * Override the existing functionality and update state for dragging
      * draggableElement.setAttribute('draggable', 'false');
      */
     this.isDragging = true;

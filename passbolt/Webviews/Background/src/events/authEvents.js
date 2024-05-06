@@ -31,7 +31,6 @@ const listen = function(worker, apiClientOptions, account) {
   });
 
   /*
-   *GetServerKeyController
    * Verify the server identity.
    *
    * @listens passbolt.auth.verify

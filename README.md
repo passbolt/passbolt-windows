@@ -10,7 +10,7 @@ The open source password manager for teams.
 
 [![License](https://img.shields.io/github/license/passbolt/passbolt)](LICENSE.txt)
 
-[![Passbolt on the windows app](./images/Windows-app-1.webp)](LICENSE.txt)
+[![Passbolt on the Windows app](./images/Windows-app-1.webp)](LICENSE.txt)
 <br>
 
 # Introducing Passbolt
@@ -32,7 +32,7 @@ By using UWP and Webview2, Passbolt Desktop App provides a consistent and seamle
 
 # Get Started
 
-## How to install the windows app
+## How to install the Windows app
 
 Access the application by clicking on the button below : 
 
