@@ -24,11 +24,15 @@ class DesktopAuthenticateController {
   /**
    * DesktopAuthenticateController constructor
    * @param {Worker} worker
+   * @param {Uuid} requestId
+   * @param {ApiClientOptions} clientOptions
+   * @param {AccountEntity} account
    */
-  constructor(worker, requestId, apiClientOptions) {
+  constructor(worker, requestId, apiClientOptions, account) {
     this.worker = worker;
     this.requestId = requestId;
     this.apiClientOptions = apiClientOptions;
+    this.account = account;
   }
 
   /**
@@ -57,12 +61,12 @@ class DesktopAuthenticateController {
     }
     //Need to reinit configuration as we launch a new application
     await Config.init();
-    const loginUserService = new LoginUserService(this.apiClientOptions);
+    const loginUserService = new LoginUserService(this.apiClientOptions, this.account);
     await loginUserService.checkPassphrase(passphrase);
     //Used to retrieve the crsf token to the API, it allows to be sure to load it to each case
     const organizationSettingsModel = new OrganizationSettingsModel(this.apiClientOptions);
     await organizationSettingsModel.getOrFind(true);
-    await loginUserService.login(passphrase, true);
+    await loginUserService.login(passphrase);
     const provider = await loginUserService.isMfaRequired();
     if (provider) {
       //Send message to the UWP's main process to handle specific 'require mfa' process

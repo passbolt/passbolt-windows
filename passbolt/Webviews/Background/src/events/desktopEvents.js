@@ -13,13 +13,12 @@
  */
 
 import AuthLogoutController from "../controllers/authLogoutController";
-import User from "passbolt-browser-extension/src/all/background_page/model/user";
 import DesktopSetAccountController from "../controllers/desktopSetAccountController";
 import DesktopPassphraseStorageController from "../controllers/desktopPassphraseStorageController";
 import DesktopRenderedIsReadyController from "../controllers/desktopRenderedIsReadyController";
 
 
-const listen = function(worker) {
+const listen = function(worker, apiClientOptions, account) {
   /*
    * Logout.
    *
@@ -27,22 +26,10 @@ const listen = function(worker) {
    * @param requestId {uuid} The request identifier
    */
   worker.port.on('passbolt.auth.logout', async requestId => {
-    const apiClientOptions = await User.getInstance().getApiClientOptions();
     const controller = new AuthLogoutController(worker, requestId, apiClientOptions);
     await controller._exec();
   });
 
-  /*
-   * Retrieve current user for authentication screen.
-   *
-   * @listens passbolt.account.get-current
-   * @param requestId {uuid} The request identifier
-   * @param account {object} The account from credential locker
-   */
-  worker.port.on('passbolt.account.set-current', async(requestId, account) => {
-    const controller = new DesktopSetAccountController(worker, requestId, account);
-    await controller._exec();
-  });
 
   /*
    * Store the passphrase inside the config to remember it.
@@ -61,9 +48,8 @@ const listen = function(worker) {
    *
    * @listens passbolt.account.get-current
    * @param requestId {uuid} The request identifier
-   * @param account {object} The account from credential locker
    */
-  worker.port.on('passbolt.auth-import.sign-in', async(requestId, account) => {
+  worker.port.on('passbolt.auth-import.sign-in', async requestId => {
     const controller = new DesktopSetAccountController(worker, requestId, account);
     await controller._exec();
   });

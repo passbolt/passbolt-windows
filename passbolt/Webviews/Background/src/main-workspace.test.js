@@ -43,7 +43,6 @@ import {ThemeEvents} from "./events/themeEvents";
 import {AuthEvents} from "./events/authEvents";
 import {KeyringEvents} from "./events/keyringEvents";
 import {UserEvents} from "./events/userEvents";
-import AuthenticationEventController from "passbolt-browser-extension/src/all/background_page/controller/auth/authenticationEventController";
 import StartLoopAuthSessionCheckService from "passbolt-browser-extension/src/all/background_page/service/auth/startLoopAuthSessionCheckService";
 import {PasswordExpiryEvents} from "./events/passwordExpiryEvents";
 import User from 'passbolt-browser-extension/src/all/background_page/model/user';
@@ -51,6 +50,8 @@ import {LocaleEvents} from "./events/localeEvents";
 import MockExtension from "passbolt-browser-extension/test/mocks/mockExtension";
 import {MfaEvents} from "passbolt-browser-extension/src/all/background_page/event/mfaEvents";
 import {MultiFactorAuthenticationEvents} from "passbolt-browser-extension/src/all/background_page/event/multiFactorAuthenticationEvents";
+import GlobalAlarmService from "./services/alarm/globalAlarmService";
+import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
 
 describe("Main workspace class", () => {
   const ipcDataMock = {
@@ -66,11 +67,10 @@ describe("Main workspace class", () => {
         callback(ipcDataMock);
       }
     });
-
     localStorage.setItem('_passbolt_data', JSON.stringify(accountDto));
     await MockExtension.withConfiguredAccount(); //curent user is ada with her private set in the keyring
     jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(accountDto).toDto());
-    jest.spyOn(User, "getInstance").mockImplementation(() => ({getApiClientOptions: () => null}));
+    jest.spyOn(User, "getInstance").mockImplementation(() => ({getApiClientOptions: () => defaultApiClientOptions()}));
     main = new Main(window.chrome.webview);
   });
 
@@ -115,31 +115,31 @@ describe("Main workspace class", () => {
     await main.initWorkspace();
 
     expect(AccountRecoveryEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
-    expect(ActionLogEvents.listen).toHaveBeenCalledWith(main.worker, null);
+    expect(ActionLogEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(AuthEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(CommentEvents.listen).toHaveBeenCalledWith(main.worker, null);
+    expect(CommentEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(DesktopEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(DesktopEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(ExportResourcesEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
-    expect(FavoriteEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
-    expect(FolderEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
-    expect(GroupEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
-    expect(ImportResourcesEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
+    expect(FavoriteEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
+    expect(FolderEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
+    expect(GroupEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
+    expect(ImportResourcesEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(KeyringEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(MfaEvents.listen).toHaveBeenCalledWith(main.worker, null);
-    expect(MultiFactorAuthenticationEvents.listen).toHaveBeenCalledWith(main.worker, null);
+    expect(MfaEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
+    expect(MultiFactorAuthenticationEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(PasswordExpiryEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
-    expect(PasswordPoliciesEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
+    expect(PasswordExpiryEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
+    expect(PasswordPoliciesEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(PownedPasswordEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(RbacEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
-    expect(ResourceEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
-    expect(ResourceTypeEvents.listen).toHaveBeenCalledWith(main.worker, null);
-    expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker, null);
-    expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
-    expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
-    expect(TagEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
+    expect(ResourceEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
+    expect(ResourceTypeEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
+    expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
+    expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
+    expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
+    expect(TagEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(ThemeEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(UserPassphrasePolicies.listen).toHaveBeenCalledWith(main.worker);
     expect(UserEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
@@ -182,15 +182,17 @@ describe("Main workspace class", () => {
     expect(window.chrome.webview.postMessage).toHaveBeenCalledWith(JSON.stringify({topic: LOCALSTORAGE_CLEAR}));
   });
 
-  it('should listen to authentication event and start loop authentication service', async() => {
-    expect.assertions(2);
+  it('should listen to global alarms and start loop authentication service', async() => {
+    expect.assertions(3);
 
-    jest.spyOn(AuthenticationEventController.prototype, "startListen");
-    jest.spyOn(StartLoopAuthSessionCheckService.prototype, "exec");
+    jest.spyOn(StartLoopAuthSessionCheckService, "exec");
+    jest.spyOn(browser.alarms.onAlarm, "removeListener");
+    jest.spyOn(browser.alarms.onAlarm, "addListener");
 
     await main.initWorkspace();
 
-    expect(AuthenticationEventController.prototype.startListen).toHaveBeenCalled();
-    expect(StartLoopAuthSessionCheckService.prototype.exec).toHaveBeenCalled();
+    expect(browser.alarms.onAlarm.removeListener).toHaveBeenCalledWith(GlobalAlarmService.exec);
+    expect(browser.alarms.onAlarm.addListener).toHaveBeenCalledWith(GlobalAlarmService.exec);
+    expect(StartLoopAuthSessionCheckService.exec).toHaveBeenCalled();
   });
 });

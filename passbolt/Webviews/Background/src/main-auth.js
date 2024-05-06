@@ -12,12 +12,15 @@
  * @since         0.3.0
  */
 
+import GetLegacyAccountService from 'passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService';
 import {AuthEvents} from './events/authEvents';
 import IPCHandler from './shared/IPCHandler';
+import BuildApiClientOptionsService from 'passbolt-browser-extension/src/all/background_page/service/account/buildApiClientOptionsService';
 import {OrganizationSettingsEvents} from 'passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents';
 import {ConfigEvents} from 'passbolt-browser-extension/src/all/background_page/event/configEvents';
 import {LocaleEvents} from './events/localeEvents';
 import {DesktopEvents} from './events/desktopEvents';
+import DesktopSetAccountController from './controllers/desktopSetAccountController';
 
 /**
  * Represents the main authentication class that sets up an event listener for the `message` event.
@@ -32,7 +35,19 @@ export default class MainAuth {
    */
   constructor() {
     this.worker = {port: new IPCHandler()};
-    this.listen();
+    //Listen account setting event
+    this.waitForAccountInstanciation();
+  }
+
+  /**
+   * Wait the Dotnet to instance the account before going further
+   */
+  waitForAccountInstanciation() {
+    this.worker.port.on('passbolt.account.set-current', async(requestId, account) => {
+      const controller = new DesktopSetAccountController(this.worker, requestId, account);
+      await controller._exec();
+      await this.listen();
+    });
   }
 
   /**
@@ -40,10 +55,12 @@ export default class MainAuth {
    */
   async listen() {
     await localStorage.clear();
-    AuthEvents.listen(this.worker);
+    const account = await GetLegacyAccountService.get();
+    const apiClientOptions = await BuildApiClientOptionsService.buildFromAccount(account);
+    AuthEvents.listen(this.worker, apiClientOptions, account);
     ConfigEvents.listen(this.worker);
     LocaleEvents.listen(this.worker);
-    DesktopEvents.listen(this.worker);
+    DesktopEvents.listen(this.worker, apiClientOptions, account);
     OrganizationSettingsEvents.listen(this.worker);
   }
 }

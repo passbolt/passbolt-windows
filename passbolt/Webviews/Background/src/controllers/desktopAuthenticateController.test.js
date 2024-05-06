@@ -21,15 +21,14 @@ import ExternalGpgKeyEntity from "passbolt-browser-extension/src/all/background_
 import {accountDto, tempPassphrase} from "../data/mockStorage";
 import {enableFetchMocks} from "jest-fetch-mock";
 import {mockApiResponse} from "passbolt-browser-extension/test/mocks/mockApiResponse";
-import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import LoginUserService from "../services/loginUserService";
 import IPCHandler from "../shared/IPCHandler";
 import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
 import {v4 as uuidv4} from "uuid";
 import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
 import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
-import AuthService from "passbolt-browser-extension/src/all/background_page/service/auth";
 import MfaAuthenticationRequiredError from "passbolt-browser-extension/src/all/background_page/error/mfaAuthenticationRequiredError";
+import AuthenticationStatusService from "passbolt-browser-extension/src/all/background_page/service/authenticationStatusService";
 
 
 describe('DesktopAuthenticateController', () => {
@@ -41,7 +40,7 @@ describe('DesktopAuthenticateController', () => {
     worker = {port: new IPCHandler()};
     jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(defaultAccountDto()));
     fetch.doMockIf(/users\/csrf-token.json/, () =>  mockApiResponse("csrf-token"));
-    jest.spyOn(AuthModel.prototype, 'login').mockResolvedValue();
+    jest.spyOn(LoginUserService.prototype, 'login').mockResolvedValue();
 
     const mockFindPrivate = jest.spyOn(Keyring.prototype, "findPrivate");
 
@@ -50,7 +49,7 @@ describe('DesktopAuthenticateController', () => {
 
     mockFindPrivate.mockImplementation(() => new ExternalGpgKeyEntity({armored_key: accountDto.user_private_armored_key}));
     desktopAuthenticateController = new DesktopAuthenticateController(worker, requestId, defaultApiClientOptions());
-    jest.spyOn(AuthService, "isAuthenticated").mockImplementation(() => true);
+    jest.spyOn(AuthenticationStatusService, "isAuthenticated").mockImplementation(() => true);
   });
   describe('DesktopAuthenticateController', () => {
     describe('DesktopAuthenticateController:exec', () => {
@@ -79,7 +78,7 @@ describe('DesktopAuthenticateController', () => {
 
         await desktopAuthenticateController.exec(tempPassphrase);
 
-        expect(LoginUserService.prototype.login).toHaveBeenCalledWith(tempPassphrase, true);
+        expect(LoginUserService.prototype.login).toHaveBeenCalledWith(tempPassphrase);
       });
 
       it('Should send event to main process after sign-in', async() => {
@@ -98,7 +97,7 @@ describe('DesktopAuthenticateController', () => {
         const passphrase = "admin@passbolt.com";
         const provider = "totp";
 
-        jest.spyOn(AuthService, "isAuthenticated").mockImplementation(() => {
+        jest.spyOn(AuthenticationStatusService, "isAuthenticated").mockImplementation(() => {
           throw new MfaAuthenticationRequiredError(null,
             {
               mfa_providers: [provider]

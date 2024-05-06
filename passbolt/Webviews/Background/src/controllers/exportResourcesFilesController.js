@@ -19,6 +19,7 @@ class ExportResourcesFileDesktopController {
    * ExportResourcesFileController constructor
    * @param {Worker} worker
    * @param {ApiClientOptions} clientOptions
+   * @param {AccountEntity} account
    */
   constructor(worker, clientOptions, requestId, account) {
     this.worker = worker;

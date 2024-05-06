@@ -19,13 +19,20 @@ import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/bac
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
 import {LocaleEvents} from "./events/localeEvents";
 import {DesktopEvents} from "./events/desktopEvents";
+import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
+import {v4 as uuid} from 'uuid';
+import {defaultApiClientOptions} from "passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data";
+import BuildApiClientOptionsService from "passbolt-browser-extension/src/all/background_page/service/account/buildApiClientOptionsService";
 
 describe("Main authentication class", () => {
   let main;
+  const mockedAccount = {user_id: uuid(), domain: "https://test-domain.passbolt.com"};
 
-  afterEach(() => {
+  beforeEach(() => {
     // Cleanup mocks
     jest.resetAllMocks();
+    jest.spyOn(GetLegacyAccountService, 'get').mockImplementation(() => mockedAccount);
+    jest.spyOn(BuildApiClientOptionsService, 'buildFromAccount').mockImplementation(() => defaultApiClientOptions());
   });
 
   it('should listen to the browser extension events', async() => {
@@ -40,9 +47,9 @@ describe("Main authentication class", () => {
     main = new Main();
     await main.listen();
 
-    expect(AuthEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(AuthEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), mockedAccount);
     expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(DesktopEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(DesktopEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), mockedAccount);
     expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
   });

@@ -13,14 +13,12 @@
  */
 
 import DesktopAuthenticateController from "../controllers/desktopAuthenticateController";
-import User from "passbolt-browser-extension/src/all/background_page/model/user";
-import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
-import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
-import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
 import CheckPassphraseController from "passbolt-browser-extension/src/all/background_page/controller/crypto/checkPassphraseController";
-import AuthVerifyServerKeyDesktopController from "../controllers/authVerifyServerKeyDesktopController";
+import AuthVerifyServerKeyController from "passbolt-browser-extension/src/all/background_page/controller/auth/authVerifyServerKeyController";
+import GetServerKeyController from "passbolt-browser-extension/src/all/background_page/controller/auth/getServerKeyController";
+import ReplaceServerKeyController from "passbolt-browser-extension/src/all/background_page/controller/auth/replaceServerKeyController";
 
-const listen = function(worker) {
+const listen = function(worker, apiClientOptions, account) {
   /*
    * Authenticate with desktop application
    *
@@ -28,22 +26,19 @@ const listen = function(worker) {
    * @param requestId {uuid} The request identifier
    */
   worker.port.on('passbolt.auth.login', async(requestId, passphrase) => {
-    const apiClientOptions = await User.getInstance().getApiClientOptions({requireCsrfToken: false});
-    const controller = new DesktopAuthenticateController(worker, requestId, apiClientOptions);
+    const controller = new DesktopAuthenticateController(worker, requestId, apiClientOptions, account);
     await controller._exec(passphrase);
   });
 
   /*
+   *GetServerKeyController
    * Verify the server identity.
    *
    * @listens passbolt.auth.verify
    * @param requestId {uuid} The request identifier
    */
   worker.port.on('passbolt.auth.verify-server-key', async requestId => {
-    const user = User.getInstance();
-    const apiClientOptions = await user.getApiClientOptions({requireCsrfToken: false});
-    const userDomain = user.settings.getDomain();
-    const auth = new AuthVerifyServerKeyDesktopController(worker, requestId, apiClientOptions, userDomain);
+    const auth = new AuthVerifyServerKeyController(worker, requestId, apiClientOptions, account);
     await auth._exec();
   });
 
@@ -55,15 +50,8 @@ const listen = function(worker) {
    * @param domain {string} The server's domain
    */
   worker.port.on('passbolt.auth.get-server-key', async requestId => {
-    try {
-      const clientOptions = await User.getInstance().getApiClientOptions();
-      const authModel = new AuthModel(clientOptions);
-      const serverKeyDto = await authModel.getServerKey();
-      worker.port.emit(requestId, 'SUCCESS', serverKeyDto);
-    } catch (error) {
-      console.error(error);
-      worker.port.emit(requestId, 'ERROR', error);
-    }
+    const getServerKeyController = new GetServerKeyController(worker, requestId, apiClientOptions);
+    await getServerKeyController._exec();
   });
 
   /*
@@ -73,19 +61,8 @@ const listen = function(worker) {
    * @param requestId {uuid} The request identifier
    */
   worker.port.on('passbolt.auth.replace-server-key', async requestId => {
-    const apiClientOptions = await User.getInstance().getApiClientOptions();
-    const authModel = new AuthModel(apiClientOptions);
-    const keyring = new Keyring();
-    const domain = Config.read('user.settings.trustedDomain');
-
-    try {
-      const serverKeyDto = await authModel.getServerKey();
-      await keyring.importServerPublicKey(serverKeyDto.armored_key, domain);
-      worker.port.emit(requestId, 'SUCCESS');
-    } catch (error) {
-      console.error(error);
-      worker.port.emit(requestId, 'ERROR', error);
-    }
+    const replaceServerKeyController = new ReplaceServerKeyController(worker, requestId, apiClientOptions, account);
+    await replaceServerKeyController._exec();
   });
 
 
