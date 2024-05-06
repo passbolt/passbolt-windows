@@ -32,15 +32,91 @@ export default class AlarmsPolyfill {
    * @param {object} options - The options of the alarm.
    */
   async create(alarmName, options) {
+    if (!options.periodInMinutes && options.when) { // is a single alarm call
+      this._createTimeout(alarmName, options);
+    } else if (options.periodInMinutes && options.when) { // is a repeated alarm starting at a given timestamp
+      this._createDelayedInterval(alarmName, options);
+    } else if (options.periodInMinutes && options.delayInMinutes) { // is a repeated alarm start after a delay
+      this._createDelayedInterval(alarmName, options);
+    } else if (options.periodInMinutes) { // is a repeated alarm where counter start immediately
+      this._createInterval(alarmName, options);
+    }
+  }
+
+  /**
+   * Creates an alarm that triggers only once using a setTimeout under the hood.
+   * @param {string} alarmName the name of the alarm passed as the callback parameter when the alarm triggers
+   * @param {object} options the options to define when the alarm triggers and at which frequency
+   * @private
+   */
+  _createTimeout(alarmName, options) {
+    let scheduledTime = options.when;
+    if (!scheduledTime && options.delayInMinutes) {
+      scheduledTime = Date.now() + options.delayInMinutes * 60_000;
+    }
+
+    const alarm = {
+      name: alarmName,
+      scheduledTime: scheduledTime,
+    };
+
+    const triggerDelay = alarm.scheduledTime - Date.now();
+
+    this._registeredAlarms[alarmName] = alarm;
+    const timeout = setTimeout(() => this.onAlarm.triggerAlarm(alarm), triggerDelay);
+    this._timeouts[alarmName] = timeout;
+  }
+
+  /**
+   * Creates a repeating alarm that triggers every `options.periodInMinutes` minute using a setInterval.
+   * @param {string} alarmName the name of the alarm passed as the callback parameter when the alarm triggers
+   * @param {object} options the options to define when the alarm triggers and at which frequency
+   * @private
+   */
+  _createInterval(alarmName, options) {
     const alarm = {
       name: alarmName,
       periodInMinutes: options.periodInMinutes,
-      scheduledTime: options.when || Date.now() + options.delayInMinutes * 1000 * 60,
+    };
+
+    const triggerDelay = options.periodInMinutes * 60_000;
+
+    this._registeredAlarms[alarmName] = alarm;
+    const timeout = setInterval(() => this.onAlarm.triggerAlarm(alarm), triggerDelay);
+    this._interval[alarmName] = timeout;
+  }
+
+  /**
+   * Creates a repeating alarm that triggers every `options.periodInMinutes` minute after a given delay or starting from the given `options.when` timestamp.
+   * It uses first a setTimeout as the call is delay then a setInterval takes the relay to do the repeating part.
+   * @param {string} alarmName the name of the alarm passed as the callback parameter when the alarm triggers
+   * @param {object} options the options to define when the alarm triggers and at which frequency
+   * @private
+   */
+  _createDelayedInterval(alarmName, options) {
+    let scheduledTime = options.when;
+    if (!scheduledTime && options.delayInMinutes) {
+      scheduledTime = Date.now() + options.delayInMinutes * 60_000;
+    }
+
+    const alarm = {
+      name: alarmName,
+      periodInMinutes: options.periodInMinutes,
+      scheduledTime: scheduledTime,
     };
 
     this._registeredAlarms[alarmName] = alarm;
-    const timeout = setTimeout(() => this.onAlarm.triggerAlarm(alarm), alarm.scheduledTime - Date.now());
-    this._timeouts[alarmName] = timeout;
+    const periodInMinutes = options.periodInMinutes;
+
+    const firstTrigger = setTimeout(() => {
+      this.onAlarm.triggerAlarm(alarm);
+
+      // after the first delayed trigger of the series for this alarm we create a regular interval trigger
+      const interval = setInterval(() => this.onAlarm.triggerAlarm(alarm), periodInMinutes * 60_000);
+      this._intervals[alarmName] = interval;
+    }, alarm.scheduledTime - Date.now());
+
+    this._timeouts[alarmName] = firstTrigger;
   }
 
   /**

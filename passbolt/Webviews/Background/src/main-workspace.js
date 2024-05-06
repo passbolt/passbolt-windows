@@ -45,11 +45,10 @@ import {AuthEvents} from './events/authEvents';
 import {UserPassphrasePolicies} from './events/userPassphrasePolicies';
 import {KeyringEvents} from './events/keyringEvents';
 import {LocaleEvents} from './events/localeEvents';
-import AuthenticationEventController from 'passbolt-browser-extension/src/all/background_page/controller/auth/authenticationEventController';
 import StartLoopAuthSessionCheckService from 'passbolt-browser-extension/src/all/background_page/service/auth/startLoopAuthSessionCheckService';
-import GpgAuth from 'passbolt-browser-extension/src/all/background_page/model/gpgauth';
 import User from 'passbolt-browser-extension/src/all/background_page/model/user';
 import {PasswordExpiryEvents} from './events/passwordExpiryEvents';
+import GlobalAlarmService from './services/alarm/globalAlarmService';
 
 /**
  * Represents the main workspace class that sets up an event listener for the `message` event.
@@ -72,15 +71,11 @@ export default class MainWorkspace {
   async initWorkspace() {
     await this.initStorage();
     this.worker = {port: new IPCHandler()};
-    this.auth = new GpgAuth();
-
-    // Start session check: Needed to display the session expired on the screen
-    const authenticationEventController = new AuthenticationEventController(this.worker);
-    authenticationEventController.startListen();
-    const startLoopAuthSessionCheckService = new StartLoopAuthSessionCheckService(this.auth);
-    startLoopAuthSessionCheckService.exec();
 
     await this.listenToEvents();
+    StartLoopAuthSessionCheckService.exec();
+    browser.alarms.onAlarm.removeListener(GlobalAlarmService.exec);
+    browser.alarms.onAlarm.addListener(GlobalAlarmService.exec);
   }
 
   /**
@@ -102,7 +97,7 @@ export default class MainWorkspace {
     ActionLogEvents.listen(this.worker, apiClientOptions);
     CommentEvents.listen(this.worker, apiClientOptions);
     ConfigEvents.listen(this.worker);
-    DesktopEvents.listen(this.worker);
+    DesktopEvents.listen(this.worker, apiClientOptions, account);
     ExportResourcesEvents.listen(this.worker, account);
     FavoriteEvents.listen(this.worker, apiClientOptions, account);
     FolderEvents.listen(this.worker, apiClientOptions, account);

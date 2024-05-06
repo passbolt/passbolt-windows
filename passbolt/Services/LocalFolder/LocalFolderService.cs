@@ -130,9 +130,9 @@ namespace passbolt.Services.LocalFolder
             }
 
             // return the common csp with specific by apps
-            return $@"<meta http-equiv=""Content-Security-Policy"" content=""{this.commonCSP} script-src https://rendered.dist/Rendered/; style-src https://rendered.dist/Rendered/dist/themes/; font-src https://rendered.dist/Rendered/fonts/; {csp}"" />";
+            return $@"<meta http-equiv=""Content-Security-Policy"" content=""{this.commonCSP} script-src https://rendered.dist/Rendered/; style-src 'self' https://rendered.dist/Rendered/dist/themes/; font-src https://rendered.dist/Rendered/fonts/; {csp}"" />";
         }
-
+         
 
         /// <summary>
         /// Get the background csp content

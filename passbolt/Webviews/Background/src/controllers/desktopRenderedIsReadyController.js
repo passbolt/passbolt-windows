@@ -19,7 +19,7 @@ import User from "passbolt-browser-extension/src/all/background_page/model/user"
  */
 class DesktopRenderedIsReadyController {
   /**
-   * DesktopAuthenticateController constructor
+   * DesktopRenderedIsReadyController constructor
    * @param {Worker} worker
    */
   constructor(worker, requestId, accountKit) {

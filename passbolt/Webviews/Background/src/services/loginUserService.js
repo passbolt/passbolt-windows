@@ -12,12 +12,14 @@
  * @since         0.0.1
  */
 
-import MfaAuthenticationRequiredError from "passbolt-browser-extension/src/all/background_page/error/mfaAuthenticationRequiredError";
 import UserAlreadyLoggedInError from "passbolt-browser-extension/src/all/background_page/error/userAlreadyLoggedInError";
-import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
-import AuthService from "passbolt-browser-extension/src/all/background_page/service/auth";
+import CheckAuthStatusService from "passbolt-browser-extension/src/all/background_page/service/auth/checkAuthStatusService";
 import CheckPassphraseService from "passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService";
+import AuthVerifyLoginChallengeService from "passbolt-browser-extension/src/all/background_page/service/auth/authVerifyLoginChallengeService";
+import PassphraseStorageService from "passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService";
+import AuthenticationStatusService from "passbolt-browser-extension/src/all/background_page/service/authenticationStatusService";
+import MfaAuthenticationRequiredError from "passbolt-browser-extension/src/all/background_page/error/mfaAuthenticationRequiredError";
 
 /**
  * Service related to the login user service
@@ -25,11 +27,14 @@ import CheckPassphraseService from "passbolt-browser-extension/src/all/backgroun
 class LoginUserService {
   /**
    * constructor for the login user service
-   * @param {ApiClientOptions} apiClientOptions
+   * @param {AccountEntity} account The user account
+   *
    */
-  constructor(apiClientOptions) {
-    this.authModel = new AuthModel(apiClientOptions);
+  constructor(apiClientOptions, account) {
+    this.account = account;
     this.checkPassphraseService = new CheckPassphraseService(new Keyring());
+    this.authVerifyLoginChallengeService = new AuthVerifyLoginChallengeService(apiClientOptions);
+    this.checkAuthStatusService = new CheckAuthStatusService();
   }
 
   /**
@@ -52,11 +57,11 @@ class LoginUserService {
   /**
    * sign in the user with backend
    * @param {string} passphrase
-   * @param {boolean} rememberMe
    */
-  async login(passphrase, rememberMe) {
+  async login(passphrase) {
     try {
-      await this.authModel.login(passphrase, rememberMe);
+      await this.authVerifyLoginChallengeService.verifyAndValidateLoginChallenge(this.account.userKeyFingerprint, this.account.userPrivateArmoredKey, passphrase);
+      PassphraseStorageService.set(passphrase, -1);
     } catch (error) {
       if (!(error instanceof UserAlreadyLoggedInError)) {
         throw error;
@@ -70,14 +75,14 @@ class LoginUserService {
    */
   async isMfaRequired() {
     try {
-      await AuthService.isAuthenticated();
+      await AuthenticationStatusService.isAuthenticated();
     } catch (error) {
-      if (error instanceof MfaAuthenticationRequiredError) {
-        return error.details.mfa_providers[0];
-      } else {
+      if (!(error instanceof MfaAuthenticationRequiredError)) {
         throw error;
       }
+      return error.details.mfa_providers[0];
     }
+    return false;
   }
 }
 
