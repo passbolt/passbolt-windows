@@ -71,7 +71,7 @@ class LoginUserService {
 
   /**
    * check if mfa is required
-   * @returns {Promise<void>}
+   * @returns {Promise<null|string>}
    */
   async isMfaRequired() {
     try {
@@ -82,7 +82,7 @@ class LoginUserService {
       }
       return error.details.mfa_providers[0];
     }
-    return false;
+    return null;
   }
 }
 

@@ -9,6 +9,7 @@
  * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
+ * @url           https://gist.github.com/iain-fraser/01d35885477f4e29a5a638364040d4f2
  * @since         1.1.0
  */
 

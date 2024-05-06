@@ -13,10 +13,10 @@
  */
 
 import KeepSessionAliveService from "passbolt-browser-extension/src/all/background_page/service/session_storage/keepSessionAliveService";
-import StartLoopAuthSessionCheckService from "./startLoopAuthSessionCheckService";
+import AuthSessionCheckService from "./authSessionCheckService";
 
 const topLevelAlarmMapping = {
-  [StartLoopAuthSessionCheckService.ALARM_NAME]: StartLoopAuthSessionCheckService.handleAuthStatusCheckAlarm,
+  [AuthSessionCheckService.ALARM_NAME]: AuthSessionCheckService.handleAuthStatusCheckAlarm,
   [KeepSessionAliveService.ALARM_NAME]: KeepSessionAliveService.handleKeepSessionAlive,
 };
 

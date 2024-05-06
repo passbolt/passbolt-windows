@@ -16,7 +16,7 @@ import CheckAuthStatusService from "passbolt-browser-extension/src/all/backgroun
 
 const AUTH_SESSION_CHECK_ALARM = "AuthSessionCheck";
 
-class StartLoopAuthSessionCheckService {
+class AuthSessionCheckService {
   /**
    * Check if the user is authenticated when the AuthSessionCheck alarm triggers.
    * @param {Alarm} alarm
@@ -24,7 +24,7 @@ class StartLoopAuthSessionCheckService {
    * @private
    */
   static async handleAuthStatusCheckAlarm(alarm) {
-    if (alarm.name !== StartLoopAuthSessionCheckService.ALARM_NAME) {
+    if (alarm.name !== AuthSessionCheckService.ALARM_NAME) {
       return;
     }
 
@@ -44,4 +44,4 @@ class StartLoopAuthSessionCheckService {
   }
 }
 
-export default StartLoopAuthSessionCheckService;
+export default AuthSessionCheckService;

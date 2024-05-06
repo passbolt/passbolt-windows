@@ -83,7 +83,7 @@ describe("LoginUserService", () => {
       const result = await service.isMfaRequired();
 
       expect(AuthenticationStatusService.isAuthenticated).toHaveBeenCalled();
-      expect(result).toBeFalsy();
+      expect(result).toBeNull();
     });
 
     it("should return the provider if mfa is required", async() => {
