@@ -32,7 +32,7 @@ By using UWP and Webview2, Passbolt Desktop App provides a consistent and seamle
 
 # Get Started
 
-## How to install the windows app
+## How to install the Windows app
 
 Access the application by clicking on the button below : 
 
