@@ -8675,7 +8675,7 @@ class ApiClient {
    */
   async findAll(urlOptions) {
     const url = this.buildUrl(this.baseUrl.toString(), urlOptions || {});
-    return await this.fetchAndHandleResponse('GET', url);
+    return this.fetchAndHandleResponse('GET', url);
   }
 
   /**
@@ -8879,6 +8879,9 @@ class ApiClient {
       this.assertBody(body);
     }
 
+    // Determine the fetch strategy, in some cases it could use a custom fetch as for MV3 to solve the invalid certificate issue.
+    // eslint-disable-next-line no-undef
+    const fetchStrategy = typeof customApiClientFetch !== "undefined" ? customApiClientFetch : fetch;
     const builtFecthOptions = await this.buildFetchOptions();
     const fetchOptions = {...builtFecthOptions, ...options};
     fetchOptions.method = method;
@@ -8886,7 +8889,7 @@ class ApiClient {
       fetchOptions.body = body;
     }
     try {
-      return await fetch(url.toString(), fetchOptions);
+      return await fetchStrategy(url.toString(), fetchOptions);
     } catch (error) {
       // Display the error in the console to see the details (maybe more details should appear in the future)
       console.error(error);
@@ -8916,20 +8919,27 @@ class ApiClient {
    * @public
    */
   async fetchAndHandleResponse(method, url, body, options) {
-    let responseJson;
     const response = await this.sendRequest(method, url, body, options);
+    return this.parseResponseJson(response);
+  }
 
+  /**
+   * Parse the response into json
+   * @param {Response} response Fetch response
+   * @return {Promise<object>}
+   */
+  async parseResponseJson(response) {
+    let responseJson;
     try {
       responseJson = await response.json();
     } catch (error) {
-      console.debug(url.toString(), error);
+      console.debug(response.url.toString(), error);
       /*
        * If the response cannot be parsed, it's not a Passbolt API response.
        * It can be a for example a proxy timeout error (504).
        */
       throw new _Error_PassboltBadResponseError__WEBPACK_IMPORTED_MODULE_1__["default"](error, response);
     }
-
     if (!response.ok) {
       const message = responseJson.header.message;
       throw new _Error_PassboltApiFetchError__WEBPACK_IMPORTED_MODULE_0__["default"](message, {
@@ -9082,6 +9092,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var _entityCollectionError__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entityCollectionError */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityCollectionError.js");
+/* harmony import */ var _entityValidationError__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./entityValidationError */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityValidationError.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -9095,6 +9106,7 @@ __webpack_require__.r(__webpack_exports__);
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         2.13.0
  */
+
 
 
 class EntityCollection {
@@ -9325,13 +9337,37 @@ class EntityCollection {
   assertUniqueByProperty(propName, message) {
     const ruleId = `unique_${propName}`;
     const propValues = this.extract(propName);
+    // Set is the preferred approach for performance reasons, it does a deduplicate in 0n.
+    const uniqueElements = new Set();
     message = message || `The collection should only contain items with unique values for the property: ${propName}.`;
-    propValues.forEach((item, index) => {
-      const foundIndex = propValues.lastIndexOf(item);
-      if (foundIndex !== index) {
+    propValues.forEach((propValue, index) => {
+      uniqueElements.add(propValue);
+      if (index !== uniqueElements.size - 1) {
         throw new _entityCollectionError__WEBPACK_IMPORTED_MODULE_0__["default"](index, ruleId, message);
       }
     });
+  }
+
+  /**
+   * Assert that no item in the collection already has the given value for the given property.
+   * @param {string} propName The property name for checking value uniqueness.
+   * @param {string|boolean|number} propValue The property value for checking value uniqueness.
+   * @param {string} [message] The error message. If none given, it will fallback on a default one.
+   * @throw {EntityValidationError} If another item already has the given value for the given property.
+   */
+  assertNotExist(propName, propValue, message) {
+    const propValues = this.extract(propName);
+    // Set is the preferred approach for performance reasons, it does a deduplicate in 0n.
+    const uniqueElements = new Set(propValues);
+    const sizeBefore = uniqueElements.size;
+    uniqueElements.add(propValue);
+
+    if (sizeBefore === uniqueElements.size) {
+      const error = new _entityValidationError__WEBPACK_IMPORTED_MODULE_1__["default"]();
+      message = message || `The collection already includes an element that has a property (${propName}) with an identical value.`;
+      error.addError(propName, 'unique', message);
+      throw error;
+    }
   }
 }
 
@@ -9363,6 +9399,10 @@ __webpack_require__.r(__webpack_exports__);
  * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         2.13.0
+ */
+
+/**
+ * @deprecated to replace with CollectionValidationError.
  */
 class EntityCollectionError extends Error {
   /**
@@ -23525,15 +23565,91 @@ class AlarmsPolyfill {
    * @param {object} options - The options of the alarm.
    */
   async create(alarmName, options) {
+    if (!options.periodInMinutes && options.when) { // is a single alarm call
+      this._createTimeout(alarmName, options);
+    } else if (options.periodInMinutes && options.when) { // is a repeated alarm starting at a given timestamp
+      this._createDelayedInterval(alarmName, options);
+    } else if (options.periodInMinutes && options.delayInMinutes) { // is a repeated alarm start after a delay
+      this._createDelayedInterval(alarmName, options);
+    } else if (options.periodInMinutes) { // is a repeated alarm where counter start immediately
+      this._createInterval(alarmName, options);
+    }
+  }
+
+  /**
+   * Creates an alarm that triggers only once using a setTimeout under the hood.
+   * @param {string} alarmName the name of the alarm passed as the callback parameter when the alarm triggers
+   * @param {object} options the options to define when the alarm triggers and at which frequency
+   * @private
+   */
+  _createTimeout(alarmName, options) {
+    let scheduledTime = options.when;
+    if (!scheduledTime && options.delayInMinutes) {
+      scheduledTime = Date.now() + options.delayInMinutes * 60_000;
+    }
+
+    const alarm = {
+      name: alarmName,
+      scheduledTime: scheduledTime,
+    };
+
+    const triggerDelay = alarm.scheduledTime - Date.now();
+
+    this._registeredAlarms[alarmName] = alarm;
+    const timeout = setTimeout(() => this.onAlarm.triggerAlarm(alarm), triggerDelay);
+    this._timeouts[alarmName] = timeout;
+  }
+
+  /**
+   * Creates a repeating alarm that triggers every `options.periodInMinutes` minute using a setInterval.
+   * @param {string} alarmName the name of the alarm passed as the callback parameter when the alarm triggers
+   * @param {object} options the options to define when the alarm triggers and at which frequency
+   * @private
+   */
+  _createInterval(alarmName, options) {
     const alarm = {
       name: alarmName,
       periodInMinutes: options.periodInMinutes,
-      scheduledTime: options.when || Date.now() + options.delayInMinutes * 1000 * 60,
+    };
+
+    const triggerDelay = options.periodInMinutes * 60_000;
+
+    this._registeredAlarms[alarmName] = alarm;
+    const timeout = setInterval(() => this.onAlarm.triggerAlarm(alarm), triggerDelay);
+    this._interval[alarmName] = timeout;
+  }
+
+  /**
+   * Creates a repeating alarm that triggers every `options.periodInMinutes` minute after a given delay or starting from the given `options.when` timestamp.
+   * It uses first a setTimeout as the call is delay then a setInterval takes the relay to do the repeating part.
+   * @param {string} alarmName the name of the alarm passed as the callback parameter when the alarm triggers
+   * @param {object} options the options to define when the alarm triggers and at which frequency
+   * @private
+   */
+  _createDelayedInterval(alarmName, options) {
+    let scheduledTime = options.when;
+    if (!scheduledTime && options.delayInMinutes) {
+      scheduledTime = Date.now() + options.delayInMinutes * 60_000;
+    }
+
+    const alarm = {
+      name: alarmName,
+      periodInMinutes: options.periodInMinutes,
+      scheduledTime: scheduledTime,
     };
 
     this._registeredAlarms[alarmName] = alarm;
-    const timeout = setTimeout(() => this.onAlarm.triggerAlarm(alarm), alarm.scheduledTime - Date.now());
-    this._timeouts[alarmName] = timeout;
+    const periodInMinutes = options.periodInMinutes;
+
+    const firstTrigger = setTimeout(() => {
+      this.onAlarm.triggerAlarm(alarm);
+
+      // after the first delayed trigger of the series for this alarm we create a regular interval trigger
+      const interval = setInterval(() => this.onAlarm.triggerAlarm(alarm), periodInMinutes * 60_000);
+      this._intervals[alarmName] = interval;
+    }, alarm.scheduledTime - Date.now());
+
+    this._timeouts[alarmName] = firstTrigger;
   }
 
   /**
@@ -24277,7 +24393,7 @@ class IPCHandler {
     } else {
       ipc = requestArgs[0];
     }
-
+    -
     window.chrome.webview.postMessage(JSON.stringify(ipc));
   }
 
@@ -25338,11 +25454,12 @@ module.exports = parent;
 var parent = __webpack_require__(/*! ../../actual/symbol */ "./node_modules/core-js-pure/actual/symbol/index.js");
 __webpack_require__(/*! ../../modules/esnext.symbol.is-registered-symbol */ "./node_modules/core-js-pure/modules/esnext.symbol.is-registered-symbol.js");
 __webpack_require__(/*! ../../modules/esnext.symbol.is-well-known-symbol */ "./node_modules/core-js-pure/modules/esnext.symbol.is-well-known-symbol.js");
-__webpack_require__(/*! ../../modules/esnext.symbol.matcher */ "./node_modules/core-js-pure/modules/esnext.symbol.matcher.js");
+__webpack_require__(/*! ../../modules/esnext.symbol.custom-matcher */ "./node_modules/core-js-pure/modules/esnext.symbol.custom-matcher.js");
 __webpack_require__(/*! ../../modules/esnext.symbol.observable */ "./node_modules/core-js-pure/modules/esnext.symbol.observable.js");
 // TODO: Remove from `core-js@4`
 __webpack_require__(/*! ../../modules/esnext.symbol.is-registered */ "./node_modules/core-js-pure/modules/esnext.symbol.is-registered.js");
 __webpack_require__(/*! ../../modules/esnext.symbol.is-well-known */ "./node_modules/core-js-pure/modules/esnext.symbol.is-well-known.js");
+__webpack_require__(/*! ../../modules/esnext.symbol.matcher */ "./node_modules/core-js-pure/modules/esnext.symbol.matcher.js");
 __webpack_require__(/*! ../../modules/esnext.symbol.metadata-key */ "./node_modules/core-js-pure/modules/esnext.symbol.metadata-key.js");
 __webpack_require__(/*! ../../modules/esnext.symbol.pattern-match */ "./node_modules/core-js-pure/modules/esnext.symbol.pattern-match.js");
 __webpack_require__(/*! ../../modules/esnext.symbol.replace-all */ "./node_modules/core-js-pure/modules/esnext.symbol.replace-all.js");
@@ -28408,10 +28525,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.36.1',
+  version: '3.37.0',
   mode: IS_PURE ? 'pure' : 'global',
   copyright: '© 2014-2024 Denis Pushkarev (zloirock.ru)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.36.1/LICENSE',
+  license: 'https://github.com/zloirock/core-js/blob/v3.37.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -30519,6 +30636,23 @@ defineWellKnownSymbol('asyncDispose');
 
 /***/ }),
 
+/***/ "./node_modules/core-js-pure/modules/esnext.symbol.custom-matcher.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/core-js-pure/modules/esnext.symbol.custom-matcher.js ***!
+  \***************************************************************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+var defineWellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol-define */ "./node_modules/core-js-pure/internals/well-known-symbol-define.js");
+
+// `Symbol.customMatcher` well-known symbol
+// https://github.com/tc39/proposal-pattern-matching
+defineWellKnownSymbol('customMatcher');
+
+
+/***/ }),
+
 /***/ "./node_modules/core-js-pure/modules/esnext.symbol.dispose.js":
 /*!********************************************************************!*\
   !*** ./node_modules/core-js-pure/modules/esnext.symbol.dispose.js ***!
@@ -31043,7 +31177,7 @@ if (typeof fetch === 'function') {
   }
 }
 
-if ( true && (typeof window === 'undefined' || typeof window.document === 'undefined')) {
+if ( true && typeof window === 'undefined') {
   var f = fetchApi || __webpack_require__(/*! cross-fetch */ "./node_modules/i18next-http-backend/node_modules/cross-fetch/dist/browser-ponyfill.js")
   if (f.default) f = f.default
   exports["default"] = f
@@ -32918,7 +33052,7 @@ class Interpolator {
         this.logger.warn(`failed parsing options string in nesting for key ${key}`, e);
         return `${key}${sep}${optionsString}`;
       }
-      delete clonedOptions.defaultValue;
+      if (clonedOptions.defaultValue && clonedOptions.defaultValue.indexOf(this.prefix) > -1) delete clonedOptions.defaultValue;
       return key;
     }
     while (match = this.nestingRegexp.exec(str)) {
@@ -33994,7 +34128,7 @@ PERFORMANCE OF THIS SOFTWARE.
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"background-webview","version":"1.0.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.12.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.75.0","webpack-cli":"^5.0.1"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","openpgp":"^5.11.1","passbolt-browser-extension":"4.6.2","passbolt-styleguide":"4.6.4","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
+module.exports = JSON.parse('{"name":"background-webview","version":"1.1.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.12.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.75.0","webpack-cli":"^5.0.1"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","openpgp":"^5.11.1","passbolt-browser-extension":"4.7.0","passbolt-styleguide":"4.7.0","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
 
 /***/ })
 
