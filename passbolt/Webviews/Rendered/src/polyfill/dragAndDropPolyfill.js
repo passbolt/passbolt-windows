@@ -1,15 +1,39 @@
 /**
- * Passbolt ~ Open source password manager for teams
- * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * Polyfill for WebView2 Drag and Drop Bug
+ * 
+ * This polyfill patches a known bug in WebView2 where drag and drop functionalities are 
+ * not working as expected. This script provides a mock implementation to temporarily 
+ * overcome the issue.
  *
- * Licensed under GNU Affero General Public License version 3 of the or any later version.
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
+ * More information:
+ * - https://github.com/MicrosoftEdge/WebView2Feedback/issues/2805
+ * - https://github.com/dotnet/maui/issues/2205
  *
- * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
- * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
- * @link          https://www.passbolt.com Passbolt(tm)
+ * This code is based on the work of Iain Fraser. Its license applies and is limited to
+ * this file only. The copyright of passbolt applies to the changes made on the original
+ * copy.
  * @url           https://gist.github.com/iain-fraser/01d35885477f4e29a5a638364040d4f2
+ * 
+ * Copyright (c) 2023 Iain Fraser
+ * Copyright (c) 2024 Passbolt SA (https://www.passbolt.com)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * this software and associated documentation files (the "Software"), to deal in 
+ * the Software without restriction, including without limitation the rights to use, 
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the 
+ * Software, and to permit persons to whom the Software is furnished to do so, 
+ * subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all 
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
  * @since         1.1.0
  */
 
