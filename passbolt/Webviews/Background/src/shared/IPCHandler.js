@@ -139,7 +139,7 @@ class IPCHandler {
     } else {
       ipc = requestArgs[0];
     }
-
+    -
     window.chrome.webview.postMessage(JSON.stringify(ipc));
   }
 

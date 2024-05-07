@@ -12,8 +12,8 @@
  * @since         0.3.0
  */
 
-import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import {USER_LOGGED_OUT} from "../enumerations/appEventEnumeration";
+import AuthLogoutService from "passbolt-styleguide/src/shared/services/api/auth/AuthLogoutService";
 
 class AuthLogoutController {
   /**
@@ -26,7 +26,7 @@ class AuthLogoutController {
     this.worker = worker;
     this.requestId = requestId;
     this.apiClientOptions = apiClientOptions;
-    this.authModel = new AuthModel(this.apiClientOptions);
+    this.authLogoutService = new AuthLogoutService(apiClientOptions);
   }
 
   /**
@@ -48,7 +48,7 @@ class AuthLogoutController {
    * @return {Promise<void>}
    */
   async exec() {
-    await this.authModel.logout();
+    this.authLogoutService.logout()
     // emits a USER_LOGGED_OUT message for the UWP's Main process to handle specific process
     this.worker.port.emit(USER_LOGGED_OUT);
   }

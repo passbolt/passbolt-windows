@@ -9,9 +9,9 @@
 The open source password manager for teams.
 
 [![License](https://img.shields.io/github/license/passbolt/passbolt)](LICENSE.txt)
-<br>
 
-![Passbolt on desktop, mobile, and cli](https://github.com/passbolt/passbolt-links/blob/main/assets/readme/passbolt-insitu.png)
+[![Passbolt on the Windows app](./images/Windows-app-1.webp)](LICENSE.txt)
+<br>
 
 # Introducing Passbolt
 
@@ -31,6 +31,29 @@ The app is built using the UWP platform and it leverages the power of Webview2 t
 By using UWP and Webview2, Passbolt Desktop App provides a consistent and seamless user experience across all Windows 10 devices. The app can adapt to the device it's running on, providing a user interface that's optimized for the screen size and input method of the device. With Passbolt Desktop App, you can manage your passwords securely, and you can do it in a way that's flexible and convenient for you.
 
 # Get Started
+
+## How to install the Windows app
+
+Access the application by clicking on the button below : 
+
+<a href="https://apps.microsoft.com/detail/9PFXS2WVKVPB">![Download passbolt from the Windows store](./images/Windows-store-button-V2.png)</a>
+
+
+## Import an existing passbolt account
+
+After installing the application, you will see instructions on how to download your account kit via the web application. By clicking the ‘Next’ button, you will be guided to the process for uploading your account kit.
+
+<div style="text-align: center;">
+  <img src="./images/desktop-app-get-started.webp" alt="How to export the account kit" style="display: block; margin: 0 auto; width: 75%;">
+</div>
+
+Once the account kit is successfully uploaded, your account information, including your username and the URL of the Passbolt server, will be displayed on the screen.
+
+Please review this information carefully before proceeding. Once your passphrase is validated, the setup of your account will be complete, and you will be able to access the password workspace.
+
+
+
+# Development
 
 ## Requirements
 - Visual Studio >= 2019 ([download](https://visualstudio.microsoft.com/downloads/))
@@ -71,8 +94,6 @@ Click to the start button in the top menu, et voilà.
 ## Trouble shooting
 - I have started the application, visual studio failed when calling API.
  In case you the API is using a self signed certificate, you need Windows to trust it. Checkout this [documentation](https://learn.microsoft.com/en-us/skype-sdk/sdn/articles/installing-the-trusted-root-certificate).
-
-# Development
 
 ## Running tests
 

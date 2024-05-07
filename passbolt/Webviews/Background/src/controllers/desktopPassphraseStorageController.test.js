@@ -30,7 +30,7 @@ describe('DesktopPassphraseStorageController', () => {
     it('Should save the passphrase in memory', async() => {
       expect.assertions(1);
 
-      jest.spyOn(PassphraseStorageService, "set");
+      jest.spyOn(PassphraseStorageService, "set").mockImplementation(() => {});
       const passphrase = "ada@passbolt.com";
       await desktopPassphraseStorageController.exec(passphrase);
 

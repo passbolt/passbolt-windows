@@ -13,10 +13,10 @@
  */
 import {USER_LOGGED_OUT} from "../enumerations/appEventEnumeration";
 import {enableFetchMocks} from "jest-fetch-mock";
-import AuthModel from "passbolt-browser-extension/src/all/background_page/model/auth/authModel";
 import IPCHandler from "../shared/IPCHandler";
 import AuthLogoutController from "./authLogoutController";
 import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
+import AuthLogoutService from "passbolt-styleguide/src/shared/services/api/auth/AuthLogoutService";
 
 describe('AuthLogoutController', () => {
   let authLogoutController, worker;
@@ -24,19 +24,19 @@ describe('AuthLogoutController', () => {
   beforeEach(async() => {
     enableFetchMocks();
     worker = {port: new IPCHandler()};
-    jest.spyOn(AuthModel.prototype, 'logout').mockResolvedValue();
+    jest.spyOn(AuthLogoutService.prototype, 'logout').mockResolvedValue();
     authLogoutController = new AuthLogoutController(worker, "request-id", defaultApiClientOptions());
   });
   describe('AuthLogoutController', () => {
     describe('AuthLogoutController:exec', () => {
-      it('Should call logout from AuthModel', async() => {
+      it('Should call logout from AuthLogoutService', async() => {
         expect.assertions(1);
 
-        jest.spyOn(authLogoutController.authModel, "logout");
+        jest.spyOn(authLogoutController.authLogoutService, "logout");
 
         await authLogoutController.exec();
 
-        expect(authLogoutController.authModel.logout).toHaveBeenCalled();
+        expect(authLogoutController.authLogoutService.logout).toHaveBeenCalled();
       });
 
       it('Should post message with USER_LOGGED_OUT topic if logout succeed', async() => {
