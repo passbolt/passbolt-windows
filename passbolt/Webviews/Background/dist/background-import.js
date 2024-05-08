@@ -24005,6 +24005,7 @@ class StoragePolyfill {
             const keys = Object.keys(storage);
             const values = Object.values(storage);
             localStorage.setItem(keys[0], JSON.stringify(values[0]));
+          
             this.onStorageChanges(keys[0], JSON.stringify(values[0]));
           } else {
             localStorage.setItem(storage, value);
