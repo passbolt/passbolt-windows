@@ -44,6 +44,7 @@ export default class MainAuth {
    */
   waitForAccountInstanciation() {
     this.worker.port.on('passbolt.account.set-current', async(requestId, account) => {
+      await localStorage.clear();
       const controller = new DesktopSetAccountController(this.worker, requestId, account);
       await controller._exec();
       await this.listen();
@@ -54,7 +55,6 @@ export default class MainAuth {
    * Listen event from the main process using bext listener
    */
   async listen() {
-    await localStorage.clear();
     const account = await GetLegacyAccountService.get();
     const apiClientOptions = await BuildApiClientOptionsService.buildFromAccount(account);
     AuthEvents.listen(this.worker, apiClientOptions, account);
