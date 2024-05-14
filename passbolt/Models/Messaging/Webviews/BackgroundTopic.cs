@@ -158,6 +158,7 @@ namespace passbolt.Models.Messaging
                 case ProgressTopics.PROGRESSUPDATEGOALS:
                 case ProgressTopics.PROGRESSOPENDIALOG:
                 case AllowedTopics.BACKGROUND_AFTER_LOGOUT:
+                case FolderTopics.MOVE_STRATEGY_REQUEST:
                     if (ipc.requestId != null)
                     {
                         AllowedTopics.AddRequestId(ipc.requestId);
