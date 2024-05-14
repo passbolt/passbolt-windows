@@ -54,6 +54,8 @@ namespace passbolt.Models
         public object message { get; set; }
         public string requestId { get; set; }
 
+        public bool withMultipleParam { get; set; }
+
 
         /// <summary>
         /// Validation attribut for topic

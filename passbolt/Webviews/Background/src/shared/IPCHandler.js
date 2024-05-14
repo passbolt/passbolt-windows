@@ -168,15 +168,19 @@ class IPCHandler {
 
   /**
    * Emit a request to the addon code and expect a response.
-   * @param message the message
+   * @param topic the topic message
    * @param args the arguments
    * @return Promise
    */
-  request(message, args) {
+  request(topic, ...args) {
     // Generate a request id that will be used by the addon to answer this request.
     const requestId = uuidv4();
+    // Request can have 0 and more params to pass
+    const withMultipleParam = args.length > 1;
+    // In case we just have one param we take only the payload passed
+    const message = withMultipleParam  ? JSON.stringify(args) : args[0];
     // Add the requestId to the request parameters.
-    const requestArgs = [{topic: message, requestId: requestId, message: args}];
+    const requestArgs = [{topic, requestId, message, withMultipleParam}];
     // The promise that is return when you call passbolt.request.
     return new Promise((resolve, reject) => {
       /*
