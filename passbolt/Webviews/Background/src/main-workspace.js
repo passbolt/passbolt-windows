@@ -49,6 +49,7 @@ import StartLoopAuthSessionCheckService from 'passbolt-browser-extension/src/all
 import User from 'passbolt-browser-extension/src/all/background_page/model/user';
 import {PasswordExpiryEvents} from './events/passwordExpiryEvents';
 import GlobalAlarmService from './services/alarm/globalAlarmService';
+import KeepSessionAliveService from 'passbolt-browser-extension/src/all/background_page/service/session_storage/keepSessionAliveService';
 
 /**
  * Represents the main workspace class that sets up an event listener for the `message` event.
@@ -74,6 +75,7 @@ export default class MainWorkspace {
 
     await this.listenToEvents();
     StartLoopAuthSessionCheckService.exec();
+    KeepSessionAliveService.start();
     browser.alarms.onAlarm.removeListener(GlobalAlarmService.exec);
     browser.alarms.onAlarm.addListener(GlobalAlarmService.exec);
   }
