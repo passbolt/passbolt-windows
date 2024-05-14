@@ -1,8 +1,8 @@
 /**
  * Polyfill for WebView2 Drag and Drop Bug
- * 
- * This polyfill patches a known bug in WebView2 where drag and drop functionalities are 
- * not working as expected. This script provides a mock implementation to temporarily 
+ *
+ * This polyfill patches a known bug in WebView2 where drag and drop functionalities are
+ * not working as expected. This script provides a mock implementation to temporarily
  * overcome the issue.
  *
  * More information:
@@ -13,27 +13,27 @@
  * this file only. The copyright of passbolt applies to the changes made on the original
  * copy.
  * @url           https://gist.github.com/iain-fraser/01d35885477f4e29a5a638364040d4f2
- * 
+ *
  * Copyright (c) 2023 Iain Fraser
  * Copyright (c) 2024 Passbolt SA (https://www.passbolt.com)
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of 
- * this software and associated documentation files (the "Software"), to deal in 
- * the Software without restriction, including without limitation the rights to use, 
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the 
- * Software, and to permit persons to whom the Software is furnished to do so, 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+ * Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all 
+ *
+ * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  * @since         1.1.0
  */
 
@@ -101,13 +101,20 @@ class DragAndDropPolyfill {
       const elementBelow = document.elementFromPoint(event.clientX, event.clientY);
       this.ghostElement.style.display = '';
 
+      // Check if the current mouse position is outside the current over element
+      if (this.currentOverElement && !this.isPointInsideElement(this.currentOverElement, event.clientX, event.clientY)) {
+        // Fire dragleave event
+        this.currentOverElement.dispatchEvent(this.createMockDragEvent('dragleave', this.getDragMoveEvent(event)));
+        //this.currentOverElement = null;
+      }
+
       if (elementBelow && elementBelow !== this.currentOverElement) {
+        if (this.currentOverElement) { this.currentOverElement.dispatchEvent(this.createMockDragEvent('dragleave', this.getDragMoveEvent(event))); }
         elementBelow.dispatchEvent(this.createMockDragEvent('dragover', this.getDragMoveEvent(event)));
         this.currentOverElement = elementBelow;
       }
     }
   }
-
   /**
    * Handle the mouseup event
    * @param {MouseEvent} event - The mousedown event
@@ -122,6 +129,7 @@ class DragAndDropPolyfill {
     }
     // Fire dragend event
     this.draggedElement.dispatchEvent(this.createMockDragEvent('dragend', this.getDragUpEvent()));
+
     // Cleanup
     this.isDragging = false;
     this.hasMoved = false;
@@ -175,6 +183,24 @@ class DragAndDropPolyfill {
       clientY: event.clientY
     };
   }
+
+  /**
+   * Check if a point is inside an element's bounds
+   * @param {HTMLElement} element - The element to check
+   * @param {number} x - The x-coordinate of the point
+   * @param {number} y - The y-coordinate of the point
+   * @returns {boolean} - True if the point is inside the element, false otherwise
+   */
+  isPointInsideElement(element, x, y) {
+    const rect = element.getBoundingClientRect();
+    return (
+      x >= rect.left &&
+      x <= rect.right &&
+      y >= rect.top &&
+      y <= rect.bottom
+    );
+  }
+
 
   /**
    * Get the drag up event for dragstart and dragover
