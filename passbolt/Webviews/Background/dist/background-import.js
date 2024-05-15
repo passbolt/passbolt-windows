@@ -24005,7 +24005,6 @@ class StoragePolyfill {
             const keys = Object.keys(storage);
             const values = Object.values(storage);
             localStorage.setItem(keys[0], JSON.stringify(values[0]));
-          
             this.onStorageChanges(keys[0], JSON.stringify(values[0]));
           } else {
             localStorage.setItem(storage, value);
@@ -24423,15 +24422,19 @@ class IPCHandler {
 
   /**
    * Emit a request to the addon code and expect a response.
-   * @param message the message
+   * @param topic the topic message
    * @param args the arguments
    * @return Promise
    */
-  request(message, args) {
+  request(topic, ...args) {
     // Generate a request id that will be used by the addon to answer this request.
     const requestId = (0,uuid__WEBPACK_IMPORTED_MODULE_0__["default"])();
+    // Request can have 0 and more params to pass
+    const withMultipleParam = args.length > 1;
+    // In case we just have one param we take only the payload passed
+    const message = withMultipleParam  ? JSON.stringify(args) : args[0];
     // Add the requestId to the request parameters.
-    const requestArgs = [{topic: message, requestId: requestId, message: args}];
+    const requestArgs = [{topic, requestId, message, withMultipleParam}];
     // The promise that is return when you call passbolt.request.
     return new Promise((resolve, reject) => {
       /*
@@ -34129,7 +34132,7 @@ PERFORMANCE OF THIS SOFTWARE.
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"background-webview","version":"1.1.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.12.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.75.0","webpack-cli":"^5.0.1"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","openpgp":"^5.11.1","passbolt-browser-extension":"4.7.0","passbolt-styleguide":"4.7.0","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
+module.exports = JSON.parse('{"name":"background-webview","version":"1.1.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.12.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.75.0","webpack-cli":"^5.0.1"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","openpgp":"^5.11.1","passbolt-browser-extension":"4.7.0","passbolt-styleguide":"4.7.8","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
 
 /***/ })
 
