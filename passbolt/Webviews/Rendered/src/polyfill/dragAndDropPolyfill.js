@@ -77,6 +77,7 @@ class DragAndDropPolyfill {
    */
   handleMouseMove(event) {
     if (!this.isDragging) { return; }
+
     if (!this.hasMoved) {
       this.hasMoved = true;
       // Fire dragstart event
@@ -85,6 +86,7 @@ class DragAndDropPolyfill {
     }
     // Retrieve image set during the setImage event from the styleguide
     const dragImage = document.getElementById('drag-image');
+
     if (!this.ghostElement && dragImage) {
       // Assign ghost element to drag image from styleguide
       this.ghostElement = dragImage;
@@ -127,20 +129,24 @@ class DragAndDropPolyfill {
     if (this.currentOverElement) {
       this.currentOverElement.dispatchEvent(this.createMockDragEvent('drop', this.getDragUpEvent()));
     }
-    // Fire dragend event
-    this.draggedElement.dispatchEvent(this.createMockDragEvent('dragend', this.getDragUpEvent()));
 
-    // Cleanup
-    this.isDragging = false;
-    this.hasMoved = false;
-    this.dragstart = null;
+    const dragImage = document.getElementById('drag-image');
 
-    if (document.body && this.ghostElement && document.body.contains(this.ghostElement)) {
-      document.body.removeChild(this.ghostElement);
+    if (document.body && dragImage && document.body.contains(dragImage)) {
+      // Fire dragend event
+      this.draggedElement.dispatchEvent(this.createMockDragEvent('dragend', this.getDragUpEvent()));
+
+      // Cleanup
+      this.isDragging = false;
+      this.hasMoved = false;
+      this.dragstart = null;
+
+      document.body.removeChild(dragImage);
       this.ghostElement = null;
+      this.draggedElement = null;
+      this.currentOverElement = null;
     }
-    this.draggedElement = null;
-    this.currentOverElement = null;
+
   }
 
   /**
