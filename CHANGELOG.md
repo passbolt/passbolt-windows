@@ -19,6 +19,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - PB-33444 When dragging resources on folders, the folders keep the \"hover\" state visually
 - PB-33442 The keepSessionAlive seems not to trigger
 - PB-33323 Dragging a private folder to a shared folder seems to be blocked in \"computing changes\" state
+- PB-33445 Sometimes the drag and drop is broken and the \"info\" tooltip stays static on the UI
+
 ### Maintenance
 - PB-22623 Start service worker in an insecure environment
 - PB-22640 As a signed-in user the inform call to action should remain after the port is disconnected only for MV3
