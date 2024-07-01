@@ -1,6 +1,6 @@
 We're pleased to announce the release of the Passbolt Windows Desktop Application Version 1.1, marking the first stable iteration of the application. This version follows a detailed security audit conducted by Cure53, reflecting our focus on maintaining high security standards. As usual, the audit's findings are available publicly on the passbolt website.
 
-This version also aligns with Passbolt v4.6 feature set, ensuring that users transitioning between the web and the desktop environment have a consistent experience. If you want to know more about the current and future status of the application, checkout this blog article: https://www.passbolt.com/blog/stable-release-of-passbolt-windows-desktop-application
+This version also aligns with Passbolt v4.8 feature set, ensuring that users transitioning between the web and the desktop environment have a consistent experience. If you want to know more about the current and future status of the application, checkout this blog article: https://www.passbolt.com/blog/stable-release-of-passbolt-windows-desktop-application
 
 Thank you for your support and for trusting Passbolt. Stay tuned for more updates and the detailed security report.
 
