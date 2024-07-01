@@ -26,6 +26,8 @@ using Windows.Storage.Streams;
 using passbolt.Services.CredentialLocker;
 using passbolt.Models.Cookies;
 using System;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace passbolt.Services.HttpService
 {
@@ -186,10 +188,34 @@ namespace passbolt.Services.HttpService
             CoreWebView2WebResourceResponse webView2WebResourceResponse = sender.Environment.CreateWebResourceResponse(
                 content,
                 (int)response.StatusCode,
-                response.StatusCode.ToString(),
+                response.ReasonPhrase != null ? response.ReasonPhrase : response.StatusCode.ToString(),
                 string.Join('\n', headers));
 
             resource.Response = webView2WebResourceResponse;
+        }
+
+        public void SendErrorToWebview(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource, HttpRequestMessage request, String errorMessage)
+        {
+            //Create a single line message
+            string[] substrings = errorMessage.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            string message = substrings.Length > 1 ? substrings[1] : errorMessage;
+
+            //Create payload to allow the toJson() method on Background
+            string payload = JsonConvert.SerializeObject(new
+            {
+                header = new { message = message },
+                body = errorMessage,
+            });
+
+            var httpContent = new StringContent(payload, Encoding.UTF8, "application/json");
+            var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = httpContent,
+                ReasonPhrase = HttpStatusCode.BadRequest.ToString(),
+                StatusCode = HttpStatusCode.BadRequest,
+                RequestMessage = request
+            };
+            this.SendResponseToWebview(sender, resource, response);
         }
 
         /// <summary>
