@@ -15,6 +15,7 @@
 import AuthImportStorageService from "../services/authImportStorageService";
 import AuthImportEntity from "../entity/AuthImportEntity/authImportEntity";
 import VerifyAccountKitService from "../services/verifyAccountKitService";
+import I18n from "passbolt-browser-extension/src/all/background_page/sdk/i18n";
 
 /**
  * Controller related to the verify account kit.
@@ -53,7 +54,12 @@ class VerifyAccountKitController {
    */
   async exec(encodedAccountKit) {
     const accountKit = await this.verifyAccountKitService.verify(encodedAccountKit);
+    //Check if accout is not a http request
     const authAccountEntity = new AuthImportEntity({account_kit: accountKit});
+    const trustedDomain = new URL(authAccountEntity.account_kit.domain);
+    if(trustedDomain.protocol != "https:") {
+      throw new Error(I18n.t("The Windows application requires the passbolt server to use HTTPS. Please contact your administrator to fix the issue and try again later."))
+    }
     AuthImportStorageService.set(authAccountEntity);
     return accountKit;
   }

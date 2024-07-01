@@ -15,6 +15,7 @@
 using System;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
@@ -247,8 +248,23 @@ namespace passbolt.Controllers
                 else
                 {
                     HttpRequestMessage request = httpService.BuildHttpRequest(resource);
-                    HttpResponseMessage response = httpService.SendRequest(request).Result;
-                    httpService.SendResponseToWebview(sender, resource, response);
+                    try
+                    {
+                        HttpResponseMessage response = httpService.SendRequest(request).Result;
+                        httpService.SendResponseToWebview(sender, resource, response);
+                    }
+                    catch (AggregateException ex)
+                    {
+                        foreach (var innerException in ex.InnerExceptions)
+                        {
+                            // Handle each inner exception based on its type
+                            if (innerException is HttpRequestException httpRequestException)
+                            {
+                                httpService.SendErrorToWebview(sender, resource, request, httpRequestException.InnerException.Message);
+                            }
+                        }
+                    }
+
                 }
             }
         }
