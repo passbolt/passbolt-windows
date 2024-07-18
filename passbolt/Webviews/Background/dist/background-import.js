@@ -23076,6 +23076,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _services_authImportStorageService__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../services/authImportStorageService */ "./src/services/authImportStorageService.js");
 /* harmony import */ var _entity_AuthImportEntity_authImportEntity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../entity/AuthImportEntity/authImportEntity */ "./src/entity/AuthImportEntity/authImportEntity.js");
 /* harmony import */ var _services_verifyAccountKitService__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../services/verifyAccountKitService */ "./src/services/verifyAccountKitService.js");
+/* harmony import */ var passbolt_browser_extension_src_all_background_page_sdk_i18n__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! passbolt-browser-extension/src/all/background_page/sdk/i18n */ "./node_modules/passbolt-browser-extension/src/all/background_page/sdk/i18n.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
@@ -23089,6 +23090,7 @@ __webpack_require__.r(__webpack_exports__);
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         0.3.0
  */
+
 
 
 
@@ -23131,7 +23133,12 @@ class VerifyAccountKitController {
    */
   async exec(encodedAccountKit) {
     const accountKit = await this.verifyAccountKitService.verify(encodedAccountKit);
+    //Check if accout is not a http request
     const authAccountEntity = new _entity_AuthImportEntity_authImportEntity__WEBPACK_IMPORTED_MODULE_1__["default"]({account_kit: accountKit});
+    const trustedDomain = new URL(authAccountEntity.account_kit.domain);
+    if(trustedDomain.protocol != "https:") {
+      throw new Error(passbolt_browser_extension_src_all_background_page_sdk_i18n__WEBPACK_IMPORTED_MODULE_3__["default"].t("The Windows application requires the passbolt server to use HTTPS. Please contact your administrator to fix the issue and try again later."))
+    }
     _services_authImportStorageService__WEBPACK_IMPORTED_MODULE_0__["default"].set(authAccountEntity);
     return accountKit;
   }
@@ -24615,10 +24622,10 @@ module.exports = __webpack_require__(/*! core-js-pure/features/get-iterator-meth
   \*************************************************************************/
 /***/ ((module) => {
 
-function _arrayLikeToArray(arr, len) {
-  if (len == null || len > arr.length) len = arr.length;
-  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-  return arr2;
+function _arrayLikeToArray(r, a) {
+  (null == a || a > r.length) && (a = r.length);
+  for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+  return n;
 }
 module.exports = _arrayLikeToArray, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
@@ -24631,8 +24638,8 @@ module.exports = _arrayLikeToArray, module.exports.__esModule = true, module.exp
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 var _Array$isArray = __webpack_require__(/*! core-js-pure/features/array/is-array.js */ "./node_modules/core-js-pure/features/array/is-array.js");
-function _arrayWithHoles(arr) {
-  if (_Array$isArray(arr)) return arr;
+function _arrayWithHoles(r) {
+  if (_Array$isArray(r)) return r;
 }
 module.exports = _arrayWithHoles, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
@@ -24644,9 +24651,9 @@ module.exports = _arrayWithHoles, module.exports.__esModule = true, module.expor
   \******************************************************************************/
 /***/ ((module) => {
 
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : {
-    "default": obj
+function _interopRequireDefault(e) {
+  return e && e.__esModule ? e : {
+    "default": e
   };
 }
 module.exports = _interopRequireDefault, module.exports.__esModule = true, module.exports["default"] = module.exports;
@@ -24716,8 +24723,8 @@ var arrayWithHoles = __webpack_require__(/*! ./arrayWithHoles.js */ "./node_modu
 var iterableToArrayLimit = __webpack_require__(/*! ./iterableToArrayLimit.js */ "./node_modules/@babel/runtime-corejs3/helpers/iterableToArrayLimit.js");
 var unsupportedIterableToArray = __webpack_require__(/*! ./unsupportedIterableToArray.js */ "./node_modules/@babel/runtime-corejs3/helpers/unsupportedIterableToArray.js");
 var nonIterableRest = __webpack_require__(/*! ./nonIterableRest.js */ "./node_modules/@babel/runtime-corejs3/helpers/nonIterableRest.js");
-function _slicedToArray(arr, i) {
-  return arrayWithHoles(arr) || iterableToArrayLimit(arr, i) || unsupportedIterableToArray(arr, i) || nonIterableRest();
+function _slicedToArray(r, e) {
+  return arrayWithHoles(r) || iterableToArrayLimit(r, e) || unsupportedIterableToArray(r, e) || nonIterableRest();
 }
 module.exports = _slicedToArray, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
@@ -24732,14 +24739,13 @@ module.exports = _slicedToArray, module.exports.__esModule = true, module.export
 var _sliceInstanceProperty = __webpack_require__(/*! core-js-pure/features/instance/slice.js */ "./node_modules/core-js-pure/features/instance/slice.js");
 var _Array$from = __webpack_require__(/*! core-js-pure/features/array/from.js */ "./node_modules/core-js-pure/features/array/from.js");
 var arrayLikeToArray = __webpack_require__(/*! ./arrayLikeToArray.js */ "./node_modules/@babel/runtime-corejs3/helpers/arrayLikeToArray.js");
-function _unsupportedIterableToArray(o, minLen) {
-  var _context;
-  if (!o) return;
-  if (typeof o === "string") return arrayLikeToArray(o, minLen);
-  var n = _sliceInstanceProperty(_context = Object.prototype.toString.call(o)).call(_context, 8, -1);
-  if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return _Array$from(o);
-  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
+function _unsupportedIterableToArray(r, a) {
+  if (r) {
+    var _context;
+    if ("string" == typeof r) return arrayLikeToArray(r, a);
+    var t = _sliceInstanceProperty(_context = {}.toString.call(r)).call(_context, 8, -1);
+    return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? _Array$from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? arrayLikeToArray(r, a) : void 0;
+  }
 }
 module.exports = _unsupportedIterableToArray, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
@@ -28529,10 +28535,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.37.0',
+  version: '3.37.1',
   mode: IS_PURE ? 'pure' : 'global',
   copyright: '© 2014-2024 Denis Pushkarev (zloirock.ru)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.37.0/LICENSE',
+  license: 'https://github.com/zloirock/core-js/blob/v3.37.1/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -31211,7 +31217,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : String(i); }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 
 
@@ -31254,7 +31260,7 @@ var Backend = function () {
     this.type = 'backend';
     this.init(services, options, allOptions);
   }
-  _createClass(Backend, [{
+  return _createClass(Backend, [{
     key: "init",
     value: function init(services) {
       var _this = this;
@@ -31264,9 +31270,10 @@ var Backend = function () {
       this.options = _objectSpread(_objectSpread(_objectSpread({}, getDefaults()), this.options || {}), options);
       this.allOptions = allOptions;
       if (this.services && this.options.reloadInterval) {
-        setInterval(function () {
+        var timer = setInterval(function () {
           return _this.reload();
         }, this.options.reloadInterval);
+        if (_typeof(timer) === 'object' && typeof timer.unref === 'function') timer.unref();
       }
     }
   }, {
@@ -31384,7 +31391,6 @@ var Backend = function () {
       });
     }
   }]);
-  return Backend;
 }();
 Backend.type = 'backend';
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Backend);
@@ -31408,7 +31414,7 @@ __webpack_require__.r(__webpack_exports__);
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : String(i); }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 
@@ -32030,7 +32036,7 @@ class ResourceStore extends EventEmitter {
       silent: false
     };
     for (const m in resources) {
-      if (typeof resources[m] === 'string' || Object.prototype.toString.apply(resources[m]) === '[object Array]') this.addResource(lng, ns, m, resources[m], {
+      if (typeof resources[m] === 'string' || Array.isArray(resources[m])) this.addResource(lng, ns, m, resources[m], {
         silent: true
       });
     }
@@ -32211,7 +32217,7 @@ class Translator extends EventEmitter {
     const joinArrays = options.joinArrays !== undefined ? options.joinArrays : this.options.joinArrays;
     const handleAsObjectInI18nFormat = !this.i18nFormat || this.i18nFormat.handleAsObject;
     const handleAsObject = typeof res !== 'string' && typeof res !== 'boolean' && typeof res !== 'number';
-    if (handleAsObjectInI18nFormat && res && handleAsObject && noObject.indexOf(resType) < 0 && !(typeof joinArrays === 'string' && resType === '[object Array]')) {
+    if (handleAsObjectInI18nFormat && res && handleAsObject && noObject.indexOf(resType) < 0 && !(typeof joinArrays === 'string' && Array.isArray(res))) {
       if (!options.returnObjects && !this.options.returnObjects) {
         if (!this.options.returnedObjectHandler) {
           this.logger.warn('accessing an object - but returnObjects options is not enabled!');
@@ -32228,7 +32234,7 @@ class Translator extends EventEmitter {
         return r;
       }
       if (keySeparator) {
-        const resTypeIsArray = resType === '[object Array]';
+        const resTypeIsArray = Array.isArray(res);
         const copy = resTypeIsArray ? [] : {};
         const newKeyToUse = resTypeIsArray ? resExactUsedKey : resUsedKey;
         for (const m in res) {
@@ -32246,7 +32252,7 @@ class Translator extends EventEmitter {
         }
         res = copy;
       }
-    } else if (handleAsObjectInI18nFormat && typeof joinArrays === 'string' && resType === '[object Array]') {
+    } else if (handleAsObjectInI18nFormat && typeof joinArrays === 'string' && Array.isArray(res)) {
       res = res.join(joinArrays);
       if (res) res = this.extendTranslation(res, keys, options, lastKey);
     } else {
@@ -32595,7 +32601,7 @@ class LanguageUtil {
     if (!fallbacks) return [];
     if (typeof fallbacks === 'function') fallbacks = fallbacks(code);
     if (typeof fallbacks === 'string') fallbacks = [fallbacks];
-    if (Object.prototype.toString.apply(fallbacks) === '[object Array]') return fallbacks;
+    if (Array.isArray(fallbacks)) return fallbacks;
     if (!code) return fallbacks.default || [];
     let found = fallbacks[code];
     if (!found) found = fallbacks[this.getScriptPartFromCode(code)];
@@ -32925,20 +32931,38 @@ class Interpolator {
     if (!options.interpolation) options.interpolation = {
       escapeValue: true
     };
-    const iOpts = options.interpolation;
-    this.escape = iOpts.escape !== undefined ? iOpts.escape : escape;
-    this.escapeValue = iOpts.escapeValue !== undefined ? iOpts.escapeValue : true;
-    this.useRawValueToEscape = iOpts.useRawValueToEscape !== undefined ? iOpts.useRawValueToEscape : false;
-    this.prefix = iOpts.prefix ? regexEscape(iOpts.prefix) : iOpts.prefixEscaped || '{{';
-    this.suffix = iOpts.suffix ? regexEscape(iOpts.suffix) : iOpts.suffixEscaped || '}}';
-    this.formatSeparator = iOpts.formatSeparator ? iOpts.formatSeparator : iOpts.formatSeparator || ',';
-    this.unescapePrefix = iOpts.unescapeSuffix ? '' : iOpts.unescapePrefix || '-';
-    this.unescapeSuffix = this.unescapePrefix ? '' : iOpts.unescapeSuffix || '';
-    this.nestingPrefix = iOpts.nestingPrefix ? regexEscape(iOpts.nestingPrefix) : iOpts.nestingPrefixEscaped || regexEscape('$t(');
-    this.nestingSuffix = iOpts.nestingSuffix ? regexEscape(iOpts.nestingSuffix) : iOpts.nestingSuffixEscaped || regexEscape(')');
-    this.nestingOptionsSeparator = iOpts.nestingOptionsSeparator ? iOpts.nestingOptionsSeparator : iOpts.nestingOptionsSeparator || ',';
-    this.maxReplaces = iOpts.maxReplaces ? iOpts.maxReplaces : 1000;
-    this.alwaysFormat = iOpts.alwaysFormat !== undefined ? iOpts.alwaysFormat : false;
+    const {
+      escape: escape$1,
+      escapeValue,
+      useRawValueToEscape,
+      prefix,
+      prefixEscaped,
+      suffix,
+      suffixEscaped,
+      formatSeparator,
+      unescapeSuffix,
+      unescapePrefix,
+      nestingPrefix,
+      nestingPrefixEscaped,
+      nestingSuffix,
+      nestingSuffixEscaped,
+      nestingOptionsSeparator,
+      maxReplaces,
+      alwaysFormat
+    } = options.interpolation;
+    this.escape = escape$1 !== undefined ? escape$1 : escape;
+    this.escapeValue = escapeValue !== undefined ? escapeValue : true;
+    this.useRawValueToEscape = useRawValueToEscape !== undefined ? useRawValueToEscape : false;
+    this.prefix = prefix ? regexEscape(prefix) : prefixEscaped || '{{';
+    this.suffix = suffix ? regexEscape(suffix) : suffixEscaped || '}}';
+    this.formatSeparator = formatSeparator || ',';
+    this.unescapePrefix = unescapeSuffix ? '' : unescapePrefix || '-';
+    this.unescapeSuffix = this.unescapePrefix ? '' : unescapeSuffix || '';
+    this.nestingPrefix = nestingPrefix ? regexEscape(nestingPrefix) : nestingPrefixEscaped || regexEscape('$t(');
+    this.nestingSuffix = nestingSuffix ? regexEscape(nestingSuffix) : nestingSuffixEscaped || regexEscape(')');
+    this.nestingOptionsSeparator = nestingOptionsSeparator || ',';
+    this.maxReplaces = maxReplaces || 1000;
+    this.alwaysFormat = alwaysFormat !== undefined ? alwaysFormat : false;
     this.resetRegExp();
   }
   reset() {
@@ -33108,13 +33132,15 @@ function parseFormatStr(formatStr) {
     } else {
       const opts = optStr.split(';');
       opts.forEach(opt => {
-        if (!opt) return;
-        const [key, ...rest] = opt.split(':');
-        const val = rest.join(':').trim().replace(/^'+|'+$/g, '');
-        if (!formatOptions[key.trim()]) formatOptions[key.trim()] = val;
-        if (val === 'false') formatOptions[key.trim()] = false;
-        if (val === 'true') formatOptions[key.trim()] = true;
-        if (!isNaN(val)) formatOptions[key.trim()] = parseInt(val, 10);
+        if (opt) {
+          const [key, ...rest] = opt.split(':');
+          const val = rest.join(':').trim().replace(/^'+|'+$/g, '');
+          const trimmedKey = key.trim();
+          if (!formatOptions[trimmedKey]) formatOptions[trimmedKey] = val;
+          if (val === 'false') formatOptions[trimmedKey] = false;
+          if (val === 'true') formatOptions[trimmedKey] = true;
+          if (!isNaN(val)) formatOptions[trimmedKey] = parseInt(val, 10);
+        }
       });
     }
   }
@@ -33918,7 +33944,7 @@ class I18n extends EventEmitter {
     const deferred = defer();
     if (typeof lngs === 'string') lngs = [lngs];
     const preloaded = this.options.preload || [];
-    const newLngs = lngs.filter(lng => preloaded.indexOf(lng) < 0);
+    const newLngs = lngs.filter(lng => preloaded.indexOf(lng) < 0 && this.services.languageUtils.isSupportedCode(lng));
     if (!newLngs.length) {
       if (callback) callback();
       return Promise.resolve();
@@ -34132,7 +34158,7 @@ PERFORMANCE OF THIS SOFTWARE.
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"background-webview","version":"1.1.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.12.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.75.0","webpack-cli":"^5.0.1"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","openpgp":"^5.11.1","passbolt-browser-extension":"4.7.8","passbolt-styleguide":"4.7.0","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
+module.exports = JSON.parse('{"name":"background-webview","version":"1.2.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.12.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.75.0","webpack-cli":"^5.0.1"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","openpgp":"^5.11.1","passbolt-browser-extension":"4.8.2","passbolt-styleguide":"4.8.0","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
 
 /***/ })
 

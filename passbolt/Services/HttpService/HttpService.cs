@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
@@ -188,7 +188,7 @@ namespace passbolt.Services.HttpService
             CoreWebView2WebResourceResponse webView2WebResourceResponse = sender.Environment.CreateWebResourceResponse(
                 content,
                 (int)response.StatusCode,
-                response.ReasonPhrase != null ? response.ReasonPhrase : response.StatusCode.ToString(),
+                !string.IsNullOrEmpty(response.ReasonPhrase) ? response.ReasonPhrase : response.StatusCode.ToString(),
                 string.Join('\n', headers));
 
             resource.Response = webView2WebResourceResponse;
