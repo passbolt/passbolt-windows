@@ -47,8 +47,8 @@ class AppImport extends Component {
     return {
       port: props.port, // The background page communication port
       storage: props.storage, // The storage
+      extensionVersion: version,
       siteSettings: {
-        version: version,
         url: ""
       },
     };
