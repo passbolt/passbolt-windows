@@ -37,6 +37,7 @@ class AppImport extends Component {
   }
 
   async componentDidMount() {
+    this.props.port.emit("passbolt.rendered.started");
     await localStorage.clear();
   }
 
