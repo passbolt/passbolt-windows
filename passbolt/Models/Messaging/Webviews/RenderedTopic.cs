@@ -26,6 +26,7 @@ namespace passbolt.Models.Messaging
     public class RenderedTopic : WebviewTopic
     {
         private List<string> topics = new List<string>();
+        private bool isRefreshed = false;
 
         public RenderedTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService, RenderedWebviewService renderedWebviewService) : base(background, rendered, localFolderService, renderedWebviewService) {
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AccountRecoveryTopics)));
@@ -56,6 +57,8 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(UserTopics)));
             topics.Add(AllowedTopics.RENDERED_READY);
+            topics.Add(AllowedTopics.RENDERED_RELOAD);
+            topics.Add(AllowedTopics.RENDERED_STARTED);
         }
 
 
@@ -79,13 +82,25 @@ namespace passbolt.Models.Messaging
             {
                 AllowedTopics.AddRequestId(ipc.requestId);
             }
-
+            if(ipc.topic == AllowedTopics.RENDERED_STARTED)
+            {
+                if(this.isRefreshed)
+                {
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_READY)));
+                    this.isRefreshed = false;
+                }
+            }
             if (ipc.topic == RbacTopics.FIND_ME)
             {
                 //We intercept the requestId and save it to map the response
                 AllowedTopics.AddPendingRequest(ipc.requestId, RbacTopics.FIND_ME);
             }
-
+            if(ipc.topic == AllowedTopics.RENDERED_RELOAD)
+            {
+                rendered.CoreWebView2.Reload();
+                this.isRefreshed = true;
+                return;
+            }
 
             background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
         }
