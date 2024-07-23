@@ -125,6 +125,17 @@ namespace passbolt.Models.Messaging
                     await localFolderService.CreateBackgroundIndex(this.currentIndexBackground, "background-auth", metaData.domain);
                     background.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, "/index-auth.html"));
                     break;
+                case AllowedTopics.BACKGROUND_AUTHENTICATION_ERROR:
+                    //This case can happen when a certificate and/or the API cannot be reached. In this case we cancel the account saving and redirect background to import
+                    if(currentIndexRendered == "index-import.html" && currentIndexBackground == "index-auth.html")
+                    {
+                        await this.credentialLockerService.Remove("account-metadata");
+                        await this.credentialLockerService.Remove("account-secret");
+                        await localFolderService.RemoveFile("Background", "index-auth.html");
+                        await localFolderService.CreateBackgroundIndex(this.currentIndexBackground, "background-import");
+                        background.Source = new Uri(UriBuilderHelper.BuildHostUri(BackgroundNavigationService.Instance.trustedUrl, "/Background/index-import.html"));
+                    }
+                    break;
                 case AllowedTopics.BACKGROUND_DOWNLOAD_FILE:
                     var downloadService = new DownloadService();
                     await downloadService.Download(ipc);
