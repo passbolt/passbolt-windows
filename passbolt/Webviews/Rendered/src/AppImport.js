@@ -37,6 +37,7 @@ class AppImport extends Component {
   }
 
   async componentDidMount() {
+    this.props.port.emit("passbolt.rendered.started");
     await localStorage.clear();
   }
 
@@ -47,8 +48,8 @@ class AppImport extends Component {
     return {
       port: props.port, // The background page communication port
       storage: props.storage, // The storage
+      extensionVersion: version,
       siteSettings: {
-        version: version,
         url: ""
       },
     };

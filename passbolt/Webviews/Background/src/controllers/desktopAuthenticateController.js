@@ -13,7 +13,7 @@
  */
 
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
-import {REQUIRE_MFA, USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
+import {BACKGROUND_AUTHENTICATION_ERROR, REQUIRE_MFA, USER_LOGGED_IN} from "../enumerations/appEventEnumeration";
 import LoginUserService from "../services/loginUserService";
 import OrganizationSettingsModel from "passbolt-browser-extension/src/all/background_page/model/organizationSettings/organizationSettingsModel";
 
@@ -47,6 +47,7 @@ class DesktopAuthenticateController {
     } catch (error) {
       console.error(error);
       this.worker.port.emit(this.requestId, 'ERROR', error);
+      this.worker.port.emit(BACKGROUND_AUTHENTICATION_ERROR);
     }
   }
 
