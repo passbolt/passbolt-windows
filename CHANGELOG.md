@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.0] - 2024-07-25
+
+### Maintenance
+- PB-34181 - As a windows app I should support the 4.9.0 version of the browser extension
+
+### Fixed
+- PB-33915 - When a an unexpected error is displayed, the 'try again' button seems to have no effect
+- PB-34091 - Fix the import account kit button after the webview refreshing
+- PB-33916 - On import/auth screen the heart icons tooltip displays "Server 1.2.0" instead of "Client 1.2.0”
+
 ## [1.2.0] - 2024-07-01
 ### Improved
 - PB-33686 As a user I should be signed out after browser update
