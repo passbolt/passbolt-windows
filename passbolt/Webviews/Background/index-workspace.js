@@ -13,6 +13,7 @@
  */
 
 import './src/polyfill/browserPolyfill';
+import "./src/polyfill/commandPolyfill"
 import './src/polyfill/desktopPolyfill';
 import './src/polyfill/storagePolyfill';
 import './src/polyfill/runtimePolyfill';
