@@ -3334,7 +3334,7 @@ class AccountRecoveryPrivateKeyEntity extends passbolt_styleguide_src_shared_mod
     // Associations
     if (this._props.account_recovery_private_key_passwords) {
       const sanitizedCollection = _accountRecoveryPrivateKeyPasswordsCollection__WEBPACK_IMPORTED_MODULE_2__["default"].sanitizeDto(this._props.account_recovery_private_key_passwords);
-      this._account_recovery_private_key_passwords = new _accountRecoveryPrivateKeyPasswordsCollection__WEBPACK_IMPORTED_MODULE_2__["default"](sanitizedCollection, {clone: false});
+      this._account_recovery_private_key_passwords = new _accountRecoveryPrivateKeyPasswordsCollection__WEBPACK_IMPORTED_MODULE_2__["default"](sanitizedCollection, {...options, clone: false});
       delete this._props.account_recovery_private_key_passwords;
     }
   }
@@ -3731,7 +3731,7 @@ class AccountRecoveryPrivateKeyPasswordsCollection extends passbolt_styleguide_s
     });
     // Directly push into the private property _items[]
     this._props.forEach(accountRecoveryPrivateKeyPassword => {
-      this._items.push(new _accountRecoveryPrivateKeyPasswordEntity__WEBPACK_IMPORTED_MODULE_1__["default"](accountRecoveryPrivateKeyPassword, {clone: false}));
+      this._items.push(new _accountRecoveryPrivateKeyPasswordEntity__WEBPACK_IMPORTED_MODULE_1__["default"](accountRecoveryPrivateKeyPassword, {...options, clone: false}));
     });
 
     // We do not keep original props
@@ -3939,7 +3939,7 @@ class AccountRecoveryUserSettingEntity extends passbolt_styleguide_src_shared_mo
     ), options);
 
     if (this._props.account_recovery_private_key) {
-      this._account_recovery_private_key = new _accountRecoveryPrivateKeyEntity__WEBPACK_IMPORTED_MODULE_0__["default"](this._props.account_recovery_private_key, {clone: false});
+      this._account_recovery_private_key = new _accountRecoveryPrivateKeyEntity__WEBPACK_IMPORTED_MODULE_0__["default"](this._props.account_recovery_private_key, {...options, clone: false});
       delete this._props.account_recovery_private_key;
     }
   }
@@ -4134,15 +4134,15 @@ __webpack_require__.r(__webpack_exports__);
 const ENTITY_NAME = "PendingAccountRecoveryRequest";
 const STATUS_PENDING = "pending";
 
-class PendingAccountRecoveryEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
+class PendingAccountRecoveryRequestEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
   /**
    * @inheritDoc
    */
   constructor(dto = {}, options = {}) {
     super(passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__["default"].validate(
-      PendingAccountRecoveryEntity.ENTITY_NAME,
+      PendingAccountRecoveryRequestEntity.ENTITY_NAME,
       dto,
-      PendingAccountRecoveryEntity.getSchema()
+      PendingAccountRecoveryRequestEntity.getSchema()
     ), options);
   }
 
@@ -4220,7 +4220,7 @@ class PendingAccountRecoveryEntity extends passbolt_styleguide_src_shared_models
   }
 }
 
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (PendingAccountRecoveryEntity);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (PendingAccountRecoveryRequestEntity);
 
 
 /***/ }),
@@ -4323,12 +4323,9 @@ class AbstractAccountEntity extends passbolt_styleguide_src_shared_models_entity
         "first_name": profileEntitySchema.properties.first_name,
         "last_name": profileEntitySchema.properties.last_name,
         "locale": {
-          "anyOf": [{
-            "type": "string",
-            "pattern": /^[a-z]{2}-[A-Z]{2}$/,
-          }, {
-            "type": "null"
-          }]
+          "type": "string",
+          "pattern": /^[a-z]{2}-[A-Z]{2}$/,
+          "nullable": true,
         },
         "security_token": _securityToken_securityTokenEntity__WEBPACK_IMPORTED_MODULE_3__["default"].getSchema(),
       }
@@ -4653,14 +4650,11 @@ class AccountEntity extends _abstractAccountEntity__WEBPACK_IMPORTED_MODULE_0__[
         ... abstractAccountEntitySchema.properties,
         "type": {
           "type": "string",
-          "pattern": `^${AccountEntity.TYPE_ACCOUNT}$`,
+          "enum": [AccountEntity.TYPE_ACCOUNT],
         },
         "role_name": {
-          "anyOf": [
-            passbolt_styleguide_src_shared_models_entity_role_roleEntity__WEBPACK_IMPORTED_MODULE_2__["default"].getSchema().properties.name,
-            {
-              "type": "null"
-            }]
+          ...passbolt_styleguide_src_shared_models_entity_role_roleEntity__WEBPACK_IMPORTED_MODULE_2__["default"].getSchema().properties.name,
+          "nullable": true,
         },
       }
     };
@@ -4787,8 +4781,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entity */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entity.js");
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
+/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entityV2 */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2.js");
+/* harmony import */ var _avatarUrlEntity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./avatarUrlEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/avatar/avatarUrlEntity.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -4809,16 +4803,18 @@ const ENTITY_NAME = 'Avatar';
 const AVATAR_URL_SIZE_SMALL = 'small';
 const AVATAR_URL_SIZE_MEDIUM = 'medium';
 
-class AvatarEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
+class AvatarEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__["default"] {
   /**
    * @inheritDoc
    */
-  constructor(avatarDto, options = {}) {
-    super(passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__["default"].validate(
-      AvatarEntity.ENTITY_NAME,
-      avatarDto,
-      AvatarEntity.getSchema()
-    ), options);
+  constructor(dto = {}, options = {}) {
+    super(dto, options);
+
+    // Associations
+    if (this._props.url) {
+      this._url = new _avatarUrlEntity__WEBPACK_IMPORTED_MODULE_1__["default"](this._props.url, {...options, clone: false});
+      delete this._props.url;
+    }
   }
 
   /**
@@ -4836,23 +4832,6 @@ class AvatarEntity extends passbolt_styleguide_src_shared_models_entity_abstract
           "type": "string",
           "format": "uuid"
         },
-        "url": {
-          "type": "object",
-          "required": [
-            AvatarEntity.AVATAR_URL_SIZE_MEDIUM,
-            AvatarEntity.AVATAR_URL_SIZE_SMALL
-          ],
-          "properties": {
-            "medium": {
-              "type": "string",
-              // "format": "x-url"
-            },
-            "small": {
-              "type": "string",
-              // "format": "x-url"
-            }
-          }
-        },
         "created": {
           "type": "string",
           "format": "date-time"
@@ -4861,6 +4840,7 @@ class AvatarEntity extends passbolt_styleguide_src_shared_models_entity_abstract
           "type": "string",
           "format": "date-time"
         },
+        "url": _avatarUrlEntity__WEBPACK_IMPORTED_MODULE_1__["default"].getSchema(),
       }
     };
   }
@@ -4880,18 +4860,18 @@ class AvatarEntity extends passbolt_styleguide_src_shared_models_entity_abstract
 
   /**
    * Get url (medium size)
-   * @returns {*}
+   * @returns {string}
    */
   get urlMedium() {
-    return this._props.url["medium"];
+    return this._url.medium;
   }
 
   /**
    * Get url (small size)
-   * @returns {*}
+   * @returns {string}
    */
   get urlSmall() {
-    return this._props.url["small"];
+    return this._url.small;
   }
 
   /**
@@ -4908,6 +4888,17 @@ class AvatarEntity extends passbolt_styleguide_src_shared_models_entity_abstract
    */
   get modified() {
     return this._props.modified || null;
+  }
+
+  /**
+   * Return a DTO ready to be sent to API
+   * @param {object} [contain] optional for example {profile: {avatar:true}}
+   * @returns {*}
+   */
+  toDto(contain) {
+    const result = super.toDto(contain);
+    result.url = this._url.toDto();
+    return result;
   }
 
   /*
@@ -4945,6 +4936,117 @@ class AvatarEntity extends passbolt_styleguide_src_shared_models_entity_abstract
 
 /***/ }),
 
+/***/ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/avatar/avatarUrlEntity.js":
+/*!****************************************************************************************************************!*\
+  !*** ./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/avatar/avatarUrlEntity.js ***!
+  \****************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entityV2 */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2.js");
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         4.9.0
+ */
+
+
+const ENTITY_NAME = "AvatarUrl";
+const AVATAR_URL_SIZE_SMALL = "small";
+const AVATAR_URL_SIZE_MEDIUM = "medium";
+
+class AvatarUrlEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__["default"] {
+  /**
+   * Get avatar entity schema
+   * @returns {Object} schema
+   */
+  static getSchema() {
+    return {
+      "type": "object",
+      "required": [
+        AvatarUrlEntity.AVATAR_URL_SIZE_MEDIUM,
+        AvatarUrlEntity.AVATAR_URL_SIZE_SMALL
+      ],
+      "properties": {
+        "medium": {
+          "type": "string",
+        },
+        "small": {
+          "type": "string",
+        }
+      }
+    };
+  }
+
+  /*
+   * ==================================================
+   * Dynamic properties getters
+   * ==================================================
+   */
+
+  /**
+   * Get url (medium size)
+   * @returns {string}
+   */
+  get medium() {
+    return this._props.medium;
+  }
+
+  /**
+   * Get url (small size)
+   * @returns {string}
+   */
+  get small() {
+    return this._props.small;
+  }
+
+  /*
+   * ==================================================
+   * Static properties getters
+   * ==================================================
+   */
+  /**
+   * AvatarUrlEntity.ENTITY_NAME
+   * @returns {string}
+   */
+  static get ENTITY_NAME() {
+    return ENTITY_NAME;
+  }
+
+  /**
+   * AvatarUrlEntity.AVATAR_URL_SIZE_MEDIUM
+   * @returns {string}
+   */
+  static get AVATAR_URL_SIZE_MEDIUM() {
+    return AVATAR_URL_SIZE_MEDIUM;
+  }
+
+  /**
+   * AvatarUrlEntity.AVATAR_URL_SIZE_SMALL
+   * @returns {string}
+   */
+  static get AVATAR_URL_SIZE_SMALL() {
+    return AVATAR_URL_SIZE_SMALL;
+  }
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (AvatarUrlEntity);
+
+
+/***/ }),
+
 /***/ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/gpgkey/gpgkeyEntity.js":
 /*!*************************************************************************************************************!*\
   !*** ./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/gpgkey/gpgkeyEntity.js ***!
@@ -4956,8 +5058,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entity */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entity.js");
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
+/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entityV2 */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2020 Passbolt SA (https://www.passbolt.com)
@@ -4974,7 +5075,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 const ENTITY_NAME = 'gpgkey';
 
 const FINGERPRINT_MIN_LENGTH = 40;
@@ -4982,18 +5082,7 @@ const FINGERPRINT_MAX_LENGTH = 40;
 const KEY_ID_MIN_LENGTH = 8;
 const KEY_ID_MAX_LENGTH = 16;
 
-class GpgkeyEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
-  /**
-   * @inheritDoc
-   */
-  constructor(gpgkeyDto, options = {}) {
-    super(passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__["default"].validate(
-      GpgkeyEntity.ENTITY_NAME,
-      gpgkeyDto,
-      GpgkeyEntity.getSchema()
-    ), options);
-  }
-
+class GpgkeyEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__["default"] {
   /**
    * Get gpgkey entity schema
    * @returns {Object} schema
@@ -5014,6 +5103,7 @@ class GpgkeyEntity extends passbolt_styleguide_src_shared_models_entity_abstract
           "type": "string",
           "format": "uuid"
         },
+        //@todo: enforce fingerprint checks with regexp like the other fingerprint schema
         "fingerprint": {
           "type": "string",
           "minLength": FINGERPRINT_MIN_LENGTH,
@@ -5026,21 +5116,15 @@ class GpgkeyEntity extends passbolt_styleguide_src_shared_models_entity_abstract
           "type": "boolean"
         },
         "type": {
-          "anyOf": [{
-            "type": "string"
-          }, {
-            "type": "null"
-          }]
+          "type": "string",
+          "nullable": true,
         },
         "uid": {
           "type": "string"
         },
         "bits": {
-          "anyOf": [{
-            "type": "integer",
-          }, {
-            "type": "null"
-          }]
+          "type": "integer",
+          "nullable": true,
         },
         "key_id": {
           "type": "string",
@@ -5052,12 +5136,9 @@ class GpgkeyEntity extends passbolt_styleguide_src_shared_models_entity_abstract
           "format": "date-time"
         },
         "expires": {
-          "anyOf": [{
-            "type": "string",
-            "format": "date-time"
-          }, {
-            "type": "null"
-          }]
+          "type": "string",
+          "format": "date-time",
+          "nullable": true,
         },
         "created": {
           "type": "string",
@@ -5165,10 +5246,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entity */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entity.js");
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
-/* harmony import */ var validator__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! validator */ "./node_modules/validator/index.js");
-/* harmony import */ var validator__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(validator__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var validator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! validator */ "./node_modules/validator/index.js");
+/* harmony import */ var validator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(validator__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entityV2 */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -5185,21 +5265,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 const ENTITY_NAME = 'GroupUser';
 
-class GroupUserEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
-  /**
-   * @inheritDoc
-   */
-  constructor(groupUserDto, options = {}) {
-    super(passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__["default"].validate(
-      GroupUserEntity.ENTITY_NAME,
-      groupUserDto,
-      GroupUserEntity.getSchema()
-    ), options);
-  }
-
+class GroupUserEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__["default"] {
   /**
    * Get groupUser entity schema
    * @returns {Object} schema
@@ -5242,7 +5310,7 @@ class GroupUserEntity extends passbolt_styleguide_src_shared_models_entity_abstr
 
   /**
    * Return a DTO ready to be sent to API
-   * @returns {*}
+   * @returns {Object}
    */
   toDto() {
     return Object.assign({}, this._props);
@@ -5271,7 +5339,7 @@ class GroupUserEntity extends passbolt_styleguide_src_shared_models_entity_abstr
 
   /**
    * Get groupUser group id
-   * @returns {string} uuid
+   * @returns {(string|null)} uuid
    */
   get groupId() {
     return this._props.group_id || null;
@@ -5279,7 +5347,7 @@ class GroupUserEntity extends passbolt_styleguide_src_shared_models_entity_abstr
 
   /**
    * Get group role
-   * @returns {boolean} true if admin
+   * @returns {boolean} true if group manager
    */
   get isAdmin() {
     return this._props.is_admin;
@@ -5306,7 +5374,7 @@ class GroupUserEntity extends passbolt_styleguide_src_shared_models_entity_abstr
    * @throws {TypeError} if id is not UUID
    */
   set id(id) {
-    if (!validator__WEBPACK_IMPORTED_MODULE_2___default().isUUID(id)) {
+    if (!validator__WEBPACK_IMPORTED_MODULE_1___default().isUUID(id)) {
       throw new TypeError('The group user id should be a valid UUID.');
     }
     this._props.id = id;
@@ -5350,9 +5418,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entityCollection__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entityCollection */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityCollection.js");
+/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entityV2Collection__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entityV2Collection */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2Collection.js");
 /* harmony import */ var _groupUserEntity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./groupUserEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/groupUser/groupUserEntity.js");
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -5369,31 +5436,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
 const ENTITY_NAME = 'GroupsUsers';
 
-class GroupsUsersCollection extends passbolt_styleguide_src_shared_models_entity_abstract_entityCollection__WEBPACK_IMPORTED_MODULE_0__["default"] {
+class GroupsUsersCollection extends passbolt_styleguide_src_shared_models_entity_abstract_entityV2Collection__WEBPACK_IMPORTED_MODULE_0__["default"] {
   /**
    * @inheritDoc
    */
-  constructor(groupsUsersDto, options = {}) {
-    super(passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_2__["default"].validate(
-      GroupsUsersCollection.ENTITY_NAME,
-      groupsUsersDto,
-      GroupsUsersCollection.getSchema()
-    ), options);
-
-    /*
-     * Note: there is no "multi-item" validation
-     * Collection validation will fail at the first item that doesn't validate
-     */
-    this._props.forEach(groupUser => {
-      this.push(new _groupUserEntity__WEBPACK_IMPORTED_MODULE_1__["default"](groupUser, {clone: false}));
-    });
-
-    // We do not keep original props
-    this._props = null;
+  get entityClass() {
+    return _groupUserEntity__WEBPACK_IMPORTED_MODULE_1__["default"];
   }
 
   /**
@@ -5456,26 +5506,6 @@ class GroupsUsersCollection extends passbolt_styleguide_src_shared_models_entity
    */
   static get ENTITY_NAME() {
     return ENTITY_NAME;
-  }
-
-  /*
-   * ==================================================
-   * Setters
-   * ==================================================
-   */
-  /**
-   * Push a copy of the groupUser to the list
-   * @param {object} groupUser DTO or GroupUserEntity
-   */
-  push(groupUser) {
-    if (!groupUser || typeof groupUser !== 'object') {
-      throw new TypeError(`GroupUsersEntity push parameter should be an object.`);
-    }
-    if (groupUser instanceof _groupUserEntity__WEBPACK_IMPORTED_MODULE_1__["default"]) {
-      groupUser = groupUser.toDto(_groupUserEntity__WEBPACK_IMPORTED_MODULE_1__["default"].ALL_CONTAIN_OPTIONS); // clone
-    }
-    groupUser = new _groupUserEntity__WEBPACK_IMPORTED_MODULE_1__["default"](groupUser); // validate
-    super.push(groupUser);
   }
 
   /*
@@ -5596,11 +5626,8 @@ class OrganizationSettingsEntity extends passbolt_styleguide_src_shared_models_e
           "type": "object"
         },
         "serverTimeDiff": {
-          "anyOf": [{
-            "type": "integer"
-          }, {
-            "type": "null"
-          }]
+          "type": "integer",
+          "nullable": true,
         },
       }
     };
@@ -5792,9 +5819,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entity */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entity.js");
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
-/* harmony import */ var _avatar_avatarEntity__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../avatar/avatarEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/avatar/avatarEntity.js");
+/* harmony import */ var _avatar_avatarEntity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../avatar/avatarEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/avatar/avatarEntity.js");
+/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entityV2 */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -5812,23 +5838,18 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 const ENTITY_NAME = 'Profile';
 
-class ProfileEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
+class ProfileEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_1__["default"] {
   /**
    * @inheritDoc
    */
-  constructor(profileDto, options = {}) {
-    super(passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__["default"].validate(
-      ProfileEntity.ENTITY_NAME,
-      profileDto,
-      ProfileEntity.getSchema()
-    ), options);
+  constructor(dto = {}, options = {}) {
+    super(dto, options);
 
     // Association
     if (this._props.avatar) {
-      this._avatar = new _avatar_avatarEntity__WEBPACK_IMPORTED_MODULE_2__["default"](this._props.avatar, {clone: false});
+      this._avatar = new _avatar_avatarEntity__WEBPACK_IMPORTED_MODULE_0__["default"](this._props.avatar, {...options, clone: false});
       delete this._props.avatar;
     }
   }
@@ -5871,7 +5892,7 @@ class ProfileEntity extends passbolt_styleguide_src_shared_models_entity_abstrac
           "type": "string",
           "format": "date-time"
         },
-        "avatar": _avatar_avatarEntity__WEBPACK_IMPORTED_MODULE_2__["default"].getSchema()
+        "avatar": _avatar_avatarEntity__WEBPACK_IMPORTED_MODULE_0__["default"].getSchema()
       }
     };
   }
@@ -5916,7 +5937,7 @@ class ProfileEntity extends passbolt_styleguide_src_shared_models_entity_abstrac
   }
 
   /**
-   * PermissionEntity.ALL_CONTAIN_OPTIONS
+   * ProfileEntity.ALL_CONTAIN_OPTIONS
    * @returns {object} all contain options that can be used in toDto()
    */
   static get ALL_CONTAIN_OPTIONS() {
@@ -6135,15 +6156,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entity */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entity.js");
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_role_roleEntity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/role/roleEntity */ "./node_modules/passbolt-styleguide/src/shared/models/entity/role/roleEntity.js");
-/* harmony import */ var _profile_profileEntity__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../profile/profileEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/profile/profileEntity.js");
-/* harmony import */ var _gpgkey_gpgkeyEntity__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../gpgkey/gpgkeyEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/gpgkey/gpgkeyEntity.js");
-/* harmony import */ var _groupUser_groupsUsersCollection__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../groupUser/groupsUsersCollection */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/groupUser/groupsUsersCollection.js");
-/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
-/* harmony import */ var _accountRecovery_accountRecoveryUserSettingEntity__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../accountRecovery/accountRecoveryUserSettingEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/accountRecovery/accountRecoveryUserSettingEntity.js");
-/* harmony import */ var _service_validator_appEmailValidatorService__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../service/validator/appEmailValidatorService */ "./node_modules/passbolt-browser-extension/src/all/background_page/service/validator/appEmailValidatorService.js");
-/* harmony import */ var _accountRecovery_pendingAccountRecoveryRequestEntity__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../accountRecovery/pendingAccountRecoveryRequestEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/accountRecovery/pendingAccountRecoveryRequestEntity.js");
+/* harmony import */ var passbolt_styleguide_src_shared_models_entity_role_roleEntity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/role/roleEntity */ "./node_modules/passbolt-styleguide/src/shared/models/entity/role/roleEntity.js");
+/* harmony import */ var _profile_profileEntity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../profile/profileEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/profile/profileEntity.js");
+/* harmony import */ var _gpgkey_gpgkeyEntity__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../gpgkey/gpgkeyEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/gpgkey/gpgkeyEntity.js");
+/* harmony import */ var _groupUser_groupsUsersCollection__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../groupUser/groupsUsersCollection */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/groupUser/groupsUsersCollection.js");
+/* harmony import */ var _accountRecovery_accountRecoveryUserSettingEntity__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../accountRecovery/accountRecoveryUserSettingEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/accountRecovery/accountRecoveryUserSettingEntity.js");
+/* harmony import */ var _service_validator_appEmailValidatorService__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../service/validator/appEmailValidatorService */ "./node_modules/passbolt-browser-extension/src/all/background_page/service/validator/appEmailValidatorService.js");
+/* harmony import */ var _accountRecovery_pendingAccountRecoveryRequestEntity__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../accountRecovery/pendingAccountRecoveryRequestEntity */ "./node_modules/passbolt-browser-extension/src/all/background_page/model/entity/accountRecovery/pendingAccountRecoveryRequestEntity.js");
+/* harmony import */ var passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! passbolt-styleguide/src/shared/models/entity/abstract/entityV2 */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -6166,45 +6186,51 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 const ENTITY_NAME = 'User';
 
-class UserEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
+class UserEntity extends passbolt_styleguide_src_shared_models_entity_abstract_entityV2__WEBPACK_IMPORTED_MODULE_7__["default"] {
   /**
    * @inheritDoc
    */
-  constructor(userDto, options = {}) {
-    super(passbolt_styleguide_src_shared_models_entity_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_5__["default"].validate(
-      UserEntity.ENTITY_NAME,
-      UserEntity._cleanupLastLoginDate(userDto),
-      UserEntity.getSchema()
-    ), options);
+  constructor(dto, options = {}) {
+    super(dto, options);
 
     // Associations
     if (this._props.profile) {
-      this._profile = new _profile_profileEntity__WEBPACK_IMPORTED_MODULE_2__["default"](this._props.profile, {clone: false});
+      this._profile = new _profile_profileEntity__WEBPACK_IMPORTED_MODULE_1__["default"](this._props.profile, {...options, clone: false});
       delete this._props.profile;
     }
     if (this._props.role) {
-      this._role = new passbolt_styleguide_src_shared_models_entity_role_roleEntity__WEBPACK_IMPORTED_MODULE_1__["default"](this._props.role, {clone: false});
+      this._role = new passbolt_styleguide_src_shared_models_entity_role_roleEntity__WEBPACK_IMPORTED_MODULE_0__["default"](this._props.role, {...options, clone: false});
       delete this._props.role;
     }
     if (this._props.gpgkey) {
-      this._gpgkey = new _gpgkey_gpgkeyEntity__WEBPACK_IMPORTED_MODULE_3__["default"](this._props.gpgkey, {clone: false});
+      this._gpgkey = new _gpgkey_gpgkeyEntity__WEBPACK_IMPORTED_MODULE_2__["default"](this._props.gpgkey, {...options, clone: false});
       delete this._props.gpgkey;
     }
     if (this._props.groups_users) {
-      this._groups_users = new _groupUser_groupsUsersCollection__WEBPACK_IMPORTED_MODULE_4__["default"](this._props.groups_users, {clone: false});
+      this._groups_users = new _groupUser_groupsUsersCollection__WEBPACK_IMPORTED_MODULE_3__["default"](this._props.groups_users, {...options, clone: false});
       delete this._props.groups_users;
     }
     if (this._props.account_recovery_user_setting) {
-      this._account_recovery_user_setting = new _accountRecovery_accountRecoveryUserSettingEntity__WEBPACK_IMPORTED_MODULE_6__["default"](this._props.account_recovery_user_setting, {clone: false});
+      this._account_recovery_user_setting = new _accountRecovery_accountRecoveryUserSettingEntity__WEBPACK_IMPORTED_MODULE_4__["default"](this._props.account_recovery_user_setting, {...options, clone: false});
       delete this._props.account_recovery_user_setting;
     }
     if (this._props.pending_account_recovery_request) {
-      this._pending_account_recovery_request = new _accountRecovery_pendingAccountRecoveryRequestEntity__WEBPACK_IMPORTED_MODULE_8__["default"](this._props.pending_account_recovery_request, {clone: false});
+      this._pending_account_recovery_request = new _accountRecovery_pendingAccountRecoveryRequestEntity__WEBPACK_IMPORTED_MODULE_6__["default"](this._props.pending_account_recovery_request, {...options, clone: false});
       delete this._props.pending_account_recovery_request;
     }
+  }
+
+  /**
+   * @inheritDoc
+   * Marshall the last_logged_in to null if empty string given
+   */
+  marshall() {
+    if (this._props.last_logged_in === "") {
+      this._props.last_logged_in = null;
+    }
+    super.marshall();
   }
 
   /**
@@ -6229,7 +6255,7 @@ class UserEntity extends passbolt_styleguide_src_shared_models_entity_abstract_e
         },
         "username": {
           "type": "string",
-          "custom": _service_validator_appEmailValidatorService__WEBPACK_IMPORTED_MODULE_7__["default"].validate
+          "custom": _service_validator_appEmailValidatorService__WEBPACK_IMPORTED_MODULE_5__["default"].validate
         },
         "active": {
           "type": "boolean"
@@ -6238,12 +6264,9 @@ class UserEntity extends passbolt_styleguide_src_shared_models_entity_abstract_e
           "type": "boolean"
         },
         "disabled": {
-          "anyOf": [{
-            "type": "string",
-            "format": "date-time"
-          }, {
-            "type": "null"
-          }]
+          "type": "string",
+          "format": "date-time",
+          "nullable": true,
         },
         "created": {
           "type": "string",
@@ -6254,74 +6277,28 @@ class UserEntity extends passbolt_styleguide_src_shared_models_entity_abstract_e
           "format": "date-time"
         },
         "last_logged_in": {
-          "anyOf": [{
-            "type": "string",
-            "format": "date-time"
-          }, {
-            "type": "null"
-          }]
+          "type": "string",
+          "format": "date-time",
+          "nullable": true,
         },
         "is_mfa_enabled": {
-          "anyOf": [{
-            "type": "boolean"
-          }, {
-            "type": "null"
-          }]
+          "type": "boolean",
+          "nullable": true,
         },
         "locale": {
-          "anyOf": [{
-            "type": "string",
-            "pattern": /^[a-z]{2}-[A-Z]{2}$/,
-          }, {
-            "type": "null"
-          }]
+          "type": "string",
+          "pattern": /^[a-z]{2}-[A-Z]{2}$/,
+          "nullable": true,
         },
         // Associated models
-        "role": passbolt_styleguide_src_shared_models_entity_role_roleEntity__WEBPACK_IMPORTED_MODULE_1__["default"].getSchema(),
-        "profile": _profile_profileEntity__WEBPACK_IMPORTED_MODULE_2__["default"].getSchema(),
-        "gpgkey": _gpgkey_gpgkeyEntity__WEBPACK_IMPORTED_MODULE_3__["default"].getSchema(),
-        "groups_users": _groupUser_groupsUsersCollection__WEBPACK_IMPORTED_MODULE_4__["default"].getSchema(),
-        "account_recovery_user_setting": _accountRecovery_accountRecoveryUserSettingEntity__WEBPACK_IMPORTED_MODULE_6__["default"].getSchema(),
-        "pending_account_recovery_request": _accountRecovery_pendingAccountRecoveryRequestEntity__WEBPACK_IMPORTED_MODULE_8__["default"].getSchema()
+        "role": passbolt_styleguide_src_shared_models_entity_role_roleEntity__WEBPACK_IMPORTED_MODULE_0__["default"].getSchema(),
+        "profile": _profile_profileEntity__WEBPACK_IMPORTED_MODULE_1__["default"].getSchema(),
+        "gpgkey": _gpgkey_gpgkeyEntity__WEBPACK_IMPORTED_MODULE_2__["default"].getSchema(),
+        "groups_users": _groupUser_groupsUsersCollection__WEBPACK_IMPORTED_MODULE_3__["default"].getSchema(),
+        "account_recovery_user_setting": _accountRecovery_accountRecoveryUserSettingEntity__WEBPACK_IMPORTED_MODULE_4__["default"].getSchema(),
+        "pending_account_recovery_request": _accountRecovery_pendingAccountRecoveryRequestEntity__WEBPACK_IMPORTED_MODULE_6__["default"].getSchema()
       }
     };
-  }
-
-  /**
-   * API returns "" for users that never logged in, convert this to null
-   * @param {object} dto
-   * @return {object} dto
-   * @private
-   */
-  static _cleanupLastLoginDate(dto) {
-    if (dto && dto.last_logged_in === '') {
-      dto.last_logged_in = null;
-    }
-    return dto;
-  }
-
-  /*
-   * ==================================================
-   * Sanitization
-   * ==================================================
-   */
-  /**
-   * Sanitize user dto:
-   * - Remove group users which don't validate if any.
-   *
-   * @param {object} dto the user dto
-   * @returns {object}
-   */
-  static sanitizeDto(dto) {
-    if (typeof dto !== "object") {
-      return dto;
-    }
-
-    if (Object.prototype.hasOwnProperty.call(dto, 'groups_users')) {
-      dto.groups_users = _groupUser_groupsUsersCollection__WEBPACK_IMPORTED_MODULE_4__["default"].sanitizeDto(dto.groups_users);
-    }
-
-    return dto;
   }
 
   /*
@@ -6387,10 +6364,10 @@ class UserEntity extends passbolt_styleguide_src_shared_models_entity_abstract_e
 
   /**
    * Get user role id
-   * @returns {string} uuid
+   * @returns {(string|null)} uuid
    */
   get roleId() {
-    return this._props.role_id;
+    return this._props.role_id || null;
   }
 
   /**
@@ -6479,7 +6456,13 @@ class UserEntity extends passbolt_styleguide_src_shared_models_entity_abstract_e
    * @returns {object} all contain options that can be used in toDto()
    */
   static get ALL_CONTAIN_OPTIONS() {
-    return {profile: _profile_profileEntity__WEBPACK_IMPORTED_MODULE_2__["default"].ALL_CONTAIN_OPTIONS, role: true, gpgkey: true, groups_users: true, account_recovery_user_setting: true, pending_account_recovery_request: true};
+    return {
+      profile: _profile_profileEntity__WEBPACK_IMPORTED_MODULE_1__["default"].ALL_CONTAIN_OPTIONS,
+      role: true, gpgkey: true,
+      groups_users: true,
+      account_recovery_user_setting: true,
+      pending_account_recovery_request: true
+    };
   }
 
   /*
@@ -6534,7 +6517,7 @@ class UserEntity extends passbolt_styleguide_src_shared_models_entity_abstract_e
 
   /**
    * Get user account recover setting
-   * @returns {(accountRecoverUserSetting|null)} account recover setting
+   * @returns {(AccountRecoveryUserSettingEntity|null)} account recover setting
    */
   get accountRecoveryUserSetting() {
     return this._account_recovery_user_setting || null;
@@ -7538,6 +7521,7 @@ const deduplicateObjects = (arr, key) => {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "assertArray": () => (/* binding */ assertArray),
 /* harmony export */   "assertBase64String": () => (/* binding */ assertBase64String),
 /* harmony export */   "assertBoolean": () => (/* binding */ assertBoolean),
 /* harmony export */   "assertExtractableSsoKey": () => (/* binding */ assertExtractableSsoKey),
@@ -7676,7 +7660,7 @@ const assertValidInitialisationVector = initialisationVector => {
 };
 
 /**
- * Assert that the given parameter is a valid UUID.
+ * Assert that the given parameter is a valid string.
  * @param {string} str the parameter to validate
  * @param {string} [errorMessage] the message to throw withing the Error if any
  * @throws {Error} if the parameter is not valid
@@ -7709,6 +7693,18 @@ const assertType = (object, expectedType, errorMessage = "The given data is not 
  */
 const assertBoolean = (value, errorMessage = "The given parameter is not a valid boolean") => {
   if (typeof value !== 'undefined' && typeof value !== 'boolean') {
+    throw new TypeError(errorMessage);
+  }
+};
+
+/**
+ * Assert that the given parameter is a valid array.
+ * @param {Array} data the parameter to validate
+ * @param {string} [errorMessage] the message to throw withing the Error if any
+ * @throws {Error} if the parameter is not valid
+ */
+const assertArray = (data, errorMessage = "The given parameter is not a valid array") => {
+  if (!Array.isArray(data)) {
     throw new TypeError(errorMessage);
   }
 };
@@ -8955,6 +8951,107 @@ class ApiClient {
 
 /***/ }),
 
+/***/ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/collectionValidationError.js":
+/*!*********************************************************************************************************!*\
+  !*** ./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/collectionValidationError.js ***!
+  \*********************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _entityValidationError__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entityValidationError */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityValidationError.js");
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         4.7.0
+ */
+
+
+class CollectionValidationError extends Error {
+  /**
+   * CollectionValidationError constructor
+   *
+   * @param {string} message
+   */
+  constructor(message = 'Collection validation error.') {
+    super(message);
+    this.name = 'CollectionValidationError';
+    this.errors = [];
+  }
+
+  /**
+   * Add an error relative to an item and its position.
+   * Note: Collection validation error is supported as long as entity are not catching and associating them to the
+   * property which failed.
+   *
+   * @param {number} position The index of the item in the collection.
+   * @param {EntityValidationError|CollectionValidationError} validationError The validation error.
+   * @throws {TypeError} if the position is not an integer.
+   * @throws {TypeError} if the error is EntityValidationError or a CollectionValidationError.
+   */
+  addItemValidationError(position, validationError) {
+    if (!Number.isInteger(position)) {
+      throw new TypeError('CollectionValidationError::addEntityValidationError expects "position" to be an integer.');
+    }
+    if (!(validationError instanceof _entityValidationError__WEBPACK_IMPORTED_MODULE_0__["default"]) && !(validationError instanceof CollectionValidationError)) {
+      throw new TypeError('CollectionValidationError::addEntityValidationError expects "entityValidationError" to be an instance of EntityValidationError or CollectionValidationError.');
+    }
+    this.errors[position] = validationError;
+  }
+
+  /**
+   * Add an error relative a collection rule.
+   *
+   * @param {string} rule The collection rule.
+   * @param {error|string} error The error.
+   * @throws {TypeError} if the rule is not a string.
+   * @throws {TypeError} if the error is not a string.
+   */
+  addCollectionValidationError(rule, error) {
+    if (typeof rule !== "string") {
+      throw new TypeError('CollectionValidationError::addCollectionValidationError expects "rule" to be a string.');
+    }
+    if (typeof error !== "string") {
+      throw new TypeError('CollectionValidationError::addCollectionValidationError expects "error" to be a string.');
+    }
+    this.errors[rule] = error;
+  }
+
+  /**
+   * Return the error in the details expected format.
+   * @return {object}
+   */
+  get details() {
+    const details = {};
+    for (const key in this.errors) {
+      if (this.errors[key] instanceof _entityValidationError__WEBPACK_IMPORTED_MODULE_0__["default"]) {
+        details[key] = this.errors[key].details;
+      } else if (this.errors[key] instanceof CollectionValidationError) {
+        details[key] = this.errors[key].details;
+      } else {
+        details[key] = this.errors[key];
+      }
+    }
+    return details;
+  }
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (CollectionValidationError);
+
+
+/***/ }),
+
 /***/ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entity.js":
 /*!**************************************************************************************!*\
   !*** ./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entity.js ***!
@@ -9350,21 +9447,32 @@ class EntityCollection {
 
   /**
    * Assert that no item in the collection already has the given value for the given property.
+   * Note: The assertion ignore undefined prop value, it is the schema responsibility to ensure properties are defined.
+   *
    * @param {string} propName The property name for checking value uniqueness.
    * @param {string|boolean|number} propValue The property value for checking value uniqueness.
-   * @param {string} [message] The error message. If none given, it will fallback on a default one.
+   * @param {object} [options] Options.
+   * @param {string} [options.message] The error message. If none given, it will fallback on a default one.
+   * @param {Set} [options.haystackSet] A haystack set to reuse if given. Used as cache to improve performance.
    * @throw {EntityValidationError} If another item already has the given value for the given property.
    */
-  assertNotExist(propName, propValue, message) {
-    const propValues = this.extract(propName);
-    // Set is the preferred approach for performance reasons, it does a deduplicate in 0n.
-    const uniqueElements = new Set(propValues);
-    const sizeBefore = uniqueElements.size;
-    uniqueElements.add(propValue);
+  assertNotExist(propName, propValue, options = {}) {
+    if (typeof propValue === "undefined") {
+      return;
+    }
 
-    if (sizeBefore === uniqueElements.size) {
+    let haystackSet = options?.haystackSet;
+
+    // If not given initialize the haystack set with the values of the items properties.
+    if (!haystackSet) {
+      const propValues = this.extract(propName);
+      haystackSet = new Set(propValues);
+    }
+
+    if (haystackSet.has(propValue)) {
       const error = new _entityValidationError__WEBPACK_IMPORTED_MODULE_1__["default"]();
-      message = message || `The collection already includes an element that has a property (${propName}) with an identical value.`;
+      const message = options?.message
+        || `The collection already includes an element that has a property (${propName}) with an identical value.`;
       error.addError(propName, 'unique', message);
       throw error;
     }
@@ -9570,11 +9678,21 @@ class EntitySchema {
         continue;
       }
 
+      // check if propery is null
+      if (dto?.[propName] === null) {
+        // the prop is explicitly null, is it explicitly nullable?
+        if ((schemaProps[propName]?.nullable) === true) {
+          result[propName] = null;
+          continue;
+        }
+        // @todo: else => props is not nullable and null we could set an error and then continue but it requires all schema to migrate to explicit "nullable": true
+      }
+
       // Check if property is required
       if (requiredProps.includes(propName)) {
         if (!Object.prototype.hasOwnProperty.call(dto, propName)) {
           validationError = EntitySchema.getOrInitEntityValidationError(name, validationError);
-          validationError.addError(propName, 'required', `The ${propName} is required.`, validationError);
+          validationError.addError(propName, 'required', `The ${propName} is required.`);
           continue;
         }
       } else {
@@ -9994,6 +10112,367 @@ class EntitySchema {
 
 /***/ }),
 
+/***/ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2.js":
+/*!****************************************************************************************!*\
+  !*** ./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2.js ***!
+  \****************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _entitySchema__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
+/* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./entity */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entity.js");
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         4.9.0
+ */
+
+
+
+class EntityV2 extends _entity__WEBPACK_IMPORTED_MODULE_1__["default"] {
+  /**
+   * The entity cached schemas referenced by entity class name.
+   * The key will represent the entity class name while the value will be the schema definition object.
+   * @type {object}
+   * @private
+   */
+  static _cachedSchema = {};
+
+  /**
+   * @inheritDoc
+   * @param {boolean} [options.validate=true] validate the given props against the entity schema and the build rules.
+   *
+   * Additionally to the Entity, the EntityV2 will:
+   * - Validate the entity schema.
+   * - Validate the entity build rules.
+   *
+   * @throws {EntityValidationError} If the dto does not validate the entity schema.
+   * @throws {EntityValidationError} If the dto does not validate the entity build rules.
+   */
+  constructor(dtos = {}, options = {}) {
+    // Note: Entity V1 will clone the dtos into the instance _props property.
+    super(dtos, options);
+    this.marshall();
+    const validate = options?.validate ?? true;
+    if (validate) {
+      this.validateSchema();
+      this.validateBuildRules(options?.validateBuildRules);
+    }
+  }
+
+  /**
+   * Marshall the entity props.
+   * Caution, the marshalling happens before the validation.
+   * @protected
+   */
+  marshall() {
+    // Override this method to marshall the entity props prior to validation.
+  }
+
+  /*
+   * ==================================================
+   * Validation
+   * ==================================================
+   */
+
+  /**
+   * Validate the entity schema.
+   * Note: the entity schema will be created on first call and cached into a class static property.
+   * @private
+   */
+  validateSchema() {
+    this._props = _entitySchema__WEBPACK_IMPORTED_MODULE_0__["default"].validate(
+      this.constructor.name,
+      this._props,
+      this.cachedSchema
+    );
+  }
+
+  /**
+   * Get the entity cached schema
+   * Note: The getter can only be accessed only from an instance context as it uses the instance scope.
+   * @returns {object}
+   * @private
+   */
+  get cachedSchema() {
+    if (!this.constructor._cachedSchema[this.constructor.name]) {
+      this.constructor._cachedSchema[this.constructor.name] = this.constructor.getSchema();
+    }
+
+    return this.constructor._cachedSchema[this.constructor.name];
+  }
+
+  /**
+   * Return the schema representing this entity.
+   * Override this method to define the entity schema.
+   * @return {object}
+   * @abstract
+   */
+  static getSchema() {
+    throw new Error("The entity class should declare its schema.");
+  }
+
+  /**
+   * Validate the item build rules.
+   * It is used to validate other rules that are not covered by the schema definition, by instance to check if
+   * a password and its confirmation are identical.
+   * @param {object} [options] Options.
+   */
+  // eslint-disable-next-line no-unused-vars
+  validateBuildRules(options = {}) {
+    // Override this method to add entity validation build rules.
+  }
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (EntityV2);
+
+
+/***/ }),
+
+/***/ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2Collection.js":
+/*!**************************************************************************************************!*\
+  !*** ./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2Collection.js ***!
+  \**************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _entityValidationError__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entityValidationError */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityValidationError.js");
+/* harmony import */ var _entityCollection__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./entityCollection */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityCollection.js");
+/* harmony import */ var _collectionValidationError__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./collectionValidationError */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/collectionValidationError.js");
+/* harmony import */ var _entityCollectionError__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./entityCollectionError */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityCollectionError.js");
+/* harmony import */ var _entitySchema__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         4.7.0
+ */
+
+
+
+
+
+
+class EntityV2Collection extends _entityCollection__WEBPACK_IMPORTED_MODULE_1__["default"] {
+  /**
+   * The collection cached schemas referenced by collection class name.
+   * The key will represent the collection class name while the value will be the schema definition object.
+   * @type {object}
+   * @private
+   */
+  static _cachedSchema = {};
+
+  /**
+   * Retrieve the entity class this collection is handling
+   * @return {Class}
+   * @abstract
+   */
+  get entityClass() {
+    throw new Error("The collection class should declare the entity class that is handled.");
+  }
+
+  /**
+   * @inheritDoc
+   * @param {boolean} [options.validate=true] validate the given props against the entity schema and the build rules.
+   *
+   * Additionally to the EntityCollection, the EntityV2 collection will:
+   * - Validate the collection schema.
+   * - Push the dtos into the collection.
+   *
+   * @throws {EntityCollectionError} If a item does not validate its entity schema.
+   * @throws {EntityCollectionError} If a item does not validate the collection validation build rules.
+   */
+  constructor(dtos = [], options = {}) {
+    // Note: EntityCollection V1 will clone the dtos into the instance _props property. Delete it after usage.
+    super(dtos, options);
+    const validate = options?.validate ?? true;
+    if (validate) {
+      this.validateSchema();
+    }
+    this.pushMany(this._props, {...options, clone: false});
+    this._props = null;
+  }
+
+  /**
+   * Validate the collection schema.
+   * Note: the collection schema will be created on first call and cached into a class static property.
+   * @private
+   */
+  validateSchema() {
+    this._props = _entitySchema__WEBPACK_IMPORTED_MODULE_4__["default"].validate(
+      this.constructor.name,
+      this._props,
+      this.cachedSchema
+    );
+  }
+
+  /**
+   * Get the collection cached schema
+   * Note: The getter can only be accessed only from an instance context as it uses the instance scope.
+   * @returns {object}
+   * @private
+   */
+  get cachedSchema() {
+    if (!this.constructor._cachedSchema[this.constructor.name]) {
+      this.constructor._cachedSchema[this.constructor.name] = this.constructor.getSchema();
+    }
+
+    return this.constructor._cachedSchema[this.constructor.name];
+  }
+
+  /**
+   * Return the schema representing this collection.
+   * Override this method to define the collection schema.
+   * @return {object}
+   * @abstract
+   */
+  static getSchema() {
+    throw new Error("The collection class should declare its schema.");
+  }
+
+  /**
+   * Build or clone entity.
+   * @param {object|Entity} data The data of the item to push
+   * @param {object} [entityOptions] Options for constructing the entity, identical to those accepted by the Entity
+   *   constructor that will be utilized for its creation.
+   * @throws {EntityValidationError} If the item doesn't validate.
+   * @returns {this.entityClass}
+   */
+  buildOrCloneEntity(data, entityOptions = {}) {
+    if (!data || typeof data !== 'object') {
+      throw new TypeError(`${this.entityClass.name}::buildOrCloneEntity expects "data" to be an object.`);
+    }
+
+    if (data instanceof this.entityClass) {
+      data = data.toDto(this.entityClass?.ALL_CONTAIN_OPTIONS); // deep clone
+    }
+
+    return new this.entityClass(data, entityOptions);
+  }
+
+  /*
+   * ==================================================
+   * Validation
+   * ==================================================
+   */
+
+  /**
+   * Validate the item build rules. It is used to verify the integrity of the collection before adding an item to it.
+   * @param {Entity} item The entity to validate the build rules for.
+   * @param {object} [options] Options.
+   */
+  // eslint-disable-next-line no-unused-vars
+  validateBuildRules(item, options = {}) {
+    // Override this method to add entity validation build rules.
+  }
+
+  /*
+   * ==================================================
+   * Setters
+   * ==================================================
+   */
+  /**
+   * Push an item to the list.
+   * Note: This method overrides the parent method and does not call the inherited version.
+   *
+   * @param {object|Entity} data The data of the item to push
+   * @param {object} [entityOptions] Options for constructing the entity, identical to those accepted by the Entity
+   *   constructor that will be utilized for its creation.
+   * @throws {EntityValidationError} If the item doesn't validate.
+   * @param {object} [options] Options.
+   * @param {object} [options.validateBuildRules] Options to pass to validate build rules function @see EntityV2Collection::validateBuildRules
+   * @param {function} [options.onItemPushed] Callback to execute after the item has been pushed to the collection.
+   */
+  push(data, entityOptions = {}, options = {}) {
+    const entity = this.buildOrCloneEntity(data, entityOptions);
+    this.validateBuildRules(entity, options?.validateBuildRules);
+    this._items.push(entity);
+    options?.onItemPushed?.(entity);
+  }
+
+  /**
+   * Push multiple items to the list.
+   * @param {object|Entity|array} data The item(s) to add to the collection should be in the form of a DTO, an entity,
+   *   or an array comprising any of the aforementioned.
+   * @param {object} [entityOptions] Options for constructing the entity, identical to those accepted by the Entity
+   *   constructor that will be utilized for its creation. Note, this entity options will be passed to the associated
+   *   collections and entities.
+   * @param {object} [options] Options.
+   * @param {object} [options.validateBuildRules] Options to pass to validate build rules function @see EntityV2Collection::validateBuildRules
+   * @param {function} [options.onItemPushed] Callback to execute after the item has been pushed to the collection.
+   * @throws {CollectionValidationError} If one item doesn't validate.
+   */
+  pushMany(data, entityOptions = {}, options = {}) {
+    if (!Array.isArray(data)) {
+      throw new TypeError(`${this.constructor.name} pushMany expects "data" to be an array.`);
+    }
+
+    data.forEach((itemDto, index) => {
+      try {
+        this.push(itemDto, entityOptions, options);
+      } catch (error) {
+        this.handlePushItemError(index, error, entityOptions);
+      }
+    });
+  }
+
+  /**
+   * Handle error occurring while adding an item to the collection.
+   * @param {number} index The index the error occurred on.
+   * @param {Error} error The error.
+   * @param {object} [entityOptions] Options for constructing the entity, identical to those accepted by the Entity
+   *   constructor that will be utilized for its creation. Note, this entity options will be passed to the associated
+   *   collections and entities.
+   * @protected
+   */
+  handlePushItemError(index, error, entityOptions) {
+    if (error instanceof _entityValidationError__WEBPACK_IMPORTED_MODULE_0__["default"] || error instanceof _collectionValidationError__WEBPACK_IMPORTED_MODULE_2__["default"] || error instanceof _entityCollectionError__WEBPACK_IMPORTED_MODULE_3__["default"]) {
+      if (!entityOptions?.ignoreInvalidEntity) {
+        /*
+         * The validation process for checking entity associations in the collection is functional. However, the error
+         * details provided is not fully detailed. While it identifies the correct data item that fails validation in
+         * the collection, it fails to clearly indicate which specific property of the parent entity is problematic.
+         */
+        const collectionValidationError = new _collectionValidationError__WEBPACK_IMPORTED_MODULE_2__["default"]();
+        collectionValidationError.addItemValidationError(index, error);
+        throw collectionValidationError;
+      } else {
+        console.debug(`${this.entityClass.name}::pushMany ignore item (${index}) due to validation error ${JSON.stringify(error?.details)}`);
+      }
+    } else {
+      throw error;
+    }
+  }
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (EntityV2Collection);
+
+
+/***/ }),
+
 /***/ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityValidationError.js":
 /*!*****************************************************************************************************!*\
   !*** ./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityValidationError.js ***!
@@ -10117,8 +10596,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _abstract_entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../abstract/entity */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entity.js");
-/* harmony import */ var _abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../abstract/entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
+/* harmony import */ var _abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../abstract/entityV2 */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityV2.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -10134,7 +10612,6 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 
-
 const ENTITY_NAME = 'Role';
 const ROLE_ADMIN = 'admin';
 const ROLE_USER = 'user';
@@ -10142,18 +10619,7 @@ const ROLE_GUEST = 'guest';
 const ROLE_ROOT = 'root';
 const ROLE_NAME_MAX_LENGTH = 255;
 
-class RoleEntity extends _abstract_entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
-  /**
-   * @inheritDoc
-   */
-  constructor(roleDto, options = {}) {
-    super(_abstract_entitySchema__WEBPACK_IMPORTED_MODULE_1__["default"].validate(
-      RoleEntity.ENTITY_NAME,
-      roleDto,
-      RoleEntity.getSchema()
-    ), options);
-  }
-
+class RoleEntity extends _abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__["default"] {
   /**
    * Get role entity schema
    * @returns {Object} schema
@@ -23341,6 +23807,7 @@ class AuthImportEntity extends passbolt_styleguide_src_shared_models_entity_abst
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "BACKGROUND_AUTHENTICATION_ERROR": () => (/* binding */ BACKGROUND_AUTHENTICATION_ERROR),
 /* harmony export */   "BACKGROUND_IMPORT": () => (/* binding */ BACKGROUND_IMPORT),
 /* harmony export */   "BACKGROUND_READY": () => (/* binding */ BACKGROUND_READY),
 /* harmony export */   "DOWNLOAD_FILE": () => (/* binding */ DOWNLOAD_FILE),
@@ -23374,6 +23841,7 @@ __webpack_require__.r(__webpack_exports__);
 const USER_LOGGED_IN = "passbolt.auth.after-login";
 const USER_LOGGED_OUT = "passbolt.auth.logout";
 const BACKGROUND_READY = "passbolt.background.is-ready";
+const BACKGROUND_AUTHENTICATION_ERROR = "passbolt.background.authentication-error";
 const BACKGROUND_IMPORT = "passbolt.background.import";
 const ERROR = "passbolt.error";
 const LOCALSTORAGE_UPDATE = "passbolt.background.localstorage-update";
@@ -23536,6 +24004,7 @@ class MainImport {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "OnAlarmEvent": () => (/* binding */ OnAlarmEvent),
 /* harmony export */   "default": () => (/* binding */ AlarmsPolyfill)
 /* harmony export */ });
 /**
@@ -23779,6 +24248,47 @@ window.chrome.alarms = new AlarmsPolyfill();
 
 __webpack_require__.g.browser = window.chrome;
 
+
+/***/ }),
+
+/***/ "./src/polyfill/commandPolyfill.js":
+/*!*****************************************!*\
+  !*** ./src/polyfill/commandPolyfill.js ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ CommandsPolyfill)
+/* harmony export */ });
+/* harmony import */ var _alarmPolyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./alarmPolyfill */ "./src/polyfill/alarmPolyfill.js");
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         1.3.0
+ */
+
+
+
+/**
+ * Polyfill to mock the commands API from browser extension
+ */
+class CommandsPolyfill { 
+    constructor() {
+        this.onCommand = new _alarmPolyfill__WEBPACK_IMPORTED_MODULE_0__.OnAlarmEvent()
+    }
+}
+
+window.chrome.commands = new CommandsPolyfill()
 
 /***/ }),
 
@@ -31837,8 +32347,7 @@ function pushPath(object, path, newValue, concat) {
     k
   } = getLastOfPath(object, path, Object);
   obj[k] = obj[k] || [];
-  if (concat) obj[k] = obj[k].concat(newValue);
-  if (!concat) obj[k].push(newValue);
+  obj[k].push(newValue);
 }
 function getPath(object, path) {
   const {
@@ -32369,13 +32878,13 @@ class Translator extends EventEmitter {
         ...this.options.interpolation.defaultVariables,
         ...data
       };
-      res = this.interpolator.interpolate(res, data, options.lng || this.language, options);
+      res = this.interpolator.interpolate(res, data, options.lng || this.language || resolved.usedLng, options);
       if (skipOnVariables) {
         const na = res.match(this.interpolator.nestingRegexp);
         const nestAft = na && na.length;
         if (nestBef < nestAft) options.nest = false;
       }
-      if (!options.lng && this.options.compatibilityAPI !== 'v1' && resolved && resolved.res) options.lng = resolved.usedLng;
+      if (!options.lng && this.options.compatibilityAPI !== 'v1' && resolved && resolved.res) options.lng = this.language || resolved.usedLng;
       if (options.nest !== false) res = this.interpolator.nest(res, function () {
         for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
           args[_key] = arguments[_key];
@@ -33869,7 +34378,7 @@ class I18n extends EventEmitter {
       options.lng = options.lng || fixedT.lng;
       options.lngs = options.lngs || fixedT.lngs;
       options.ns = options.ns || fixedT.ns;
-      options.keyPrefix = options.keyPrefix || keyPrefix || fixedT.keyPrefix;
+      if (options.keyPrefix !== '') options.keyPrefix = options.keyPrefix || keyPrefix || fixedT.keyPrefix;
       const keySeparator = _this3.options.keySeparator || '.';
       let resultKey;
       if (options.keyPrefix && Array.isArray(key)) {
@@ -34158,7 +34667,7 @@ PERFORMANCE OF THIS SOFTWARE.
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"background-webview","version":"1.2.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.12.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.75.0","webpack-cli":"^5.0.1"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","openpgp":"^5.11.1","passbolt-browser-extension":"4.8.2","passbolt-styleguide":"4.8.0","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
+module.exports = JSON.parse('{"name":"background-webview","version":"1.3.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.12.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.75.0","webpack-cli":"^5.0.1"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","openpgp":"^5.11.1","passbolt-browser-extension":"4.9.1","passbolt-styleguide":"4.9.3","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
 
 /***/ })
 
@@ -34282,15 +34791,16 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _src_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./src/polyfill/browserPolyfill */ "./src/polyfill/browserPolyfill.js");
 /* harmony import */ var _src_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_src_polyfill_browserPolyfill__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _src_polyfill_desktopPolyfill__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/polyfill/desktopPolyfill */ "./src/polyfill/desktopPolyfill.js");
-/* harmony import */ var _src_polyfill_desktopPolyfill__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_src_polyfill_desktopPolyfill__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _src_polyfill_storagePolyfill__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/polyfill/storagePolyfill */ "./src/polyfill/storagePolyfill.js");
-/* harmony import */ var _src_polyfill_runtimePolyfill__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/polyfill/runtimePolyfill */ "./src/polyfill/runtimePolyfill.js");
-/* harmony import */ var _src_polyfill_alarmPolyfill__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./src/polyfill/alarmPolyfill */ "./src/polyfill/alarmPolyfill.js");
-/* harmony import */ var _src_polyfill_cookiePolyfill__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./src/polyfill/cookiePolyfill */ "./src/polyfill/cookiePolyfill.js");
-/* harmony import */ var _src_polyfill_scriptingPolyfill__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./src/polyfill/scriptingPolyfill */ "./src/polyfill/scriptingPolyfill.js");
-/* harmony import */ var _src_polyfill_sessionStoragePolyfill__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./src/polyfill/sessionStoragePolyfill */ "./src/polyfill/sessionStoragePolyfill.js");
-/* harmony import */ var _src_main_import__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./src/main-import */ "./src/main-import.js");
+/* harmony import */ var _src_polyfill_commandPolyfill__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./src/polyfill/commandPolyfill */ "./src/polyfill/commandPolyfill.js");
+/* harmony import */ var _src_polyfill_desktopPolyfill__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./src/polyfill/desktopPolyfill */ "./src/polyfill/desktopPolyfill.js");
+/* harmony import */ var _src_polyfill_desktopPolyfill__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_src_polyfill_desktopPolyfill__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _src_polyfill_storagePolyfill__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./src/polyfill/storagePolyfill */ "./src/polyfill/storagePolyfill.js");
+/* harmony import */ var _src_polyfill_runtimePolyfill__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./src/polyfill/runtimePolyfill */ "./src/polyfill/runtimePolyfill.js");
+/* harmony import */ var _src_polyfill_alarmPolyfill__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./src/polyfill/alarmPolyfill */ "./src/polyfill/alarmPolyfill.js");
+/* harmony import */ var _src_polyfill_cookiePolyfill__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./src/polyfill/cookiePolyfill */ "./src/polyfill/cookiePolyfill.js");
+/* harmony import */ var _src_polyfill_scriptingPolyfill__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./src/polyfill/scriptingPolyfill */ "./src/polyfill/scriptingPolyfill.js");
+/* harmony import */ var _src_polyfill_sessionStoragePolyfill__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./src/polyfill/sessionStoragePolyfill */ "./src/polyfill/sessionStoragePolyfill.js");
+/* harmony import */ var _src_main_import__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./src/main-import */ "./src/main-import.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
@@ -34316,7 +34826,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-new _src_main_import__WEBPACK_IMPORTED_MODULE_8__["default"]();
+
+new _src_main_import__WEBPACK_IMPORTED_MODULE_9__["default"]();
 })();
 
 /******/ })()
