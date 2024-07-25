@@ -161,7 +161,7 @@ export default class AlarmsPolyfill {
 /**
  * Class representing an alarm event.
  */
-class OnAlarmEvent {
+export class OnAlarmEvent {
   /**
    * Create a new OnAlarmEvent object.
    */

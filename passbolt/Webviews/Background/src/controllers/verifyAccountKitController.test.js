@@ -18,7 +18,7 @@ import {v4 as uuidv4} from "uuid";
 import VerifyAccountKitController from "./verifyAccountKitController";
 import AuthImportStorageService from "../services/authImportStorageService";
 import AuthImportEntity from "../entity/AuthImportEntity/authImportEntity";
-import {pgpKeys} from "passbolt-browser-extension/test/fixtures/pgpKeys/keys";
+import {pgpKeys} from "passbolt-styleguide/test/fixture/pgpKeys/keys";
 import {defaultData} from "../services/verifyAccountKitService.test.data";
 
 describe('VerifyAccountKitController', () => {

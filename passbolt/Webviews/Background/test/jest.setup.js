@@ -1,5 +1,6 @@
 import "./polyfill/chromePolyfill"
 import "../src/polyfill/alarmPolyfill"
+import "../src/polyfill/commandPolyfill"
 import "../src/polyfill/desktopPolyfill"
 import "../src/polyfill/runtimePolyfill"
 import "../src/polyfill/storagePolyfill"
