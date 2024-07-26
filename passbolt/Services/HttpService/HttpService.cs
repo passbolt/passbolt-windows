@@ -58,7 +58,7 @@ namespace passbolt.Services.HttpService
         /// <param name="sender"></param>
         /// <param name="webviewRequest"></param>
         /// <exception cref="UnauthorizedAPICallException"></exception>
-        public async void CheckAPICall(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs webviewRequest)
+        public void CheckAPICall(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs webviewRequest)
         {
             if(this.trustedDomain == null)
             {
@@ -70,6 +70,26 @@ namespace passbolt.Services.HttpService
             {
                 throw new UnauthorizedAPICallException();
             }
+        }
+
+        /// <summary>
+        /// Init the trusted domain if this one is not set yet
+        /// </summary>
+        /// <param name="trustedDomainFromMetadata"></param>
+        public void setTrustedDomain(String trustedDomainFromMetadata)
+        {
+            // Only init trustedDomain if not set yet
+            if(this.trustedDomain == null)
+            {
+                this.trustedDomain = trustedDomainFromMetadata;
+            }
+        }
+        /// <summary>
+        /// Unset the trusted domain
+        /// </summary>
+        public void unSetTrustedDomain()
+        {
+            this.trustedDomain = null;
         }
 
         /// <summary>
