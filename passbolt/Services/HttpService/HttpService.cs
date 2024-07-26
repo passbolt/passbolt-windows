@@ -60,12 +60,6 @@ namespace passbolt.Services.HttpService
         /// <exception cref="UnauthorizedAPICallException"></exception>
         public void CheckAPICall(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs webviewRequest)
         {
-            if(this.trustedDomain == null)
-            {
-                var metaData = await this.credentialLockerService.GetAccountMetadata();
-                this.trustedDomain = metaData != null ? metaData.domain : null;
-            }
-
             if (!this.isCallToServer(webviewRequest) && !this.isCallToPownedService(webviewRequest))
             {
                 throw new UnauthorizedAPICallException();
