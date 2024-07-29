@@ -87,6 +87,8 @@ namespace passbolt.Controllers
 
                 if (currentAccountMetaData != null)
                 {
+                    //When the  application start the main controller save the metadata and init the httpservice trusted domain
+                    this.httpService.setTrustedDomain(currentAccountMetaData.domain);
                     //If the credential locker is not empty we launch the authentication applications.
                     await LocalFolderService.Instance.CreateRenderedIndex("index-auth.html", "rendered-auth", "ext_authentication.min.css", currentAccountMetaData.domain);
                     await LocalFolderService.Instance.CreateBackgroundIndex("index-auth.html", "background-auth", currentAccountMetaData.domain);
@@ -100,6 +102,18 @@ namespace passbolt.Controllers
 
                 await this.LoadWebviews();
                 this.SetWebviewSettings(webviewBackground);
+            }
+            //When credentials are saved from import and we navigate to auth application we init the trusted domain to check API calls
+            if(currentAccountMetaData == null && this.backgroundNavigationService.IsAuthApplication(args.Uri))
+            {
+                currentAccountMetaData = await this.credentialLockerService.GetAccountMetadata();
+                this.httpService.setTrustedDomain(currentAccountMetaData.domain);
+            }
+            //In case of we are facing to an authentication error during import we delete trusted domain from the HTTPServices
+            if (currentAccountMetaData != null && this.backgroundNavigationService.IsImportApplication(args.Uri))
+            {
+                currentAccountMetaData = null;
+                this.httpService.unSetTrustedDomain();
             }
         }
 
