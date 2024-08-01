@@ -55,7 +55,16 @@ namespace passbolt.Services.NavigationService
         {
             return url == $"https://{this.trustedUrl}/Background/index-auth.html";
         }
-      
+
+        /// <summary>
+        /// Check if background webview is running the import file
+        /// </summary>
+        /// <returns></returns>
+        public bool IsImportApplication(string url)
+        {
+            return url == $"https://{this.trustedUrl}/Background/index-import.html";
+        }
+
         /// <summary>
         /// Check navigation history to verify if workspace loading comes from importation
         /// </summary>

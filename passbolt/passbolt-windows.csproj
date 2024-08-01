@@ -352,8 +352,8 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
     <None Include="Webviews\Rendered\fonts\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </None>
     <None Include="Webviews\Rendered\src\js\Stylesheet.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
