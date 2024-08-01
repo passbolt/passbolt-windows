@@ -15,7 +15,7 @@
 import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
 import VerifyAccountKitService from "./verifyAccountKitService";
 import {defaultData} from "./verifyAccountKitService.test.data";
-import {pgpKeys} from "passbolt-browser-extension/test/fixtures/pgpKeys/keys";
+import {pgpKeys} from "passbolt-styleguide/test/fixture/pgpKeys/keys";
 
 describe('VerifyAccountKitService', () => {
   let verifyAccountKitService;

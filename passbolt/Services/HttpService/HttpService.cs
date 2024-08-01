@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
  *
@@ -26,6 +26,8 @@ using Windows.Storage.Streams;
 using passbolt.Services.CredentialLocker;
 using passbolt.Models.Cookies;
 using System;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace passbolt.Services.HttpService
 {
@@ -56,18 +58,32 @@ namespace passbolt.Services.HttpService
         /// <param name="sender"></param>
         /// <param name="webviewRequest"></param>
         /// <exception cref="UnauthorizedAPICallException"></exception>
-        public async void CheckAPICall(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs webviewRequest)
+        public void CheckAPICall(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs webviewRequest)
         {
-            if(this.trustedDomain == null)
-            {
-                var metaData = await this.credentialLockerService.GetAccountMetadata();
-                this.trustedDomain = metaData != null ? metaData.domain : null;
-            }
-
             if (!this.isCallToServer(webviewRequest) && !this.isCallToPownedService(webviewRequest))
             {
                 throw new UnauthorizedAPICallException();
             }
+        }
+
+        /// <summary>
+        /// Init the trusted domain if this one is not set yet
+        /// </summary>
+        /// <param name="trustedDomainFromMetadata"></param>
+        public void setTrustedDomain(String trustedDomainFromMetadata)
+        {
+            // Only init trustedDomain if not set yet
+            if(this.trustedDomain == null)
+            {
+                this.trustedDomain = trustedDomainFromMetadata;
+            }
+        }
+        /// <summary>
+        /// Unset the trusted domain
+        /// </summary>
+        public void unSetTrustedDomain()
+        {
+            this.trustedDomain = null;
         }
 
         /// <summary>
@@ -186,10 +202,34 @@ namespace passbolt.Services.HttpService
             CoreWebView2WebResourceResponse webView2WebResourceResponse = sender.Environment.CreateWebResourceResponse(
                 content,
                 (int)response.StatusCode,
-                response.StatusCode.ToString(),
+                !string.IsNullOrEmpty(response.ReasonPhrase) ? response.ReasonPhrase : response.StatusCode.ToString(),
                 string.Join('\n', headers));
 
             resource.Response = webView2WebResourceResponse;
+        }
+
+        public void SendErrorToWebview(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource, HttpRequestMessage request, String errorMessage)
+        {
+            //Create a single line message
+            string[] substrings = errorMessage.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            string message = substrings.Length > 1 ? substrings[1] : errorMessage;
+
+            //Create payload to allow the toJson() method on Background
+            string payload = JsonConvert.SerializeObject(new
+            {
+                header = new { message = message },
+                body = errorMessage,
+            });
+
+            var httpContent = new StringContent(payload, Encoding.UTF8, "application/json");
+            var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = httpContent,
+                ReasonPhrase = HttpStatusCode.BadRequest.ToString(),
+                StatusCode = HttpStatusCode.BadRequest,
+                RequestMessage = request
+            };
+            this.SendResponseToWebview(sender, resource, response);
         }
 
         /// <summary>

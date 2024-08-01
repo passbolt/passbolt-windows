@@ -1,6 +1,6 @@
 {
   "name": "rendered-webview",
-  "version": "1.1.0",
+  "version": "1.3.0",
   "description": "Rendered webview2 for passbolt desktop windows",
   "license": "AGPL-3.0",
   "copyright": "Copyright 2022 Passbolt SA",
@@ -9,7 +9,7 @@
   "main": "index.js",
   "dependencies": {
     "copy-webpack-plugin": "^11.0.0",
-    "passbolt-styleguide": "4.7.0",
+    "passbolt-styleguide": "4.9.3",
     "prop-types": "^15.8.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",

@@ -2,6 +2,31 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.0] - 2024-07-25
+
+### Maintenance
+- PB-34181 - As a windows app I should support the 4.9.0 version of the browser extension
+
+### Fixed
+- PB-33915 - When a an unexpected error is displayed, the 'try again' button seems to have no effect
+- PB-34091 - Fix the import account kit button after the webview refreshing
+- PB-33916 - On import/auth screen the heart icons tooltip displays "Server 1.2.0" instead of "Client 1.2.0”
+
+## [1.2.0] - 2024-07-01
+### Improved
+- PB-33686 As a user I should be signed out after browser update
+- PB-33610 As a desktop i should inform the user about an untrusted certificate
+- PB-33609 as a desktop i should not accept http trusted domain
+
+### Fixed
+- PB-33595 As a user running an instance serving an invalid certificate I should be able to sync the gpgkeyring
+- PB-33727 Fix session extension, service worker awaken and user instance storage not set
+- PB-33801 Remove active account cache in memory
+
+### Maintenance
+- PB-33541 Chrome Extension Manifest upgrade to version 3
+- PB-33728 - Add support of 4.8 BEXT on the windows app
+
 ## [1.1.0] - 2024-05-15
 ### Added
 - PB-32931 As administrator, I see SSO and Directory Sync health checks in Passbolt API Status page
