@@ -15,7 +15,6 @@
 using System;
 using System.Diagnostics;
 using System.Net.Http;
-using System.Security.Authentication;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;

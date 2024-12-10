@@ -16,7 +16,7 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class SecretTopics
     {
-        public const string DECRYPT_SECRET = "passbolt.secret.decrypt";
+        public const string DECRYPT_SECRET = "passbolt.secret.find-by-resource-id";
         public const string PASSPHRASE_REQUEST = "passbolt.passphrase.request";
     }
 }

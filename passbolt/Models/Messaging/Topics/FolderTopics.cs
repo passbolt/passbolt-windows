@@ -18,11 +18,11 @@ namespace passbolt.Models.Messaging.Topics
     {
         public const string CREATE= "passbolt.folders.create";
         public const string UPDATE = "passbolt.folders.update";
-        public const string FIND_ALL = "passbolt.folders.find-permissions";
         public const string DELETE= "passbolt.folders.delete";
-        public const string OPEN_DIALOG= "passbolt.folders.open-move-confirmation-dialog";
+        public const string OPEN_DIALOG= "passbolt.folders.move-by-id";
         public const string UPDATE_LOCALSTORAGE= "passbolt.folders.update-local-storage";
         public const string SELECT_AND_SCROLL_TO = "passbolt.folders.select-and-scroll-to";
         public const string MOVE_STRATEGY_REQUEST = "passbolt.folders.move-strategy.request";
+        public const string FIND_DETAILS = "passbolt.folders.find-details";
     }
 }

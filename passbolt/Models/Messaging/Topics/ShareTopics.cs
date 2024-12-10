@@ -16,7 +16,6 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class ShareTopics
     {
-        public const string GET_RESOURCES = "passbolt.share.get-resources";
         public const string GET_FOLDERS = "passbolt.share.get-folders";
         public const string SAVE_RESOURCES = "passbolt.share.resources.save";
         public const string SAVE_FOLDERS = "passbolt.share.folders.save";
