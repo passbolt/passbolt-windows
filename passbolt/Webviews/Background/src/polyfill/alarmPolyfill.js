@@ -22,6 +22,7 @@ export default class AlarmsPolyfill {
   constructor() {
     this._registeredAlarms = {};
     this._timeouts = {};
+    this._intervals = {};
     this.onAlarm = new OnAlarmEvent();
     this.onAlarm.triggerAlarm = this.onAlarm.triggerAlarm.bind(this);
   }
