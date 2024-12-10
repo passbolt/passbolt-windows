@@ -47,12 +47,12 @@ class IPCHandler {
         const listener = listeners[i];
         if (event.requestId) {
           let args = [event.requestId, event.message];
-          if(event.withMultipleParam) {
+          if (event.withMultipleParam) {
             try {
-              args = [event.requestId].concat(JSON.parse(event.message)) 
+              args = [event.requestId].concat(JSON.parse(event.message));
             } catch (error) {
-              console.error(error)
-              throw error
+              console.error(error);
+              throw error;
             }
           }
           listener.callback.apply(this, args);

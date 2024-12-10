@@ -50,6 +50,9 @@ import User from 'passbolt-browser-extension/src/all/background_page/model/user'
 import {PasswordExpiryEvents} from './events/passwordExpiryEvents';
 import GlobalAlarmService from './services/alarm/globalAlarmService';
 import KeepSessionAliveService from 'passbolt-browser-extension/src/all/background_page/service/session_storage/keepSessionAliveService';
+import {AccountEvents} from 'passbolt-browser-extension/src/all/background_page/event/accountEvents';
+import {PermissionEvents} from 'passbolt-browser-extension/src/all/background_page/event/permissionEvents';
+import {MetadataEvents} from './events/metadataEvents';
 
 /**
  * Represents the main workspace class that sets up an event listener for the `message` event.
@@ -94,6 +97,7 @@ export default class MainWorkspace {
   async listenToEvents() {
     const apiClientOptions = await User.getInstance().getApiClientOptions();
     const account = await GetLegacyAccountService.get({role: true});
+    AccountEvents.listen(this.worker, apiClientOptions, account);
     AuthEvents.listen(this.worker);
     AccountRecoveryEvents.listen(this.worker, account);
     ActionLogEvents.listen(this.worker, apiClientOptions);
@@ -108,6 +112,7 @@ export default class MainWorkspace {
     KeyringEvents.listen(this.worker, null, account);
     LocaleEvents.listen(this.worker);
     MfaEvents.listen(this.worker, apiClientOptions);
+    MetadataEvents.listen(this.worker, apiClientOptions, account);
     MultiFactorAuthenticationEvents.listen(this.worker, apiClientOptions);
     OrganizationSettingsEvents.listen(this.worker);
     PownedPasswordEvents.listen(this.worker);
@@ -122,6 +127,7 @@ export default class MainWorkspace {
     ThemeEvents.listen(this.worker);
     PasswordExpiryEvents.listen(this.worker, apiClientOptions, account);
     PasswordPoliciesEvents.listen(this.worker, apiClientOptions, account);
+    PermissionEvents.listen(this.worker, apiClientOptions, account);
     UserPassphrasePolicies.listen(this.worker);
     window.chrome.webview.postMessage(JSON.stringify({topic: BACKGROUND_READY}));
   }

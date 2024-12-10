@@ -48,7 +48,7 @@ class AuthLogoutController {
    * @return {Promise<void>}
    */
   async exec() {
-    this.authLogoutService.logout()
+    this.authLogoutService.logout();
     // emits a USER_LOGGED_OUT message for the UWP's Main process to handle specific process
     this.worker.port.emit(USER_LOGGED_OUT);
   }

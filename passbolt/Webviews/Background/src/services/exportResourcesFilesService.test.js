@@ -20,6 +20,7 @@ import FileService from "passbolt-browser-extension/src/all/background_page/serv
 import ExportResourcesFileEntity from "passbolt-browser-extension/src/all/background_page/model/entity/export/exportResourcesFileEntity";
 import {DOWNLOAD_FILE} from "../enumerations/appEventEnumeration";
 import {accountDto} from "../data/mockStorage";
+import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
 
 // Reset the modules before each test.
 beforeEach(() => {
@@ -30,17 +31,15 @@ beforeEach(() => {
 describe('ExportResourcesFileService', () => {
   let exportResourcesFileService, exportEntity;
 
-  beforeEach(() => {
-    exportResourcesFileService = new ExportResourcesFileService(null, defaultApiClientOptions(), accountDto);
+  beforeEach(async() => {
+    exportResourcesFileService = new ExportResourcesFileService(null, defaultApiClientOptions(), new AccountEntity(accountDto));
     exportEntity = new ExportResourcesFileEntity(resourceToExport);
     jest.spyOn(User, "getInstance").mockImplementation(() => ({get: () => ({id: 1})}));
     jest.spyOn(exportResourcesFileService.progressService, "start").mockImplementation(() => {});
     jest.spyOn(exportResourcesFileService.progressService, "finishStep").mockImplementation(() => Promise.resolve());
     jest.spyOn(exportResourcesFileService.progressService, "close").mockImplementation(() => Promise.resolve());
-    jest.spyOn(exportResourcesFileService.exportResoucesFileController, "prepareExportContent").mockImplementation(() => {});
-    jest.spyOn(exportResourcesFileService.exportResoucesFileController, "decryptSecrets").mockImplementation(() => {});
-    jest.spyOn(exportResourcesFileService.exportResoucesFileController, "export").mockImplementation(() => {});
-    jest.spyOn(exportResourcesFileService.exportResoucesFileController, "getPrivateKey").mockImplementation(() => {});
+    jest.spyOn(exportResourcesFileService.exportResourcesService, "prepareExportContent").mockImplementation(() => {});
+    jest.spyOn(exportResourcesFileService.exportResourcesService, "exportToFile").mockImplementation(() => {});
     jest.spyOn(FileService, "blobToDataURL").mockImplementation(() => {});
   });
   describe('ExportResourcesFileService:Download', () => {
@@ -56,14 +55,12 @@ describe('ExportResourcesFileService', () => {
       expect(exportResourcesFileService.progressService.close).toHaveBeenCalledTimes(1);
     });
     it('should export data by using exportResoucesFileController from bext', async() => {
-      expect.assertions(6);
+      expect.assertions(4);
       await exportResourcesFileService.download(resourceToExport);
-      expect(exportResourcesFileService.exportResoucesFileController.prepareExportContent).toHaveBeenCalledWith(exportEntity);
-      expect(exportResourcesFileService.exportResoucesFileController.prepareExportContent).toHaveBeenCalledTimes(1);
-      expect(exportResourcesFileService.exportResoucesFileController.getPrivateKey).toHaveBeenCalledTimes(1);
-      expect(exportResourcesFileService.exportResoucesFileController.decryptSecrets).toHaveBeenCalledTimes(1);
-      expect(exportResourcesFileService.exportResoucesFileController.export).toHaveBeenCalledWith(exportEntity);
-      expect(exportResourcesFileService.exportResoucesFileController.export).toHaveBeenCalledTimes(1);
+      expect(exportResourcesFileService.exportResourcesService.prepareExportContent).toHaveBeenCalledWith(exportEntity);
+      expect(exportResourcesFileService.exportResourcesService.prepareExportContent).toHaveBeenCalledTimes(1);
+      expect(exportResourcesFileService.exportResourcesService.exportToFile).toHaveBeenCalledWith(exportEntity, null);
+      expect(exportResourcesFileService.exportResourcesService.exportToFile).toHaveBeenCalledTimes(1);
     });
   });
   describe('ExportResourcesFileService:generateBlob', () => {
