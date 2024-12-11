@@ -13,11 +13,12 @@
  */
 
 import i18n from "passbolt-browser-extension/src/all/background_page/sdk/i18n";
-import ExportResourcesFileController from "passbolt-browser-extension/src/all/background_page/controller/export/exportResourcesFileController";
 import ExportResourcesFileEntity from "passbolt-browser-extension/src/all/background_page/model/entity/export/exportResourcesFileEntity";
 import ProgressService from "passbolt-browser-extension/src/all/background_page/service/progress/progressService";
 import {DOWNLOAD_FILE} from "../enumerations/appEventEnumeration";
 import FileService from "passbolt-browser-extension/src/all/background_page/service/file/fileService";
+import ExportResourcesService from "passbolt-browser-extension/src/all/background_page/service/resource/export/exportResourcesService";
+import PassphraseStorageService from "passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService";
 
 const INITIAL_PROGRESS_GOAL = 100;
 
@@ -31,8 +32,8 @@ class ExportResourcesFileService {
    */
   constructor(worker, apiClientOptions, account) {
     this.worker = worker;
-    this.exportResoucesFileController = new ExportResourcesFileController(worker, apiClientOptions, account);
     this.progressService = new ProgressService(this.worker, i18n.t("Exporting ..."));
+    this.exportResourcesService = new ExportResourcesService(account, apiClientOptions, this.progressService);
   }
 
   /**
@@ -43,10 +44,9 @@ class ExportResourcesFileService {
     try {
       this.progressService.start(INITIAL_PROGRESS_GOAL, i18n.t("Generate file"));
       const exportEntity = new ExportResourcesFileEntity(exportResourcesFileDto);
-      await this.exportResoucesFileController.prepareExportContent(exportEntity);
-      const privateKey = await this.exportResoucesFileController.getPrivateKey();
-      await this.exportResoucesFileController.decryptSecrets(exportEntity, privateKey);
-      await this.exportResoucesFileController.export(exportEntity);
+      await this.exportResourcesService.prepareExportContent(exportEntity);
+      const passphrase = await PassphraseStorageService.get();
+      await this.exportResourcesService.exportToFile(exportEntity, passphrase);
       await this.generateBlob(exportEntity);
       await this.progressService.finishStep(i18n.t('Done'), true);
       await this.progressService.close();
@@ -64,7 +64,7 @@ class ExportResourcesFileService {
   async generateBlob(exportEntity) {
     const date = new Date().toISOString().slice(0, 10);
     const filename = `passbolt-export-${date}.${exportEntity.fileType}`;
-    const mimeType = this.exportResoucesFileController.getMimeType(exportEntity.fileType);
+    const mimeType = {kdbx: "application/x-keepass", csv: "text/csv"}[exportEntity.fileType] || "text/plain";
 
     const blobFile = new Blob([exportEntity.file], {type: mimeType});
     const content = await FileService.blobToDataURL(blobFile);
