@@ -56,6 +56,8 @@ import HandlePassphraseEntryEvents
   from "passbolt-styleguide/src/react-extension/components/AuthenticationPassphrase/HandlePassphraseEntryEvents/HandlePassphraseEntryEvents";
 import PasswordExpirySettingsContextProvider from "passbolt-styleguide/src/react-extension/contexts/PasswordExpirySettingsContext";
 import ProgressContextProvider from "passbolt-styleguide/src/react-extension/contexts/ProgressContext";
+import MetadataTypesSettingsLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/MetadataTypesSettingsLocalStorageContext/MetadataTypesSettingsLocalStorageContext";
+import ResourceTypesLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/ResourceTypesLocalStorageContext/ResourceTypesLocalStorageContext";
 
 /**
  * The passbolt application served by the desktop.
@@ -113,23 +115,27 @@ class AppWorkspace extends Component {
                                             ]}>
                                               <PasswordExpirySettingsContextProvider>
                                                 <ResourceWorkspaceContextProvider>
-                                                  <ResourcePasswordGeneratorContextProvider>
-                                                    <ManageDialogs />
-                                                    <ManageWorkflows />
-                                                    <ManageContextualMenu />
-                                                    <ManageAnnouncements />
-                                                    <DragContextProvider>
-                                                      <div id="container" className="page password">
-                                                        <div id="app" className="app ready" tabIndex="1000">
-                                                          <div className="header first">
-                                                            <DisplayMainMenu />
+                                                  <MetadataTypesSettingsLocalStorageContextProvider>
+                                                    <ResourceTypesLocalStorageContextProvider>
+                                                      <ResourcePasswordGeneratorContextProvider>
+                                                        <ManageDialogs />
+                                                        <ManageWorkflows />
+                                                        <ManageContextualMenu />
+                                                        <ManageAnnouncements />
+                                                        <DragContextProvider>
+                                                          <div id="container" className="page password">
+                                                            <div id="app" className="app ready" tabIndex="1000">
+                                                              <div className="header first">
+                                                                <DisplayMainMenu />
+                                                              </div>
+                                                              <ResourcesWebviewContext />
+                                                              <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
+                                                            </div>
                                                           </div>
-                                                          <ResourcesWebviewContext />
-                                                          <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
-                                                        </div>
-                                                      </div>
-                                                    </DragContextProvider>
-                                                  </ResourcePasswordGeneratorContextProvider>
+                                                        </DragContextProvider>
+                                                      </ResourcePasswordGeneratorContextProvider>
+                                                    </ResourceTypesLocalStorageContextProvider>
+                                                  </MetadataTypesSettingsLocalStorageContextProvider>
                                                 </ResourceWorkspaceContextProvider>
                                               </PasswordExpirySettingsContextProvider>
                                             </Route>

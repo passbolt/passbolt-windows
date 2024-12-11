@@ -16,6 +16,7 @@ import AccountModel from "passbolt-browser-extension/src/all/background_page/mod
 import PassphraseStorageService from "passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService";
 import FileService from "passbolt-browser-extension/src/all/background_page/service/file/fileService";
 import {DOWNLOAD_FILE, ROTATE_KEY} from "../enumerations/appEventEnumeration";
+import KeepSessionAliveService from "passbolt-browser-extension/src/all/background_page/service/session_storage/keepSessionAliveService";
 
 const RECOVERY_KIT_FILENAME = "passbolt-recovery-kit.asc";
 
@@ -60,7 +61,7 @@ class UpdatePrivateKeyController {
 
     await this.accountModel.updatePrivateKey(userPrivateArmoredKey);
     await PassphraseStorageService.flushPassphrase();
-    if (PassphraseStorageService.isSessionKeptUntilLogOut()) {
+    if (KeepSessionAliveService.isStarted()) {
       await PassphraseStorageService.set(newPassphrase);
     }
 
