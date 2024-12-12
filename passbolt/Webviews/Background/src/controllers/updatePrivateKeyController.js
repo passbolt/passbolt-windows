@@ -62,7 +62,7 @@ class UpdatePrivateKeyController {
     await this.accountModel.updatePrivateKey(userPrivateArmoredKey);
     await PassphraseStorageService.flushPassphrase();
     if (KeepSessionAliveService.isStarted()) {
-      await PassphraseStorageService.set(newPassphrase);
+      await PassphraseStorageService.set(newPassphrase, -1);
     }
 
     this.worker.port.emit(ROTATE_KEY, userPrivateArmoredKey);
