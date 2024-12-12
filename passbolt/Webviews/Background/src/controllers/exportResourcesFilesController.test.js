@@ -12,6 +12,7 @@
  * @since         0.3.0
  */
 
+import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
 import {accountDto} from "../data/mockStorage";
 import {resourceToExport} from "../services/exportResourcesFilesService.test.data";
 import ExportResourcesFileDesktopController from "./exportResourcesFilesController";
@@ -31,7 +32,7 @@ describe('ExportResourcesFileDesktopController', () => {
         emit: jest.fn()
       }
     };
-    exportResourcesFileDesktopController = new ExportResourcesFileDesktopController(worker, defaultApiClientOptions(), null, accountDto);
+    exportResourcesFileDesktopController = new ExportResourcesFileDesktopController(worker, defaultApiClientOptions(), null, new AccountEntity(accountDto));
   });
 
   describe('ExportResourcesFileDesktopController:exec', () => {

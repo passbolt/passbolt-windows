@@ -12,15 +12,15 @@
  * @since         1.3.0
  */
 
-import { OnAlarmEvent } from "./alarmPolyfill"
+import {OnAlarmEvent} from "./alarmPolyfill";
 
 /**
  * Polyfill to mock the commands API from browser extension
  */
-export default class CommandsPolyfill { 
-    constructor() {
-        this.onCommand = new OnAlarmEvent()
-    }
+export default class CommandsPolyfill {
+  constructor() {
+    this.onCommand = new OnAlarmEvent();
+  }
 }
 
-window.chrome.commands = new CommandsPolyfill()
+window.chrome.commands = new CommandsPolyfill();

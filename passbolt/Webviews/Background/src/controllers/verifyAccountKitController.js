@@ -57,8 +57,8 @@ class VerifyAccountKitController {
     //Check if accout is not a http request
     const authAccountEntity = new AuthImportEntity({account_kit: accountKit});
     const trustedDomain = new URL(authAccountEntity.account_kit.domain);
-    if(trustedDomain.protocol != "https:") {
-      throw new Error(I18n.t("The Windows application requires the passbolt server to use HTTPS. Please contact your administrator to fix the issue and try again later."))
+    if (trustedDomain.protocol != "https:") {
+      throw new Error(I18n.t("The Windows application requires the passbolt server to use HTTPS. Please contact your administrator to fix the issue and try again later."));
     }
     AuthImportStorageService.set(authAccountEntity);
     return accountKit;

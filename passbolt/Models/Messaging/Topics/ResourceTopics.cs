@@ -16,15 +16,15 @@ namespace passbolt.Models.Messaging.Topics
 {
     public class ResourceTopics
     {
-        public const string FIND_ALL = "passbolt.resources.find-all";
+        public const string FIND_ALL_IDS_BY_IS_SHARED_WITH_GROUP = "passbolt.resources.find-all-ids-by-is-shared-with-group";
         public const string UPDATE_LOCALSTORAGE = "passbolt.resources.update-local-storage";
-        public const string FIND_PERMISSION = "passbolt.resources.find-permissions";
         public const string UPDATE = "passbolt.resources.update";
         public const string CREATE = "passbolt.resources.create";
         public const string DELETE_ALL = "passbolt.resources.delete-all";
-        public const string GET_ALL = "passbolt.resource-type.get-all";
         public const string GET_GRID_SETTING = "passbolt.resources.get-grid-setting";
         public const string SET_GRID_SETTING = "passbolt.resources.set-grid-setting";
         public const string FIND_DETAILS = "passbolt.resources.find-details";
+        public const string FIND_ALL_BY_IDS_FOR_DISPLAY_PERMISSIONS = "passbolt.resources.find-all-by-ids-for-display-permissions";
+        public const string MOVE_BY_IDS = "passbolt.resources.move-by-ids";
     }
 }

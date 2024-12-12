@@ -76,8 +76,8 @@ class DragAndDropPolyfill {
    * @param {MouseEvent} event - The mousedown event
    */
   handleMouseMove(event) {
-    if (!this.isDragging) { 
-      return; 
+    if (!this.isDragging) {
+      return;
     }
     if (!this.hasMoved) {
       this.hasMoved = true;

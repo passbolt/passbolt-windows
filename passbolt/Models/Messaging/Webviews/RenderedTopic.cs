@@ -28,6 +28,7 @@ namespace passbolt.Models.Messaging
         private List<string> topics = new List<string>();
 
         public RenderedTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService, RenderedWebviewService renderedWebviewService) : base(background, rendered, localFolderService, renderedWebviewService) {
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(AccountTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AccountRecoveryTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
@@ -41,12 +42,16 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(LocaleTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(KeyringTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(MfaTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(MetadataTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(PownedPasswordTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(PasswordExpiryTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(PasswordGeneratorTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(PasswordPoliciesTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(PermissionTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(PermissionTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(RbacTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTypeTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SecretTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
