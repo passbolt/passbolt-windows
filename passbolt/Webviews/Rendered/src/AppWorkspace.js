@@ -39,7 +39,6 @@ import DisplayUserSettingsWorkspace from "./components/DisplayUserSettingsWorksp
 import DisplayActionFeedbacks from "passbolt-styleguide/src/react-extension/components/Common/ActionFeedback/DisplayActionFeedbacks";
 import HandleFolderMoveStrategyEvents from "passbolt-styleguide/src/react-extension/components/ResourceFolder/HandleFolderMoveStrategyEvents/HandleFolderMoveStrategyEvents";
 import HandleProgressEvents from "passbolt-styleguide/src/react-extension/components/Common/Progress/HandleProgressEvents/HandleProgressEvents";
-import Footer from "passbolt-styleguide/src/react-extension/components/Common/Footer/Footer";
 import HandleSessionExpired from "passbolt-styleguide/src/react-extension/components/Authentication/HandleSessionExpired/HandleSessionExpired";
 import HandleRouteFallback from "passbolt-styleguide/src/react-extension/components/Common/Route/HandleRouteFallback";
 import AccountRecoveryUserContextProvider from "passbolt-styleguide/src/react-extension/contexts/AccountRecoveryUserContext";
@@ -185,7 +184,6 @@ class AppWorkspace extends Component {
                                           </Switch>
                                         </NavigationContextProvider>
                                       </Router>
-                                      <Footer />
                                     </ProgressContextProvider>
                                   </LoadingContextProvider>
                                 </ContextualMenuContextProvider>
