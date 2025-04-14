@@ -20,7 +20,8 @@ import TranslationProvider from "passbolt-styleguide/src/react-extension/compone
 import Footer from "passbolt-styleguide/src/react-extension/components/Common/Footer/Footer";
 import OrchestrateAccountKitImportation from "passbolt-styleguide/src/react-extension/components/Desktop/OrchestrateAccountKitImportation/OrchestrateAccountKitImportation";
 import ImportAccountKitContextProvider from "passbolt-styleguide/src/react-extension/contexts/Desktop/ImportAccountKitContext";
-import RenderedWebview from "./components/RenderedWebview";
+import LogoSVG from "passbolt-styleguide/src/img/svg/logo.svg";
+import RenderedWebview from "./components/RenderedWebview"
 import {version} from '../package.json';
 
 /**
@@ -67,7 +68,9 @@ class AppImport extends Component {
               <div id="container" className="container page login">
                 <div className="content">
                   <div className="header">
-                    <div className="logo"><span className="visually-hidden">Passbolt</span></div>
+                    <div className="logo-svg">
+                      <LogoSVG role="img" width="20rem" height="3.5rem"/>
+                    </div>
                   </div>
                   <div className="login-form">
                     <Switch>

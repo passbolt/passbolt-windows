@@ -17,7 +17,7 @@ import DesktopAuthenticateController from "./desktopAuthenticateController";
 import InitPassboltDataLocalStorageService from "../services/initPassboltDataLocalStorageService";
 import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
-import ExternalGpgKeyEntity from "passbolt-browser-extension/src/all/background_page/model/entity/gpgkey/external/externalGpgKeyEntity";
+import ExternalGpgKeyEntity from "passbolt-styleguide/src/shared/models/entity/gpgkey/externalGpgKeyEntity";
 import {accountDto, tempPassphrase} from "../data/mockStorage";
 import {enableFetchMocks} from "jest-fetch-mock";
 import {mockApiResponse} from "passbolt-browser-extension/test/mocks/mockApiResponse";
