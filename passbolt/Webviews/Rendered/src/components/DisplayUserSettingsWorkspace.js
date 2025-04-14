@@ -24,8 +24,6 @@ import DisplayUserProfile from "passbolt-styleguide/src/react-extension/componen
 import DisplayUserTheme from "passbolt-styleguide/src/react-extension/components/UserSetting/DisplayUserTheme/DisplayUserTheme";
 import DisplayUserSettingsWorkspaceBreadcrumb
   from "passbolt-styleguide/src/react-extension/components/UserSetting/DisplayUserSettingsWorkspaceBreadcrumb/DisplayUserSettingsWorkspaceBreadcrumb";
-import DisplayUserSettingsWorkspaceActions
-  from "passbolt-styleguide/src/react-extension/components/UserSetting/DisplayUserSettingWorkspaceActions/DisplayUserSettingWorkspaceActions";
 import DisplayUserGpgInformation from "passbolt-styleguide/src/react-extension/components/UserSetting/DisplayUserGpgInformation/DisplayUserGpgInformation";
 import SearchBar from "passbolt-styleguide/src/react-extension/components/Common/Navigation/Search/SearchBar";
 import DisplayUserPassphrase from "passbolt-styleguide/src/react-extension/components/UserSetting/ChangeUserPassphrase/ChangeUserPassphrase";
@@ -94,9 +92,6 @@ class DisplayUserSettingsWorkspace extends React.Component {
           <Logo/>
           <SearchBar disabled={true}/>
           <DisplayUserBadgeMenu baseUrl={this.props.context.userSettings.getTrustedDomain()} user={this.props.context.loggedInUser}/>
-        </div>
-        <div className="header third">
-          <DisplayUserSettingsWorkspaceActions/>
         </div>
         <div className="panel main">
           <div className="panel left">
