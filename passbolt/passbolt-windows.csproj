@@ -264,10 +264,7 @@
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     <Content Include="Assets\Wide310x150Logo.scale-400.png" />
     <None Include="Package.StoreAssociation.xml" />
-    <Content Include="Webviews\Rendered\img\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
+    <Content Include="Webviews\Rendered\img\**" />
     <Content Include="Webviews\Rendered\dist\locales\**" />
     <Content Include="Webviews\Background\dist\locales\**" />
   </ItemGroup>
