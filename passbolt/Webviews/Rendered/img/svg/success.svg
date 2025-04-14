@@ -1,0 +1,4 @@
+<svg viewBox="0 0 128 128" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+  <circle id="success-circle" r="62.5" transform="matrix(0-1 1 0 64 64)" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dashoffset="392.7" stroke-dasharray="392.7"/>
+  <path id="success-check" d="M87.0622,46.7031L55.3505,78.4148L40.9361,64.0004" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dashoffset="65.24" stroke-dasharray="65.24"/>
+</svg>
