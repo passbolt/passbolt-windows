@@ -164,8 +164,8 @@ class AppAuthentication extends Component {
                       <OrchestrateLoginBoxMain />
                     </div>
                   </div>
+                  <Footer />
                 </div>
-                <Footer />
               </AuthenticationLoginContextProvider>
             </Router>
           </TranslationProvider>

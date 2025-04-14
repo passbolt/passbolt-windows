@@ -84,8 +84,8 @@ class AppImport extends Component {
                     </Switch>
                   </div>
                 </div>
+                <Footer />
               </div>
-              <Footer />
             </Router>
           </TranslationProvider>
         </AppContext.Provider>
