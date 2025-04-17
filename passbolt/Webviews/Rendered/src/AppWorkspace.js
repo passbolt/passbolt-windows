@@ -34,7 +34,6 @@ import LoadingContextProvider from "passbolt-styleguide/src/react-extension/cont
 import UserWorkspaceContextProvider from "passbolt-styleguide/src/react-extension/contexts/UserWorkspaceContext";
 import DisplayUserWorkspace from "passbolt-styleguide/src/react-extension/components/User/DisplayUserWorkspace/DisplayUserWorkspace";
 import UserSettingsContextProvider from "passbolt-styleguide/src/react-extension/contexts/UserSettingsContext";
-import DisplayUserSettingsWorkspace from "./components/DisplayUserSettingsWorkspace";
 import DisplayActionFeedbacks from "passbolt-styleguide/src/react-extension/components/Common/ActionFeedback/DisplayActionFeedbacks";
 import HandleFolderMoveStrategyEvents from "passbolt-styleguide/src/react-extension/components/ResourceFolder/HandleFolderMoveStrategyEvents/HandleFolderMoveStrategyEvents";
 import HandleProgressEvents from "passbolt-styleguide/src/react-extension/components/Common/Progress/HandleProgressEvents/HandleProgressEvents";
@@ -56,6 +55,7 @@ import PasswordExpirySettingsContextProvider from "passbolt-styleguide/src/react
 import ProgressContextProvider from "passbolt-styleguide/src/react-extension/contexts/ProgressContext";
 import MetadataTypesSettingsLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/MetadataTypesSettingsLocalStorageContext/MetadataTypesSettingsLocalStorageContext";
 import ResourceTypesLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/ResourceTypesLocalStorageContext/ResourceTypesLocalStorageContext";
+import DisplayUserSettingsWorkspace from "passbolt-styleguide/src/react-extension/components/UserSetting/DisplayUserSettingsWorkspace/DisplayUserSettingsWorkspace";
 
 /**
  * The passbolt application served by the desktop.
