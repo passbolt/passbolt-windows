@@ -33,7 +33,37 @@ module.exports = {
         options: {
           presets: ["@babel/react"],
         },
-      }
+      },
+      {
+        test: /\.svg$/,
+        use: [          {
+          loader: "@svgr/webpack",
+          options: {
+            svgoConfig: {
+              plugins: [
+                {
+                  name: 'preset-default',
+                  params: {
+                    overrides: {
+                      removeViewBox: false,
+                      cleanupIds: false,
+                      removeTitle: false,
+                      removeDesc: false,
+                    },
+                  },
+                },
+                {
+                  name: 'prefixIds',
+                  params: {
+                    prefixIds: false,
+                    prefixClassNames: false
+                  },
+                },
+              ],
+            }
+          }
+        }],
+      },
     ],
   },
   plugins: [

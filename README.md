@@ -34,9 +34,27 @@ By using UWP and Webview2, Passbolt Desktop App provides a consistent and seamle
 
 ## How to install the Windows app
 
-Access the application by clicking on the button below : 
+Access the application by clicking on the button below :
 
 <a href="https://apps.microsoft.com/detail/9PFXS2WVKVPB">![Download passbolt from the Windows store](./images/Windows-store-button-V2.png)</a>
+
+### Debug version alternative
+
+Debug packages are available [here](https://github.com/passbolt/passbolt-windows/releases) for installation. These packages are made to be used only for troubleshooting issues when no other solution is available. Once the issue is found and solved, it is recommanded to go back with the standard version of the application.
+
+In order to proceed with the installation of a debug package, you need:
+1. Download the latest passbolt-windows_*_Debug.zip package
+2. Unzip the package
+3. Install the certificate of the application on your machine. Double-click on the *.cer file you can find in the folder after having unzipped it. The certificate should be place in "Local Machine" > "Trusted Root Certification Authorities"
+4. Install the application using the *.msixbundle package from the unzipped folder
+
+The application is now installed on your machine and ready to be launched.
+
+#### Trouble shooting
+
+1. If you have the Passbolt Desktop App already installed on your machine, it is very likely that Windows will not let you install the debug package. You may need to remove the standard version first in order to proceed.
+2. The installer opens but, it's not possible to install the package, the button is greyed out. In that case, it could be that the proper certificate is not installed, installed at the wrong place or not trusted. Make sure during the installation that the certificate is placed in "Local Machine" > "Trusted Root Certification Authorities" (the name may vary because of the localization settings of your OS). A restart of your machine can help after the procedure.
+3. The debug app starts but the debugger windows do not open. It can happen sometimes. To fix this, ensure that the developer mode is activated on your OS ([How to enable the developer mode on Windows 11](https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development))
 
 
 ## Import an existing passbolt account
@@ -52,7 +70,6 @@ Once the account kit is successfully uploaded, your account information, includi
 Please review this information carefully before proceeding. Once your passphrase is validated, the setup of your account will be complete, and you will be able to access the password workspace.
 
 
-
 # Development
 
 ## Requirements
@@ -61,7 +78,7 @@ Please review this information carefully before proceeding. Once your passphrase
 - Edge ([download](https://developer.microsoft.com/en-us/microsoft-edge/webview2/))
 - Passbolt API >= v4.2.0
 
-## Clone the project 
+## Clone the project
 
 ```bash
 git clone git@github.com:passbolt/passbolt-windows
