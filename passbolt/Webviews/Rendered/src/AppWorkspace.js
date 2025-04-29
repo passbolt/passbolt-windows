@@ -16,7 +16,6 @@ import React, {Component} from "react";
 import {BrowserRouter as Router, Route, Switch} from "react-router-dom";
 import PropTypes from "prop-types";
 import AppContext from "passbolt-styleguide/src/shared/context/AppContext/AppContext";
-import DisplayMainMenu from "passbolt-styleguide/src/react-extension/components/Common/Menu/DisplayMainMenu";
 import ManageDialogs from "passbolt-styleguide/src/react-extension/components/Common/Dialog/ManageDialogs/ManageDialogs";
 import ResourceWorkspaceContextProvider from "passbolt-styleguide/src/react-extension/contexts/ResourceWorkspaceContext";
 import ResourcePasswordGeneratorContextProvider from "passbolt-styleguide/src/react-extension/contexts/ResourcePasswordGeneratorContext";
@@ -35,11 +34,9 @@ import LoadingContextProvider from "passbolt-styleguide/src/react-extension/cont
 import UserWorkspaceContextProvider from "passbolt-styleguide/src/react-extension/contexts/UserWorkspaceContext";
 import DisplayUserWorkspace from "passbolt-styleguide/src/react-extension/components/User/DisplayUserWorkspace/DisplayUserWorkspace";
 import UserSettingsContextProvider from "passbolt-styleguide/src/react-extension/contexts/UserSettingsContext";
-import DisplayUserSettingsWorkspace from "./components/DisplayUserSettingsWorkspace";
 import DisplayActionFeedbacks from "passbolt-styleguide/src/react-extension/components/Common/ActionFeedback/DisplayActionFeedbacks";
 import HandleFolderMoveStrategyEvents from "passbolt-styleguide/src/react-extension/components/ResourceFolder/HandleFolderMoveStrategyEvents/HandleFolderMoveStrategyEvents";
 import HandleProgressEvents from "passbolt-styleguide/src/react-extension/components/Common/Progress/HandleProgressEvents/HandleProgressEvents";
-import Footer from "passbolt-styleguide/src/react-extension/components/Common/Footer/Footer";
 import HandleSessionExpired from "passbolt-styleguide/src/react-extension/components/Authentication/HandleSessionExpired/HandleSessionExpired";
 import HandleRouteFallback from "passbolt-styleguide/src/react-extension/components/Common/Route/HandleRouteFallback";
 import AccountRecoveryUserContextProvider from "passbolt-styleguide/src/react-extension/contexts/AccountRecoveryUserContext";
@@ -58,6 +55,7 @@ import PasswordExpirySettingsContextProvider from "passbolt-styleguide/src/react
 import ProgressContextProvider from "passbolt-styleguide/src/react-extension/contexts/ProgressContext";
 import MetadataTypesSettingsLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/MetadataTypesSettingsLocalStorageContext/MetadataTypesSettingsLocalStorageContext";
 import ResourceTypesLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/ResourceTypesLocalStorageContext/ResourceTypesLocalStorageContext";
+import DisplayUserSettingsWorkspace from "passbolt-styleguide/src/react-extension/components/UserSetting/DisplayUserSettingsWorkspace/DisplayUserSettingsWorkspace";
 
 /**
  * The passbolt application served by the desktop.
@@ -125,9 +123,6 @@ class AppWorkspace extends Component {
                                                         <DragContextProvider>
                                                           <div id="container" className="page password">
                                                             <div id="app" className="app ready" tabIndex="1000">
-                                                              <div className="header first">
-                                                                <DisplayMainMenu />
-                                                              </div>
                                                               <ResourcesWebviewContext />
                                                               <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
                                                             </div>
@@ -153,9 +148,6 @@ class AppWorkspace extends Component {
                                                 <ManageAnnouncements />
                                                 <div id="container" className="page user">
                                                   <div id="app" className="app ready" tabIndex="1000">
-                                                    <div className="header first">
-                                                      <DisplayMainMenu />
-                                                    </div>
                                                     <DisplayUserWorkspace />
                                                   </div>
                                                 </div>
@@ -169,9 +161,6 @@ class AppWorkspace extends Component {
                                                   <ManageAnnouncements />
                                                   <div id="container" className="page settings">
                                                     <div id="app" className="app ready" tabIndex="1000">
-                                                      <div className="header first">
-                                                        <DisplayMainMenu />
-                                                      </div>
                                                       <DisplayUserSettingsWorkspace />
                                                     </div>
                                                   </div>
@@ -185,7 +174,6 @@ class AppWorkspace extends Component {
                                           </Switch>
                                         </NavigationContextProvider>
                                       </Router>
-                                      <Footer />
                                     </ProgressContextProvider>
                                   </LoadingContextProvider>
                                 </ContextualMenuContextProvider>
