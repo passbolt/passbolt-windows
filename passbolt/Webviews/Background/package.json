@@ -1,6 +1,6 @@
 {
   "name": "background-webview",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "description": "Background webview2 for passbolt dekstop windows",
   "license": "AGPL-3.0",
   "copyright": "Copyright 2022 Passbolt SA",
@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.22.15",
-    "@babel/plugin-transform-runtime": "^7.21.4",
+    "@babel/plugin-transform-runtime": "^7.26.10",
     "@babel/preset-env": "^7.21.5",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
@@ -45,8 +45,8 @@
     "@babel/preset-react": "^7.22.15",
     "buffer": "^6.0.3",
     "openpgp": "^5.11.1",
-    "passbolt-browser-extension": "4.10.2",
-    "passbolt-styleguide": "4.10.2",
+    "passbolt-browser-extension": "5.0.1",
+    "passbolt-styleguide": "5.0.1",
     "setimmediate": "^1.0.5",
     "stream-browserify": "^3.0.0",
     "validator": "^13.7.0"

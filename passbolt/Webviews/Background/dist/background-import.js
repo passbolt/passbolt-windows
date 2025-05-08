@@ -9989,6 +9989,11 @@ class EntitySchema {
       return prop;
     }
 
+    // check if prop is null
+    if (propSchema.nullable === true && prop === null) {
+      return prop;
+    }
+
     // Check if prop validates based on type
     EntitySchema.validatePropType(propName, prop, propSchema);
 
@@ -10422,6 +10427,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _entitySchema__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
 /* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./entity */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entity.js");
+/* harmony import */ var validator_es_lib_util_assertString__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! validator/es/lib/util/assertString */ "./node_modules/validator/es/lib/util/assertString.js");
+/* harmony import */ var _entityValidationError__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./entityValidationError */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityValidationError.js");
+/* harmony import */ var _utils_stringUtils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../utils/stringUtils */ "./node_modules/passbolt-styleguide/src/shared/utils/stringUtils.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -10438,6 +10446,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+const SCALAR_PROPERTY_TYPES = ["string", "number", "integer", "boolean"];
+const ARRAY_PROPERTY_TYPE = "array";
+
 class EntityV2 extends _entity__WEBPACK_IMPORTED_MODULE_1__["default"] {
   /**
    * The entity cached schemas referenced by entity class name.
@@ -10450,7 +10464,12 @@ class EntityV2 extends _entity__WEBPACK_IMPORTED_MODULE_1__["default"] {
   /**
    * @inheritDoc
    * @param {boolean} [options.validate=true] validate the given props against the entity schema and the build rules.
+   *   Disabling validation should be done with caution, considering its consequences:
+   *     - The data will not be checked against the schema or the build rules.
+   *     - The data will not be trimmed, and properties not defined in the schema will remain in _props.
+   *     - Triggering validation later through validate, validateSchema, or validateBuildRules will not validate associated entities and collections.
    * @param {object} [options.schema] dynamic schema to be used for data validation.
+   * @param {object} [options.validateBuildRules] Options to pass to validate build rules function @see EntityV2::validateBuildRules
    *
    * Additionally to the Entity, the EntityV2 will:
    * - Validate the entity schema.
@@ -10460,12 +10479,16 @@ class EntityV2 extends _entity__WEBPACK_IMPORTED_MODULE_1__["default"] {
    * @throws {EntityValidationError} If the dto does not validate the entity build rules.
    */
   constructor(dtos = {}, options = {}) {
+    const validate = options?.validate ?? true;
+
     // Note: Entity V1 will clone the dtos into the instance _props property.
     super(dtos, options);
     this.marshall();
-    const validate = options?.validate ?? true;
     if (validate) {
-      this.validateSchema(options?.schema);
+      this.validateSchema({schema: options?.schema, skipSchemaAssociationValidation: options?.skipSchemaAssociationValidation});
+    }
+    this.createAssociations(options);
+    if (validate) {
       this.validateBuildRules(options?.validateBuildRules);
     }
   }
@@ -10479,23 +10502,50 @@ class EntityV2 extends _entity__WEBPACK_IMPORTED_MODULE_1__["default"] {
     // Override this method to marshall the entity props prior to validation.
   }
 
-  /*
-   * ==================================================
-   * Validation
-   * ==================================================
+  /**
+   * Validate the entity: its schema and its build rules.
+   * @param {object} [options] Options
+   * @param {object} [options.schema] dynamic schema to be used for data validation.
+   * @param {object} [options.skipSchemaAssociationValidation] skip association validation schema
+   * @param {object} [options.validateBuildRules] Options to pass to validate build rules function
    */
+  validate(options = {}) {
+    try {
+      this.validateSchema(
+        {schema: options?.schema, skipSchemaAssociationValidation: options?.skipSchemaAssociationValidation}
+      );
+      this.validateBuildRules(options?.validateBuildRules);
+      this.validateAssociations(options);
+    } catch (error) {
+      if (!(error instanceof _entityValidationError__WEBPACK_IMPORTED_MODULE_2__["default"])) {
+        throw error;
+      }
+      return error;
+    }
+
+    return null;
+  }
 
   /**
    * Validate the entity schema.
    * Note: the entity schema will be created on first call and cached into a class static property.
-   * @param {object} [schema] dynamic schema to be used for data validation instead of the cachedSchema.
-   * @private
+   * Note: it does not validate the schema of associated entities or collections, it remains the responsibility of the constructor.
+   * @param {object} [options.schema] dynamic schema to be used for data validation.
+   * @param {object} [options.skipSchemaAssociationValidation] skip association validation schema
+   * @throws {EntityValidationError} If the dto does not validate the entity schema.1
    */
-  validateSchema(schema = null) {
+  validateSchema(option = null) {
+    let schema = option?.schema ?? this.cachedSchema;
+    if (option?.skipSchemaAssociationValidation) {
+      schema = {...schema};
+      const requiredAssociations = Object.keys(this.constructor.associations);
+      const required = schema.required.filter(requiredSchema => !requiredAssociations.includes(requiredSchema));
+      schema.required = required;
+    }
     this._props = _entitySchema__WEBPACK_IMPORTED_MODULE_0__["default"].validate(
       this.constructor.name,
       this._props,
-      schema ?? this.cachedSchema
+      schema
     );
   }
 
@@ -10528,10 +10578,295 @@ class EntityV2 extends _entity__WEBPACK_IMPORTED_MODULE_1__["default"] {
    * It is used to validate other rules that are not covered by the schema definition, by instance to check if
    * a password and its confirmation are identical.
    * @param {object} [options] Options.
+   * @throws {EntityValidationError} If the dto does not validate the entity build rules.
    */
   // eslint-disable-next-line no-unused-vars
   validateBuildRules(options = {}) {
     // Override this method to add entity validation build rules.
+  }
+
+  /**
+   * create the association entity: its schema and its build rules.
+   * @param {object} [options] Options
+   */
+  createAssociations(options = {}) {
+    if (Object.keys(this.constructor.associations).length > 0) {
+      const validationErrors = new _entityValidationError__WEBPACK_IMPORTED_MODULE_2__["default"]();
+      for (const [associationProp, associationEntityClass] of Object.entries(this.constructor.associations)) {
+        try {
+          if (this._props[associationProp]) {
+            // Get the association name and replace '_[a-z]' into [A-Z]  (example: associated_entity_v2 become associatedEntityV2)
+            const associationPropName = (0,_utils_stringUtils__WEBPACK_IMPORTED_MODULE_3__.snakeCaseToCamelCase)(associationProp);
+            this[`_${associationPropName}`] = new associationEntityClass(this._props[associationProp], {...options, clone: false});
+            delete this._props[associationProp];
+          }
+        } catch (error) {
+          if (error instanceof _entityValidationError__WEBPACK_IMPORTED_MODULE_2__["default"]) {
+            validationErrors.addAssociationError(associationProp, error);
+          } else {
+            throw error;
+          }
+        }
+      }
+      // Throw error if some issues were gathered
+      if (validationErrors.hasErrors()) {
+        throw validationErrors;
+      }
+    }
+  }
+
+  /**
+   * Return the associations contained in the entity.
+   * Override this method to define the associations.
+   * @return {object}
+   */
+  static get associations() {
+    return {};
+  }
+
+  /**
+   * Return a property value.
+   *
+   * Note: This function returns only scalar properties. Not supported:
+   *   - associated entities;
+   *   - associated collections;
+   *   - nested object;
+   *   - nested array;
+   *
+   * @param {string} propName The property name.
+   * @returns {*}
+   * @throws {TypeError} If the given property name is not a string.
+   * @throws {Error} If the property has no schema definition.
+   * @throws {Error} If the property references an association.
+   */
+  get(propName) {
+    (0,validator_es_lib_util_assertString__WEBPACK_IMPORTED_MODULE_4__["default"])(propName);
+    const schemaProperties = this.constructor.getSchema().properties[propName];
+    if (!schemaProperties) {
+      throw new Error(`The property "${propName}" has no schema definition.`);
+    }
+    if (!SCALAR_PROPERTY_TYPES.includes(schemaProperties?.type)) {
+      throw new Error("The property \"associated_entity\" should reference scalar properties only.");
+    }
+    return this._props[propName];
+  }
+
+  /**
+   * Set a property value. The new property value will be validated against the entity schema unless validation is
+   * explicitly disabled in the options.
+   *
+   * Note: the build rules are not enforced by this assignment and should be handled by the caller.
+   * Note: This function sets scalar and association properties. Not supported:
+   *   - nested object;
+   *
+   * @param {string} propName The property name.
+   * @param {*} value The value to set.
+   * @param {object} [options] Options.
+   * @param {boolean} [options.validate=true] validate the given props against the entity schema and the build rules.
+   * @throws {Error} If the property has no schema definition.
+   * @throws {Error} If the property does not validate the entity schema.
+   * @throws {EntityValidationError} If the property does not validate the entity schema.
+   */
+  set(propName, value, options = {}) {
+    (0,validator_es_lib_util_assertString__WEBPACK_IMPORTED_MODULE_4__["default"])(propName);
+
+    const validate = options?.validate ?? true;
+    if (this.isAssociation(propName)) {
+      this.setAssociation(propName, value, options);
+    } else {
+      const propNameSplit = propName.split(".");
+      const basePropName = propNameSplit[0];
+
+      const schemaProperties = this.constructor.getSchema().properties[basePropName];
+      if (!schemaProperties) {
+        throw new Error(`The property "${basePropName}" has no schema definition.`);
+      }
+
+      if (schemaProperties?.type === ARRAY_PROPERTY_TYPE) {
+        this.setArrayProp(propName, value, options);
+      } else {
+        if (!SCALAR_PROPERTY_TYPES.includes(schemaProperties?.type)) {
+          throw new Error("The property \"associated_entity\" should reference scalar properties only.");
+        }
+        if (validate) {
+          _entitySchema__WEBPACK_IMPORTED_MODULE_0__["default"].validateProp(basePropName, value, schemaProperties);
+        }
+        this._props[basePropName] = value;
+      }
+    }
+  }
+  /**
+   * Set an array property value. The new array value will be validated against the entity schema unless validation is
+   * explicitly disabled in the options.
+   *
+   * @param {string} propName The property name.
+   * @param {*} value The value to set.
+   * @param {object} [options] Options.
+   * @throws {Error} If the property does not respect the index format.
+   * @throws {Error} If the property does not include an index.
+   * @throws {Error} If the property does not validate the entity schema.
+   * @throws {EntityValidationError} If the property does not validate the entity schema.
+   * @private
+   */
+  setArrayProp(propName, value, options) {
+    (0,validator_es_lib_util_assertString__WEBPACK_IMPORTED_MODULE_4__["default"])(propName); // Assert propName is a string
+    const propNameSplit = propName.split(".");
+    const basePropName = propNameSplit[0];
+    let index = null;
+    const schemaProperties = this.constructor.getSchema().properties[basePropName];
+    const validate = options?.validate ?? true;
+
+    if (propNameSplit.length === 2) {
+      //Validate array index format
+      const arrayIndexMatch = propNameSplit[1].match(/^(\d+)$/);
+      if (!arrayIndexMatch) {
+        throw new Error(`The property "${propNameSplit[0]}" has an invalid index format. Expected format: digits.`);
+      }
+      index = parseInt(arrayIndexMatch[1], 10);
+    } else {
+      throw new Error(`The property "${propNameSplit[0]}" has no index passed.`);
+    }
+
+    if (!SCALAR_PROPERTY_TYPES.includes(schemaProperties.items.type)) {
+      throw new Error("The property \"associated_entity\" with array type should reference scalar properties only.");
+    }
+    if (validate) {
+      _entitySchema__WEBPACK_IMPORTED_MODULE_0__["default"].validateProp(basePropName, value, schemaProperties.items);
+    }
+    if (!this._props[basePropName]) {
+      this._props[basePropName] = [];
+    }
+    this._props[basePropName][index] = value;
+  }
+
+  /**
+   * Set an association or an association property value. The new association value will be validated against the entity schema unless validation is
+   * explicitly disabled in the options.
+   *
+   * Note: If the value is an instance of entity type, no clone or validation is applied.
+   * Note: the build rules are not enforced by this assignment and should be handled by the caller.
+   * Note: This function sets association and association properties. Not supported:
+   *   - nested object;
+   *   - nested array;
+   *
+   * @param {string} propName The property name.
+   * @param {*} value The value to set.
+   * @param {object} [options] Options.
+   * @throws {Error} If the property has no schema definition.
+   * @throws {Error} If the property does not validate the entity schema.
+   * @throws {EntityValidationError} If the property does not validate the entity schema.
+   * @private
+   */
+  setAssociation(propName, value, options = {}) {
+    (0,validator_es_lib_util_assertString__WEBPACK_IMPORTED_MODULE_4__["default"])(propName); // Assert propName is a string
+    // Assert is association
+    if (this.isAssociation(propName)) {
+      // Get the prop name split in case of association prop name (example: associationPropName.propName)
+      const propNameSplit = propName.split(".");
+      // Get the association name and replace '_[a-z]' into [A-Z]  (example: associated_entity_v2 become associatedEntityV2)
+      const associationPropName = (0,_utils_stringUtils__WEBPACK_IMPORTED_MODULE_3__.snakeCaseToCamelCase)(propNameSplit[0]);
+      // Check if the propName  is a property of the association
+      const isPropertyAssociation = propNameSplit.length > 1;
+      if (isPropertyAssociation) {
+        if (!this[`_${associationPropName}`]) {
+          // Instantiate a new empty association entity with no validation to set the value after
+          this[`_${associationPropName}`] = new this.constructor.associations[propNameSplit[0]]({}, {validate: false});
+        }
+        const concatenatedPropName = propNameSplit.slice(1).join('.');
+        // loop to set the association prop name
+        this[`_${associationPropName}`].set(concatenatedPropName, value, options);
+      } else {
+        if (value instanceof this.constructor.associations[propName]) {
+          // Set the association
+          this[`_${associationPropName}`] = value;
+        } else {
+          // Instantiate a new association entity with the value
+          this[`_${associationPropName}`] = new this.constructor.associations[propName](value, options);
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate the entity associations
+   * @param {object} [options] Options
+   */
+  validateAssociations(options = {}) {
+    const validationErrors = new _entityValidationError__WEBPACK_IMPORTED_MODULE_2__["default"]();
+
+    if (Object.keys(this.constructor.associations).length > 0) {
+      Object.keys(this.constructor.associations).forEach(propsName => {
+        const propsNameToCamelCase = (0,_utils_stringUtils__WEBPACK_IMPORTED_MODULE_3__.snakeCaseToCamelCase)(propsName);
+        if (this[`_${propsNameToCamelCase}`]) {
+          const association = this[propsNameToCamelCase];
+          const errors = association.validate(options);
+          if (errors) {
+            validationErrors.addAssociationError(propsName, errors);
+          }
+        }
+      });
+    }
+
+    // Throw error if some issues were gathered
+    if (validationErrors.hasErrors()) {
+      throw validationErrors;
+    }
+  }
+
+  /**
+   * Compares the properties of two entities to identify differences.
+   *
+   * Note: This function compares only scalar properties. Not supported:
+   *   - associated entities;
+   *   - associated collections;
+   *   - nested object;
+   *   - nested array;
+   *
+   * @param {EntityV2} compareEntity The entity to compare to.
+   * @return {Object} Returns an object containing properties from the current entity that differ from those of the entity being compared.
+   * The values in the returned object are taken from the compared entity.
+   */
+  diffProps(compareEntity) {
+    if (!(compareEntity instanceof EntityV2)) {
+      throw new TypeError("The property \"compareEntity\" should be of \"EntityV2\" type.");
+    }
+
+    const diff = {};
+    const schema = this.constructor.getSchema();
+    const propertiesNamesToCompare = Object.keys(schema.properties)
+      .filter(propertyName => SCALAR_PROPERTY_TYPES.includes(schema.properties[propertyName].type));
+
+    for (const propertyName of propertiesNamesToCompare) {
+      const propValue = this.get(propertyName);
+      const comparedPropValue = compareEntity.get(propertyName);
+      if (propValue !== comparedPropValue) {
+        diff[propertyName] = comparedPropValue;
+      }
+    }
+
+    return diff;
+  }
+
+  /**
+   * Determines if the current entity has different properties compared to another entity.
+   * This function checks only directly associated properties and does not include comparisons of nested or associated entities.
+   * @param {EntityV2} compareEntity The entity to compare to.
+   * @return {boolean}
+   */
+  hasDiffProps(compareEntity) {
+    const diff = this.diffProps(compareEntity);
+    return Object.keys(diff).length > 0;
+  }
+
+  /**
+   * Determine if the prop name is part of an association
+   * @param {string} propName The property name.
+   * @returns {boolean}
+   */
+  isAssociation(propName) {
+    // Get the main prop name split in case of association prop name (example: associationPropName.propName)
+    const mainPropName = propName.split(".")[0];
+    return Boolean(this.constructor.associations?.[mainPropName]);
   }
 }
 
@@ -10719,7 +11054,7 @@ class EntityV2Collection extends _entityCollection__WEBPACK_IMPORTED_MODULE_1__[
    *   constructor that will be utilized for its creation.
    * @param {object} [options] Options.
    * @param {object} [options.validateBuildRules] Options to pass to validate build rules function @see EntityV2Collection::validateBuildRules
-   * @param {object} [options.replacePropertyCompare] Property name to find the element to replace.
+   * @param {string} [options.replacePropertyName = "id"] Property name to find the element to replace.
    * @throws {EntityValidationError} If the item doesn't validate.
    */
   pushOrReplace(data, entityOptions = {}, options = {}) {
@@ -10853,6 +11188,22 @@ class EntityValidationError extends Error {
       this.details[property] = {};
     }
     this.details[property][rule] = message;
+  }
+
+  /**
+   * Add an association error for a given error details
+   *
+   * @param {string} associationName example: name
+   * @param {EntityValidationError} error
+   */
+  addAssociationError(associationName, error) {
+    if (typeof associationName !== 'string') {
+      throw new TypeError('EntityValidationError addAssociationError associationName should be a string.');
+    }
+    if (!(error instanceof EntityValidationError)) {
+      throw new TypeError('EntityValidationError addAssociationError errorDetails should be an object.');
+    }
+    this.details[associationName] = error;
   }
 
   /**
@@ -11105,6 +11456,41 @@ class RoleEntity extends _abstract_entityV2__WEBPACK_IMPORTED_MODULE_0__["defaul
 }
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (RoleEntity);
+
+
+/***/ }),
+
+/***/ "./node_modules/passbolt-styleguide/src/shared/utils/stringUtils.js":
+/*!**************************************************************************!*\
+  !*** ./node_modules/passbolt-styleguide/src/shared/utils/stringUtils.js ***!
+  \**************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   snakeCaseToCamelCase: () => (/* binding */ snakeCaseToCamelCase)
+/* harmony export */ });
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         5.0.0
+ */
+
+/**
+ * Convert a snake case string to camelCase
+ * @param {string} text
+ * @return {string}
+ */
+const snakeCaseToCamelCase = text => text?.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
 
 
 /***/ }),
@@ -11523,6 +11909,32 @@ function validate(uuid) {
 }
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (validate);
+
+/***/ }),
+
+/***/ "./node_modules/validator/es/lib/util/assertString.js":
+/*!************************************************************!*\
+  !*** ./node_modules/validator/es/lib/util/assertString.js ***!
+  \************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ assertString)
+/* harmony export */ });
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function assertString(input) {
+  var isString = typeof input === 'string' || input instanceof String;
+
+  if (!isString) {
+    var invalidType = _typeof(input);
+
+    if (input === null) invalidType = 'null';else if (invalidType === 'object') invalidType = input.constructor.name;
+    throw new TypeError("Expected a string but received a ".concat(invalidType));
+  }
+}
 
 /***/ }),
 
@@ -19675,34 +20087,27 @@ module.exports["default"] = exports.default;
 
 
 var _Object$defineProperty = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/object/define-property */ "./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js");
-
 var _interopRequireDefault = __webpack_require__(/*! @babel/runtime-corejs3/helpers/interopRequireDefault */ "./node_modules/@babel/runtime-corejs3/helpers/interopRequireDefault.js");
-
 _Object$defineProperty(exports, "__esModule", {
   value: true
 });
-
 exports["default"] = void 0;
-
 var _reduce = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/reduce */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/reduce.js"));
-
 var _map = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/map */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/map.js"));
-
 var _indexOf = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/index-of */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/index-of.js"));
-
 var _concat = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/concat */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/concat.js"));
-
 /*!
- * XRegExp.build 5.1.1
+ * XRegExp.build 5.1.2
  * <xregexp.com>
  * Steven Levithan (c) 2012-present MIT License
  */
-var _default = function _default(XRegExp) {
+var _default = exports["default"] = function _default(XRegExp) {
   var REGEX_DATA = 'xregexp';
   var subParts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*\]/g;
   var parts = XRegExp.union([/\({{([\w$]+)}}\)|{{([\w$]+)}}/, subParts], 'g', {
     conjunction: 'or'
   });
+
   /**
    * Strips a leading `^` and trailing unescaped `$`, if both are present.
    *
@@ -19710,20 +20115,19 @@ var _default = function _default(XRegExp) {
    * @param {String} pattern Pattern to process.
    * @returns {String} Pattern with edge anchors removed.
    */
-
   function deanchor(pattern) {
     // Allow any number of empty noncapturing groups before/after anchors, because regexes
     // built/generated by XRegExp sometimes include them
     var leadingAnchor = /^(?:\(\?:\))*\^/;
     var trailingAnchor = /\$(?:\(\?:\))*$/;
-
-    if (leadingAnchor.test(pattern) && trailingAnchor.test(pattern) && // Ensure that the trailing `$` isn't escaped
+    if (leadingAnchor.test(pattern) && trailingAnchor.test(pattern) &&
+    // Ensure that the trailing `$` isn't escaped
     trailingAnchor.test(pattern.replace(/\\[\s\S]/g, ''))) {
       return pattern.replace(leadingAnchor, '').replace(trailingAnchor, '');
     }
-
     return pattern;
   }
+
   /**
    * Converts the provided value to an XRegExp. Native RegExp flags are not preserved.
    *
@@ -19733,29 +20137,28 @@ var _default = function _default(XRegExp) {
    *   already a regex generated by XRegExp
    * @returns {RegExp} XRegExp object with XRegExp syntax applied.
    */
-
-
   function asXRegExp(value, addFlagX) {
     var flags = addFlagX ? 'x' : '';
-    return XRegExp.isRegExp(value) ? value[REGEX_DATA] && value[REGEX_DATA].captureNames ? // Don't recompile, to preserve capture names
-    value : // Recompile as XRegExp
-    XRegExp(value.source, flags) : // Compile string as XRegExp
+    return XRegExp.isRegExp(value) ? value[REGEX_DATA] && value[REGEX_DATA].captureNames ?
+    // Don't recompile, to preserve capture names
+    value :
+    // Recompile as XRegExp
+    XRegExp(value.source, flags) :
+    // Compile string as XRegExp
     XRegExp(value, flags);
   }
-
   function interpolate(substitution) {
     return substitution instanceof RegExp ? substitution : XRegExp.escape(substitution);
   }
-
   function reduceToSubpatternsObject(subpatterns, interpolated, subpatternIndex) {
     subpatterns["subpattern".concat(subpatternIndex)] = interpolated;
     return subpatterns;
   }
-
   function embedSubpatternAfter(raw, subpatternIndex, rawLiterals) {
     var hasSubpattern = subpatternIndex < rawLiterals.length - 1;
     return raw + (hasSubpattern ? "{{subpattern".concat(subpatternIndex, "}}") : '');
   }
+
   /**
    * Provides tagged template literals that create regexes with XRegExp syntax and flags. The
    * provided pattern is handled as a raw string, so backslashes don't need to be escaped.
@@ -19783,21 +20186,18 @@ var _default = function _default(XRegExp) {
    * const backref2 = /(b)\1/;
    * XRegExp.tag()`${backref1}${backref2}`.test('aabb'); // -> true
    */
-
-
   XRegExp.tag = function (flags) {
     return function (literals) {
       var _context, _context2;
-
       for (var _len = arguments.length, substitutions = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
         substitutions[_key - 1] = arguments[_key];
       }
-
       var subpatterns = (0, _reduce["default"])(_context = (0, _map["default"])(substitutions).call(substitutions, interpolate)).call(_context, reduceToSubpatternsObject, {});
       var pattern = (0, _map["default"])(_context2 = literals.raw).call(_context2, embedSubpatternAfter).join('');
       return XRegExp.build(pattern, subpatterns, flags);
     };
   };
+
   /**
    * Builds regexes using named subpatterns, for readability and pattern reuse. Backreferences in
    * the outer pattern and provided subpatterns are automatically renumbered to work correctly.
@@ -19823,22 +20223,18 @@ var _default = function _default(XRegExp) {
    * time.test('10:59'); // -> true
    * XRegExp.exec('10:59', time).groups.minutes; // -> '59'
    */
-
-
   XRegExp.build = function (pattern, subs, flags) {
-    flags = flags || ''; // Used with `asXRegExp` calls for `pattern` and subpatterns in `subs`, to work around how
+    flags = flags || '';
+    // Used with `asXRegExp` calls for `pattern` and subpatterns in `subs`, to work around how
     // some browsers convert `RegExp('\n')` to a regex that contains the literal characters `\`
     // and `n`. See more details at <https://github.com/slevithan/xregexp/pull/163>.
-
     var addFlagX = (0, _indexOf["default"])(flags).call(flags, 'x') !== -1;
-    var inlineFlags = /^\(\?([\w$]+)\)/.exec(pattern); // Add flags within a leading mode modifier to the overall pattern's flags
-
+    var inlineFlags = /^\(\?([\w$]+)\)/.exec(pattern);
+    // Add flags within a leading mode modifier to the overall pattern's flags
     if (inlineFlags) {
       flags = XRegExp._clipDuplicates(flags + inlineFlags[1]);
     }
-
     var data = {};
-
     for (var p in subs) {
       if (subs.hasOwnProperty(p)) {
         // Passing to XRegExp enables extended syntax and ensures independent validity,
@@ -19853,12 +20249,13 @@ var _default = function _default(XRegExp) {
           names: sub[REGEX_DATA].captureNames || []
         };
       }
-    } // Passing to XRegExp dies on octals and ensures the outer pattern is independently valid;
+    }
+
+    // Passing to XRegExp dies on octals and ensures the outer pattern is independently valid;
     // helps keep this simple. Named captures will be put back.
+    var patternAsRegex = asXRegExp(pattern, addFlagX);
 
-
-    var patternAsRegex = asXRegExp(pattern, addFlagX); // 'Caps' is short for 'captures'
-
+    // 'Caps' is short for 'captures'
     var numCaps = 0;
     var numPriorCaps;
     var numOuterCaps = 0;
@@ -19868,72 +20265,64 @@ var _default = function _default(XRegExp) {
       var subName = $1 || $2;
       var capName;
       var intro;
-      var localCapIndex; // Named subpattern
-
+      var localCapIndex;
+      // Named subpattern
       if (subName) {
         var _context3;
-
         if (!data.hasOwnProperty(subName)) {
           throw new ReferenceError("Undefined property ".concat($0));
-        } // Named subpattern was wrapped in a capturing group
-
-
+        }
+        // Named subpattern was wrapped in a capturing group
         if ($1) {
           capName = outerCapNames[numOuterCaps];
-          outerCapsMap[++numOuterCaps] = ++numCaps; // If it's a named group, preserve the name. Otherwise, use the subpattern name
+          outerCapsMap[++numOuterCaps] = ++numCaps;
+          // If it's a named group, preserve the name. Otherwise, use the subpattern name
           // as the capture name
-
           intro = "(?<".concat(capName || subName, ">");
         } else {
           intro = '(?:';
         }
-
         numPriorCaps = numCaps;
         var rewrittenSubpattern = data[subName].pattern.replace(subParts, function (match, paren, backref) {
           // Capturing group
           if (paren) {
             capName = data[subName].names[numCaps - numPriorCaps];
-            ++numCaps; // If the current capture has a name, preserve the name
-
+            ++numCaps;
+            // If the current capture has a name, preserve the name
             if (capName) {
               return "(?<".concat(capName, ">");
-            } // Backreference
-
+            }
+            // Backreference
           } else if (backref) {
-            localCapIndex = +backref - 1; // Rewrite the backreference
-
+            localCapIndex = +backref - 1;
+            // Rewrite the backreference
             return data[subName].names[localCapIndex] ? // Need to preserve the backreference name in case using flag `n`
             "\\k<".concat(data[subName].names[localCapIndex], ">") : "\\".concat(+backref + numPriorCaps);
           }
-
           return match;
         });
         return (0, _concat["default"])(_context3 = "".concat(intro)).call(_context3, rewrittenSubpattern, ")");
-      } // Capturing group
-
-
+      }
+      // Capturing group
       if ($3) {
         capName = outerCapNames[numOuterCaps];
-        outerCapsMap[++numOuterCaps] = ++numCaps; // If the current capture has a name, preserve the name
-
+        outerCapsMap[++numOuterCaps] = ++numCaps;
+        // If the current capture has a name, preserve the name
         if (capName) {
           return "(?<".concat(capName, ">");
-        } // Backreference
-
+        }
+        // Backreference
       } else if ($4) {
-        localCapIndex = +$4 - 1; // Rewrite the backreference
-
+        localCapIndex = +$4 - 1;
+        // Rewrite the backreference
         return outerCapNames[localCapIndex] ? // Need to preserve the backreference name in case using flag `n`
         "\\k<".concat(outerCapNames[localCapIndex], ">") : "\\".concat(outerCapsMap[+$4]);
       }
-
       return $0;
     });
     return XRegExp(output, flags);
   };
 };
-
-exports["default"] = _default;
 module.exports = exports.default;
 
 /***/ }),
@@ -19948,27 +20337,20 @@ module.exports = exports.default;
 
 
 var _Object$defineProperty = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/object/define-property */ "./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js");
-
 var _interopRequireDefault = __webpack_require__(/*! @babel/runtime-corejs3/helpers/interopRequireDefault */ "./node_modules/@babel/runtime-corejs3/helpers/interopRequireDefault.js");
-
 _Object$defineProperty(exports, "__esModule", {
   value: true
 });
-
 exports["default"] = void 0;
-
 var _indexOf = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/index-of */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/index-of.js"));
-
 var _concat = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/concat */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/concat.js"));
-
 var _slice = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/slice */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js"));
-
 /*!
- * XRegExp.matchRecursive 5.1.1
+ * XRegExp.matchRecursive 5.1.2
  * <xregexp.com>
  * Steven Levithan (c) 2009-present MIT License
  */
-var _default = function _default(XRegExp) {
+var _default = exports["default"] = function _default(XRegExp) {
   /**
    * Returns a match detail object composed of the provided values.
    *
@@ -19982,6 +20364,7 @@ var _default = function _default(XRegExp) {
       end: end
     };
   }
+
   /**
    * Returns an array of match strings between outermost left and right delimiters, or an array of
    * objects with detailed match parts and position data. By default, an error is thrown if
@@ -20057,44 +20440,40 @@ var _default = function _default(XRegExp) {
    * });
    * // -> ['an']
    */
-
-
   XRegExp.matchRecursive = function (str, left, right, flags, options) {
     flags = flags || '';
     options = options || {};
     var global = (0, _indexOf["default"])(flags).call(flags, 'g') !== -1;
-    var sticky = (0, _indexOf["default"])(flags).call(flags, 'y') !== -1; // Flag `y` is handled manually
-
+    var sticky = (0, _indexOf["default"])(flags).call(flags, 'y') !== -1;
+    // Flag `y` is handled manually
     var basicFlags = flags.replace(/y/g, '');
     left = XRegExp(left, basicFlags);
     right = XRegExp(right, basicFlags);
     var esc;
     var _options = options,
-        escapeChar = _options.escapeChar;
-
+      escapeChar = _options.escapeChar;
     if (escapeChar) {
       var _context, _context2;
-
       if (escapeChar.length > 1) {
         throw new Error('Cannot use more than one escape character');
       }
-
-      escapeChar = XRegExp.escape(escapeChar); // Example of concatenated `esc` regex:
+      escapeChar = XRegExp.escape(escapeChar);
+      // Example of concatenated `esc` regex:
       // `escapeChar`: '%'
       // `left`: '<'
       // `right`: '>'
       // Regex is: /(?:%[\S\s]|(?:(?!<|>)[^%])+)+/
-
-      esc = new RegExp((0, _concat["default"])(_context = (0, _concat["default"])(_context2 = "(?:".concat(escapeChar, "[\\S\\s]|(?:(?!")).call(_context2, // Using `XRegExp.union` safely rewrites backreferences in `left` and `right`.
+      esc = new RegExp((0, _concat["default"])(_context = (0, _concat["default"])(_context2 = "(?:".concat(escapeChar, "[\\S\\s]|(?:(?!")).call(_context2,
+      // Using `XRegExp.union` safely rewrites backreferences in `left` and `right`.
       // Intentionally not passing `basicFlags` to `XRegExp.union` since any syntax
       // transformation resulting from those flags was already applied to `left` and
       // `right` when they were passed through the XRegExp constructor above.
       XRegExp.union([left, right], '', {
         conjunction: 'or'
-      }).source, ")[^")).call(_context, escapeChar, "])+)+"), // Flags `dgy` not needed here
+      }).source, ")[^")).call(_context, escapeChar, "])+)+"),
+      // Flags `dgy` not needed here
       flags.replace(XRegExp._hasNativeFlag('s') ? /[^imsu]/g : /[^imu]/g, ''));
     }
-
     var openTokens = 0;
     var delimStart = 0;
     var delimEnd = 0;
@@ -20105,24 +20484,24 @@ var _default = function _default(XRegExp) {
     var rightMatch;
     var vN = options.valueNames;
     var output = [];
-
     while (true) {
       // If using an escape character, advance to the delimiter's next starting position,
       // skipping any escaped characters in between
       if (escapeChar) {
         delimEnd += (XRegExp.exec(str, esc, delimEnd, 'sticky') || [''])[0].length;
       }
-
       leftMatch = XRegExp.exec(str, left, delimEnd);
-      rightMatch = XRegExp.exec(str, right, delimEnd); // Keep the leftmost match only
-
+      rightMatch = XRegExp.exec(str, right, delimEnd);
+      // Keep the leftmost match only
       if (leftMatch && rightMatch) {
         if (leftMatch.index <= rightMatch.index) {
           rightMatch = null;
         } else {
           leftMatch = null;
         }
-      } // Paths (LM: leftMatch, RM: rightMatch, OT: openTokens):
+      }
+
+      // Paths (LM: leftMatch, RM: rightMatch, OT: openTokens):
       // LM | RM | OT | Result
       // 1  | 0  | 1  | loop
       // 1  | 0  | 0  | loop
@@ -20132,63 +20511,52 @@ var _default = function _default(XRegExp) {
       // 0  | 0  | 0  | break
       // The paths above don't include the sticky mode special case. The loop ends after the
       // first completed match if not `global`.
-
-
       if (leftMatch || rightMatch) {
         delimStart = (leftMatch || rightMatch).index;
         delimEnd = delimStart + (leftMatch || rightMatch)[0].length;
       } else if (!openTokens) {
         break;
       }
-
       if (sticky && !openTokens && delimStart > lastOuterEnd) {
         break;
       }
-
       if (leftMatch) {
         if (!openTokens) {
           outerStart = delimStart;
           innerStart = delimEnd;
         }
-
         openTokens += 1;
       } else if (rightMatch && openTokens) {
         openTokens -= 1;
-
         if (!openTokens) {
           if (vN) {
             if (vN[0] && outerStart > lastOuterEnd) {
               output.push(row(vN[0], (0, _slice["default"])(str).call(str, lastOuterEnd, outerStart), lastOuterEnd, outerStart));
             }
-
             if (vN[1]) {
               output.push(row(vN[1], (0, _slice["default"])(str).call(str, outerStart, innerStart), outerStart, innerStart));
             }
-
             if (vN[2]) {
               output.push(row(vN[2], (0, _slice["default"])(str).call(str, innerStart, delimStart), innerStart, delimStart));
             }
-
             if (vN[3]) {
               output.push(row(vN[3], (0, _slice["default"])(str).call(str, delimStart, delimEnd), delimStart, delimEnd));
             }
           } else {
             output.push((0, _slice["default"])(str).call(str, innerStart, delimStart));
           }
-
           lastOuterEnd = delimEnd;
-
           if (!global) {
             break;
           }
-        } // Found unbalanced delimiter
-
+        }
+        // Found unbalanced delimiter
       } else {
         var unbalanced = options.unbalanced || 'error';
-
         if (unbalanced === 'skip' || unbalanced === 'skip-lazy') {
           if (rightMatch) {
-            rightMatch = null; // No `leftMatch` for unbalanced left delimiter because we've reached the string end
+            rightMatch = null;
+            // No `leftMatch` for unbalanced left delimiter because we've reached the string end
           } else {
             if (unbalanced === 'skip') {
               var outerStartDelimLength = XRegExp.exec(str, left, outerStart, 'sticky')[0].length;
@@ -20196,35 +20564,29 @@ var _default = function _default(XRegExp) {
             } else {
               delimEnd = outerStart + 1;
             }
-
             openTokens = 0;
           }
         } else if (unbalanced === 'error') {
           var _context3;
-
           var delimSide = rightMatch ? 'right' : 'left';
           var errorPos = rightMatch ? delimStart : outerStart;
           throw new Error((0, _concat["default"])(_context3 = "Unbalanced ".concat(delimSide, " delimiter found in string at position ")).call(_context3, errorPos));
         } else {
           throw new Error("Unsupported value for unbalanced: ".concat(unbalanced));
         }
-      } // If the delimiter matched an empty string, avoid an infinite loop
+      }
 
-
+      // If the delimiter matched an empty string, avoid an infinite loop
       if (delimStart === delimEnd) {
         delimEnd += 1;
       }
     }
-
     if (global && output.length > 0 && !sticky && vN && vN[0] && str.length > lastOuterEnd) {
       output.push(row(vN[0], (0, _slice["default"])(str).call(str, lastOuterEnd), lastOuterEnd, str.length));
     }
-
     return output;
   };
 };
-
-exports["default"] = _default;
 module.exports = exports.default;
 
 /***/ }),
@@ -20239,45 +20601,29 @@ module.exports = exports.default;
 
 
 var _sliceInstanceProperty = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/slice */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js");
-
 var _Array$from = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/array/from */ "./node_modules/@babel/runtime-corejs3/core-js-stable/array/from.js");
-
 var _Symbol = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/symbol */ "./node_modules/@babel/runtime-corejs3/core-js-stable/symbol.js");
-
 var _getIteratorMethod = __webpack_require__(/*! @babel/runtime-corejs3/core-js/get-iterator-method */ "./node_modules/@babel/runtime-corejs3/core-js/get-iterator-method.js");
-
 var _Array$isArray = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/array/is-array */ "./node_modules/@babel/runtime-corejs3/core-js-stable/array/is-array.js");
-
 var _Object$defineProperty = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/object/define-property */ "./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js");
-
 var _interopRequireDefault = __webpack_require__(/*! @babel/runtime-corejs3/helpers/interopRequireDefault */ "./node_modules/@babel/runtime-corejs3/helpers/interopRequireDefault.js");
-
 _Object$defineProperty(exports, "__esModule", {
   value: true
 });
-
 exports["default"] = void 0;
-
 var _slicedToArray2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/helpers/slicedToArray */ "./node_modules/@babel/runtime-corejs3/helpers/slicedToArray.js"));
-
 var _forEach = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/for-each */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/for-each.js"));
-
 var _concat = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/concat */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/concat.js"));
-
 var _indexOf = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/index-of */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/index-of.js"));
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof _Symbol !== "undefined" && _getIteratorMethod(o) || o["@@iterator"]; if (!it) { if (_Array$isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
-function _unsupportedIterableToArray(o, minLen) { var _context4; if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = _sliceInstanceProperty(_context4 = Object.prototype.toString.call(o)).call(_context4, 8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return _Array$from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof _Symbol && _getIteratorMethod(r) || r["@@iterator"]; if (!t) { if (_Array$isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { var _context4; if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = _sliceInstanceProperty(_context4 = {}.toString.call(r)).call(_context4, 8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? _Array$from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 /*!
- * XRegExp Unicode Base 5.1.1
+ * XRegExp Unicode Base 5.1.2
  * <xregexp.com>
  * Steven Levithan (c) 2008-present MIT License
  */
-var _default = function _default(XRegExp) {
+var _default = exports["default"] = function _default(XRegExp) {
   /**
    * Adds base support for Unicode matching:
    * - Adds syntax `\p{..}` for matching Unicode tokens. Tokens can be inverted using `\P{..}` or
@@ -20291,172 +20637,155 @@ var _default = function _default(XRegExp) {
    *
    * @requires XRegExp
    */
+
   // ==--------------------------==
   // Private stuff
   // ==--------------------------==
+
   // Storage for Unicode data
   var unicode = {};
-  var unicodeTypes = {}; // Reuse utils
+  var unicodeTypes = {};
 
+  // Reuse utils
   var dec = XRegExp._dec;
   var hex = XRegExp._hex;
-  var pad4 = XRegExp._pad4; // Generates a token lookup name: lowercase, with hyphens, spaces, and underscores removed
+  var pad4 = XRegExp._pad4;
 
+  // Generates a token lookup name: lowercase, with hyphens, spaces, and underscores removed
   function normalize(name) {
     return name.replace(/[- _]+/g, '').toLowerCase();
-  } // Gets the decimal code of a literal code unit, \xHH, \uHHHH, or a backslash-escaped literal
+  }
 
-
+  // Gets the decimal code of a literal code unit, \xHH, \uHHHH, or a backslash-escaped literal
   function charCode(chr) {
     var esc = /^\\[xu](.+)/.exec(chr);
     return esc ? dec(esc[1]) : chr.charCodeAt(chr[0] === '\\' ? 1 : 0);
-  } // Inverts a list of ordered BMP characters and ranges
+  }
 
-
+  // Inverts a list of ordered BMP characters and ranges
   function invertBmp(range) {
     var output = '';
     var lastEnd = -1;
     (0, _forEach["default"])(XRegExp).call(XRegExp, range, /(\\x..|\\u....|\\?[\s\S])(?:-(\\x..|\\u....|\\?[\s\S]))?/, function (m) {
       var start = charCode(m[1]);
-
       if (start > lastEnd + 1) {
         output += "\\u".concat(pad4(hex(lastEnd + 1)));
-
         if (start > lastEnd + 2) {
           output += "-\\u".concat(pad4(hex(start - 1)));
         }
       }
-
       lastEnd = charCode(m[2] || m[1]);
     });
-
     if (lastEnd < 0xFFFF) {
       output += "\\u".concat(pad4(hex(lastEnd + 1)));
-
       if (lastEnd < 0xFFFE) {
         output += '-\\uFFFF';
       }
     }
-
     return output;
-  } // Generates an inverted BMP range on first use
+  }
 
-
+  // Generates an inverted BMP range on first use
   function cacheInvertedBmp(slug) {
     var prop = 'b!';
     return unicode[slug][prop] || (unicode[slug][prop] = invertBmp(unicode[slug].bmp));
-  } // Combines and optionally negates BMP and astral data
+  }
 
-
+  // Combines and optionally negates BMP and astral data
   function buildAstral(slug, isNegated) {
     var item = unicode[slug];
     var combined = '';
-
     if (item.bmp && !item.isBmpLast) {
       var _context;
-
       combined = (0, _concat["default"])(_context = "[".concat(item.bmp, "]")).call(_context, item.astral ? '|' : '');
     }
-
     if (item.astral) {
       combined += item.astral;
     }
-
     if (item.isBmpLast && item.bmp) {
       var _context2;
-
       combined += (0, _concat["default"])(_context2 = "".concat(item.astral ? '|' : '', "[")).call(_context2, item.bmp, "]");
-    } // Astral Unicode tokens always match a code point, never a code unit
+    }
 
-
+    // Astral Unicode tokens always match a code point, never a code unit
     return isNegated ? "(?:(?!".concat(combined, ")(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[\0-\uFFFF]))") : "(?:".concat(combined, ")");
-  } // Builds a complete astral pattern on first use
+  }
 
-
+  // Builds a complete astral pattern on first use
   function cacheAstral(slug, isNegated) {
     var prop = isNegated ? 'a!' : 'a=';
     return unicode[slug][prop] || (unicode[slug][prop] = buildAstral(slug, isNegated));
-  } // ==--------------------------==
+  }
+
+  // ==--------------------------==
   // Core functionality
   // ==--------------------------==
 
   /*
    * Add astral mode (flag A) and Unicode token syntax: `\p{..}`, `\P{..}`, `\p{^..}`, `\pC`.
    */
-
-
-  XRegExp.addToken( // Use `*` instead of `+` to avoid capturing `^` as the token name in `\p{^}`
+  XRegExp.addToken(
+  // Use `*` instead of `+` to avoid capturing `^` as the token name in `\p{^}`
   /\\([pP])(?:{(\^?)(?:(\w+)=)?([^}]*)}|([A-Za-z]))/, function (match, scope, flags) {
     var ERR_DOUBLE_NEG = 'Invalid double negation ';
     var ERR_UNKNOWN_NAME = 'Unknown Unicode token ';
     var ERR_UNKNOWN_REF = 'Unicode token missing data ';
     var ERR_ASTRAL_ONLY = 'Astral mode required for Unicode token ';
     var ERR_ASTRAL_IN_CLASS = 'Astral mode does not support Unicode tokens within character classes';
-
     var _match = (0, _slicedToArray2["default"])(match, 6),
-        fullToken = _match[0],
-        pPrefix = _match[1],
-        caretNegation = _match[2],
-        typePrefix = _match[3],
-        tokenName = _match[4],
-        tokenSingleCharName = _match[5]; // Negated via \P{..} or \p{^..}
-
-
-    var isNegated = pPrefix === 'P' || !!caretNegation; // Switch from BMP (0-FFFF) to astral (0-10FFFF) mode via flag A
-
-    var isAstralMode = (0, _indexOf["default"])(flags).call(flags, 'A') !== -1; // Token lookup name. Check `tokenSingleCharName` first to avoid passing `undefined`
+      fullToken = _match[0],
+      pPrefix = _match[1],
+      caretNegation = _match[2],
+      typePrefix = _match[3],
+      tokenName = _match[4],
+      tokenSingleCharName = _match[5];
+    // Negated via \P{..} or \p{^..}
+    var isNegated = pPrefix === 'P' || !!caretNegation;
+    // Switch from BMP (0-FFFF) to astral (0-10FFFF) mode via flag A
+    var isAstralMode = (0, _indexOf["default"])(flags).call(flags, 'A') !== -1;
+    // Token lookup name. Check `tokenSingleCharName` first to avoid passing `undefined`
     // via `\p{}`
-
-    var slug = normalize(tokenSingleCharName || tokenName); // Token data object
-
+    var slug = normalize(tokenSingleCharName || tokenName);
+    // Token data object
     var item = unicode[slug];
-
     if (pPrefix === 'P' && caretNegation) {
       throw new SyntaxError(ERR_DOUBLE_NEG + fullToken);
     }
-
     if (!unicode.hasOwnProperty(slug)) {
       throw new SyntaxError(ERR_UNKNOWN_NAME + fullToken);
     }
-
     if (typePrefix) {
       if (!(unicodeTypes[typePrefix] && unicodeTypes[typePrefix][slug])) {
         throw new SyntaxError(ERR_UNKNOWN_NAME + fullToken);
       }
-    } // Switch to the negated form of the referenced Unicode token
+    }
 
-
+    // Switch to the negated form of the referenced Unicode token
     if (item.inverseOf) {
       slug = normalize(item.inverseOf);
-
       if (!unicode.hasOwnProperty(slug)) {
         var _context3;
-
         throw new ReferenceError((0, _concat["default"])(_context3 = "".concat(ERR_UNKNOWN_REF + fullToken, " -> ")).call(_context3, item.inverseOf));
       }
-
       item = unicode[slug];
       isNegated = !isNegated;
     }
-
     if (!(item.bmp || isAstralMode)) {
       throw new SyntaxError(ERR_ASTRAL_ONLY + fullToken);
     }
-
     if (isAstralMode) {
       if (scope === 'class') {
         throw new SyntaxError(ERR_ASTRAL_IN_CLASS);
       }
-
       return cacheAstral(slug, isNegated);
     }
-
     return scope === 'class' ? isNegated ? cacheInvertedBmp(slug) : item.bmp : "".concat((isNegated ? '[^' : '[') + item.bmp, "]");
   }, {
     scope: 'all',
     optionalFlags: 'A',
     leadChar: '\\'
   });
+
   /**
    * Adds to the list of Unicode tokens that XRegExp regexes can match via `\p` or `\P`.
    *
@@ -20488,57 +20817,48 @@ var _default = function _default(XRegExp) {
    * }]);
    * XRegExp('\\p{XDigit}:\\p{Hexadecimal}+').test('0:3D'); // -> true
    */
-
   XRegExp.addUnicodeData = function (data, typePrefix) {
     var ERR_NO_NAME = 'Unicode token requires name';
     var ERR_NO_DATA = 'Unicode token has no character data ';
-
     if (typePrefix) {
       // Case sensitive to match ES2018
       unicodeTypes[typePrefix] = {};
     }
-
     var _iterator = _createForOfIteratorHelper(data),
-        _step;
-
+      _step;
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var item = _step.value;
-
         if (!item.name) {
           throw new Error(ERR_NO_NAME);
         }
-
         if (!(item.inverseOf || item.bmp || item.astral)) {
           throw new Error(ERR_NO_DATA + item.name);
         }
-
         var normalizedName = normalize(item.name);
         unicode[normalizedName] = item;
-
         if (typePrefix) {
           unicodeTypes[typePrefix][normalizedName] = true;
         }
-
         if (item.alias) {
           var normalizedAlias = normalize(item.alias);
           unicode[normalizedAlias] = item;
-
           if (typePrefix) {
             unicodeTypes[typePrefix][normalizedAlias] = true;
           }
         }
-      } // Reset the pattern cache used by the `XRegExp` constructor, since the same pattern and
-      // flags might now produce different results
+      }
 
+      // Reset the pattern cache used by the `XRegExp` constructor, since the same pattern and
+      // flags might now produce different results
     } catch (err) {
       _iterator.e(err);
     } finally {
       _iterator.f();
     }
-
     XRegExp.cache.flush('patterns');
   };
+
   /**
    * @ignore
    *
@@ -20560,15 +20880,11 @@ var _default = function _default(XRegExp) {
    * the future. It is meant for userland code that wishes to reuse the (large) internal Unicode
    * structures set up by XRegExp.
    */
-
-
   XRegExp._getUnicodeProperty = function (name) {
     var slug = normalize(name);
     return unicode[slug];
   };
 };
-
-exports["default"] = _default;
 module.exports = exports.default;
 
 /***/ }),
@@ -20583,24 +20899,19 @@ module.exports = exports.default;
 
 
 var _Object$defineProperty = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/object/define-property */ "./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js");
-
 var _interopRequireDefault = __webpack_require__(/*! @babel/runtime-corejs3/helpers/interopRequireDefault */ "./node_modules/@babel/runtime-corejs3/helpers/interopRequireDefault.js");
-
 _Object$defineProperty(exports, "__esModule", {
   value: true
 });
-
 exports["default"] = void 0;
-
 var _categories = _interopRequireDefault(__webpack_require__(/*! ../../tools/output/categories */ "./node_modules/xregexp/tools/output/categories.js"));
-
 /*!
- * XRegExp Unicode Categories 5.1.1
+ * XRegExp Unicode Categories 5.1.2
  * <xregexp.com>
  * Steven Levithan (c) 2010-present MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
  */
-var _default = function _default(XRegExp) {
+var _default = exports["default"] = function _default(XRegExp) {
   /**
    * Adds support for Unicode's general categories. E.g., `\p{Lu}` or `\p{Uppercase Letter}`. See
    * category descriptions in UAX #44 <http://unicode.org/reports/tr44/#GC_Values_Table>. Token
@@ -20610,14 +20921,12 @@ var _default = function _default(XRegExp) {
    *
    * @requires XRegExp, Unicode Base
    */
+
   if (!XRegExp.addUnicodeData) {
     throw new ReferenceError('Unicode Base must be loaded before Unicode Categories');
   }
-
   XRegExp.addUnicodeData(_categories["default"]);
 };
-
-exports["default"] = _default;
 module.exports = exports.default;
 
 /***/ }),
@@ -20632,24 +20941,19 @@ module.exports = exports.default;
 
 
 var _Object$defineProperty = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/object/define-property */ "./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js");
-
 var _interopRequireDefault = __webpack_require__(/*! @babel/runtime-corejs3/helpers/interopRequireDefault */ "./node_modules/@babel/runtime-corejs3/helpers/interopRequireDefault.js");
-
 _Object$defineProperty(exports, "__esModule", {
   value: true
 });
-
 exports["default"] = void 0;
-
 var _properties = _interopRequireDefault(__webpack_require__(/*! ../../tools/output/properties */ "./node_modules/xregexp/tools/output/properties.js"));
-
 /*!
- * XRegExp Unicode Properties 5.1.1
+ * XRegExp Unicode Properties 5.1.2
  * <xregexp.com>
  * Steven Levithan (c) 2012-present MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
  */
-var _default = function _default(XRegExp) {
+var _default = exports["default"] = function _default(XRegExp) {
   /**
    * Adds properties to meet the UTS #18 Level 1 RL1.2 requirements for Unicode regex support. See
    * <http://unicode.org/reports/tr18/#RL1.2>. Following are definitions of these properties from
@@ -20688,12 +20992,13 @@ var _default = function _default(XRegExp) {
    *
    * @requires XRegExp, Unicode Base
    */
+
   if (!XRegExp.addUnicodeData) {
     throw new ReferenceError('Unicode Base must be loaded before Unicode Properties');
   }
+  var unicodeData = _properties["default"];
 
-  var unicodeData = _properties["default"]; // Add non-generated data
-
+  // Add non-generated data
   unicodeData.push({
     name: 'Assigned',
     // Since this is defined as the inverse of Unicode category Cn (Unassigned), the Unicode
@@ -20702,8 +21007,6 @@ var _default = function _default(XRegExp) {
   });
   XRegExp.addUnicodeData(unicodeData);
 };
-
-exports["default"] = _default;
 module.exports = exports.default;
 
 /***/ }),
@@ -20718,24 +21021,19 @@ module.exports = exports.default;
 
 
 var _Object$defineProperty = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/object/define-property */ "./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js");
-
 var _interopRequireDefault = __webpack_require__(/*! @babel/runtime-corejs3/helpers/interopRequireDefault */ "./node_modules/@babel/runtime-corejs3/helpers/interopRequireDefault.js");
-
 _Object$defineProperty(exports, "__esModule", {
   value: true
 });
-
 exports["default"] = void 0;
-
 var _scripts = _interopRequireDefault(__webpack_require__(/*! ../../tools/output/scripts */ "./node_modules/xregexp/tools/output/scripts.js"));
-
 /*!
- * XRegExp Unicode Scripts 5.1.1
+ * XRegExp Unicode Scripts 5.1.2
  * <xregexp.com>
  * Steven Levithan (c) 2010-present MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
  */
-var _default = function _default(XRegExp) {
+var _default = exports["default"] = function _default(XRegExp) {
   /**
    * Adds support for all Unicode scripts. E.g., `\p{Latin}`. Token names are case insensitive,
    * and any spaces, hyphens, and underscores are ignored.
@@ -20744,14 +21042,12 @@ var _default = function _default(XRegExp) {
    *
    * @requires XRegExp, Unicode Base
    */
+
   if (!XRegExp.addUnicodeData) {
     throw new ReferenceError('Unicode Base must be loaded before Unicode Scripts');
   }
-
   XRegExp.addUnicodeData(_scripts["default"], 'Script');
 };
-
-exports["default"] = _default;
 module.exports = exports.default;
 
 /***/ }),
@@ -20766,37 +21062,25 @@ module.exports = exports.default;
 
 
 var _Object$defineProperty = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/object/define-property */ "./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js");
-
 var _interopRequireDefault = __webpack_require__(/*! @babel/runtime-corejs3/helpers/interopRequireDefault */ "./node_modules/@babel/runtime-corejs3/helpers/interopRequireDefault.js");
-
 _Object$defineProperty(exports, "__esModule", {
   value: true
 });
-
 exports["default"] = void 0;
-
 var _xregexp = _interopRequireDefault(__webpack_require__(/*! ./xregexp */ "./node_modules/xregexp/lib/xregexp.js"));
-
 var _build = _interopRequireDefault(__webpack_require__(/*! ./addons/build */ "./node_modules/xregexp/lib/addons/build.js"));
-
 var _matchrecursive = _interopRequireDefault(__webpack_require__(/*! ./addons/matchrecursive */ "./node_modules/xregexp/lib/addons/matchrecursive.js"));
-
 var _unicodeBase = _interopRequireDefault(__webpack_require__(/*! ./addons/unicode-base */ "./node_modules/xregexp/lib/addons/unicode-base.js"));
-
 var _unicodeCategories = _interopRequireDefault(__webpack_require__(/*! ./addons/unicode-categories */ "./node_modules/xregexp/lib/addons/unicode-categories.js"));
-
 var _unicodeProperties = _interopRequireDefault(__webpack_require__(/*! ./addons/unicode-properties */ "./node_modules/xregexp/lib/addons/unicode-properties.js"));
-
 var _unicodeScripts = _interopRequireDefault(__webpack_require__(/*! ./addons/unicode-scripts */ "./node_modules/xregexp/lib/addons/unicode-scripts.js"));
-
 (0, _build["default"])(_xregexp["default"]);
 (0, _matchrecursive["default"])(_xregexp["default"]);
 (0, _unicodeBase["default"])(_xregexp["default"]);
 (0, _unicodeCategories["default"])(_xregexp["default"]);
 (0, _unicodeProperties["default"])(_xregexp["default"]);
 (0, _unicodeScripts["default"])(_xregexp["default"]);
-var _default = _xregexp["default"];
-exports["default"] = _default;
+var _default = exports["default"] = _xregexp["default"];
 module.exports = exports.default;
 
 /***/ }),
@@ -20811,51 +21095,30 @@ module.exports = exports.default;
 
 
 var _sliceInstanceProperty2 = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/slice */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js");
-
 var _Array$from = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/array/from */ "./node_modules/@babel/runtime-corejs3/core-js-stable/array/from.js");
-
 var _Symbol = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/symbol */ "./node_modules/@babel/runtime-corejs3/core-js-stable/symbol.js");
-
 var _getIteratorMethod = __webpack_require__(/*! @babel/runtime-corejs3/core-js/get-iterator-method */ "./node_modules/@babel/runtime-corejs3/core-js/get-iterator-method.js");
-
 var _Array$isArray = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/array/is-array */ "./node_modules/@babel/runtime-corejs3/core-js-stable/array/is-array.js");
-
 var _Object$defineProperty = __webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/object/define-property */ "./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js");
-
 var _interopRequireDefault = __webpack_require__(/*! @babel/runtime-corejs3/helpers/interopRequireDefault */ "./node_modules/@babel/runtime-corejs3/helpers/interopRequireDefault.js");
-
 _Object$defineProperty(exports, "__esModule", {
   value: true
 });
-
 exports["default"] = void 0;
-
 var _slicedToArray2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/helpers/slicedToArray */ "./node_modules/@babel/runtime-corejs3/helpers/slicedToArray.js"));
-
-var _flags = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/flags */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/flags.js"));
-
-var _sort = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/sort */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/sort.js"));
-
-var _slice = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/slice */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js"));
-
-var _parseInt2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/parse-int */ "./node_modules/@babel/runtime-corejs3/core-js-stable/parse-int.js"));
-
-var _indexOf = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/index-of */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/index-of.js"));
-
-var _forEach = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/for-each */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/for-each.js"));
-
 var _create = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/object/create */ "./node_modules/@babel/runtime-corejs3/core-js-stable/object/create.js"));
-
+var _flags = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/flags */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/flags.js"));
+var _sort = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/sort */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/sort.js"));
+var _slice = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/slice */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js"));
+var _parseInt2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/parse-int */ "./node_modules/@babel/runtime-corejs3/core-js-stable/parse-int.js"));
+var _indexOf = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/index-of */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/index-of.js"));
+var _forEach = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/for-each */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/for-each.js"));
 var _concat = _interopRequireDefault(__webpack_require__(/*! @babel/runtime-corejs3/core-js-stable/instance/concat */ "./node_modules/@babel/runtime-corejs3/core-js-stable/instance/concat.js"));
-
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof _Symbol !== "undefined" && _getIteratorMethod(o) || o["@@iterator"]; if (!it) { if (_Array$isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
-function _unsupportedIterableToArray(o, minLen) { var _context9; if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = _sliceInstanceProperty2(_context9 = Object.prototype.toString.call(o)).call(_context9, 8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return _Array$from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof _Symbol && _getIteratorMethod(r) || r["@@iterator"]; if (!t) { if (_Array$isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n2 = 0, F = function F() {}; return { s: F, n: function n() { return _n2 >= r.length ? { done: !0 } : { done: !1, value: r[_n2++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { var _context9; if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = _sliceInstanceProperty2(_context9 = {}.toString.call(r)).call(_context9, 8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? _Array$from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 /*!
- * XRegExp 5.1.1
+ * XRegExp 5.1.2
  * <xregexp.com>
  * Steven Levithan (c) 2007-present MIT License
  */
@@ -20866,61 +21129,60 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
  * make your client-side grepping simpler and more powerful, while freeing you from related
  * cross-browser inconsistencies.
  */
+
 // ==--------------------------==
 // Private stuff
 // ==--------------------------==
-// Property name used for extended regex instance data
-var REGEX_DATA = 'xregexp'; // Optional features that can be installed and uninstalled
 
+// Property name used for extended regex instance data
+var REGEX_DATA = 'xregexp';
+// Optional features that can be installed and uninstalled
 var features = {
   astral: false,
   namespacing: true
-}; // Storage for fixed/extended native methods
-
-var fixed = {}; // Storage for regexes cached by `XRegExp.cache`
-
-var regexCache = {}; // Storage for pattern details cached by the `XRegExp` constructor
-
-var patternCache = {}; // Storage for regex syntax tokens added internally or by `XRegExp.addToken`
-
-var tokens = []; // Token scopes
-
+};
+// Storage for fixed/extended native methods
+var fixed = {};
+// Storage for regexes cached by `XRegExp.cache`
+var regexCache = (0, _create["default"])(null);
+// Storage for pattern details cached by the `XRegExp` constructor
+var patternCache = (0, _create["default"])(null);
+// Storage for regex syntax tokens added internally or by `XRegExp.addToken`
+var tokens = [];
+// Token scopes
 var defaultScope = 'default';
-var classScope = 'class'; // Regexes that match native regex syntax, including octals
-
+var classScope = 'class';
+// Regexes that match native regex syntax, including octals
 var nativeTokens = {
   // Any native multicharacter token in default scope, or any single character
   'default': /\\(?:0(?:[0-3][0-7]{0,2}|[4-7][0-7]?)?|[1-9]\d*|x[\dA-Fa-f]{2}|u(?:[\dA-Fa-f]{4}|{[\dA-Fa-f]+})|c[A-Za-z]|[\s\S])|\(\?(?:[:=!]|<[=!])|[?*+]\?|{\d+(?:,\d*)?}\??|[\s\S]/,
   // Any native multicharacter token in character class scope, or any single character
   'class': /\\(?:[0-3][0-7]{0,2}|[4-7][0-7]?|x[\dA-Fa-f]{2}|u(?:[\dA-Fa-f]{4}|{[\dA-Fa-f]+})|c[A-Za-z]|[\s\S])|[\s\S]/
-}; // Any backreference or dollar-prefixed character in replacement strings
-
-var replacementToken = /\$(?:\{([^\}]+)\}|<([^>]+)>|(\d\d?|[\s\S]?))/g; // Check for correct `exec` handling of nonparticipating capturing groups
-
-var correctExecNpcg = /()??/.exec('')[1] === undefined; // Check for ES6 `flags` prop support
-
+};
+// Any backreference or dollar-prefixed character in replacement strings
+var replacementToken = /\$(?:\{([^\}]+)\}|<([^>]+)>|(\d\d?|[\s\S]?))/g;
+// Check for correct `exec` handling of nonparticipating capturing groups
+var correctExecNpcg = /()??/.exec('')[1] === undefined;
+// Check for ES6 `flags` prop support
 var hasFlagsProp = (0, _flags["default"])(/x/) !== undefined;
-
 function hasNativeFlag(flag) {
   // Can't check based on the presence of properties/getters since browsers might support such
   // properties even when they don't support the corresponding flag in regex construction (tested
   // in Chrome 48, where `'unicode' in /x/` is true but trying to construct a regex with flag `u`
   // throws an error)
   var isSupported = true;
-
   try {
     // Can't use regex literals for testing even in a `try` because regex literals with
     // unsupported flags cause a compilation error in IE
-    new RegExp('', flag); // Work around a broken/incomplete IE11 polyfill for sticky introduced in core-js 3.6.0
+    new RegExp('', flag);
 
+    // Work around a broken/incomplete IE11 polyfill for sticky introduced in core-js 3.6.0
     if (flag === 'y') {
       // Using function to avoid babel transform to regex literal
       var gy = function () {
         return 'gy';
       }();
-
       var incompleteY = '.a'.replace(new RegExp('a', gy), '.') === '..';
-
       if (incompleteY) {
         isSupported = false;
       }
@@ -20928,19 +21190,17 @@ function hasNativeFlag(flag) {
   } catch (exception) {
     isSupported = false;
   }
-
   return isSupported;
-} // Check for ES2021 `d` flag support
-
-
-var hasNativeD = hasNativeFlag('d'); // Check for ES2018 `s` flag support
-
-var hasNativeS = hasNativeFlag('s'); // Check for ES6 `u` flag support
-
-var hasNativeU = hasNativeFlag('u'); // Check for ES6 `y` flag support
-
-var hasNativeY = hasNativeFlag('y'); // Tracker for known flags, including addon flags
-
+}
+// Check for ES2021 `d` flag support
+var hasNativeD = hasNativeFlag('d');
+// Check for ES2018 `s` flag support
+var hasNativeS = hasNativeFlag('s');
+// Check for ES6 `u` flag support
+var hasNativeU = hasNativeFlag('u');
+// Check for ES6 `y` flag support
+var hasNativeY = hasNativeFlag('y');
+// Tracker for known flags, including addon flags
 var registeredFlags = {
   d: hasNativeD,
   g: true,
@@ -20949,9 +21209,10 @@ var registeredFlags = {
   s: hasNativeS,
   u: hasNativeU,
   y: hasNativeY
-}; // Flags to remove when passing to native `RegExp` constructor
-
+};
+// Flags to remove when passing to native `RegExp` constructor
 var nonnativeFlags = hasNativeS ? /[^dgimsuy]+/g : /[^dgimuy]+/g;
+
 /**
  * Attaches extended data and `XRegExp.prototype` properties to a regex object.
  *
@@ -20965,19 +21226,16 @@ var nonnativeFlags = hasNativeS ? /[^dgimsuy]+/g : /[^dgimuy]+/g;
  *   skipping some operations like attaching `XRegExp.prototype` properties.
  * @returns {!RegExp} Augmented regex.
  */
-
 function augment(regex, captureNames, xSource, xFlags, isInternalOnly) {
   var _context;
-
   regex[REGEX_DATA] = {
     captureNames: captureNames
   };
-
   if (isInternalOnly) {
     return regex;
-  } // Can't auto-inherit these since the XRegExp constructor returns a nonprimitive value
+  }
 
-
+  // Can't auto-inherit these since the XRegExp constructor returns a nonprimitive value
   if (regex.__proto__) {
     regex.__proto__ = XRegExp.prototype;
   } else {
@@ -20988,12 +21246,12 @@ function augment(regex, captureNames, xSource, xFlags, isInternalOnly) {
       regex[p] = XRegExp.prototype[p];
     }
   }
-
-  regex[REGEX_DATA].source = xSource; // Emulate the ES6 `flags` prop by ensuring flags are in alphabetical order
-
+  regex[REGEX_DATA].source = xSource;
+  // Emulate the ES6 `flags` prop by ensuring flags are in alphabetical order
   regex[REGEX_DATA].flags = xFlags ? (0, _sort["default"])(_context = xFlags.split('')).call(_context).join('') : xFlags;
   return regex;
 }
+
 /**
  * Removes any duplicate characters from the provided string.
  *
@@ -21001,11 +21259,10 @@ function augment(regex, captureNames, xSource, xFlags, isInternalOnly) {
  * @param {String} str String to remove duplicate characters from.
  * @returns {string} String with any duplicate characters removed.
  */
-
-
 function clipDuplicates(str) {
   return str.replace(/([\s\S])(?=[\s\S]*\1)/g, '');
 }
+
 /**
  * Copies a regex object while preserving extended data and augmenting with `XRegExp.prototype`
  * properties. The copy has a fresh `lastIndex` property (set to zero). Allows adding and removing
@@ -21024,15 +21281,11 @@ function clipDuplicates(str) {
  *   - `source` {String} Overrides `<regex>.source`, for special cases.
  * @returns {RegExp} Copy of the provided regex, possibly with modified flags.
  */
-
-
 function copyRegex(regex, options) {
   var _context2;
-
   if (!XRegExp.isRegExp(regex)) {
     throw new TypeError('Type RegExp expected');
   }
-
   var xData = regex[REGEX_DATA] || {};
   var flags = getNativeFlags(regex);
   var flagsToAdd = '';
@@ -21040,52 +21293,45 @@ function copyRegex(regex, options) {
   var xregexpSource = null;
   var xregexpFlags = null;
   options = options || {};
-
   if (options.removeG) {
     flagsToRemove += 'g';
   }
-
   if (options.removeY) {
     flagsToRemove += 'y';
   }
-
   if (flagsToRemove) {
     flags = flags.replace(new RegExp("[".concat(flagsToRemove, "]+"), 'g'), '');
   }
-
   if (options.addG) {
     flagsToAdd += 'g';
   }
-
   if (options.addY) {
     flagsToAdd += 'y';
   }
-
   if (flagsToAdd) {
     flags = clipDuplicates(flags + flagsToAdd);
   }
-
   if (!options.isInternalOnly) {
     if (xData.source !== undefined) {
       xregexpSource = xData.source;
-    } // null or undefined; don't want to add to `flags` if the previous value was null, since
+    }
+    // null or undefined; don't want to add to `flags` if the previous value was null, since
     // that indicates we're not tracking original precompilation flags
-
-
     if ((0, _flags["default"])(xData) != null) {
       // Flags are only added for non-internal regexes by `XRegExp.globalize`. Flags are never
       // removed for non-internal regexes, so don't need to handle it
       xregexpFlags = flagsToAdd ? clipDuplicates((0, _flags["default"])(xData) + flagsToAdd) : (0, _flags["default"])(xData);
     }
-  } // Augment with `XRegExp.prototype` properties, but use the native `RegExp` constructor to avoid
+  }
+
+  // Augment with `XRegExp.prototype` properties, but use the native `RegExp` constructor to avoid
   // searching for special tokens. That would be wrong for regexes constructed by `RegExp`, and
   // unnecessary for regexes constructed by `XRegExp` because the regex has already undergone the
   // translation to native regex syntax
-
-
   regex = augment(new RegExp(options.source || regex.source, flags), hasNamedCapture(regex) ? (0, _slice["default"])(_context2 = xData.captureNames).call(_context2, 0) : null, xregexpSource, xregexpFlags, options.isInternalOnly);
   return regex;
 }
+
 /**
  * Converts hexadecimal to decimal.
  *
@@ -21093,11 +21339,10 @@ function copyRegex(regex, options) {
  * @param {String} hex
  * @returns {number}
  */
-
-
 function dec(hex) {
   return (0, _parseInt2["default"])(hex, 16);
 }
+
 /**
  * Returns a pattern that can be used in a native RegExp in place of an ignorable token such as an
  * inline comment or whitespace with flag x. This is used directly as a token handler function
@@ -21109,28 +21354,29 @@ function dec(hex) {
  * @param {String} flags Flags arg of `XRegExp.addToken` handler
  * @returns {string} Either '' or '(?:)', depending on which is needed in the context of the match.
  */
-
-
 function getContextualTokenSeparator(match, scope, flags) {
   var matchEndPos = match.index + match[0].length;
   var precedingChar = match.input[match.index - 1];
   var followingChar = match.input[matchEndPos];
-
-  if ( // No need to separate tokens if at the beginning or end of a group, before or after a
+  if (
+  // No need to separate tokens if at the beginning or end of a group, before or after a
   // group, or before or after a `|`
-  /^[()|]$/.test(precedingChar) || /^[()|]$/.test(followingChar) || // No need to separate tokens if at the beginning or end of the pattern
-  match.index === 0 || matchEndPos === match.input.length || // No need to separate tokens if at the beginning of a noncapturing group or lookaround.
+  /^[()|]$/.test(precedingChar) || /^[()|]$/.test(followingChar) ||
+  // No need to separate tokens if at the beginning or end of the pattern
+  match.index === 0 || matchEndPos === match.input.length ||
+  // No need to separate tokens if at the beginning of a noncapturing group or lookaround.
   // Looks only at the last 4 chars (at most) for perf when constructing long regexes.
-  /\(\?(?:[:=!]|<[=!])$/.test(match.input.substring(match.index - 4, match.index)) || // Avoid separating tokens when the following token is a quantifier
+  /\(\?(?:[:=!]|<[=!])$/.test(match.input.substring(match.index - 4, match.index)) ||
+  // Avoid separating tokens when the following token is a quantifier
   isQuantifierNext(match.input, matchEndPos, flags)) {
     return '';
-  } // Keep tokens separated. This avoids e.g. inadvertedly changing `\1 1` or `\1(?#)1` to `\11`.
+  }
+  // Keep tokens separated. This avoids e.g. inadvertedly changing `\1 1` or `\1(?#)1` to `\11`.
   // This also ensures all tokens remain as discrete atoms, e.g. it prevents converting the
   // syntax error `(? :` into `(?:`.
-
-
   return '(?:)';
 }
+
 /**
  * Returns native `RegExp` flags used by a regex object.
  *
@@ -21138,14 +21384,14 @@ function getContextualTokenSeparator(match, scope, flags) {
  * @param {RegExp} regex Regex to check.
  * @returns {string} Native flags in use.
  */
-
-
 function getNativeFlags(regex) {
-  return hasFlagsProp ? (0, _flags["default"])(regex) : // Explicitly using `RegExp.prototype.toString` (rather than e.g. `String` or concatenation
+  return hasFlagsProp ? (0, _flags["default"])(regex) :
+  // Explicitly using `RegExp.prototype.toString` (rather than e.g. `String` or concatenation
   // with an empty string) allows this to continue working predictably when
   // `XRegExp.proptotype.toString` is overridden
   /\/([a-z]*)$/i.exec(RegExp.prototype.toString.call(regex))[1];
 }
+
 /**
  * Determines whether a regex has extended instance data used to track capture names.
  *
@@ -21153,11 +21399,10 @@ function getNativeFlags(regex) {
  * @param {RegExp} regex Regex to check.
  * @returns {boolean} Whether the regex uses named capture.
  */
-
-
 function hasNamedCapture(regex) {
   return !!(regex[REGEX_DATA] && regex[REGEX_DATA].captureNames);
 }
+
 /**
  * Converts decimal to hexadecimal.
  *
@@ -21165,11 +21410,10 @@ function hasNamedCapture(regex) {
  * @param {Number|String} dec
  * @returns {string}
  */
-
-
 function hex(dec) {
   return (0, _parseInt2["default"])(dec, 10).toString(16);
 }
+
 /**
  * Checks whether the next nonignorable token after the specified position is a quantifier.
  *
@@ -21179,8 +21423,6 @@ function hex(dec) {
  * @param {String} flags Flags used by the pattern.
  * @returns {Boolean} Whether the next nonignorable token is a quantifier.
  */
-
-
 function isQuantifierNext(pattern, pos, flags) {
   var inlineCommentPattern = '\\(\\?#[^)]*\\)';
   var lineCommentPattern = '#[^#\\n]*';
@@ -21190,6 +21432,7 @@ function isQuantifierNext(pattern, pos, flags) {
   /^(?:\(\?#[^)]*\))*(?:[?*+]|{\d+(?:,\d*)?})/;
   return regex.test((0, _slice["default"])(pattern).call(pattern, pos));
 }
+
 /**
  * Determines whether a value is of the specified type, by resolving its internal [[Class]].
  *
@@ -21198,11 +21441,10 @@ function isQuantifierNext(pattern, pos, flags) {
  * @param {String} type Type to check for, in TitleCase.
  * @returns {boolean} Whether the object matches the type.
  */
-
-
 function isType(value, type) {
   return Object.prototype.toString.call(value) === "[object ".concat(type, "]");
 }
+
 /**
  * Returns the object, or throws an error if it is `null` or `undefined`. This is used to follow
  * the ES5 abstract operation `ToObject`.
@@ -21211,16 +21453,14 @@ function isType(value, type) {
  * @param {*} value Object to check and return.
  * @returns {*} The provided object.
  */
-
-
 function nullThrows(value) {
   // null or undefined
   if (value == null) {
     throw new TypeError('Cannot convert null or undefined to object');
   }
-
   return value;
 }
+
 /**
  * Adds leading zeros if shorter than four characters. Used for fixed-length hexadecimal values.
  *
@@ -21228,15 +21468,13 @@ function nullThrows(value) {
  * @param {String} str
  * @returns {string}
  */
-
-
 function pad4(str) {
   while (str.length < 4) {
     str = "0".concat(str);
   }
-
   return str;
 }
+
 /**
  * Checks for flag-related errors, and strips/applies flags in a leading mode modifier. Offloads
  * the flag preparation logic from the `XRegExp` constructor.
@@ -21246,32 +21484,28 @@ function pad4(str) {
  * @param {String} flags Any combination of flags.
  * @returns {!Object} Object with properties `pattern` and `flags`.
  */
-
-
 function prepareFlags(pattern, flags) {
   // Recent browsers throw on duplicate flags, so copy this behavior for nonnative flags
   if (clipDuplicates(flags) !== flags) {
     throw new SyntaxError("Invalid duplicate regex flag ".concat(flags));
-  } // Strip and apply a leading mode modifier with any combination of flags except `dgy`
+  }
 
-
+  // Strip and apply a leading mode modifier with any combination of flags except `dgy`
   pattern = pattern.replace(/^\(\?([\w$]+)\)/, function ($0, $1) {
     if (/[dgy]/.test($1)) {
       throw new SyntaxError("Cannot use flags dgy in mode modifier ".concat($0));
-    } // Allow duplicate flags within the mode modifier
-
-
+    }
+    // Allow duplicate flags within the mode modifier
     flags = clipDuplicates(flags + $1);
     return '';
-  }); // Throw on unknown native or nonnative flags
+  });
 
+  // Throw on unknown native or nonnative flags
   var _iterator = _createForOfIteratorHelper(flags),
-      _step;
-
+    _step;
   try {
     for (_iterator.s(); !(_step = _iterator.n()).done;) {
       var flag = _step.value;
-
       if (!registeredFlags[flag]) {
         throw new SyntaxError("Unknown regex flag ".concat(flag));
       }
@@ -21281,12 +21515,12 @@ function prepareFlags(pattern, flags) {
   } finally {
     _iterator.f();
   }
-
   return {
     pattern: pattern,
     flags: flags
   };
 }
+
 /**
  * Prepares an options object from the given value.
  *
@@ -21294,35 +21528,30 @@ function prepareFlags(pattern, flags) {
  * @param {String|Object} value Value to convert to an options object.
  * @returns {Object} Options object.
  */
-
-
 function prepareOptions(value) {
   var options = {};
-
   if (isType(value, 'String')) {
     (0, _forEach["default"])(XRegExp).call(XRegExp, value, /[^\s,]+/, function (match) {
       options[match] = true;
     });
     return options;
   }
-
   return value;
 }
+
 /**
  * Registers a flag so it doesn't throw an 'unknown flag' error.
  *
  * @private
  * @param {String} flag Single-character flag to register.
  */
-
-
 function registerFlag(flag) {
   if (!/^[\w$]$/.test(flag)) {
     throw new Error('Flag must be a single character A-Za-z0-9_$');
   }
-
   registeredFlags[flag] = true;
 }
+
 /**
  * Runs built-in and custom regex syntax tokens in reverse insertion order at the specified
  * position, until a match is found.
@@ -21335,37 +21564,33 @@ function registerFlag(flag) {
  * @param {Object} context Context object to use for token handler functions.
  * @returns {Object} Object with properties `matchLength`, `output`, and `reparse`; or `null`.
  */
-
-
 function runTokens(pattern, flags, pos, scope, context) {
   var i = tokens.length;
   var leadChar = pattern[pos];
   var result = null;
   var match;
-  var t; // Run in reverse insertion order
+  var t;
 
+  // Run in reverse insertion order
   while (i--) {
     t = tokens[i];
-
     if (t.leadChar && t.leadChar !== leadChar || t.scope !== scope && t.scope !== 'all' || t.flag && !((0, _indexOf["default"])(flags).call(flags, t.flag) !== -1)) {
       continue;
     }
-
     match = XRegExp.exec(pattern, t.regex, pos, 'sticky');
-
     if (match) {
       result = {
         matchLength: match[0].length,
         output: t.handler.call(context, match, scope, flags),
         reparse: t.reparse
-      }; // Finished with token tests
-
+      };
+      // Finished with token tests
       break;
     }
   }
-
   return result;
 }
+
 /**
  * Enables or disables implicit astral mode opt-in. When enabled, flag A is automatically added to
  * all new regexes created by XRegExp. This causes an error to be thrown when creating regexes if
@@ -21374,11 +21599,10 @@ function runTokens(pattern, flags, pos, scope, context) {
  * @private
  * @param {Boolean} on `true` to enable; `false` to disable.
  */
-
-
 function setAstral(on) {
   features.astral = on;
 }
+
 /**
  * Adds named capture groups to the `groups` property of match arrays. See here for details:
  * https://github.com/tc39/proposal-regexp-named-groups
@@ -21386,11 +21610,11 @@ function setAstral(on) {
  * @private
  * @param {Boolean} on `true` to enable; `false` to disable.
  */
-
-
 function setNamespacing(on) {
   features.namespacing = on;
-} // ==--------------------------==
+}
+
+// ==--------------------------==
 // Constructor
 // ==--------------------------==
 
@@ -21429,30 +21653,24 @@ function setNamespacing(on) {
  * // have fresh `lastIndex` properties (set to zero).
  * XRegExp(/regex/);
  */
-
-
 function XRegExp(pattern, flags) {
   if (XRegExp.isRegExp(pattern)) {
     if (flags !== undefined) {
       throw new TypeError('Cannot supply flags when copying a RegExp');
     }
-
     return copyRegex(pattern);
-  } // Copy the argument behavior of `RegExp`
+  }
 
-
+  // Copy the argument behavior of `RegExp`
   pattern = pattern === undefined ? '' : String(pattern);
   flags = flags === undefined ? '' : String(flags);
-
   if (XRegExp.isInstalled('astral') && !((0, _indexOf["default"])(flags).call(flags, 'A') !== -1)) {
     // This causes an error to be thrown if the Unicode Base addon is not available
     flags += 'A';
   }
-
   if (!patternCache[pattern]) {
     patternCache[pattern] = {};
   }
-
   if (!patternCache[pattern][flags]) {
     var context = {
       hasNamedCapture: false,
@@ -21461,36 +21679,35 @@ function XRegExp(pattern, flags) {
     var scope = defaultScope;
     var output = '';
     var pos = 0;
-    var result; // Check for flag-related errors, and strip/apply flags in a leading mode modifier
+    var result;
 
+    // Check for flag-related errors, and strip/apply flags in a leading mode modifier
     var applied = prepareFlags(pattern, flags);
     var appliedPattern = applied.pattern;
-    var appliedFlags = (0, _flags["default"])(applied); // Use XRegExp's tokens to translate the pattern to a native regex pattern.
-    // `appliedPattern.length` may change on each iteration if tokens use `reparse`
+    var appliedFlags = (0, _flags["default"])(applied);
 
+    // Use XRegExp's tokens to translate the pattern to a native regex pattern.
+    // `appliedPattern.length` may change on each iteration if tokens use `reparse`
     while (pos < appliedPattern.length) {
       do {
         // Check for custom tokens at the current position
-        result = runTokens(appliedPattern, appliedFlags, pos, scope, context); // If the matched token used the `reparse` option, splice its output into the
+        result = runTokens(appliedPattern, appliedFlags, pos, scope, context);
+        // If the matched token used the `reparse` option, splice its output into the
         // pattern before running tokens again at the same position
-
         if (result && result.reparse) {
           appliedPattern = (0, _slice["default"])(appliedPattern).call(appliedPattern, 0, pos) + result.output + (0, _slice["default"])(appliedPattern).call(appliedPattern, pos + result.matchLength);
         }
       } while (result && result.reparse);
-
       if (result) {
         output += result.output;
         pos += result.matchLength || 1;
       } else {
         // Get the native token at the current position
         var _XRegExp$exec = XRegExp.exec(appliedPattern, nativeTokens[scope], pos, 'sticky'),
-            _XRegExp$exec2 = (0, _slicedToArray2["default"])(_XRegExp$exec, 1),
-            token = _XRegExp$exec2[0];
-
+          _XRegExp$exec2 = (0, _slicedToArray2["default"])(_XRegExp$exec, 1),
+          token = _XRegExp$exec2[0];
         output += token;
         pos += token.length;
-
         if (token === '[' && scope === defaultScope) {
           scope = classScope;
         } else if (token === ']' && scope === classScope) {
@@ -21498,7 +21715,6 @@ function XRegExp(pattern, flags) {
         }
       }
     }
-
     patternCache[pattern][flags] = {
       // Use basic cleanup to collapse repeated empty groups like `(?:)(?:)` to `(?:)`. Empty
       // groups are sometimes inserted during regex transpilation in order to keep tokens
@@ -21510,13 +21726,14 @@ function XRegExp(pattern, flags) {
       captures: context.hasNamedCapture ? context.captureNames : null
     };
   }
-
   var generated = patternCache[pattern][flags];
   return augment(new RegExp(generated.pattern, (0, _flags["default"])(generated)), generated.captures, pattern, flags);
-} // Add `RegExp.prototype` to the prototype chain
+}
 
+// Add `RegExp.prototype` to the prototype chain
+XRegExp.prototype = /(?:)/;
 
-XRegExp.prototype = /(?:)/; // ==--------------------------==
+// ==--------------------------==
 // Public properties
 // ==--------------------------==
 
@@ -21528,17 +21745,19 @@ XRegExp.prototype = /(?:)/; // ==--------------------------==
  * @memberOf XRegExp
  * @type String
  */
+XRegExp.version = '5.1.2';
 
-XRegExp.version = '5.1.1'; // ==--------------------------==
+// ==--------------------------==
 // Public methods
 // ==--------------------------==
-// Intentionally undocumented; used in tests and addons
 
+// Intentionally undocumented; used in tests and addons
 XRegExp._clipDuplicates = clipDuplicates;
 XRegExp._hasNativeFlag = hasNativeFlag;
 XRegExp._dec = dec;
 XRegExp._hex = hex;
 XRegExp._pad4 = pad4;
+
 /**
  * Extends XRegExp syntax and allows custom flags. This is used internally and can be used to
  * create XRegExp addons. If more than one token can match the same string, the last added wins.
@@ -21588,22 +21807,17 @@ XRegExp._pad4 = pad4;
  * XRegExp('a+', 'U').exec('aaa')[0]; // -> 'a'
  * XRegExp('a+?', 'U').exec('aaa')[0]; // -> 'aaa'
  */
-
 XRegExp.addToken = function (regex, handler, options) {
   options = options || {};
   var _options = options,
-      optionalFlags = _options.optionalFlags;
-
+    optionalFlags = _options.optionalFlags;
   if (options.flag) {
     registerFlag(options.flag);
   }
-
   if (optionalFlags) {
     optionalFlags = optionalFlags.split('');
-
     var _iterator2 = _createForOfIteratorHelper(optionalFlags),
-        _step2;
-
+      _step2;
     try {
       for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
         var flag = _step2.value;
@@ -21614,9 +21828,9 @@ XRegExp.addToken = function (regex, handler, options) {
     } finally {
       _iterator2.f();
     }
-  } // Add to the private list of syntax tokens
+  }
 
-
+  // Add to the private list of syntax tokens
   tokens.push({
     regex: copyRegex(regex, {
       addG: true,
@@ -21628,11 +21842,13 @@ XRegExp.addToken = function (regex, handler, options) {
     flag: options.flag,
     reparse: options.reparse,
     leadChar: options.leadChar
-  }); // Reset the pattern cache used by the `XRegExp` constructor, since the same pattern and flags
-  // might now produce different results
+  });
 
+  // Reset the pattern cache used by the `XRegExp` constructor, since the same pattern and flags
+  // might now produce different results
   XRegExp.cache.flush('patterns');
 };
+
 /**
  * Caches and returns the result of calling `XRegExp(pattern, flags)`. On any subsequent call with
  * the same pattern and flag combination, the cached copy of the regex is returned.
@@ -21648,26 +21864,24 @@ XRegExp.addToken = function (regex, handler, options) {
  *   // The regex is compiled once only
  * }
  */
-
-
 XRegExp.cache = function (pattern, flags) {
   if (!regexCache[pattern]) {
     regexCache[pattern] = {};
   }
-
   return regexCache[pattern][flags] || (regexCache[pattern][flags] = XRegExp(pattern, flags));
-}; // Intentionally undocumented; used in tests
+};
 
-
+// Intentionally undocumented; used in tests
 XRegExp.cache.flush = function (cacheName) {
   if (cacheName === 'patterns') {
     // Flush the pattern cache used by the `XRegExp` constructor
-    patternCache = {};
+    patternCache = (0, _create["default"])(null);
   } else {
     // Flush the regex cache populated by `XRegExp.cache`
-    regexCache = {};
+    regexCache = (0, _create["default"])(null);
   }
 };
+
 /**
  * Escapes any regular expression metacharacters, for use when matching literal strings. The result
  * can safely be used at any position within a regex that uses any flags.
@@ -21692,15 +21906,16 @@ XRegExp.cache.flush = function (cacheName) {
 // - `#` and <whitespace> - context: default with flag x
 // - `^` - context: default, and context: class if it's the first character in the class
 // - `-` - context: class if part of a valid character class range
-
-
 XRegExp.escape = function (str) {
-  return String(nullThrows(str)). // Escape most special chars with a backslash
-  replace(/[\\\[\]{}()*+?.^$|]/g, '\\$&'). // Convert to \uNNNN for special chars that can't be escaped when used with ES6 flag `u`
+  return String(nullThrows(str)).
+  // Escape most special chars with a backslash
+  replace(/[\\\[\]{}()*+?.^$|]/g, '\\$&').
+  // Convert to \uNNNN for special chars that can't be escaped when used with ES6 flag `u`
   replace(/[\s#\-,]/g, function (match) {
     return "\\u".concat(pad4(hex(match.charCodeAt(0))));
   });
 };
+
 /**
  * Executes a regex search in a specified string. Returns a match array or `null`. If the provided
  * regex uses named capture, named capture properties are included on the match array's `groups`
@@ -21731,15 +21946,12 @@ XRegExp.escape = function (str) {
  * }
  * // result -> ['2', '3', '4']
  */
-
-
 XRegExp.exec = function (str, regex, pos, sticky) {
   var cacheKey = 'g';
   var addY = false;
   var fakeY = false;
   var match;
   addY = hasNativeY && !!(sticky || regex.sticky && sticky !== false);
-
   if (addY) {
     cacheKey += 'y';
   } else if (sticky) {
@@ -21751,9 +21963,9 @@ XRegExp.exec = function (str, regex, pos, sticky) {
     fakeY = true;
     cacheKey += 'FakeY';
   }
+  regex[REGEX_DATA] = regex[REGEX_DATA] || {};
 
-  regex[REGEX_DATA] = regex[REGEX_DATA] || {}; // Shares cached copies with `XRegExp.match`/`replace`
-
+  // Shares cached copies with `XRegExp.match`/`replace`
   var r2 = regex[REGEX_DATA][cacheKey] || (regex[REGEX_DATA][cacheKey] = copyRegex(regex, {
     addG: true,
     addY: addY,
@@ -21762,21 +21974,22 @@ XRegExp.exec = function (str, regex, pos, sticky) {
     isInternalOnly: true
   }));
   pos = pos || 0;
-  r2.lastIndex = pos; // Fixed `exec` required for `lastIndex` fix, named backreferences, etc.
+  r2.lastIndex = pos;
 
-  match = fixed.exec.call(r2, str); // Get rid of the capture added by the pseudo-sticky matcher if needed. An empty string means
+  // Fixed `exec` required for `lastIndex` fix, named backreferences, etc.
+  match = fixed.exec.call(r2, str);
+
+  // Get rid of the capture added by the pseudo-sticky matcher if needed. An empty string means
   // the original regexp failed (see above).
-
   if (fakeY && match && match.pop() === '') {
     match = null;
   }
-
   if (regex.global) {
     regex.lastIndex = match ? r2.lastIndex : 0;
   }
-
   return match;
 };
+
 /**
  * Executes a provided function once per regex match. Searches always start at the beginning of the
  * string and continue until the end, regardless of the state of the regex's `global` property and
@@ -21799,13 +22012,10 @@ XRegExp.exec = function (str, regex, pos, sticky) {
  * });
  * // evens -> [2, 4]
  */
-
-
 XRegExp.forEach = function (str, regex, callback) {
   var pos = 0;
   var i = -1;
   var match;
-
   while (match = XRegExp.exec(str, regex, pos)) {
     // Because `regex` is provided to `callback`, the function could use the deprecated/
     // nonstandard `RegExp.prototype.compile` to mutate the regex. However, since `XRegExp.exec`
@@ -21817,6 +22027,7 @@ XRegExp.forEach = function (str, regex, callback) {
     pos = match.index + (match[0].length || 1);
   }
 };
+
 /**
  * Copies a regex object and adds flag `g`. The copy maintains extended data, is augmented with
  * `XRegExp.prototype` properties, and has a fresh `lastIndex` property (set to zero). Native
@@ -21830,13 +22041,12 @@ XRegExp.forEach = function (str, regex, callback) {
  * const globalCopy = XRegExp.globalize(/regex/);
  * globalCopy.global; // -> true
  */
-
-
 XRegExp.globalize = function (regex) {
   return copyRegex(regex, {
     addG: true
   });
 };
+
 /**
  * Installs optional features according to the specified options. Can be undone using
  * `XRegExp.uninstall`.
@@ -21857,19 +22067,16 @@ XRegExp.globalize = function (regex) {
  * // With an options string
  * XRegExp.install('astral namespacing');
  */
-
-
 XRegExp.install = function (options) {
   options = prepareOptions(options);
-
   if (!features.astral && options.astral) {
     setAstral(true);
   }
-
   if (!features.namespacing && options.namespacing) {
     setNamespacing(true);
   }
 };
+
 /**
  * Checks whether an individual optional feature is installed.
  *
@@ -21882,11 +22089,10 @@ XRegExp.install = function (options) {
  *
  * XRegExp.isInstalled('astral');
  */
-
-
 XRegExp.isInstalled = function (feature) {
   return !!features[feature];
 };
+
 /**
  * Returns `true` if an object is a regex; `false` if it isn't. This works correctly for regexes
  * created in another frame, when `instanceof` and `constructor` checks would fail.
@@ -21901,11 +22107,10 @@ XRegExp.isInstalled = function (feature) {
  * XRegExp.isRegExp(RegExp('^', 'm')); // -> true
  * XRegExp.isRegExp(XRegExp('(?s).')); // -> true
  */
-
-
 XRegExp.isRegExp = function (value) {
   return Object.prototype.toString.call(value) === '[object RegExp]';
-}; // Same as `isType(value, 'RegExp')`, but avoiding that function call here for perf since
+};
+// Same as `isType(value, 'RegExp')`, but avoiding that function call here for perf since
 // `isRegExp` is used heavily by internals including regex construction
 
 /**
@@ -21935,27 +22140,26 @@ XRegExp.isRegExp = function (value) {
  * XRegExp.match('abc', /\w/, 'all'); // -> ['a', 'b', 'c']
  * XRegExp.match('abc', /x/, 'all'); // -> []
  */
-
-
 XRegExp.match = function (str, regex, scope) {
   var global = regex.global && scope !== 'one' || scope === 'all';
   var cacheKey = (global ? 'g' : '') + (regex.sticky ? 'y' : '') || 'noGY';
-  regex[REGEX_DATA] = regex[REGEX_DATA] || {}; // Shares cached copies with `XRegExp.exec`/`replace`
+  regex[REGEX_DATA] = regex[REGEX_DATA] || {};
 
+  // Shares cached copies with `XRegExp.exec`/`replace`
   var r2 = regex[REGEX_DATA][cacheKey] || (regex[REGEX_DATA][cacheKey] = copyRegex(regex, {
     addG: !!global,
     removeG: scope === 'one',
     isInternalOnly: true
   }));
   var result = String(nullThrows(str)).match(r2);
-
   if (regex.global) {
-    regex.lastIndex = scope === 'one' && result ? // Can't use `r2.lastIndex` since `r2` is nonglobal in this case
+    regex.lastIndex = scope === 'one' && result ?
+    // Can't use `r2.lastIndex` since `r2` is nonglobal in this case
     result.index + result[0].length : 0;
   }
-
   return global ? result || [] : result && result[0];
 };
+
 /**
  * Retrieves the matches from searching a string using a chain of regexes that successively search
  * within previous matches. The provided `chain` array can contain regexes and or objects with
@@ -21984,20 +22188,16 @@ XRegExp.match = function (str, regex, scope) {
  * ]);
  * // -> ['xregexp.com', 'www.google.com']
  */
-
-
 XRegExp.matchChain = function (str, chain) {
   return function recurseChain(values, level) {
     var item = chain[level].regex ? chain[level] : {
       regex: chain[level]
     };
     var matches = [];
-
     function addMatch(match) {
       if (item.backref) {
         var ERR_UNDEFINED_GROUP = "Backreference to undefined group: ".concat(item.backref);
         var isNamedBackref = isNaN(item.backref);
-
         if (isNamedBackref && XRegExp.isInstalled('namespacing')) {
           // `groups` has `null` as prototype, so using `in` instead of `hasOwnProperty`
           if (!(match.groups && item.backref in match.groups)) {
@@ -22006,17 +22206,14 @@ XRegExp.matchChain = function (str, chain) {
         } else if (!match.hasOwnProperty(item.backref)) {
           throw new ReferenceError(ERR_UNDEFINED_GROUP);
         }
-
         var backrefValue = isNamedBackref && XRegExp.isInstalled('namespacing') ? match.groups[item.backref] : match[item.backref];
         matches.push(backrefValue || '');
       } else {
         matches.push(match[0]);
       }
     }
-
     var _iterator3 = _createForOfIteratorHelper(values),
-        _step3;
-
+      _step3;
     try {
       for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
         var value = _step3.value;
@@ -22027,10 +22224,10 @@ XRegExp.matchChain = function (str, chain) {
     } finally {
       _iterator3.f();
     }
-
     return level === chain.length - 1 || !matches.length ? matches : recurseChain(matches, level + 1);
   }([str], 0);
 };
+
 /**
  * Returns a new string with one or all matches of a pattern replaced. The pattern can be a string
  * or regex, and the replacement can be a string or a function to be called for each match. To
@@ -22083,18 +22280,16 @@ XRegExp.matchChain = function (str, chain) {
  * XRegExp.replace('RegExp builds RegExps', 'RegExp', 'XRegExp', 'all');
  * // -> 'XRegExp builds XRegExps'
  */
-
-
 XRegExp.replace = function (str, search, replacement, scope) {
   var isRegex = XRegExp.isRegExp(search);
   var global = search.global && scope !== 'one' || scope === 'all';
   var cacheKey = (global ? 'g' : '') + (search.sticky ? 'y' : '') || 'noGY';
   var s2 = search;
-
   if (isRegex) {
-    search[REGEX_DATA] = search[REGEX_DATA] || {}; // Shares cached copies with `XRegExp.exec`/`match`. Since a copy is used, `search`'s
-    // `lastIndex` isn't updated *during* replacement iterations
+    search[REGEX_DATA] = search[REGEX_DATA] || {};
 
+    // Shares cached copies with `XRegExp.exec`/`match`. Since a copy is used, `search`'s
+    // `lastIndex` isn't updated *during* replacement iterations
     s2 = search[REGEX_DATA][cacheKey] || (search[REGEX_DATA][cacheKey] = copyRegex(search, {
       addG: !!global,
       removeG: scope === 'one',
@@ -22102,18 +22297,17 @@ XRegExp.replace = function (str, search, replacement, scope) {
     }));
   } else if (global) {
     s2 = new RegExp(XRegExp.escape(String(search)), 'g');
-  } // Fixed `replace` required for named backreferences, etc.
+  }
 
-
+  // Fixed `replace` required for named backreferences, etc.
   var result = fixed.replace.call(nullThrows(str), s2, replacement);
-
   if (isRegex && search.global) {
     // Fixes IE, Safari bug (last tested IE 9, Safari 5.1)
     search.lastIndex = 0;
   }
-
   return result;
 };
+
 /**
  * Performs batch processing of string replacements. Used like `XRegExp.replace`, but accepts an
  * array of replacement details. Later replacements operate on the output of earlier replacements.
@@ -22137,12 +22331,9 @@ XRegExp.replace = function (str, search, replacement, scope) {
  *   [/f/g, (match) => match.toUpperCase()]
  * ]);
  */
-
-
 XRegExp.replaceEach = function (str, replacements) {
   var _iterator4 = _createForOfIteratorHelper(replacements),
-      _step4;
-
+    _step4;
   try {
     for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
       var r = _step4.value;
@@ -22153,9 +22344,9 @@ XRegExp.replaceEach = function (str, replacements) {
   } finally {
     _iterator4.f();
   }
-
   return str;
 };
+
 /**
  * Splits a string into an array of strings using a regex or string separator. Matches of the
  * separator are not included in the result array. However, if `separator` is a regex that contains
@@ -22182,11 +22373,10 @@ XRegExp.replaceEach = function (str, replacements) {
  * XRegExp.split('..word1..', /([a-z]+)(\d+)/i);
  * // -> ['..', 'word', '1', '..']
  */
-
-
 XRegExp.split = function (str, separator, limit) {
   return fixed.split.call(nullThrows(str), separator, limit);
 };
+
 /**
  * Executes a regex search in a specified string. Returns `true` or `false`. Optional `pos` and
  * `sticky` arguments specify the search start position, and whether the match must start at the
@@ -22211,11 +22401,10 @@ XRegExp.split = function (str, separator, limit) {
  * XRegExp.test('abc', /c/, 2, 'sticky'); // -> true
  */
 // Do this the easy way :-)
-
-
 XRegExp.test = function (str, regex, pos, sticky) {
   return !!XRegExp.exec(str, regex, pos, sticky);
 };
+
 /**
  * Uninstalls optional features according to the specified options. Used to undo the actions of
  * `XRegExp.install`.
@@ -22236,19 +22425,16 @@ XRegExp.test = function (str, regex, pos, sticky) {
  * // With an options string
  * XRegExp.uninstall('astral namespacing');
  */
-
-
 XRegExp.uninstall = function (options) {
   options = prepareOptions(options);
-
   if (features.astral && options.astral) {
     setAstral(false);
   }
-
   if (features.namespacing && options.namespacing) {
     setNamespacing(false);
   }
 };
+
 /**
  * Returns an XRegExp object that is the union of the given patterns. Patterns can be provided as
  * regex objects or strings. Metacharacters are escaped in patterns provided as strings.
@@ -22270,52 +22456,45 @@ XRegExp.uninstall = function (options) {
  * XRegExp.union([/man/, /bear/, /pig/], 'i', {conjunction: 'none'});
  * // -> /manbearpig/i
  */
-
-
 XRegExp.union = function (patterns, flags, options) {
   options = options || {};
   var conjunction = options.conjunction || 'or';
   var numCaptures = 0;
   var numPriorCaptures;
   var captureNames;
-
   function rewrite(match, paren, backref) {
-    var name = captureNames[numCaptures - numPriorCaptures]; // Capturing group
+    var name = captureNames[numCaptures - numPriorCaptures];
 
+    // Capturing group
     if (paren) {
-      ++numCaptures; // If the current capture has a name, preserve the name
-
+      ++numCaptures;
+      // If the current capture has a name, preserve the name
       if (name) {
         return "(?<".concat(name, ">");
-      } // Backreference
-
+      }
+      // Backreference
     } else if (backref) {
       // Rewrite the backreference
       return "\\".concat(+backref + numPriorCaptures);
     }
-
     return match;
   }
-
   if (!(isType(patterns, 'Array') && patterns.length)) {
     throw new TypeError('Must provide a nonempty array of patterns to merge');
   }
-
   var parts = /(\()(?!\?)|\\([1-9]\d*)|\\[\s\S]|\[(?:[^\\\]]|\\[\s\S])*\]/g;
   var output = [];
-
   var _iterator5 = _createForOfIteratorHelper(patterns),
-      _step5;
-
+    _step5;
   try {
     for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
       var pattern = _step5.value;
-
       if (XRegExp.isRegExp(pattern)) {
         numPriorCaptures = numCaptures;
-        captureNames = pattern[REGEX_DATA] && pattern[REGEX_DATA].captureNames || []; // Rewrite backreferences. Passing to XRegExp dies on octals and ensures patterns are
-        // independently valid; helps keep this simple. Named captures are put back
+        captureNames = pattern[REGEX_DATA] && pattern[REGEX_DATA].captureNames || [];
 
+        // Rewrite backreferences. Passing to XRegExp dies on octals and ensures patterns are
+        // independently valid; helps keep this simple. Named captures are put back
         output.push(XRegExp(pattern.source).source.replace(parts, rewrite));
       } else {
         output.push(XRegExp.escape(pattern));
@@ -22326,10 +22505,11 @@ XRegExp.union = function (patterns, flags, options) {
   } finally {
     _iterator5.f();
   }
-
   var separator = conjunction === 'none' ? '' : '|';
   return XRegExp(output.join(separator), flags);
-}; // ==--------------------------==
+};
+
+// ==--------------------------==
 // Fixed/extended native methods
 // ==--------------------------==
 
@@ -22341,72 +22521,64 @@ XRegExp.union = function (patterns, flags, options) {
  * @param {String} str String to search.
  * @returns {Array} Match array with named backreference properties, or `null`.
  */
-
-
 fixed.exec = function (str) {
   var origLastIndex = this.lastIndex;
   var match = RegExp.prototype.exec.apply(this, arguments);
-
   if (match) {
     // Fix browsers whose `exec` methods don't return `undefined` for nonparticipating capturing
     // groups. This fixes IE 5.5-8, but not IE 9's quirks mode or emulation of older IEs. IE 9
     // in standards mode follows the spec.
     if (!correctExecNpcg && match.length > 1 && (0, _indexOf["default"])(match).call(match, '') !== -1) {
       var _context3;
-
       var r2 = copyRegex(this, {
         removeG: true,
         isInternalOnly: true
-      }); // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
+      });
+      // Using `str.slice(match.index)` rather than `match[0]` in case lookahead allowed
       // matching due to characters outside the match
-
       (0, _slice["default"])(_context3 = String(str)).call(_context3, match.index).replace(r2, function () {
-        var len = arguments.length; // Skip index 0 and the last 2
-
+        var len = arguments.length;
+        // Skip index 0 and the last 2
         for (var i = 1; i < len - 2; ++i) {
           if ((i < 0 || arguments.length <= i ? undefined : arguments[i]) === undefined) {
             match[i] = undefined;
           }
         }
       });
-    } // Attach named capture properties
+    }
 
-
+    // Attach named capture properties
     if (this[REGEX_DATA] && this[REGEX_DATA].captureNames) {
       var groupsObject = match;
-
       if (XRegExp.isInstalled('namespacing')) {
         // https://tc39.github.io/proposal-regexp-named-groups/#sec-regexpbuiltinexec
         match.groups = (0, _create["default"])(null);
         groupsObject = match.groups;
-      } // Skip index 0
-
-
+      }
+      // Skip index 0
       for (var i = 1; i < match.length; ++i) {
         var name = this[REGEX_DATA].captureNames[i - 1];
-
         if (name) {
           groupsObject[name] = match[i];
         }
-      } // Preserve any existing `groups` obj that came from native ES2018 named capture
-
+      }
+      // Preserve any existing `groups` obj that came from native ES2018 named capture
     } else if (!match.groups && XRegExp.isInstalled('namespacing')) {
       match.groups = undefined;
-    } // Fix browsers that increment `lastIndex` after zero-length matches
+    }
 
-
+    // Fix browsers that increment `lastIndex` after zero-length matches
     if (this.global && !match[0].length && this.lastIndex > match.index) {
       this.lastIndex = match.index;
     }
   }
-
   if (!this.global) {
     // Fixes IE, Opera bug (last tested IE 9, Opera 11.6)
     this.lastIndex = origLastIndex;
   }
-
   return match;
 };
+
 /**
  * Fixes browser bugs in the native `RegExp.prototype.test`.
  *
@@ -22414,12 +22586,11 @@ fixed.exec = function (str) {
  * @param {String} str String to search.
  * @returns {boolean} Whether the regex matched the provided value.
  */
-
-
 fixed.test = function (str) {
   // Do this the easy way :-)
   return !!fixed.exec.call(this, str);
 };
+
 /**
  * Adds named capture support (with backreferences returned as `result.name`), and fixes browser
  * bugs in the native `String.prototype.match`.
@@ -22429,21 +22600,19 @@ fixed.test = function (str) {
  * @returns {Array} If `regex` uses flag g, an array of match strings or `null`. Without flag g,
  *   the result of calling `regex.exec(this)`.
  */
-
-
 fixed.match = function (regex) {
   if (!XRegExp.isRegExp(regex)) {
     // Use the native `RegExp` rather than `XRegExp`
     regex = new RegExp(regex);
   } else if (regex.global) {
-    var result = String.prototype.match.apply(this, arguments); // Fixes IE bug
-
+    var result = String.prototype.match.apply(this, arguments);
+    // Fixes IE bug
     regex.lastIndex = 0;
     return result;
   }
-
   return fixed.exec.call(regex, nullThrows(this));
 };
+
 /**
  * Adds support for `${n}` (or `$<n>`) tokens for named and numbered backreferences in replacement
  * text, and provides named backreferences to replacement functions as `arguments[0].name`. Also
@@ -22457,26 +22626,22 @@ fixed.match = function (regex) {
  * @param {String|Function} replacement Replacement string or a function invoked to create it.
  * @returns {string} New string with one or all matches replaced.
  */
-
-
 fixed.replace = function (search, replacement) {
   var isRegex = XRegExp.isRegExp(search);
   var origLastIndex;
   var captureNames;
   var result;
-
   if (isRegex) {
     if (search[REGEX_DATA]) {
       captureNames = search[REGEX_DATA].captureNames;
-    } // Only needed if `search` is nonglobal
-
-
+    }
+    // Only needed if `search` is nonglobal
     origLastIndex = search.lastIndex;
   } else {
     search += ''; // Type-convert
-  } // Don't use `typeof`; some older browsers return 'function' for regex objects
+  }
 
-
+  // Don't use `typeof`; some older browsers return 'function' for regex objects
   if (isType(replacement, 'Function')) {
     // Stringifying `this` fixes a bug in IE < 9 where the last argument in replacement
     // functions isn't type-converted to a string
@@ -22484,10 +22649,8 @@ fixed.replace = function (search, replacement) {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
-
       if (captureNames) {
         var groupsObject;
-
         if (XRegExp.isInstalled('namespacing')) {
           // https://tc39.github.io/proposal-regexp-named-groups/#sec-regexpbuiltinexec
           groupsObject = (0, _create["default"])(null);
@@ -22497,17 +22660,16 @@ fixed.replace = function (search, replacement) {
           // properties. This really does need to use `String` as a constructor
           args[0] = new String(args[0]);
           groupsObject = args[0];
-        } // Store named backreferences
+        }
 
-
+        // Store named backreferences
         for (var i = 0; i < captureNames.length; ++i) {
           if (captureNames[i]) {
             groupsObject[captureNames[i]] = args[i + 1];
           }
         }
-      } // ES6 specs the context for replacement functions as `undefined`
-
-
+      }
+      // ES6 specs the context for replacement functions as `undefined`
       return replacement.apply(void 0, args);
     });
   } else {
@@ -22517,76 +22679,68 @@ fixed.replace = function (search, replacement) {
       for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
         args[_key2] = arguments[_key2];
       }
-
       return String(replacement).replace(replacementToken, replacer);
-
       function replacer($0, bracketed, angled, dollarToken) {
-        bracketed = bracketed || angled; // ES2018 added a new trailing `groups` arg that's passed to replacement functions
+        bracketed = bracketed || angled;
+
+        // ES2018 added a new trailing `groups` arg that's passed to replacement functions
         // when the search regex uses native named capture
-
         var numNonCaptureArgs = isType(args[args.length - 1], 'Object') ? 4 : 3;
-        var numCaptures = args.length - numNonCaptureArgs; // Handle named or numbered backreference with curly or angled braces: ${n}, $<n>
+        var numCaptures = args.length - numNonCaptureArgs;
 
+        // Handle named or numbered backreference with curly or angled braces: ${n}, $<n>
         if (bracketed) {
           // Handle backreference to numbered capture, if `bracketed` is an integer. Use
           // `0` for the entire match. Any number of leading zeros may be used.
           if (/^\d+$/.test(bracketed)) {
             // Type-convert and drop leading zeros
             var _n = +bracketed;
-
             if (_n <= numCaptures) {
               return args[_n] || '';
             }
-          } // Handle backreference to named capture. If the name does not refer to an
+          }
+
+          // Handle backreference to named capture. If the name does not refer to an
           // existing capturing group, it's an error. Also handles the error for numbered
           // backference that does not refer to an existing group.
           // Using `indexOf` since having groups with the same name is already an error,
           // otherwise would need `lastIndexOf`.
-
-
           var n = captureNames ? (0, _indexOf["default"])(captureNames).call(captureNames, bracketed) : -1;
-
           if (n < 0) {
             throw new SyntaxError("Backreference to undefined group ".concat($0));
           }
-
           return args[n + 1] || '';
-        } // Handle `$`-prefixed variable
+        }
+
+        // Handle `$`-prefixed variable
         // Handle space/blank first because type conversion with `+` drops space padding
         // and converts spaces and empty strings to `0`
-
-
         if (dollarToken === '' || dollarToken === ' ') {
           throw new SyntaxError("Invalid token ".concat($0));
         }
-
         if (dollarToken === '&' || +dollarToken === 0) {
           // $&, $0 (not followed by 1-9), $00
           return args[0];
         }
-
         if (dollarToken === '$') {
           // $$
           return '$';
         }
-
         if (dollarToken === '`') {
           var _context4;
-
           // $` (left context)
           return (0, _slice["default"])(_context4 = args[args.length - 1]).call(_context4, 0, args[args.length - 2]);
         }
-
         if (dollarToken === "'") {
           var _context5;
-
           // $' (right context)
           return (0, _slice["default"])(_context5 = args[args.length - 1]).call(_context5, args[args.length - 2] + args[0].length);
-        } // Handle numbered backreference without braces
+        }
+
+        // Handle numbered backreference without braces
         // Type-convert and drop leading zero
-
-
-        dollarToken = +dollarToken; // XRegExp behavior for `$n` and `$nn`:
+        dollarToken = +dollarToken;
+        // XRegExp behavior for `$n` and `$nn`:
         // - Backrefs end after 1 or 2 digits. Use `${..}` or `$<..>` for more digits.
         // - `$1` is an error if no capturing groups.
         // - `$10` is an error if less than 10 capturing groups. Use `${1}0` or `$<1>0`
@@ -22599,21 +22753,18 @@ fixed.replace = function (search, replacement) {
         // - `$10` is `$1` followed by a literal `0` if less than 10 capturing groups.
         // - `$01` is `$1` if at least one capturing group, else it's a literal `$01`.
         // - `$0` is a literal `$0`.
-
         if (!isNaN(dollarToken)) {
           if (dollarToken > numCaptures) {
             throw new SyntaxError("Backreference to undefined group ".concat($0));
           }
-
           return args[dollarToken] || '';
-        } // `$` followed by an unsupported char is an error, unlike native JS
+        }
 
-
+        // `$` followed by an unsupported char is an error, unlike native JS
         throw new SyntaxError("Invalid token ".concat($0));
       }
     });
   }
-
   if (isRegex) {
     if (search.global) {
       // Fixes IE, Safari bug (last tested IE 9, Safari 5.1)
@@ -22623,9 +22774,9 @@ fixed.replace = function (search, replacement) {
       search.lastIndex = origLastIndex;
     }
   }
-
   return result;
 };
+
 /**
  * Fixes browser bugs in the native `String.prototype.split`. Use via `XRegExp.split`.
  *
@@ -22634,19 +22785,18 @@ fixed.replace = function (search, replacement) {
  * @param {Number} [limit] Maximum number of items to include in the result array.
  * @returns {!Array} Array of substrings.
  */
-
-
 fixed.split = function (separator, limit) {
   if (!XRegExp.isRegExp(separator)) {
     // Browsers handle nonregex split correctly, so use the faster native method
     return String.prototype.split.apply(this, arguments);
   }
-
   var str = String(this);
   var output = [];
   var origLastIndex = separator.lastIndex;
   var lastLastIndex = 0;
-  var lastLength; // Values for `limit`, per the spec:
+  var lastLength;
+
+  // Values for `limit`, per the spec:
   // If undefined: pow(2,32) - 1
   // If 0, Infinity, or NaN: 0
   // If positive number: limit = floor(limit); if (limit >= pow(2,32)) limit -= pow(2,32);
@@ -22654,22 +22804,18 @@ fixed.split = function (separator, limit) {
   // If other: Type-convert, then use the above rules
   // This line fails in very strange ways for some values of `limit` in Opera 10.5-10.63, unless
   // Opera Dragonfly is open (go figure). It works in at least Opera 9.5-10.1 and 11+
-
   limit = (limit === undefined ? -1 : limit) >>> 0;
   (0, _forEach["default"])(XRegExp).call(XRegExp, str, separator, function (match) {
     // This condition is not the same as `if (match[0].length)`
     if (match.index + match[0].length > lastLastIndex) {
       output.push((0, _slice["default"])(str).call(str, lastLastIndex, match.index));
-
       if (match.length > 1 && match.index < str.length) {
         Array.prototype.push.apply(output, (0, _slice["default"])(match).call(match, 1));
       }
-
       lastLength = match[0].length;
       lastLastIndex = match.index + lastLength;
     }
   });
-
   if (lastLastIndex === str.length) {
     if (!separator.test('') || lastLength) {
       output.push('');
@@ -22677,10 +22823,11 @@ fixed.split = function (separator, limit) {
   } else {
     output.push((0, _slice["default"])(str).call(str, lastLastIndex));
   }
-
   separator.lastIndex = origLastIndex;
   return output.length > limit ? (0, _slice["default"])(output).call(output, 0, limit) : output;
-}; // ==--------------------------==
+};
+
+// ==--------------------------==
 // Built-in syntax/flag tokens
 // ==--------------------------==
 
@@ -22689,19 +22836,17 @@ fixed.split = function (separator, limit) {
  * SyntaxErrors but are allowed in web reality. XRegExp makes them errors for cross-browser
  * consistency and to reserve their syntax, but lets them be superseded by addons.
  */
-
-
 XRegExp.addToken(/\\([ABCE-RTUVXYZaeg-mopqyz]|c(?![A-Za-z])|u(?![\dA-Fa-f]{4}|{[\dA-Fa-f]+})|x(?![\dA-Fa-f]{2}))/, function (match, scope) {
   // \B is allowed in default scope only
   if (match[1] === 'B' && scope === defaultScope) {
     return match[0];
   }
-
   throw new SyntaxError("Invalid escape ".concat(match[0]));
 }, {
   scope: 'all',
   leadChar: '\\'
 });
+
 /*
  * Unicode code point escape with curly braces: `\u{N..}`. `N..` is any one or more digit
  * hexadecimal number from 0-10FFFF, and can include leading zeros. Requires the native ES6 `u` flag
@@ -22710,49 +22855,44 @@ XRegExp.addToken(/\\([ABCE-RTUVXYZaeg-mopqyz]|c(?![A-Za-z])|u(?![\dA-Fa-f]{4}|{[
  * if you follow a `\u{N..}` token that references a code point above U+FFFF with a quantifier, or
  * if you use the same in a character class.
  */
-
 XRegExp.addToken(/\\u{([\dA-Fa-f]+)}/, function (match, scope, flags) {
   var code = dec(match[1]);
-
   if (code > 0x10FFFF) {
     throw new SyntaxError("Invalid Unicode code point ".concat(match[0]));
   }
-
   if (code <= 0xFFFF) {
     // Converting to \uNNNN avoids needing to escape the literal character and keep it
     // separate from preceding tokens
     return "\\u".concat(pad4(hex(code)));
-  } // If `code` is between 0xFFFF and 0x10FFFF, require and defer to native handling
-
-
+  }
+  // If `code` is between 0xFFFF and 0x10FFFF, require and defer to native handling
   if (hasNativeU && (0, _indexOf["default"])(flags).call(flags, 'u') !== -1) {
     return match[0];
   }
-
   throw new SyntaxError('Cannot use Unicode code point above \\u{FFFF} without flag u');
 }, {
   scope: 'all',
   leadChar: '\\'
 });
+
 /*
  * Comment pattern: `(?# )`. Inline comments are an alternative to the line comments allowed in
  * free-spacing mode (flag x).
  */
-
 XRegExp.addToken(/\(\?#[^)]*\)/, getContextualTokenSeparator, {
   leadChar: '('
 });
+
 /*
  * Whitespace and line comments, in free-spacing mode (aka extended mode, flag x) only.
  */
-
 XRegExp.addToken(/\s+|#[^\n]*\n?/, getContextualTokenSeparator, {
   flag: 'x'
 });
+
 /*
  * Dot, in dotAll mode (aka singleline mode, flag s) only.
  */
-
 if (!hasNativeS) {
   XRegExp.addToken(/\./, function () {
     return '[\\s\\S]';
@@ -22761,45 +22901,41 @@ if (!hasNativeS) {
     leadChar: '.'
   });
 }
+
 /*
  * Named backreference: `\k<name>`. Backreference names can use RegExpIdentifierName characters
  * only. Also allows numbered backreferences as `\k<n>`.
  */
-
-
 XRegExp.addToken(/\\k<([^>]+)>/, function (match) {
   var _context6, _context7;
-
   // Groups with the same name is an error, else would need `lastIndexOf`
   var index = isNaN(match[1]) ? (0, _indexOf["default"])(_context6 = this.captureNames).call(_context6, match[1]) + 1 : +match[1];
   var endIndex = match.index + match[0].length;
-
   if (!index || index > this.captureNames.length) {
     throw new SyntaxError("Backreference to undefined group ".concat(match[0]));
-  } // Keep backreferences separate from subsequent literal numbers. This avoids e.g.
+  }
+  // Keep backreferences separate from subsequent literal numbers. This avoids e.g.
   // inadvertedly changing `(?<n>)\k<n>1` to `()\11`.
-
-
   return (0, _concat["default"])(_context7 = "\\".concat(index)).call(_context7, endIndex === match.input.length || isNaN(match.input[endIndex]) ? '' : '(?:)');
 }, {
   leadChar: '\\'
 });
+
 /*
  * Numbered backreference or octal, plus any following digits: `\0`, `\11`, etc. Octals except `\0`
  * not followed by 0-9 and backreferences to unopened capture groups throw an error. Other matches
  * are returned unaltered. IE < 9 doesn't support backreferences above `\99` in regex syntax.
  */
-
 XRegExp.addToken(/\\(\d+)/, function (match, scope) {
   if (!(scope === defaultScope && /^[1-9]/.test(match[1]) && +match[1] <= this.captureNames.length) && match[1] !== '0') {
     throw new SyntaxError("Cannot use octal escape or backreference to undefined group ".concat(match[0]));
   }
-
   return match[0];
 }, {
   scope: 'all',
   leadChar: '\\'
 });
+
 /*
  * Named capturing group; match the opening delimiter only: `(?<name>`. Capture names can use the
  * RegExpIdentifierName characters only. Names can't be integers. Supports Python-style
@@ -22807,42 +22943,36 @@ XRegExp.addToken(/\\(\d+)/, function (match, scope) {
  * supported the Python-style syntax. Otherwise, XRegExp might treat numbered backreferences to
  * Python-style named capture as octals.
  */
-
-XRegExp.addToken(/\(\?P?<((?:[\$A-Z_a-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05D0-\u05EA\u05EF-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u0860-\u086A\u0870-\u0887\u0889-\u088E\u08A0-\u08C9\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u09FC\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C5D\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D04-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u1711\u171F-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1878\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4C\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2118-\u211D\u2124\u2126\u2128\u212A-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309B-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DBF\u4E00-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7CA\uA7D0\uA7D1\uA7D3\uA7D5-\uA7D9\uA7F2-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA8FE\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD40-\uDD74\uDE80-\uDE9C\uDEA0-\uDED0\uDF00-\uDF1F\uDF2D-\uDF4A\uDF50-\uDF75\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDD70-\uDD7A\uDD7C-\uDD8A\uDD8C-\uDD92\uDD94\uDD95\uDD97-\uDDA1\uDDA3-\uDDB1\uDDB3-\uDDB9\uDDBB\uDDBC\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67\uDF80-\uDF85\uDF87-\uDFB0\uDFB2-\uDFBA]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00\uDE10-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE4\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDD00-\uDD23\uDE80-\uDEA9\uDEB0\uDEB1\uDF00-\uDF1C\uDF27\uDF30-\uDF45\uDF70-\uDF81\uDFB0-\uDFC4\uDFE0-\uDFF6]|\uD804[\uDC03-\uDC37\uDC71\uDC72\uDC75\uDC83-\uDCAF\uDCD0-\uDCE8\uDD03-\uDD26\uDD44\uDD47\uDD50-\uDD72\uDD76\uDD83-\uDDB2\uDDC1-\uDDC4\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE2B\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEDE\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D\uDF50\uDF5D-\uDF61]|\uD805[\uDC00-\uDC34\uDC47-\uDC4A\uDC5F-\uDC61\uDC80-\uDCAF\uDCC4\uDCC5\uDCC7\uDD80-\uDDAE\uDDD8-\uDDDB\uDE00-\uDE2F\uDE44\uDE80-\uDEAA\uDEB8\uDF00-\uDF1A\uDF40-\uDF46]|\uD806[\uDC00-\uDC2B\uDCA0-\uDCDF\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD2F\uDD3F\uDD41\uDDA0-\uDDA7\uDDAA-\uDDD0\uDDE1\uDDE3\uDE00\uDE0B-\uDE32\uDE3A\uDE50\uDE5C-\uDE89\uDE9D\uDEB0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC2E\uDC40\uDC72-\uDC8F\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD30\uDD46\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD89\uDD98\uDEE0-\uDEF2\uDFB0]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|\uD80B[\uDF90-\uDFF0]|[\uD80C\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE70-\uDEBE\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDE40-\uDE7F\uDF00-\uDF4A\uDF50\uDF93-\uDF9F\uDFE0\uDFE1\uDFE3]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDD00-\uDD08]|\uD82B[\uDFF0-\uDFF3\uDFF5-\uDFFB\uDFFD\uDFFE]|\uD82C[\uDC00-\uDD22\uDD50-\uDD52\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB]|\uD837[\uDF00-\uDF1E]|\uD838[\uDD00-\uDD2C\uDD37-\uDD3D\uDD4E\uDE90-\uDEAD\uDEC0-\uDEEB]|\uD839[\uDFE0-\uDFE6\uDFE8-\uDFEB\uDFED\uDFEE\uDFF0-\uDFFE]|\uD83A[\uDC00-\uDCC4\uDD00-\uDD43\uDD4B]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD869[\uDC00-\uDEDF\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF38\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A])(?:[\$0-9A-Z_a-z\xAA\xB5\xB7\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0300-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u0483-\u0487\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05EF-\u05F2\u0610-\u061A\u0620-\u0669\u066E-\u06D3\u06D5-\u06DC\u06DF-\u06E8\u06EA-\u06FC\u06FF\u0710-\u074A\u074D-\u07B1\u07C0-\u07F5\u07FA\u07FD\u0800-\u082D\u0840-\u085B\u0860-\u086A\u0870-\u0887\u0889-\u088E\u0898-\u08E1\u08E3-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BC-\u09C4\u09C7\u09C8\u09CB-\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u09FC\u09FE\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABC-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9-\u0AFF\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3C-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B55-\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD0\u0BD7\u0BE6-\u0BEF\u0C00-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3C-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C58-\u0C5A\u0C5D\u0C60-\u0C63\u0C66-\u0C6F\u0C80-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBC-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CDD\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1\u0CF2\u0D00-\u0D0C\u0D0E-\u0D10\u0D12-\u0D44\u0D46-\u0D48\u0D4A-\u0D4E\u0D54-\u0D57\u0D5F-\u0D63\u0D66-\u0D6F\u0D7A-\u0D7F\u0D81-\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E4E\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EBD\u0EC0-\u0EC4\u0EC6\u0EC8-\u0ECD\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F18\u0F19\u0F20-\u0F29\u0F35\u0F37\u0F39\u0F3E-\u0F47\u0F49-\u0F6C\u0F71-\u0F84\u0F86-\u0F97\u0F99-\u0FBC\u0FC6\u1000-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135D-\u135F\u1369-\u1371\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u1715\u171F-\u1734\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17D3\u17D7\u17DC\u17DD\u17E0-\u17E9\u180B-\u180D\u180F-\u1819\u1820-\u1878\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u193B\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19DA\u1A00-\u1A1B\u1A20-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AA7\u1AB0-\u1ABD\u1ABF-\u1ACE\u1B00-\u1B4C\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1BF3\u1C00-\u1C37\u1C40-\u1C49\u1C4D-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CD0-\u1CD2\u1CD4-\u1CFA\u1D00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u200C\u200D\u203F\u2040\u2054\u2071\u207F\u2090-\u209C\u20D0-\u20DC\u20E1\u20E5-\u20F0\u2102\u2107\u210A-\u2113\u2115\u2118-\u211D\u2124\u2126\u2128\u212A-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2CE4\u2CEB-\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D7F-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u3005-\u3007\u3021-\u302F\u3031-\u3035\u3038-\u303C\u3041-\u3096\u3099-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DBF\u4E00-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66F\uA674-\uA67D\uA67F-\uA6F1\uA717-\uA71F\uA722-\uA788\uA78B-\uA7CA\uA7D0\uA7D1\uA7D3\uA7D5-\uA7D9\uA7F2-\uA827\uA82C\uA840-\uA873\uA880-\uA8C5\uA8D0-\uA8D9\uA8E0-\uA8F7\uA8FB\uA8FD-\uA92D\uA930-\uA953\uA960-\uA97C\uA980-\uA9C0\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF6\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABEA\uABEC\uABED\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE00-\uFE0F\uFE20-\uFE2F\uFE33\uFE34\uFE4D-\uFE4F\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF3F\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD40-\uDD74\uDDFD\uDE80-\uDE9C\uDEA0-\uDED0\uDEE0\uDF00-\uDF1F\uDF2D-\uDF4A\uDF50-\uDF7A\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCA0-\uDCA9\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDD70-\uDD7A\uDD7C-\uDD8A\uDD8C-\uDD92\uDD94\uDD95\uDD97-\uDDA1\uDDA3-\uDDB1\uDDB3-\uDDB9\uDDBB\uDDBC\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67\uDF80-\uDF85\uDF87-\uDFB0\uDFB2-\uDFBA]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00-\uDE03\uDE05\uDE06\uDE0C-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE38-\uDE3A\uDE3F\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE6\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDD00-\uDD27\uDD30-\uDD39\uDE80-\uDEA9\uDEAB\uDEAC\uDEB0\uDEB1\uDF00-\uDF1C\uDF27\uDF30-\uDF50\uDF70-\uDF85\uDFB0-\uDFC4\uDFE0-\uDFF6]|\uD804[\uDC00-\uDC46\uDC66-\uDC75\uDC7F-\uDCBA\uDCC2\uDCD0-\uDCE8\uDCF0-\uDCF9\uDD00-\uDD34\uDD36-\uDD3F\uDD44-\uDD47\uDD50-\uDD73\uDD76\uDD80-\uDDC4\uDDC9-\uDDCC\uDDCE-\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE37\uDE3E\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEEA\uDEF0-\uDEF9\uDF00-\uDF03\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3B-\uDF44\uDF47\uDF48\uDF4B-\uDF4D\uDF50\uDF57\uDF5D-\uDF63\uDF66-\uDF6C\uDF70-\uDF74]|\uD805[\uDC00-\uDC4A\uDC50-\uDC59\uDC5E-\uDC61\uDC80-\uDCC5\uDCC7\uDCD0-\uDCD9\uDD80-\uDDB5\uDDB8-\uDDC0\uDDD8-\uDDDD\uDE00-\uDE40\uDE44\uDE50-\uDE59\uDE80-\uDEB8\uDEC0-\uDEC9\uDF00-\uDF1A\uDF1D-\uDF2B\uDF30-\uDF39\uDF40-\uDF46]|\uD806[\uDC00-\uDC3A\uDCA0-\uDCE9\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD35\uDD37\uDD38\uDD3B-\uDD43\uDD50-\uDD59\uDDA0-\uDDA7\uDDAA-\uDDD7\uDDDA-\uDDE1\uDDE3\uDDE4\uDE00-\uDE3E\uDE47\uDE50-\uDE99\uDE9D\uDEB0-\uDEF8]|\uD807[\uDC00-\uDC08\uDC0A-\uDC36\uDC38-\uDC40\uDC50-\uDC59\uDC72-\uDC8F\uDC92-\uDCA7\uDCA9-\uDCB6\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD36\uDD3A\uDD3C\uDD3D\uDD3F-\uDD47\uDD50-\uDD59\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD8E\uDD90\uDD91\uDD93-\uDD98\uDDA0-\uDDA9\uDEE0-\uDEF6\uDFB0]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|\uD80B[\uDF90-\uDFF0]|[\uD80C\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2E]|\uD811[\uDC00-\uDE46]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE60-\uDE69\uDE70-\uDEBE\uDEC0-\uDEC9\uDED0-\uDEED\uDEF0-\uDEF4\uDF00-\uDF36\uDF40-\uDF43\uDF50-\uDF59\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDE40-\uDE7F\uDF00-\uDF4A\uDF4F-\uDF87\uDF8F-\uDF9F\uDFE0\uDFE1\uDFE3\uDFE4\uDFF0\uDFF1]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDD00-\uDD08]|\uD82B[\uDFF0-\uDFF3\uDFF5-\uDFFB\uDFFD\uDFFE]|\uD82C[\uDC00-\uDD22\uDD50-\uDD52\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99\uDC9D\uDC9E]|\uD833[\uDF00-\uDF2D\uDF30-\uDF46]|\uD834[\uDD65-\uDD69\uDD6D-\uDD72\uDD7B-\uDD82\uDD85-\uDD8B\uDDAA-\uDDAD\uDE42-\uDE44]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB\uDFCE-\uDFFF]|\uD836[\uDE00-\uDE36\uDE3B-\uDE6C\uDE75\uDE84\uDE9B-\uDE9F\uDEA1-\uDEAF]|\uD837[\uDF00-\uDF1E]|\uD838[\uDC00-\uDC06\uDC08-\uDC18\uDC1B-\uDC21\uDC23\uDC24\uDC26-\uDC2A\uDD00-\uDD2C\uDD30-\uDD3D\uDD40-\uDD49\uDD4E\uDE90-\uDEAE\uDEC0-\uDEF9]|\uD839[\uDFE0-\uDFE6\uDFE8-\uDFEB\uDFED\uDFEE\uDFF0-\uDFFE]|\uD83A[\uDC00-\uDCC4\uDCD0-\uDCD6\uDD00-\uDD4B\uDD50-\uDD59]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD83E[\uDFF0-\uDFF9]|\uD869[\uDC00-\uDEDF\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF38\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A]|\uDB40[\uDD00-\uDDEF])*)>/, function (match) {
+XRegExp.addToken(/\(\?P?<((?:[\$A-Z_a-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05D0-\u05EA\u05EF-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u0860-\u086A\u0870-\u0887\u0889-\u088E\u08A0-\u08C9\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u09FC\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C5D\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D04-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u1711\u171F-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1878\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4C\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C8A\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2118-\u211D\u2124\u2126\u2128\u212A-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309B-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DBF\u4E00-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7CD\uA7D0\uA7D1\uA7D3\uA7D5-\uA7DC\uA7F2-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA8FE\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD40-\uDD74\uDE80-\uDE9C\uDEA0-\uDED0\uDF00-\uDF1F\uDF2D-\uDF4A\uDF50-\uDF75\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDD70-\uDD7A\uDD7C-\uDD8A\uDD8C-\uDD92\uDD94\uDD95\uDD97-\uDDA1\uDDA3-\uDDB1\uDDB3-\uDDB9\uDDBB\uDDBC\uDDC0-\uDDF3\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67\uDF80-\uDF85\uDF87-\uDFB0\uDFB2-\uDFBA]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00\uDE10-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE4\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDD00-\uDD23\uDD4A-\uDD65\uDD6F-\uDD85\uDE80-\uDEA9\uDEB0\uDEB1\uDEC2-\uDEC4\uDF00-\uDF1C\uDF27\uDF30-\uDF45\uDF70-\uDF81\uDFB0-\uDFC4\uDFE0-\uDFF6]|\uD804[\uDC03-\uDC37\uDC71\uDC72\uDC75\uDC83-\uDCAF\uDCD0-\uDCE8\uDD03-\uDD26\uDD44\uDD47\uDD50-\uDD72\uDD76\uDD83-\uDDB2\uDDC1-\uDDC4\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE2B\uDE3F\uDE40\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEDE\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3D\uDF50\uDF5D-\uDF61\uDF80-\uDF89\uDF8B\uDF8E\uDF90-\uDFB5\uDFB7\uDFD1\uDFD3]|\uD805[\uDC00-\uDC34\uDC47-\uDC4A\uDC5F-\uDC61\uDC80-\uDCAF\uDCC4\uDCC5\uDCC7\uDD80-\uDDAE\uDDD8-\uDDDB\uDE00-\uDE2F\uDE44\uDE80-\uDEAA\uDEB8\uDF00-\uDF1A\uDF40-\uDF46]|\uD806[\uDC00-\uDC2B\uDCA0-\uDCDF\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD2F\uDD3F\uDD41\uDDA0-\uDDA7\uDDAA-\uDDD0\uDDE1\uDDE3\uDE00\uDE0B-\uDE32\uDE3A\uDE50\uDE5C-\uDE89\uDE9D\uDEB0-\uDEF8\uDFC0-\uDFE0]|\uD807[\uDC00-\uDC08\uDC0A-\uDC2E\uDC40\uDC72-\uDC8F\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD30\uDD46\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD89\uDD98\uDEE0-\uDEF2\uDF02\uDF04-\uDF10\uDF12-\uDF33\uDFB0]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|\uD80B[\uDF90-\uDFF0]|[\uD80C\uD80E\uD80F\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883\uD885-\uD887][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2F\uDC41-\uDC46\uDC60-\uDFFF]|\uD810[\uDC00-\uDFFA]|\uD811[\uDC00-\uDE46]|\uD818[\uDD00-\uDD1D]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE70-\uDEBE\uDED0-\uDEED\uDF00-\uDF2F\uDF40-\uDF43\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDD40-\uDD6C\uDE40-\uDE7F\uDF00-\uDF4A\uDF50\uDF93-\uDF9F\uDFE0\uDFE1\uDFE3]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDCFF-\uDD08]|\uD82B[\uDFF0-\uDFF3\uDFF5-\uDFFB\uDFFD\uDFFE]|\uD82C[\uDC00-\uDD22\uDD32\uDD50-\uDD52\uDD55\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB]|\uD837[\uDF00-\uDF1E\uDF25-\uDF2A]|\uD838[\uDC30-\uDC6D\uDD00-\uDD2C\uDD37-\uDD3D\uDD4E\uDE90-\uDEAD\uDEC0-\uDEEB]|\uD839[\uDCD0-\uDCEB\uDDD0-\uDDED\uDDF0\uDFE0-\uDFE6\uDFE8-\uDFEB\uDFED\uDFEE\uDFF0-\uDFFE]|\uD83A[\uDC00-\uDCC4\uDD00-\uDD43\uDD4B]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD869[\uDC00-\uDEDF\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF39\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0\uDFF0-\uDFFF]|\uD87B[\uDC00-\uDE5D]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A\uDF50-\uDFFF]|\uD888[\uDC00-\uDFAF])(?:[\$0-9A-Z_a-z\xAA\xB5\xB7\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0300-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u0483-\u0487\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u05D0-\u05EA\u05EF-\u05F2\u0610-\u061A\u0620-\u0669\u066E-\u06D3\u06D5-\u06DC\u06DF-\u06E8\u06EA-\u06FC\u06FF\u0710-\u074A\u074D-\u07B1\u07C0-\u07F5\u07FA\u07FD\u0800-\u082D\u0840-\u085B\u0860-\u086A\u0870-\u0887\u0889-\u088E\u0897-\u08E1\u08E3-\u0963\u0966-\u096F\u0971-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BC-\u09C4\u09C7\u09C8\u09CB-\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09F1\u09FC\u09FE\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A75\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABC-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AEF\u0AF9-\u0AFF\u0B01-\u0B03\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3C-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B55-\u0B57\u0B5C\u0B5D\u0B5F-\u0B63\u0B66-\u0B6F\u0B71\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD0\u0BD7\u0BE6-\u0BEF\u0C00-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3C-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C58-\u0C5A\u0C5D\u0C60-\u0C63\u0C66-\u0C6F\u0C80-\u0C83\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBC-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CDD\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1-\u0CF3\u0D00-\u0D0C\u0D0E-\u0D10\u0D12-\u0D44\u0D46-\u0D48\u0D4A-\u0D4E\u0D54-\u0D57\u0D5F-\u0D63\u0D66-\u0D6F\u0D7A-\u0D7F\u0D81-\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E01-\u0E3A\u0E40-\u0E4E\u0E50-\u0E59\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EBD\u0EC0-\u0EC4\u0EC6\u0EC8-\u0ECE\u0ED0-\u0ED9\u0EDC-\u0EDF\u0F00\u0F18\u0F19\u0F20-\u0F29\u0F35\u0F37\u0F39\u0F3E-\u0F47\u0F49-\u0F6C\u0F71-\u0F84\u0F86-\u0F97\u0F99-\u0FBC\u0FC6\u1000-\u1049\u1050-\u109D\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135D-\u135F\u1369-\u1371\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u1715\u171F-\u1734\u1740-\u1753\u1760-\u176C\u176E-\u1770\u1772\u1773\u1780-\u17D3\u17D7\u17DC\u17DD\u17E0-\u17E9\u180B-\u180D\u180F-\u1819\u1820-\u1878\u1880-\u18AA\u18B0-\u18F5\u1900-\u191E\u1920-\u192B\u1930-\u193B\u1946-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u19D0-\u19DA\u1A00-\u1A1B\u1A20-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AA7\u1AB0-\u1ABD\u1ABF-\u1ACE\u1B00-\u1B4C\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1BF3\u1C00-\u1C37\u1C40-\u1C49\u1C4D-\u1C7D\u1C80-\u1C8A\u1C90-\u1CBA\u1CBD-\u1CBF\u1CD0-\u1CD2\u1CD4-\u1CFA\u1D00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u200C\u200D\u203F\u2040\u2054\u2071\u207F\u2090-\u209C\u20D0-\u20DC\u20E1\u20E5-\u20F0\u2102\u2107\u210A-\u2113\u2115\u2118-\u211D\u2124\u2126\u2128\u212A-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2CE4\u2CEB-\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D7F-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2DE0-\u2DFF\u3005-\u3007\u3021-\u302F\u3031-\u3035\u3038-\u303C\u3041-\u3096\u3099-\u309F\u30A1-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DBF\u4E00-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA62B\uA640-\uA66F\uA674-\uA67D\uA67F-\uA6F1\uA717-\uA71F\uA722-\uA788\uA78B-\uA7CD\uA7D0\uA7D1\uA7D3\uA7D5-\uA7DC\uA7F2-\uA827\uA82C\uA840-\uA873\uA880-\uA8C5\uA8D0-\uA8D9\uA8E0-\uA8F7\uA8FB\uA8FD-\uA92D\uA930-\uA953\uA960-\uA97C\uA980-\uA9C0\uA9CF-\uA9D9\uA9E0-\uA9FE\uAA00-\uAA36\uAA40-\uAA4D\uAA50-\uAA59\uAA60-\uAA76\uAA7A-\uAAC2\uAADB-\uAADD\uAAE0-\uAAEF\uAAF2-\uAAF6\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABEA\uABEC\uABED\uABF0-\uABF9\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE00-\uFE0F\uFE20-\uFE2F\uFE33\uFE34\uFE4D-\uFE4F\uFE70-\uFE74\uFE76-\uFEFC\uFF10-\uFF19\uFF21-\uFF3A\uFF3F\uFF41-\uFF5A\uFF65-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]|\uD800[\uDC00-\uDC0B\uDC0D-\uDC26\uDC28-\uDC3A\uDC3C\uDC3D\uDC3F-\uDC4D\uDC50-\uDC5D\uDC80-\uDCFA\uDD40-\uDD74\uDDFD\uDE80-\uDE9C\uDEA0-\uDED0\uDEE0\uDF00-\uDF1F\uDF2D-\uDF4A\uDF50-\uDF7A\uDF80-\uDF9D\uDFA0-\uDFC3\uDFC8-\uDFCF\uDFD1-\uDFD5]|\uD801[\uDC00-\uDC9D\uDCA0-\uDCA9\uDCB0-\uDCD3\uDCD8-\uDCFB\uDD00-\uDD27\uDD30-\uDD63\uDD70-\uDD7A\uDD7C-\uDD8A\uDD8C-\uDD92\uDD94\uDD95\uDD97-\uDDA1\uDDA3-\uDDB1\uDDB3-\uDDB9\uDDBB\uDDBC\uDDC0-\uDDF3\uDE00-\uDF36\uDF40-\uDF55\uDF60-\uDF67\uDF80-\uDF85\uDF87-\uDFB0\uDFB2-\uDFBA]|\uD802[\uDC00-\uDC05\uDC08\uDC0A-\uDC35\uDC37\uDC38\uDC3C\uDC3F-\uDC55\uDC60-\uDC76\uDC80-\uDC9E\uDCE0-\uDCF2\uDCF4\uDCF5\uDD00-\uDD15\uDD20-\uDD39\uDD80-\uDDB7\uDDBE\uDDBF\uDE00-\uDE03\uDE05\uDE06\uDE0C-\uDE13\uDE15-\uDE17\uDE19-\uDE35\uDE38-\uDE3A\uDE3F\uDE60-\uDE7C\uDE80-\uDE9C\uDEC0-\uDEC7\uDEC9-\uDEE6\uDF00-\uDF35\uDF40-\uDF55\uDF60-\uDF72\uDF80-\uDF91]|\uD803[\uDC00-\uDC48\uDC80-\uDCB2\uDCC0-\uDCF2\uDD00-\uDD27\uDD30-\uDD39\uDD40-\uDD65\uDD69-\uDD6D\uDD6F-\uDD85\uDE80-\uDEA9\uDEAB\uDEAC\uDEB0\uDEB1\uDEC2-\uDEC4\uDEFC-\uDF1C\uDF27\uDF30-\uDF50\uDF70-\uDF85\uDFB0-\uDFC4\uDFE0-\uDFF6]|\uD804[\uDC00-\uDC46\uDC66-\uDC75\uDC7F-\uDCBA\uDCC2\uDCD0-\uDCE8\uDCF0-\uDCF9\uDD00-\uDD34\uDD36-\uDD3F\uDD44-\uDD47\uDD50-\uDD73\uDD76\uDD80-\uDDC4\uDDC9-\uDDCC\uDDCE-\uDDDA\uDDDC\uDE00-\uDE11\uDE13-\uDE37\uDE3E-\uDE41\uDE80-\uDE86\uDE88\uDE8A-\uDE8D\uDE8F-\uDE9D\uDE9F-\uDEA8\uDEB0-\uDEEA\uDEF0-\uDEF9\uDF00-\uDF03\uDF05-\uDF0C\uDF0F\uDF10\uDF13-\uDF28\uDF2A-\uDF30\uDF32\uDF33\uDF35-\uDF39\uDF3B-\uDF44\uDF47\uDF48\uDF4B-\uDF4D\uDF50\uDF57\uDF5D-\uDF63\uDF66-\uDF6C\uDF70-\uDF74\uDF80-\uDF89\uDF8B\uDF8E\uDF90-\uDFB5\uDFB7-\uDFC0\uDFC2\uDFC5\uDFC7-\uDFCA\uDFCC-\uDFD3\uDFE1\uDFE2]|\uD805[\uDC00-\uDC4A\uDC50-\uDC59\uDC5E-\uDC61\uDC80-\uDCC5\uDCC7\uDCD0-\uDCD9\uDD80-\uDDB5\uDDB8-\uDDC0\uDDD8-\uDDDD\uDE00-\uDE40\uDE44\uDE50-\uDE59\uDE80-\uDEB8\uDEC0-\uDEC9\uDED0-\uDEE3\uDF00-\uDF1A\uDF1D-\uDF2B\uDF30-\uDF39\uDF40-\uDF46]|\uD806[\uDC00-\uDC3A\uDCA0-\uDCE9\uDCFF-\uDD06\uDD09\uDD0C-\uDD13\uDD15\uDD16\uDD18-\uDD35\uDD37\uDD38\uDD3B-\uDD43\uDD50-\uDD59\uDDA0-\uDDA7\uDDAA-\uDDD7\uDDDA-\uDDE1\uDDE3\uDDE4\uDE00-\uDE3E\uDE47\uDE50-\uDE99\uDE9D\uDEB0-\uDEF8\uDFC0-\uDFE0\uDFF0-\uDFF9]|\uD807[\uDC00-\uDC08\uDC0A-\uDC36\uDC38-\uDC40\uDC50-\uDC59\uDC72-\uDC8F\uDC92-\uDCA7\uDCA9-\uDCB6\uDD00-\uDD06\uDD08\uDD09\uDD0B-\uDD36\uDD3A\uDD3C\uDD3D\uDD3F-\uDD47\uDD50-\uDD59\uDD60-\uDD65\uDD67\uDD68\uDD6A-\uDD8E\uDD90\uDD91\uDD93-\uDD98\uDDA0-\uDDA9\uDEE0-\uDEF6\uDF00-\uDF10\uDF12-\uDF3A\uDF3E-\uDF42\uDF50-\uDF5A\uDFB0]|\uD808[\uDC00-\uDF99]|\uD809[\uDC00-\uDC6E\uDC80-\uDD43]|\uD80B[\uDF90-\uDFF0]|[\uD80C\uD80E\uD80F\uD81C-\uD820\uD822\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883\uD885-\uD887][\uDC00-\uDFFF]|\uD80D[\uDC00-\uDC2F\uDC40-\uDC55\uDC60-\uDFFF]|\uD810[\uDC00-\uDFFA]|\uD811[\uDC00-\uDE46]|\uD818[\uDD00-\uDD39]|\uD81A[\uDC00-\uDE38\uDE40-\uDE5E\uDE60-\uDE69\uDE70-\uDEBE\uDEC0-\uDEC9\uDED0-\uDEED\uDEF0-\uDEF4\uDF00-\uDF36\uDF40-\uDF43\uDF50-\uDF59\uDF63-\uDF77\uDF7D-\uDF8F]|\uD81B[\uDD40-\uDD6C\uDD70-\uDD79\uDE40-\uDE7F\uDF00-\uDF4A\uDF4F-\uDF87\uDF8F-\uDF9F\uDFE0\uDFE1\uDFE3\uDFE4\uDFF0\uDFF1]|\uD821[\uDC00-\uDFF7]|\uD823[\uDC00-\uDCD5\uDCFF-\uDD08]|\uD82B[\uDFF0-\uDFF3\uDFF5-\uDFFB\uDFFD\uDFFE]|\uD82C[\uDC00-\uDD22\uDD32\uDD50-\uDD52\uDD55\uDD64-\uDD67\uDD70-\uDEFB]|\uD82F[\uDC00-\uDC6A\uDC70-\uDC7C\uDC80-\uDC88\uDC90-\uDC99\uDC9D\uDC9E]|\uD833[\uDCF0-\uDCF9\uDF00-\uDF2D\uDF30-\uDF46]|\uD834[\uDD65-\uDD69\uDD6D-\uDD72\uDD7B-\uDD82\uDD85-\uDD8B\uDDAA-\uDDAD\uDE42-\uDE44]|\uD835[\uDC00-\uDC54\uDC56-\uDC9C\uDC9E\uDC9F\uDCA2\uDCA5\uDCA6\uDCA9-\uDCAC\uDCAE-\uDCB9\uDCBB\uDCBD-\uDCC3\uDCC5-\uDD05\uDD07-\uDD0A\uDD0D-\uDD14\uDD16-\uDD1C\uDD1E-\uDD39\uDD3B-\uDD3E\uDD40-\uDD44\uDD46\uDD4A-\uDD50\uDD52-\uDEA5\uDEA8-\uDEC0\uDEC2-\uDEDA\uDEDC-\uDEFA\uDEFC-\uDF14\uDF16-\uDF34\uDF36-\uDF4E\uDF50-\uDF6E\uDF70-\uDF88\uDF8A-\uDFA8\uDFAA-\uDFC2\uDFC4-\uDFCB\uDFCE-\uDFFF]|\uD836[\uDE00-\uDE36\uDE3B-\uDE6C\uDE75\uDE84\uDE9B-\uDE9F\uDEA1-\uDEAF]|\uD837[\uDF00-\uDF1E\uDF25-\uDF2A]|\uD838[\uDC00-\uDC06\uDC08-\uDC18\uDC1B-\uDC21\uDC23\uDC24\uDC26-\uDC2A\uDC30-\uDC6D\uDC8F\uDD00-\uDD2C\uDD30-\uDD3D\uDD40-\uDD49\uDD4E\uDE90-\uDEAE\uDEC0-\uDEF9]|\uD839[\uDCD0-\uDCF9\uDDD0-\uDDFA\uDFE0-\uDFE6\uDFE8-\uDFEB\uDFED\uDFEE\uDFF0-\uDFFE]|\uD83A[\uDC00-\uDCC4\uDCD0-\uDCD6\uDD00-\uDD4B\uDD50-\uDD59]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB]|\uD83E[\uDFF0-\uDFF9]|\uD869[\uDC00-\uDEDF\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF39\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0\uDFF0-\uDFFF]|\uD87B[\uDC00-\uDE5D]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A\uDF50-\uDFFF]|\uD888[\uDC00-\uDFAF]|\uDB40[\uDD00-\uDDEF])*)>/, function (match) {
   var _context8;
-
   if (!XRegExp.isInstalled('namespacing') && (match[1] === 'length' || match[1] === '__proto__')) {
     throw new SyntaxError("Cannot use reserved word as capture name ".concat(match[0]));
   }
-
   if ((0, _indexOf["default"])(_context8 = this.captureNames).call(_context8, match[1]) !== -1) {
     throw new SyntaxError("Cannot use same name for multiple groups ".concat(match[0]));
   }
-
   this.captureNames.push(match[1]);
   this.hasNamedCapture = true;
   return '(';
 }, {
   leadChar: '('
 });
+
 /*
  * Capturing group; match the opening parenthesis only. Required for support of named capturing
  * groups. Also adds named capture only mode (flag n).
  */
-
 XRegExp.addToken(/\((?!\?)/, function (match, scope, flags) {
   if ((0, _indexOf["default"])(flags).call(flags, 'n') !== -1) {
     return '(?:';
   }
-
   this.captureNames.push(null);
   return '(';
 }, {
   optionalFlags: 'n',
   leadChar: '('
 });
-var _default = XRegExp;
-exports["default"] = _default;
+var _default = exports["default"] = XRegExp;
 module.exports = exports.default;
 
 /***/ }),
@@ -27635,7 +27765,7 @@ var FunctionPrototype = Function.prototype;
 var apply = FunctionPrototype.apply;
 var call = FunctionPrototype.call;
 
-// eslint-disable-next-line es/no-reflect -- safe
+// eslint-disable-next-line es/no-function-prototype-bind, es/no-reflect -- safe
 module.exports = typeof Reflect == 'object' && Reflect.apply || (NATIVE_BIND ? call.bind(apply) : function () {
   return call.apply(apply, arguments);
 });
@@ -27699,7 +27829,7 @@ module.exports = !fails(function () {
 var NATIVE_BIND = __webpack_require__(/*! ../internals/function-bind-native */ "./node_modules/core-js-pure/internals/function-bind-native.js");
 
 var call = Function.prototype.call;
-
+// eslint-disable-next-line es/no-function-prototype-bind -- safe
 module.exports = NATIVE_BIND ? call.bind(call) : function () {
   return call.apply(call, arguments);
 };
@@ -27790,6 +27920,7 @@ var NATIVE_BIND = __webpack_require__(/*! ../internals/function-bind-native */ "
 
 var FunctionPrototype = Function.prototype;
 var call = FunctionPrototype.call;
+// eslint-disable-next-line es/no-function-prototype-bind -- safe
 var uncurryThisWithBind = NATIVE_BIND && FunctionPrototype.bind.bind(call, call);
 
 module.exports = NATIVE_BIND ? uncurryThisWithBind : function (fn) {
@@ -29428,10 +29559,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.38.1',
+  version: '3.41.0',
   mode: IS_PURE ? 'pure' : 'global',
-  copyright: '© 2014-2024 Denis Pushkarev (zloirock.ru)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.38.1/LICENSE',
+  copyright: '© 2014-2025 Denis Pushkarev (zloirock.ru)',
+  license: 'https://github.com/zloirock/core-js/blob/v3.41.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -29955,9 +30086,9 @@ module.exports = function (key) {
 /* eslint-disable es/no-symbol -- required for testing */
 var NATIVE_SYMBOL = __webpack_require__(/*! ../internals/symbol-constructor-detection */ "./node_modules/core-js-pure/internals/symbol-constructor-detection.js");
 
-module.exports = NATIVE_SYMBOL
-  && !Symbol.sham
-  && typeof Symbol.iterator == 'symbol';
+module.exports = NATIVE_SYMBOL &&
+  !Symbol.sham &&
+  typeof Symbol.iterator == 'symbol';
 
 
 /***/ }),
@@ -32069,15 +32200,11 @@ module.exports = parent;
   \************************************************************/
 /***/ ((module, exports, __webpack_require__) => {
 
-var fetchApi
-if (typeof fetch === 'function') {
-  if (typeof __webpack_require__.g !== 'undefined' && __webpack_require__.g.fetch) {
-    fetchApi = __webpack_require__.g.fetch
-  } else if (typeof window !== 'undefined' && window.fetch) {
-    fetchApi = window.fetch
-  } else {
-    fetchApi = fetch
-  }
+var fetchApi = typeof fetch === 'function' ? fetch : undefined
+if (typeof __webpack_require__.g !== 'undefined' && __webpack_require__.g.fetch) {
+  fetchApi = __webpack_require__.g.fetch
+} else if (typeof window !== 'undefined' && window.fetch) {
+  fetchApi = window.fetch
 }
 
 if ( true && typeof window === 'undefined') {
@@ -32207,7 +32334,15 @@ var Backend = function () {
       this.options.request(this.options, url, payload, function (err, res) {
         if (res && (res.status >= 500 && res.status < 600 || !res.status)) return callback('failed loading ' + url + '; status code: ' + res.status, true);
         if (res && res.status >= 400 && res.status < 500) return callback('failed loading ' + url + '; status code: ' + res.status, false);
-        if (!res && err && err.message && err.message.toLowerCase().indexOf('failed') > -1 && (err.message.indexOf('fetch') > -1 || err.message.toLowerCase().indexOf('network') > -1)) return callback('failed loading ' + url + ': ' + err.message, true);
+        if (!res && err && err.message) {
+          var errorMessage = err.message.toLowerCase();
+          var isNetworkError = ['failed', 'fetch', 'network', 'load'].find(function (term) {
+            return errorMessage.indexOf(term) > -1;
+          });
+          if (isNetworkError) {
+            return callback('failed loading ' + url + ': ' + err.message, true);
+          }
+        }
         if (err) return callback(err, false);
         var ret, parseErr;
         try {
@@ -32312,15 +32447,11 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 
 
-var fetchApi;
-if (typeof fetch === 'function') {
-  if (typeof global !== 'undefined' && global.fetch) {
-    fetchApi = global.fetch;
-  } else if (typeof window !== 'undefined' && window.fetch) {
-    fetchApi = window.fetch;
-  } else {
-    fetchApi = fetch;
-  }
+var fetchApi = typeof fetch === 'function' ? fetch : undefined;
+if (typeof global !== 'undefined' && global.fetch) {
+  fetchApi = global.fetch;
+} else if (typeof window !== 'undefined' && window.fetch) {
+  fetchApi = window.fetch;
 }
 var XmlHttpRequestApi;
 if ((0,_utils_js__WEBPACK_IMPORTED_MODULE_0__.hasXMLHttpRequest)()) {
@@ -32538,123 +32669,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   t: () => (/* binding */ t),
 /* harmony export */   use: () => (/* binding */ use)
 /* harmony export */ });
-const consoleLogger = {
-  type: 'logger',
-  log(args) {
-    this.output('log', args);
-  },
-  warn(args) {
-    this.output('warn', args);
-  },
-  error(args) {
-    this.output('error', args);
-  },
-  output(type, args) {
-    if (console && console[type]) console[type].apply(console, args);
-  }
-};
-class Logger {
-  constructor(concreteLogger) {
-    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    this.init(concreteLogger, options);
-  }
-  init(concreteLogger) {
-    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    this.prefix = options.prefix || 'i18next:';
-    this.logger = concreteLogger || consoleLogger;
-    this.options = options;
-    this.debug = options.debug;
-  }
-  log() {
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-    return this.forward(args, 'log', '', true);
-  }
-  warn() {
-    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      args[_key2] = arguments[_key2];
-    }
-    return this.forward(args, 'warn', '', true);
-  }
-  error() {
-    for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-      args[_key3] = arguments[_key3];
-    }
-    return this.forward(args, 'error', '');
-  }
-  deprecate() {
-    for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-      args[_key4] = arguments[_key4];
-    }
-    return this.forward(args, 'warn', 'WARNING DEPRECATED: ', true);
-  }
-  forward(args, lvl, prefix, debugOnly) {
-    if (debugOnly && !this.debug) return null;
-    if (typeof args[0] === 'string') args[0] = `${prefix}${this.prefix} ${args[0]}`;
-    return this.logger[lvl](args);
-  }
-  create(moduleName) {
-    return new Logger(this.logger, {
-      ...{
-        prefix: `${this.prefix}:${moduleName}:`
-      },
-      ...this.options
-    });
-  }
-  clone(options) {
-    options = options || this.options;
-    options.prefix = options.prefix || this.prefix;
-    return new Logger(this.logger, options);
-  }
-}
-var baseLogger = new Logger();
-
-class EventEmitter {
-  constructor() {
-    this.observers = {};
-  }
-  on(events, listener) {
-    events.split(' ').forEach(event => {
-      if (!this.observers[event]) this.observers[event] = new Map();
-      const numListeners = this.observers[event].get(listener) || 0;
-      this.observers[event].set(listener, numListeners + 1);
-    });
-    return this;
-  }
-  off(event, listener) {
-    if (!this.observers[event]) return;
-    if (!listener) {
-      delete this.observers[event];
-      return;
-    }
-    this.observers[event].delete(listener);
-  }
-  emit(event) {
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-    if (this.observers[event]) {
-      const cloned = Array.from(this.observers[event].entries());
-      cloned.forEach(_ref => {
-        let [observer, numTimesAdded] = _ref;
-        for (let i = 0; i < numTimesAdded; i++) {
-          observer(...args);
-        }
-      });
-    }
-    if (this.observers['*']) {
-      const cloned = Array.from(this.observers['*'].entries());
-      cloned.forEach(_ref2 => {
-        let [observer, numTimesAdded] = _ref2;
-        for (let i = 0; i < numTimesAdded; i++) {
-          observer.apply(observer, [event, ...args]);
-        }
-      });
-    }
-  }
-}
-
+const isString = obj => typeof obj === 'string';
 const defer = () => {
   let res;
   let rej;
@@ -32677,9 +32692,9 @@ const copy = (a, s, t) => {
 };
 const lastOfPathSeparatorRegExp = /###/g;
 const cleanKey = key => key && key.indexOf('###') > -1 ? key.replace(lastOfPathSeparatorRegExp, '.') : key;
-const canNotTraverseDeeper = object => !object || typeof object === 'string';
+const canNotTraverseDeeper = object => !object || isString(object);
 const getLastOfPath = (object, path, Empty) => {
-  const stack = typeof path !== 'string' ? path : path.split('.');
+  const stack = !isString(path) ? path : path.split('.');
   let stackIndex = 0;
   while (stackIndex < stack.length - 1) {
     if (canNotTraverseDeeper(object)) return {};
@@ -32747,7 +32762,7 @@ const deepExtend = (target, source, overwrite) => {
   for (const prop in source) {
     if (prop !== '__proto__' && prop !== 'constructor') {
       if (prop in target) {
-        if (typeof target[prop] === 'string' || target[prop] instanceof String || typeof source[prop] === 'string' || source[prop] instanceof String) {
+        if (isString(target[prop]) || target[prop] instanceof String || isString(source[prop]) || source[prop] instanceof String) {
           if (overwrite) target[prop] = source[prop];
         } else {
           deepExtend(target[prop], source[prop], overwrite);
@@ -32769,7 +32784,7 @@ var _entityMap = {
   '/': '&#x2F;'
 };
 const escape = data => {
-  if (typeof data === 'string') {
+  if (isString(data)) {
     return data.replace(/[&<>"'\/]/g, s => _entityMap[s]);
   }
   return data;
@@ -32841,10 +32856,124 @@ const deepFind = function (obj, path) {
   }
   return current;
 };
-const getCleanedCode = code => {
-  if (code && code.indexOf('_') > 0) return code.replace('_', '-');
-  return code;
+const getCleanedCode = code => code && code.replace('_', '-');
+
+const consoleLogger = {
+  type: 'logger',
+  log(args) {
+    this.output('log', args);
+  },
+  warn(args) {
+    this.output('warn', args);
+  },
+  error(args) {
+    this.output('error', args);
+  },
+  output(type, args) {
+    if (console && console[type]) console[type].apply(console, args);
+  }
 };
+class Logger {
+  constructor(concreteLogger) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    this.init(concreteLogger, options);
+  }
+  init(concreteLogger) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    this.prefix = options.prefix || 'i18next:';
+    this.logger = concreteLogger || consoleLogger;
+    this.options = options;
+    this.debug = options.debug;
+  }
+  log() {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    return this.forward(args, 'log', '', true);
+  }
+  warn() {
+    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+    return this.forward(args, 'warn', '', true);
+  }
+  error() {
+    for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      args[_key3] = arguments[_key3];
+    }
+    return this.forward(args, 'error', '');
+  }
+  deprecate() {
+    for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      args[_key4] = arguments[_key4];
+    }
+    return this.forward(args, 'warn', 'WARNING DEPRECATED: ', true);
+  }
+  forward(args, lvl, prefix, debugOnly) {
+    if (debugOnly && !this.debug) return null;
+    if (isString(args[0])) args[0] = `${prefix}${this.prefix} ${args[0]}`;
+    return this.logger[lvl](args);
+  }
+  create(moduleName) {
+    return new Logger(this.logger, {
+      ...{
+        prefix: `${this.prefix}:${moduleName}:`
+      },
+      ...this.options
+    });
+  }
+  clone(options) {
+    options = options || this.options;
+    options.prefix = options.prefix || this.prefix;
+    return new Logger(this.logger, options);
+  }
+}
+var baseLogger = new Logger();
+
+class EventEmitter {
+  constructor() {
+    this.observers = {};
+  }
+  on(events, listener) {
+    events.split(' ').forEach(event => {
+      if (!this.observers[event]) this.observers[event] = new Map();
+      const numListeners = this.observers[event].get(listener) || 0;
+      this.observers[event].set(listener, numListeners + 1);
+    });
+    return this;
+  }
+  off(event, listener) {
+    if (!this.observers[event]) return;
+    if (!listener) {
+      delete this.observers[event];
+      return;
+    }
+    this.observers[event].delete(listener);
+  }
+  emit(event) {
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+    if (this.observers[event]) {
+      const cloned = Array.from(this.observers[event].entries());
+      cloned.forEach(_ref => {
+        let [observer, numTimesAdded] = _ref;
+        for (let i = 0; i < numTimesAdded; i++) {
+          observer(...args);
+        }
+      });
+    }
+    if (this.observers['*']) {
+      const cloned = Array.from(this.observers['*'].entries());
+      cloned.forEach(_ref2 => {
+        let [observer, numTimesAdded] = _ref2;
+        for (let i = 0; i < numTimesAdded; i++) {
+          observer.apply(observer, [event, ...args]);
+        }
+      });
+    }
+  }
+}
 
 class ResourceStore extends EventEmitter {
   constructor(data) {
@@ -32885,7 +33014,7 @@ class ResourceStore extends EventEmitter {
       if (key) {
         if (Array.isArray(key)) {
           path.push(...key);
-        } else if (typeof key === 'string' && keySeparator) {
+        } else if (isString(key) && keySeparator) {
           path.push(...key.split(keySeparator));
         } else {
           path.push(key);
@@ -32898,7 +33027,7 @@ class ResourceStore extends EventEmitter {
       ns = path[1];
       key = path.slice(2).join('.');
     }
-    if (result || !ignoreJSONStructure || typeof key !== 'string') return result;
+    if (result || !ignoreJSONStructure || !isString(key)) return result;
     return deepFind(this.data && this.data[lng] && this.data[lng][ns], key, keySeparator);
   }
   addResource(lng, ns, key, value) {
@@ -32922,7 +33051,7 @@ class ResourceStore extends EventEmitter {
       silent: false
     };
     for (const m in resources) {
-      if (typeof resources[m] === 'string' || Array.isArray(resources[m])) this.addResource(lng, ns, m, resources[m], {
+      if (isString(resources[m]) || Array.isArray(resources[m])) this.addResource(lng, ns, m, resources[m], {
         silent: true
       });
     }
@@ -33035,17 +33164,16 @@ class Translator extends EventEmitter {
       if (m && m.length > 0) {
         return {
           key,
-          namespaces
+          namespaces: isString(namespaces) ? [namespaces] : namespaces
         };
       }
       const parts = key.split(nsSeparator);
       if (nsSeparator !== keySeparator || nsSeparator === keySeparator && this.options.ns.indexOf(parts[0]) > -1) namespaces = parts.shift();
       key = parts.join(keySeparator);
     }
-    if (typeof namespaces === 'string') namespaces = [namespaces];
     return {
       key,
-      namespaces
+      namespaces: isString(namespaces) ? [namespaces] : namespaces
     };
   }
   translate(keys, options, lastKey) {
@@ -33102,8 +33230,8 @@ class Translator extends EventEmitter {
     const noObject = ['[object Number]', '[object Function]', '[object RegExp]'];
     const joinArrays = options.joinArrays !== undefined ? options.joinArrays : this.options.joinArrays;
     const handleAsObjectInI18nFormat = !this.i18nFormat || this.i18nFormat.handleAsObject;
-    const handleAsObject = typeof res !== 'string' && typeof res !== 'boolean' && typeof res !== 'number';
-    if (handleAsObjectInI18nFormat && res && handleAsObject && noObject.indexOf(resType) < 0 && !(typeof joinArrays === 'string' && Array.isArray(res))) {
+    const handleAsObject = !isString(res) && typeof res !== 'boolean' && typeof res !== 'number';
+    if (handleAsObjectInI18nFormat && res && handleAsObject && noObject.indexOf(resType) < 0 && !(isString(joinArrays) && Array.isArray(res))) {
       if (!options.returnObjects && !this.options.returnObjects) {
         if (!this.options.returnedObjectHandler) {
           this.logger.warn('accessing an object - but returnObjects options is not enabled!');
@@ -33138,13 +33266,13 @@ class Translator extends EventEmitter {
         }
         res = copy;
       }
-    } else if (handleAsObjectInI18nFormat && typeof joinArrays === 'string' && Array.isArray(res)) {
+    } else if (handleAsObjectInI18nFormat && isString(joinArrays) && Array.isArray(res)) {
       res = res.join(joinArrays);
       if (res) res = this.extendTranslation(res, keys, options, lastKey);
     } else {
       let usedDefault = false;
       let usedKey = false;
-      const needsPluralHandling = options.count !== undefined && typeof options.count !== 'string';
+      const needsPluralHandling = options.count !== undefined && !isString(options.count);
       const hasDefaultValue = Translator.hasDefaultValue(options);
       const defaultValueSuffix = needsPluralHandling ? this.pluralResolver.getSuffix(lng, options.count, options) : '';
       const defaultValueSuffixOrdinalFallback = options.ordinal && needsPluralHandling ? this.pluralResolver.getSuffix(lng, options.count, {
@@ -33244,13 +33372,13 @@ class Translator extends EventEmitter {
           }
         }
       });
-      const skipOnVariables = typeof res === 'string' && (options && options.interpolation && options.interpolation.skipOnVariables !== undefined ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables);
+      const skipOnVariables = isString(res) && (options && options.interpolation && options.interpolation.skipOnVariables !== undefined ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables);
       let nestBef;
       if (skipOnVariables) {
         const nb = res.match(this.interpolator.nestingRegexp);
         nestBef = nb && nb.length;
       }
-      let data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
+      let data = options.replace && !isString(options.replace) ? options.replace : options;
       if (this.options.interpolation.defaultVariables) data = {
         ...this.options.interpolation.defaultVariables,
         ...data
@@ -33275,7 +33403,7 @@ class Translator extends EventEmitter {
       if (options.interpolation) this.interpolator.reset();
     }
     const postProcess = options.postProcess || this.options.postProcess;
-    const postProcessorNames = typeof postProcess === 'string' ? [postProcess] : postProcess;
+    const postProcessorNames = isString(postProcess) ? [postProcess] : postProcess;
     if (res !== undefined && res !== null && postProcessorNames && postProcessorNames.length && options.applyPostProcessor !== false) {
       res = postProcessor.handle(postProcessorNames, res, key, this.options && this.options.postProcessPassResolved ? {
         i18nResolved: {
@@ -33294,7 +33422,7 @@ class Translator extends EventEmitter {
     let exactUsedKey;
     let usedLng;
     let usedNS;
-    if (typeof keys === 'string') keys = [keys];
+    if (isString(keys)) keys = [keys];
     keys.forEach(k => {
       if (this.isValidLookup(found)) return;
       const extracted = this.extractFromKey(k, options);
@@ -33302,9 +33430,9 @@ class Translator extends EventEmitter {
       usedKey = key;
       let namespaces = extracted.namespaces;
       if (this.options.fallbackNS) namespaces = namespaces.concat(this.options.fallbackNS);
-      const needsPluralHandling = options.count !== undefined && typeof options.count !== 'string';
+      const needsPluralHandling = options.count !== undefined && !isString(options.count);
       const needsZeroSuffixLookup = needsPluralHandling && !options.ordinal && options.count === 0 && this.pluralResolver.shouldUseIntlApi();
-      const needsContextHandling = options.context !== undefined && (typeof options.context === 'string' || typeof options.context === 'number') && options.context !== '';
+      const needsContextHandling = options.context !== undefined && (isString(options.context) || typeof options.context === 'number') && options.context !== '';
       const codes = options.lngs ? options.lngs : this.languageUtils.toResolveHierarchy(options.lng || this.language, options.fallbackLng);
       namespaces.forEach(ns => {
         if (this.isValidLookup(found)) return;
@@ -33376,7 +33504,7 @@ class Translator extends EventEmitter {
   getUsedParamsDetails() {
     let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     const optionsKeys = ['defaultValue', 'ordinal', 'context', 'replace', 'lng', 'lngs', 'fallbackLng', 'ns', 'keySeparator', 'nsSeparator', 'returnObjects', 'returnDetails', 'joinArrays', 'postProcess', 'interpolation'];
-    const useOptionsReplaceForData = options.replace && typeof options.replace !== 'string';
+    const useOptionsReplaceForData = options.replace && !isString(options.replace);
     let data = useOptionsReplaceForData ? options.replace : options;
     if (useOptionsReplaceForData && typeof options.count !== 'undefined') {
       data.count = options.count;
@@ -33431,7 +33559,16 @@ class LanguageUtil {
     return this.formatLanguageCode(p[0]);
   }
   formatLanguageCode(code) {
-    if (typeof code === 'string' && code.indexOf('-') > -1) {
+    if (isString(code) && code.indexOf('-') > -1) {
+      if (typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales !== 'undefined') {
+        try {
+          let formattedCode = Intl.getCanonicalLocales(code)[0];
+          if (formattedCode && this.options.lowerCaseLng) {
+            formattedCode = formattedCode.toLowerCase();
+          }
+          if (formattedCode) return formattedCode;
+        } catch (e) {}
+      }
       const specialCases = ['hans', 'hant', 'latn', 'cyrl', 'cans', 'mong', 'arab'];
       let p = code.split('-');
       if (this.options.lowerCaseLng) {
@@ -33484,7 +33621,7 @@ class LanguageUtil {
   getFallbackCodes(fallbacks, code) {
     if (!fallbacks) return [];
     if (typeof fallbacks === 'function') fallbacks = fallbacks(code);
-    if (typeof fallbacks === 'string') fallbacks = [fallbacks];
+    if (isString(fallbacks)) fallbacks = [fallbacks];
     if (Array.isArray(fallbacks)) return fallbacks;
     if (!code) return fallbacks.default || [];
     let found = fallbacks[code];
@@ -33505,11 +33642,11 @@ class LanguageUtil {
         this.logger.warn(`rejecting language code not found in supportedLngs: ${c}`);
       }
     };
-    if (typeof code === 'string' && (code.indexOf('-') > -1 || code.indexOf('_') > -1)) {
+    if (isString(code) && (code.indexOf('-') > -1 || code.indexOf('_') > -1)) {
       if (this.options.load !== 'languageOnly') addCode(this.formatLanguageCode(code));
       if (this.options.load !== 'languageOnly' && this.options.load !== 'currentOnly') addCode(this.getScriptPartFromCode(code));
       if (this.options.load !== 'currentOnly') addCode(this.getLanguagePartFromCode(code));
-    } else if (typeof code === 'string') {
+    } else if (isString(code)) {
       addCode(this.formatLanguageCode(code));
     }
     fallbackCodes.forEach(fc => {
@@ -33680,24 +33817,27 @@ class PluralResolver {
   getRule(code) {
     let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     if (this.shouldUseIntlApi()) {
-      try {
-        const cleanedCode = getCleanedCode(code === 'dev' ? 'en' : code);
-        const type = options.ordinal ? 'ordinal' : 'cardinal';
-        const cacheKey = JSON.stringify({
-          cleanedCode,
-          type
-        });
-        if (cacheKey in this.pluralRulesCache) {
-          return this.pluralRulesCache[cacheKey];
-        }
-        const rule = new Intl.PluralRules(cleanedCode, {
-          type
-        });
-        this.pluralRulesCache[cacheKey] = rule;
-        return rule;
-      } catch (err) {
-        return;
+      const cleanedCode = getCleanedCode(code === 'dev' ? 'en' : code);
+      const type = options.ordinal ? 'ordinal' : 'cardinal';
+      const cacheKey = JSON.stringify({
+        cleanedCode,
+        type
+      });
+      if (cacheKey in this.pluralRulesCache) {
+        return this.pluralRulesCache[cacheKey];
       }
+      let rule;
+      try {
+        rule = new Intl.PluralRules(cleanedCode, {
+          type
+        });
+      } catch (err) {
+        if (!code.match(/-|_/)) return;
+        const lngPart = this.languageUtils.getLanguagePartFromCode(code);
+        rule = this.getRule(lngPart, options);
+      }
+      this.pluralRulesCache[cacheKey] = rule;
+      return rule;
     }
     return this.rules[code] || this.rules[this.languageUtils.getLanguagePartFromCode(code)];
   }
@@ -33767,7 +33907,7 @@ const deepFindWithDefaults = function (data, defaultData, key) {
   let keySeparator = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '.';
   let ignoreJSONStructure = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
   let path = getPathWithDefaults(data, defaultData, key);
-  if (!path && ignoreJSONStructure && typeof key === 'string') {
+  if (!path && ignoreJSONStructure && isString(key)) {
     path = deepFind(data, key, keySeparator);
     if (path === undefined) path = deepFind(defaultData, key, keySeparator);
   }
@@ -33877,7 +34017,7 @@ class Interpolator {
         if (value === undefined) {
           if (typeof missingInterpolationHandler === 'function') {
             const temp = missingInterpolationHandler(str, match, options);
-            value = typeof temp === 'string' ? temp : '';
+            value = isString(temp) ? temp : '';
           } else if (options && Object.prototype.hasOwnProperty.call(options, matchedVar)) {
             value = '';
           } else if (skipOnVariables) {
@@ -33887,7 +34027,7 @@ class Interpolator {
             this.logger.warn(`missed to pass in variable ${matchedVar} for interpolating ${str}`);
             value = '';
           }
-        } else if (typeof value !== 'string' && !this.useRawValueToEscape) {
+        } else if (!isString(value) && !this.useRawValueToEscape) {
           value = makeString(value);
         }
         const safeValue = todo.safeValue(value);
@@ -33941,7 +34081,7 @@ class Interpolator {
       clonedOptions = {
         ...options
       };
-      clonedOptions = clonedOptions.replace && typeof clonedOptions.replace !== 'string' ? clonedOptions.replace : clonedOptions;
+      clonedOptions = clonedOptions.replace && !isString(clonedOptions.replace) ? clonedOptions.replace : clonedOptions;
       clonedOptions.applyPostProcessor = false;
       delete clonedOptions.defaultValue;
       let doReduce = false;
@@ -33952,8 +34092,8 @@ class Interpolator {
         doReduce = true;
       }
       value = fc(handleHasOptions.call(this, match[1].trim(), clonedOptions), clonedOptions);
-      if (value && match[0] === str && typeof value !== 'string') return value;
-      if (typeof value !== 'string') value = makeString(value);
+      if (value && match[0] === str && !isString(value)) return value;
+      if (!isString(value)) value = makeString(value);
       if (!value) {
         this.logger.warn(`missed to resolve ${match[1]} for nesting ${str}`);
         value = '';
@@ -34065,8 +34205,7 @@ class Formatter {
     let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
       interpolation: {}
     };
-    const iOpts = options.interpolation;
-    this.formatSeparator = iOpts.formatSeparator ? iOpts.formatSeparator : iOpts.formatSeparator || ',';
+    this.formatSeparator = options.interpolation.formatSeparator || ',';
   }
   add(name, fc) {
     this.formats[name.toLowerCase().trim()] = fc;
@@ -34267,8 +34406,8 @@ class Connector extends EventEmitter {
       this.logger.warn('No backend was added via i18next.use. Will not load resources.');
       return callback && callback();
     }
-    if (typeof languages === 'string') languages = this.languageUtils.toResolveHierarchy(languages);
-    if (typeof namespaces === 'string') namespaces = [namespaces];
+    if (isString(languages)) languages = this.languageUtils.toResolveHierarchy(languages);
+    if (isString(namespaces)) namespaces = [namespaces];
     const toLoad = this.queueLoad(languages, namespaces, options, callback);
     if (!toLoad.toLoad.length) {
       if (!toLoad.pending.length) callback();
@@ -34372,8 +34511,8 @@ const get = () => ({
   overloadTranslationOptionHandler: args => {
     let ret = {};
     if (typeof args[1] === 'object') ret = args[1];
-    if (typeof args[1] === 'string') ret.defaultValue = args[1];
-    if (typeof args[2] === 'string') ret.tDescription = args[2];
+    if (isString(args[1])) ret.defaultValue = args[1];
+    if (isString(args[2])) ret.tDescription = args[2];
     if (typeof args[2] === 'object' || typeof args[3] === 'object') {
       const options = args[3] || args[2];
       Object.keys(options).forEach(key => {
@@ -34397,9 +34536,9 @@ const get = () => ({
   }
 });
 const transformOptions = options => {
-  if (typeof options.ns === 'string') options.ns = [options.ns];
-  if (typeof options.fallbackLng === 'string') options.fallbackLng = [options.fallbackLng];
-  if (typeof options.fallbackNS === 'string') options.fallbackNS = [options.fallbackNS];
+  if (isString(options.ns)) options.ns = [options.ns];
+  if (isString(options.fallbackLng)) options.fallbackLng = [options.fallbackLng];
+  if (isString(options.fallbackNS)) options.fallbackNS = [options.fallbackNS];
   if (options.supportedLngs && options.supportedLngs.indexOf('cimode') < 0) {
     options.supportedLngs = options.supportedLngs.concat(['cimode']);
   }
@@ -34447,7 +34586,7 @@ class I18n extends EventEmitter {
       options = {};
     }
     if (!options.defaultNS && options.defaultNS !== false && options.ns) {
-      if (typeof options.ns === 'string') {
+      if (isString(options.ns)) {
         options.defaultNS = options.ns;
       } else if (options.ns.indexOf('translation') < 0) {
         options.defaultNS = options.ns[0];
@@ -34580,7 +34719,7 @@ class I18n extends EventEmitter {
   loadResources(language) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop;
     let usedCallback = callback;
-    const usedLng = typeof language === 'string' ? language : this.language;
+    const usedLng = isString(language) ? language : this.language;
     if (typeof language === 'function') usedCallback = language;
     if (!this.options.resources || this.options.partialBundledLanguages) {
       if (usedLng && usedLng.toLowerCase() === 'cimode' && (!this.options.preload || this.options.preload.length === 0)) return usedCallback();
@@ -34698,7 +34837,7 @@ class I18n extends EventEmitter {
     };
     const setLng = lngs => {
       if (!lng && !lngs && this.services.languageDetector) lngs = [];
-      const l = typeof lngs === 'string' ? lngs : this.services.languageUtils.getBestMatchFromCodes(lngs);
+      const l = isString(lngs) ? lngs : this.services.languageUtils.getBestMatchFromCodes(lngs);
       if (l) {
         if (!this.language) {
           setLngProps(l);
@@ -34750,7 +34889,7 @@ class I18n extends EventEmitter {
       }
       return _this3.t(resultKey, options);
     };
-    if (typeof lng === 'string') {
+    if (isString(lng)) {
       fixedT.lng = lng;
     } else {
       fixedT.lngs = lng;
@@ -34801,7 +34940,7 @@ class I18n extends EventEmitter {
       if (callback) callback();
       return Promise.resolve();
     }
-    if (typeof ns === 'string') ns = [ns];
+    if (isString(ns)) ns = [ns];
     ns.forEach(n => {
       if (this.options.ns.indexOf(n) < 0) this.options.ns.push(n);
     });
@@ -34813,7 +34952,7 @@ class I18n extends EventEmitter {
   }
   loadLanguages(lngs, callback) {
     const deferred = defer();
-    if (typeof lngs === 'string') lngs = [lngs];
+    if (isString(lngs)) lngs = [lngs];
     const preloaded = this.options.preload || [];
     const newLngs = lngs.filter(lng => preloaded.indexOf(lng) < 0 && this.services.languageUtils.isSupportedCode(lng));
     if (!newLngs.length) {
@@ -35029,7 +35168,7 @@ PERFORMANCE OF THIS SOFTWARE.
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"background-webview","version":"1.4.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.21.4","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.14.0","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.94.0","webpack-cli":"^5.1.4"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","openpgp":"^5.11.1","passbolt-browser-extension":"4.10.2","passbolt-styleguide":"4.10.2","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"background-webview","version":"2.0.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.26.10","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.14.0","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.94.0","webpack-cli":"^5.1.4"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","openpgp":"^5.11.1","passbolt-browser-extension":"5.0.1","passbolt-styleguide":"5.0.1","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
 
 /***/ })
 
