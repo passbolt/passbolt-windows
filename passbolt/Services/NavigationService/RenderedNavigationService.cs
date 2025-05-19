@@ -72,7 +72,7 @@ namespace passbolt.Services.NavigationService
         /// </summary>
         public async Task CanOpenBrowser(string url)
         {
-            if (url.StartsWith("https://help.passbolt.com/") || url.StartsWith("https://www.passbolt.com/"))
+            if (url.StartsWith("https://help.passbolt.com/") || url.StartsWith("https://www.passbolt.com/") || url == "https://en.wikipedia.org/wiki/Phishing")
             {
                 await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
             }
