@@ -21,7 +21,7 @@ import Footer from "passbolt-styleguide/src/react-extension/components/Common/Fo
 import OrchestrateAccountKitImportation from "passbolt-styleguide/src/react-extension/components/Desktop/OrchestrateAccountKitImportation/OrchestrateAccountKitImportation";
 import ImportAccountKitContextProvider from "passbolt-styleguide/src/react-extension/contexts/Desktop/ImportAccountKitContext";
 import LogoSVG from "passbolt-styleguide/src/img/svg/logo.svg";
-import RenderedWebview from "./components/RenderedWebview"
+import RenderedWebview from "./components/RenderedWebview";
 import {version} from '../package.json';
 
 /**

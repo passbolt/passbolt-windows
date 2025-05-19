@@ -158,7 +158,7 @@ class AppAuthentication extends Component {
                     <div className="header">
                       <div className="logo-svg">
                         <LogoSVG role="img" width="20rem" height="3.5rem"/>
-                      </div>                    
+                      </div>
                     </div>
                     <div className="login-form">
                       <OrchestrateLoginBoxMain />
