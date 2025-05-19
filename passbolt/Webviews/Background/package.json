@@ -44,9 +44,9 @@
     "@babel/core": "^7.23.3",
     "@babel/preset-react": "^7.22.15",
     "buffer": "^6.0.3",
-    "openpgp": "^5.11.1",
+    "openpgp": "^6.1.1",
     "passbolt-browser-extension": "5.0.1",
-    "passbolt-styleguide": "5.0.1",
+    "passbolt-styleguide": "^5.1.3",
     "setimmediate": "^1.0.5",
     "stream-browserify": "^3.0.0",
     "validator": "^13.7.0"
