@@ -9,7 +9,7 @@
   "main": "index.js",
   "dependencies": {
     "copy-webpack-plugin": "^11.0.0",
-    "passbolt-styleguide": "5.1.0-alpha.3",
+    "passbolt-styleguide": "^5.1.3",
     "prop-types": "^15.8.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
@@ -21,7 +21,7 @@
     "build": "webpack",
     "build-watch": "webpack --watch",
     "lint": "npm run lint:lockfile && npm run lint:eslint",
-    "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts npm --allowed-schemes \"https:\" --empty-hostname false",
+    "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \"https:\" \"git+ssh:\" --empty-hostname false",
     "lint:eslint": "eslint -c .eslintrc.json --ext js src",
     "lint:eslint-fix": "eslint -c .eslintrc.json --ext js --fix src",
     "test": "jest",
