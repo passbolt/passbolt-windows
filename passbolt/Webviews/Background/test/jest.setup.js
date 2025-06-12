@@ -1,3 +1,6 @@
+import "passbolt-browser-extension/test/mocks/mockJsDomPolyfill";
+import "passbolt-browser-extension/test/mocks/mockCryptoKey";
+import MockNavigatorLocks from 'passbolt-browser-extension/test/mocks/mockNavigatorLocks';
 import "./polyfill/chromePolyfill"
 import "../src/polyfill/alarmPolyfill"
 import "../src/polyfill/commandPolyfill"
@@ -27,3 +30,11 @@ window.chrome.runtime = {
 
 global.chrome = window.chrome;
 global.browser = window.chrome;
+if (!global.navigator) {
+  global.navigator = {};
+}
+if (!global.navigator.locks) {
+  global.navigator.locks = new MockNavigatorLocks();
+}
+navigator.onLine = true;
+global.document = window.document
