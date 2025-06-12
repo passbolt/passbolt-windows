@@ -28,7 +28,7 @@ rendered-audit:
   allow_failure: true
   extends: .rules
   stage: test
-  image: node:16
+  image: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/node:22
   script:
     - cd passbolt/Webviews/Rendered
     - npm audit
@@ -36,11 +36,11 @@ rendered-audit:
 background-tests:
   extends: .rules
   stage: test
-  image: node:16
+  image: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/node:22
   coverage: /Lines\s* [:] ([\d\.]+)%/
   script:
     - cd passbolt/Webviews/Background
-    - npm i
+    - npm ci
     - npm run test:coverage
   artifacts:
     when: always
@@ -52,7 +52,7 @@ background-tests:
 
 background-linter:
   stage: test
-  image: node:16
+  image: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/node:22
   extends: .rules
   script:
     - cd passbolt/Webviews/Background
@@ -63,7 +63,7 @@ background-audit:
   allow_failure: true
   extends: .rules
   stage: test
-  image: node:16
+  image: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/node:22
   script:
     - cd passbolt/Webviews/Background
     - npm audit
