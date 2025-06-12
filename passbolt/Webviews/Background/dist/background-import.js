@@ -5128,7 +5128,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var openpgp__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! openpgp */ "./node_modules/openpgp/dist/openpgp.min.mjs");
+/* harmony import */ var openpgp__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! openpgp */ "./node_modules/passbolt-browser-extension/node_modules/openpgp/dist/openpgp.min.mjs");
 /* harmony import */ var _utils_openpgp_openpgpAssertions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils/openpgp/openpgpAssertions */ "./node_modules/passbolt-browser-extension/src/all/background_page/utils/openpgp/openpgpAssertions.js");
 /**
  * Passbolt ~ Open source password manager for teams
@@ -5281,7 +5281,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var openpgp__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! openpgp */ "./node_modules/openpgp/dist/openpgp.min.mjs");
+/* harmony import */ var openpgp__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! openpgp */ "./node_modules/passbolt-browser-extension/node_modules/openpgp/dist/openpgp.min.mjs");
 /* harmony import */ var _utils_openpgp_openpgpAssertions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils/openpgp/openpgpAssertions */ "./node_modules/passbolt-browser-extension/src/all/background_page/utils/openpgp/openpgpAssertions.js");
 /* harmony import */ var _error_invalidMasterPasswordError__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../error/invalidMasterPasswordError */ "./node_modules/passbolt-browser-extension/src/all/background_page/error/invalidMasterPasswordError.js");
 /* harmony import */ var _utils_assertions__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../utils/assertions */ "./node_modules/passbolt-browser-extension/src/all/background_page/utils/assertions.js");
@@ -5359,7 +5359,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var openpgp__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! openpgp */ "./node_modules/openpgp/dist/openpgp.min.mjs");
+/* harmony import */ var openpgp__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! openpgp */ "./node_modules/passbolt-browser-extension/node_modules/openpgp/dist/openpgp.min.mjs");
 /* harmony import */ var _utils_openpgp_openpgpAssertions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils/openpgp/openpgpAssertions */ "./node_modules/passbolt-browser-extension/src/all/background_page/utils/openpgp/openpgpAssertions.js");
 /* harmony import */ var _decryptMessageService__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./decryptMessageService */ "./node_modules/passbolt-browser-extension/src/all/background_page/service/crypto/decryptMessageService.js");
 /**
@@ -5940,7 +5940,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   OpenpgpAssertion: () => (/* binding */ OpenpgpAssertion)
 /* harmony export */ });
-/* harmony import */ var openpgp__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! openpgp */ "./node_modules/openpgp/dist/openpgp.min.mjs");
+/* harmony import */ var openpgp__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! openpgp */ "./node_modules/passbolt-browser-extension/node_modules/openpgp/dist/openpgp.min.mjs");
 /* harmony import */ var _sdk_i18n__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../sdk/i18n */ "./node_modules/passbolt-browser-extension/src/all/background_page/sdk/i18n.js");
 /* harmony import */ var _format_uint8ArrayConvert__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../format/uint8ArrayConvert */ "./node_modules/passbolt-browser-extension/src/all/background_page/utils/format/uint8ArrayConvert.js");
 /* harmony import */ var _assertions__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../assertions */ "./node_modules/passbolt-browser-extension/src/all/background_page/utils/assertions.js");
@@ -35242,10 +35242,10 @@ const t="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",n="AR
 
 /***/ }),
 
-/***/ "./node_modules/openpgp/dist/openpgp.min.mjs":
-/*!***************************************************!*\
-  !*** ./node_modules/openpgp/dist/openpgp.min.mjs ***!
-  \***************************************************/
+/***/ "./node_modules/passbolt-browser-extension/node_modules/openpgp/dist/openpgp.min.mjs":
+/*!*******************************************************************************************!*\
+  !*** ./node_modules/passbolt-browser-extension/node_modules/openpgp/dist/openpgp.min.mjs ***!
+  \*******************************************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
