@@ -44,7 +44,21 @@ export default class MainAuth {
    */
   waitForAccountInstanciation() {
     this.worker.port.on('passbolt.account.set-current', async(requestId, account) => {
-      await localStorage.clear();
+      const prefixToKeep = 'resourceGridUserSetting-';
+
+      const entriesToKeep = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(prefixToKeep)) {
+          entriesToKeep[key] = localStorage.getItem(key);
+        }
+      }
+      
+      localStorage.clear();
+      
+      for (const [key, value] of Object.entries(entriesToKeep)) {
+        localStorage.setItem(key, value);
+      }
       const controller = new DesktopSetAccountController(this.worker, requestId, account);
       await controller._exec();
       await this.listen();

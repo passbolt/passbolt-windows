@@ -22,7 +22,6 @@ jest.mock('passbolt-browser-extension/src/all/background_page/service/auth/authV
 jest.mock('passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService');
 jest.mock('passbolt-browser-extension/src/all/background_page/model/keyring');
 jest.mock('passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService');
-jest.mock('passbolt-browser-extension/src/all/background_page/service/authenticationStatusService');
 
 describe("LoginUserService", () => {
   let service, account;
@@ -31,6 +30,7 @@ describe("LoginUserService", () => {
     const apiClientOptions = defaultApiClientOptions();
     account = defaultAccountDto();
     service = new LoginUserService(apiClientOptions, account);
+    jest.spyOn(AuthenticationStatusService, "isAuthenticated").mockImplementation(() => false);
   });
 
   describe("checkPassphrase", () => {
