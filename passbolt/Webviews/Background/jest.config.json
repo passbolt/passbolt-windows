@@ -1,5 +1,5 @@
 {
-    "testEnvironment": "jsdom",
+    "testEnvironment": "node",
     "reporters": [
       "default",
       "jest-junit"
@@ -11,7 +11,7 @@
       }]
     },
     "transformIgnorePatterns": ["/node_modules/(.!passbolt-browser-extension)"],
-    "setupFilesAfterEnv": ["<rootDir>/test/jest.setup.js"],
+    "setupFilesAfterEnv": ["<rootDir>/test/jest.setup.js", "jest-localstorage-mock"],
     "coverageReporters": [
       "cobertura",
       "html",

@@ -52,6 +52,7 @@ import {MfaEvents} from "passbolt-browser-extension/src/all/background_page/even
 import {MultiFactorAuthenticationEvents} from "passbolt-browser-extension/src/all/background_page/event/multiFactorAuthenticationEvents";
 import GlobalAlarmService from "./services/alarm/globalAlarmService";
 import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
+import KeepSessionAliveService from "passbolt-browser-extension/src/all/background_page/service/session_storage/keepSessionAliveService";
 
 describe("Main workspace class", () => {
   const ipcDataMock = {
@@ -72,6 +73,8 @@ describe("Main workspace class", () => {
     jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(accountDto).toDto());
     jest.spyOn(User, "getInstance").mockImplementation(() => ({getApiClientOptions: () => defaultApiClientOptions()}));
     main = new Main(window.chrome.webview);
+    jest.spyOn(StartLoopAuthSessionCheckService, "exec").mockImplementation(() => jest.fn())
+    jest.spyOn(KeepSessionAliveService, "start").mockImplementation(() => jest.fn())
   });
 
   afterEach(() => {
@@ -194,5 +197,6 @@ describe("Main workspace class", () => {
     expect(browser.alarms.onAlarm.removeListener).toHaveBeenCalledWith(GlobalAlarmService.exec);
     expect(browser.alarms.onAlarm.addListener).toHaveBeenCalledWith(GlobalAlarmService.exec);
     expect(StartLoopAuthSessionCheckService.exec).toHaveBeenCalled();
+    browser.alarms.onAlarm.removeListener(GlobalAlarmService.exec);
   });
 });
