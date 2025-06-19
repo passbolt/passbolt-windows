@@ -4,6 +4,7 @@ The Passbolt Windows App version 2.0.1 introduces the first features built on en
 
 Resources using encrypted metadata now support multiple URIs. For example, addresses like app.example.com and admin.example.com can be linked to the same credential, helping the browser extension recognise credentials across multiple domains.
 
+This release also addresses multiple bugs reported by the community, including a blank screen issue that occurred when administrators customized RBAC settings. Additionally, the session timeout issue has been resolved. Users will now enjoy extended sessions while actively using the application, aligning the behavior with what they are accustomed to in the browser application.
 
 Icons and colours can now be set for resources with encrypted metadata, using a method compatible with KeePass for easy import and export. This visual distinction helps users quickly navigate large workspaces.
 
