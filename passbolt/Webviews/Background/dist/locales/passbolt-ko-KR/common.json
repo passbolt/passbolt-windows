@@ -1441,6 +1441,8 @@
   "UI Permissions": "UI 권한",
   "Uid": "Uid",
   "Unable to copy the TOTP": "TOP를 복사할 수 없습니다",
+  "Unable to load/refresh the folders.": "폴더를 로드/새로 고침할 수 없습니다.",
+  "Unable to load/refresh the resources.": "리소스를 로드/새로 고침할 수 없습니다.",
   "Unable to preview the TOTP": "TOP를 미리 볼 수 없습니다",
   "Unable to use the password on this page. Copy and paste the information instead.": "이 페이지에서 비밀번호를 사용할 수 없습니다. 대신 정보를 복사하여 붙여넣습니다.",
   "Unchanged": "변경되지 않음",
