@@ -1,100 +1,57 @@
-release song: https://www.youtube.com/watch?v=VmtU-bLyReU
+Windows passbolt 2.2.0 adds custom fields, one of the five most‑requested features from the community. Built on top of encrypted‑metadata introduced earlier this year, custom fields let users attach additional key‑value pairs to a resource or as a standalone one. Typical use‑cases include centralising CI/CD job variables and storing environment‑specific configuration values that need more structure than a general note.
 
-The Passbolt Windows App version 2.0.1 introduces the first features built on encrypted metadata, enhancing resource management and customisation. This update lays the groundwork for future improvements and delivers practical everyday benefits.
+Custom fields rely on encrypted metadata, therefore the feature is still in beta and is not yet available on Passbolt Cloud. A step‑by‑step guide on how to enable the encrypted metadata  on a self‑hosted instance will be available in a blog post that will be published soon. The encrypted‑metadata feature is scheduled to be marked as stable in Passbolt 5.4, planned for August 2025.
 
-Resources using encrypted metadata now support multiple URIs. For example, addresses like app.example.com and admin.example.com can be linked to the same credential, helping the browser extension recognise credentials across multiple domains.
+Several bugs reported by the community have also been fixed. As always, thank you to everyone who took the time to file issues, test patches and suggest improvements. For a complete list of changes, consult the changelog.
 
 This release also addresses multiple bugs reported by the community, including a blank screen issue that occurred when administrators customized RBAC settings. Additionally, the session timeout issue has been resolved. Users will now enjoy extended sessions while actively using the application, aligning the behavior with what they are accustomed to in the browser application.
 
-Icons and colours can now be set for resources with encrypted metadata, using a method compatible with KeePass for easy import and export. This visual distinction helps users quickly navigate large workspaces.
-
-A new density setting is available to adjust grid spacing, providing a clearer, more comfortable view. Users can easily toggle this in the workspace column settings as needed.
-
-The Passbolt interface now supports Ukrainian and Slovenian languages, enabling native speakers to use the tool comfortably without relying on English.
-
-Additionally, resource owners now receive notifications on the day their passwords expire, supporting teams in managing rotation policies effectively.
-
-This update includes several bug fixes and maintenance improvements based on community feedback. Thanks to everyone who contributed by reporting issues and suggesting improvements.
-
-For full technical details of everything in this release, check out the changelog.
-
-
-## [2.1.0] - 2025-06-16
+## [2.2.0] - 2025-07-15
 
 ### Added
-- PB-41365 Support options for ECC Key generation
-- PB-42936 Translate the application into Ukrainian
-- PB-42897 Upgrade resource to v5 from information panel
-- PB-42896 PB-42896 Display an “Upgrade Resource to v5” card in the information panel
-- PB-42895 Upgrade v4 password string resources to v5 default
-- PB-42894 Upgrade a single v4 resource to v5
-- PB-42860 Translate the application into Slovenian	
-- PB-42796 Add a limit for multiple URIs
-- PB-42788 As a user I can access the resource appearance customization from the create/edit
-- PB-42704 Display missing metadata keys information in the user sidebar
-- PB-42658 Refresh the users local storage after sharing missing metadata keys
-- PB-42598 Retrieve missing_metadata_keys_ids information when retrieving signed-in user details with the getOrFindMe method of the UserModel
-- PB-42590 Write the background color and icon ID into KDBX files
-- PB-42589 Read the background color and icon ID from KDBX files
-- PB-42588 Adapt the ResourceIcon component to handle IconEntity
-- PB-42587 Add the AddResourceAppearance form part for the resource dialog
-- PB-42586 Add the ‘appearance’ metadata field in the resource dialog
-- PB-42585 Add IconEntity as an associated entity in MetadataEntity
-- PB-42584 Create IconEntity to hold custom icon and color information
-- PB-42570 Create a method canSuggestUris using canSuggestUri
-- PB-42543 Allow users to navigate to the additional URIs from the SelectResourceForm
-- PB-42536 Allow user to add additional URIs from the Create and Edit Resource v5 dialogs
-- PB-42534 Display resource additional URIs badge in the filtered resource of the QuickApplication
-- PB-42533 Display resource additional URIs badge in the suggested resource of the QuickApplication
-- PB-42530 Display resource additional URIs in the details of a resource of the QuickApplication
-- PB-42529 Display resource additional URIs badge in the browsed resource of the QuickApplication
-- PB-42528 Display resource additional URIs badge in the resource details sidebar
-- PB-42527 Display resource additional URIs badge in the resources grid
-- PB-42526 Create the ResourceUrisBadge component to handle resource additional URIs badge and the tooltip displaying them
-- PB-42130 Add shareMetadataKeyPrivate event to AppEvents
-
-- PB-42129 Create ShareMetadataKeyPrivateController and use ShareMetadataKeyPrivateService to perform the action
-- PB-42127 Create ShareMetadataKeyPrivateService and implement shareMissing method
-- PB-42114 Add create or share method to metadata private key api service
-- PB-42368 Update EncryptOne method from EncryptMetadataPrivateKeysService to allow encryption without signature
-- PB-42134 Update DisplayUsersContextualMenu to display a Share metadata keys action if key is missing
-- PB-42133 Update DisplayUserWorkspaceActions to display a Share metadata keys action if key is missing
-- PB-42132 Implement Dialog confirmation when administrator wants to share keys with an user
-- PB-42131 Add share method into metadataKeysServiceWorkerService to perform the UI action
-- PB-42126 Add cloneForSharing method into MetadataPrivateKeyEntity
-- PB-42124 Create ShareMetadataPrivateKeysCollection
-- PB-42110 Update userModel updateLocalStorage method to include missing_metadata_keys_ids option
-- PB-42109 Add missing_metadata_keys_ids property to UserEntity
-- PB-41617 Add comfortable grid
-- PB-39042 Display upgrade resource to v5 card
-
-### Improved
-- PB-42883 Improve performance by skipping the decryption of unchanged metadata.
-- PB-41654 Transform workspaces shifter into a dropdown
-- PB-42184 Increase the share dialog width to accommodate longer strings from translations or user names
+- PB-43269 Create the entity CustomFieldEntity
+- PB-43271 Create the entity collection CustomFieldsCollection
+- PB-43273 Create the entity SecretDataV5StandaloneCustomFieldsCollection
+- PB-43275 Update the resource types schema definitions
+- PB-43277 Update the ResourceMetadataEntity
+- PB-43278 Update the ResourceFormEntity
+- PB-43279 Update the Secret Entities
+- PB-43283 Display a new entry the create/edit dialog to set custom fields on the left sidebar and the menu
+- PB-43284 Create the CustomFieldForm for the create/edit dialog
+- PB-43285 Handle the CustomFieldForm warnings and limitation
+- PB-43286 Update create/edit resource to select secret custom fields for a standalone custom fields
+- PB-43287 Display the Custom Fields section on the right sidebar
+- PB-43289 Display standalone custom fields in the component DisplayResourceCreationMenu
+- PB-43290 Display standalone custom fields in the component DisplayResourcesWorkspaceMainMenu
+- PB-43291 Display the URIs section in the right sidebar
+- PB-43374 Add validation on keys and values of each elements of custom fields for the resource form entity
+- PB-43377 Add set collection into entity v2
+- PB-43145 Find a list of resources based on IDs and that are suitable for local storage from the API
+- PB-43146 Find a list of resources based on a parent folder id and that are suitable for the local storage from the API
+- PB-43133 Display padding below tags in resource workspace left sidebar
+- PB-42185 The folder caret that expands or collapses folders in the tree should have a larger clickable area to make it easier to use
+- PB-43222 Improve the group dialog to match the new share dimensions
+- PB-43147 Find and update resources based on parent folder id for the local storage
+- PB-43148 Create a connector for finding resources based on a parent id for the styleguide to call it later
+- PB-43149 Create a ResourcesServiceWorkerService to call the service worker for resource related operations
+- PB-43150 Implement the optimised call in the Styleguide when filtering by a folder
+- PB-43151 Optimise the data retrieved from the API such that updates are not done if unnecessary
+- PB-43156 Clarify implications for backups and other devices before changing the passphrase in the user settings workspace
+- PB-43489 Display unexpected error if there is any issue during the secret decryption
 
 ### Fixed
-- PB-41760 On some conditions, scrollbars can appear and break the design
-- PB-42561 The folder tree caret when scrolling appeared in the wrong orientation
-- PB-43008 Fix dragging v5 resources into shared folders should trigger the share strategy on the resource
-- PB-42985 Translate the button manage account in the profile dropdown
-- PB-42789 Fix userAvatar on userInformationPanel with attention required svg
-- PB-42702 Fix contains missing_metadata_keys_ids miss match
-- PB-42606 Fix the Quick App Login form CTA spinner should not be displayed over the text of the button
-- PB-42272 Fix display v5 resource metadata in the grid when filtering by group
-- PB-42077 Update navigation menu icon width
-- PB-41649 Re-align components in the left sidebar
-- PB-41643 Remove TOTP MFA (profile workspace) border around the QR code and card
-- PB-41642 Update Turn off MFA primary button to be red
-### Maintenance
-- PB-43012 Change authentication_token parameter to token for get the user key policies endpoint
-- PB-42790 Replace legacy Icon by SVG
-- PB-42572 Update Quickaccess HomePage to use the canSuggestUris
-- PB-42571 Update isSuggestion in resource entity to use canSuggestUris
-- PB-42569 Create and merge canSuggestUri into a service
-- PB-42978 Check object_type is defined and valid before metadata encryption
+- PB-43109 Fix: from the sidebar when upgrade from v4 to v5 goes wrong the error message in the notification
+- PB-43118 Hide the "Share metadata keys" button in the users workspace action bar for the current signed-in user
+- PB-43215 Fix account recovery creator name
+- PB-43063 Fix group edit dialog double warning message has broken UI
+- PB-43117 Hide the "Share metadata keys" button in the users workspace action bar after sharing missing metadata keys with a user
+- PB-43064 Fix group edit dialog can show a mix of error and warning messages
+- PB-43150: fix folder not being reloaded
+- PB-43424 Clicking on the "open in a new tab” call to action  in the quick application should open the resource url in a new tab
+- PB-43108 Display attention required icon on "metadata keys" label in the user details sidebar if the user is not having access to some metadata keys
+- PB-43217 The default icon stroke width is too thick in the grid and doesn't match the custom icons
+- PB-43220 Copy URL field action button lacks padding and is broken in the SSO settings
+- PB-43168 Align vertically resources workspace select check-boxes
+- PB-43211 The feedback message notifying the administrator when a metadata key has been shared with a user contains a typo
+- PB-43471 Center vertically the icon on the create and edit dialog
 
-### Security
-- PB-42613 Upgrade browser extension OpenPGP.js to the latest version
-- PB-42700 Upgrade vulnerable library undici and lockfile-lint-api
-- PB-42391 Update Papaparse library
