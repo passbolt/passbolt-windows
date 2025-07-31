@@ -30,7 +30,7 @@ namespace passbolt.Models.Cookies
         public void addCookie(string setCookieHeader)
         {
             string pattern = @"^(Set-Cookie:\s*)([^;=\s]+)=([^;\s]*)(;\s*Expires=[^;]*)?(;\s*Max-Age=\d+)?(;\s*Domain=[^;]*)?(;\s*Path=[^;]*)?(;\s*Secure)?(;\s*HttpOnly)?(;\s*SameSite=(Strict|Lax|None))?(;\s*path=\/[^;\s]*)?(; secure)?$";
-            Regex regex = new Regex(pattern);
+            Regex regex = new Regex(pattern, RegexOptions.IgnoreCase);
 
             if (regex.Match(setCookieHeader).Success)
             {
@@ -42,7 +42,7 @@ namespace passbolt.Models.Cookies
                 //Get cookie name and value 
                 string cookieName = nameValuePart.Split('=')[0];
                 string cookieValue = nameValuePart.Substring(nameValuePart.IndexOf('=') + 1);
-                cookies.Add(cookieName, cookieValue);
+                cookies[cookieName] = cookieValue;
             }
         }
 

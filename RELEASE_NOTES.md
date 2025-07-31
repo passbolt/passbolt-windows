@@ -4,6 +4,7 @@ Custom fields rely on encrypted metadata, therefore the feature is still in beta
 
 Several bugs reported by the community have also been fixed. As always, thank you to everyone who took the time to file issues, test patches and suggest improvements. For a complete list of changes, consult the changelog.
 
+This release also addresses multiple bugs reported by the community, including a blank screen issue that occurred when administrators customized RBAC settings. Additionally, the session timeout issue has been resolved. Users will now enjoy extended sessions while actively using the application, aligning the behavior with what they are accustomed to in the browser application.
 
 ## [2.2.0] - 2025-07-15
 
