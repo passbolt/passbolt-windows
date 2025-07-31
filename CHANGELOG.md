@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.1] - 2025-08-01
+
+### Fixed
+- PB-43969 CSRF token in request body or headers does not match or is missing on the windows app
+
 ## [2.2.0] - 2025-07-15
 
 ### Added

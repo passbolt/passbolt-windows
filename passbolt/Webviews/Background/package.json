@@ -1,6 +1,6 @@
 {
   "name": "background-webview",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Background webview2 for passbolt dekstop windows",
   "license": "AGPL-3.0",
   "copyright": "Copyright 2022 Passbolt SA",
