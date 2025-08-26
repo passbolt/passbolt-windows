@@ -14,6 +14,7 @@
 
 import GetOrFindMetadataTypesController from "passbolt-browser-extension/src/all/background_page/controller/metadata/getMetadataTypesSettingsController";
 import ShareMetadataKeyPrivateController from "passbolt-browser-extension/src/all/background_page/controller/metadata/shareMetadataKeyPrivateController";
+import GetOrFindMetadataKeysSettingsController from "passbolt-browser-extension/src/all/background_page/controller/metadata/getOrFindMetadataKeysSettingsController";
 
 const listen = function(worker, apiClientOptions, account) {
   /*
@@ -38,6 +39,18 @@ const listen = function(worker, apiClientOptions, account) {
     const controller = new ShareMetadataKeyPrivateController(worker, requestId, apiClientOptions, account);
     await controller._exec(userId);
   });
+
+  /*
+   * Get or find metadata keys settings.
+   *
+   * @listens passbolt.metadata.get-or-find-metadata-keys-settings
+   * @param requestId {uuid} The request identifier
+   */
+  worker.port.on('passbolt.metadata.get-or-find-metadata-keys-settings', async requestId => {
+    const controller = new GetOrFindMetadataKeysSettingsController(worker, requestId, apiClientOptions, account);
+    await controller._exec();
+  });
+
 };
 
 export const MetadataEvents = {listen};
