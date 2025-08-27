@@ -28,6 +28,9 @@
     "test:unit": "jest --no-cache ./src/",
     "test:coverage": "jest --no-cache ./src/ --coverage"
   },
+  "overrides": {
+    "brace-expansion": "^1.1.12"
+  },
   "devDependencies": {
     "@babel/core": "^7.26.10",
     "@babel/eslint-parser": "^7.27.0",

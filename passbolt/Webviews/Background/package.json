@@ -41,13 +41,16 @@
     "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4"
   },
+  "overrides": {
+    "brace-expansion": "^1.1.12"
+  },
   "dependencies": {
     "@babel/core": "^7.23.3",
     "@babel/preset-react": "^7.22.15",
     "buffer": "^6.0.3",
     "formdata-node": "^6.0.3",
     "openpgp": "^6.1.1",
-    "passbolt-browser-extension": "5.4.0",
+    "passbolt-browser-extension": "5.4.1",
     "passbolt-styleguide": "^5.4.4",
     "setimmediate": "^1.0.5",
     "stream-browserify": "^3.0.0",
