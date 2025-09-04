@@ -38,8 +38,9 @@ namespace passbolt.Models.Messaging
         public const string BACKGROUND_GET_COOKIE = "passbolt.background.get-cookie";
         public const string BACKGROUND_ROTATE_KEY = "passbolt.background.rotate-private-key";
         public const string RENDERED_RELOAD = "passbolt.tab.reload";
+        public const string BACKGROUND_CLIPBOARD_SET_TEXT = "passbolt.background.clipboard-set-text";
 
-        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR, BACKGROUND_DOWNLOAD_FILE, BACKGROUND_STORE_PASSPHRASE, BACKGROUND_SET_THEME, BACKGROUND_SET_SECURITY_TOKEN, BACKGROUND_SET_LOCALE, RENDERED_READY, BACKGROUND_AFTER_LOGOUT, BACKGROUND_GET_COOKIE, BACKGROUND_ROTATE_KEY, BACKGROUND_AUTHENTICATION_ERROR, RENDERED_RELOAD };
+        private static List<string> topics = new List<string>() { BACKGROUND_READY, ERROR, BACKGROUND_DOWNLOAD_FILE, BACKGROUND_STORE_PASSPHRASE, BACKGROUND_SET_THEME, BACKGROUND_SET_SECURITY_TOKEN, BACKGROUND_SET_LOCALE, RENDERED_READY, BACKGROUND_AFTER_LOGOUT, BACKGROUND_GET_COOKIE, BACKGROUND_ROTATE_KEY, BACKGROUND_AUTHENTICATION_ERROR, RENDERED_RELOAD, BACKGROUND_CLIPBOARD_SET_TEXT };
         private static List<string> requestIds = new List<string>();
         private static Dictionary<string, string> pendingRequests = new Dictionary<string, string>();
 
@@ -62,6 +63,7 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthImportTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ClipboardTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FavoriteTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));

@@ -24,6 +24,6 @@ import {version} from '../../package.json';
 window.chrome.runtime = {
   id: {},
   lastError: null,
-  getManifest: () => ({version})
+  getManifest: () => ({version}),
+  getURL:() => ""
 };
-
