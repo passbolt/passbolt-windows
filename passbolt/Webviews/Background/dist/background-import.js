@@ -24507,6 +24507,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   BACKGROUND_AUTHENTICATION_ERROR: () => (/* binding */ BACKGROUND_AUTHENTICATION_ERROR),
 /* harmony export */   BACKGROUND_IMPORT: () => (/* binding */ BACKGROUND_IMPORT),
 /* harmony export */   BACKGROUND_READY: () => (/* binding */ BACKGROUND_READY),
+/* harmony export */   CLIPBOARD_SET_TEXT: () => (/* binding */ CLIPBOARD_SET_TEXT),
 /* harmony export */   DOWNLOAD_FILE: () => (/* binding */ DOWNLOAD_FILE),
 /* harmony export */   ERROR: () => (/* binding */ ERROR),
 /* harmony export */   LOCALSTORAGE_CLEAR: () => (/* binding */ LOCALSTORAGE_CLEAR),
@@ -24551,6 +24552,7 @@ const UPDATE_THEME = "passbolt.background.set-theme";
 const UPDATE_SECURITY_TOKEN = "passbolt.background.set-security-token";
 const UPDATE_LOCALE = "passbolt.background.set-locale";
 const ROTATE_KEY = "passbolt.background.rotate-private-key";
+const CLIPBOARD_SET_TEXT = "passbolt.background.clipboard-set-text";
 
 
 /***/ }),
@@ -25107,9 +25109,9 @@ __webpack_require__.r(__webpack_exports__);
 window.chrome.runtime = {
   id: {},
   lastError: null,
-  getManifest: () => ({version: _package_json__WEBPACK_IMPORTED_MODULE_0__.version})
+  getManifest: () => ({version: _package_json__WEBPACK_IMPORTED_MODULE_0__.version}),
+  getURL:() => ""
 };
-
 
 
 /***/ }),
