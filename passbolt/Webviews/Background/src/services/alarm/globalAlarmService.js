@@ -14,10 +14,12 @@
 
 import KeepSessionAliveService from "passbolt-browser-extension/src/all/background_page/service/session_storage/keepSessionAliveService";
 import AuthSessionCheckService from "./authSessionCheckService";
+import CopyToClipboardService from "passbolt-browser-extension/src/all/background_page/service/clipboard/copyToClipboardService";
 
 const topLevelAlarmMapping = {
   [AuthSessionCheckService.ALARM_NAME]: AuthSessionCheckService.handleAuthStatusCheckAlarm,
   [KeepSessionAliveService.ALARM_NAME]: KeepSessionAliveService.handleKeepSessionAlive,
+  [CopyToClipboardService.ALARM_NAME]: CopyToClipboardService.handleClipboardTemporaryContentFlushEvent,
 };
 
 /**

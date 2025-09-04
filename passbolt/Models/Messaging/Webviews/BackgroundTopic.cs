@@ -31,6 +31,7 @@ using passbolt.Utils;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace passbolt.Models.Messaging
 {
@@ -175,6 +176,11 @@ namespace passbolt.Models.Messaging
                         AllowedTopics.AddRequestId(ipc.requestId);
                     }
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
+                    break;
+                case AllowedTopics.BACKGROUND_CLIPBOARD_SET_TEXT:
+                    DataPackage dataPackage = new DataPackage();
+                    dataPackage.SetText((string)ipc.message);
+                    Clipboard.SetContent(dataPackage);
                     break;
                 default:
                     if (!AllowedTopics.proceedRequestId(ipc.topic))

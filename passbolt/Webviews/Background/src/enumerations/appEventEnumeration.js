@@ -28,3 +28,4 @@ export const UPDATE_THEME = "passbolt.background.set-theme";
 export const UPDATE_SECURITY_TOKEN = "passbolt.background.set-security-token";
 export const UPDATE_LOCALE = "passbolt.background.set-locale";
 export const ROTATE_KEY = "passbolt.background.rotate-private-key";
+export const CLIPBOARD_SET_TEXT = "passbolt.background.clipboard-set-text";

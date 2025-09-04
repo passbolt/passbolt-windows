@@ -32,7 +32,7 @@ import {ImportResourcesEvents} from 'passbolt-browser-extension/src/all/backgrou
 import {AccountRecoveryEvents} from './events/accountRecoveryEvents';
 import {ExportResourcesEvents} from './events/exportResourcesEvents';
 import {RbacEvents} from './events/rbacEvents';
-import {BACKGROUND_READY} from './enumerations/appEventEnumeration';
+import {BACKGROUND_READY,CLIPBOARD_SET_TEXT} from './enumerations/appEventEnumeration';
 import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
 import {DesktopEvents} from './events/desktopEvents';
@@ -42,6 +42,7 @@ import {MultiFactorAuthenticationEvents} from 'passbolt-browser-extension/src/al
 import {ThemeEvents} from './events/themeEvents';
 import {UserEvents} from './events/userEvents';
 import {AuthEvents} from './events/authEvents';
+import {ClipboardEvents} from './events/clipboardEvents';
 import {UserPassphrasePolicies} from './events/userPassphrasePolicies';
 import {KeyringEvents} from './events/keyringEvents';
 import {LocaleEvents} from './events/localeEvents';
@@ -81,6 +82,11 @@ export default class MainWorkspace {
     KeepSessionAliveService.start();
     browser.alarms.onAlarm.removeListener(GlobalAlarmService.exec);
     browser.alarms.onAlarm.addListener(GlobalAlarmService.exec);
+    /*
+     * Applying the clipboard polyfill requires the communication port to request the native application, so it is applied here.
+     * todo move the polyfill definition with others to remain consistant.
+     */
+    navigator.clipboard.writeText = async(data) => await this.worker.port.emit(CLIPBOARD_SET_TEXT, data);
   }
 
   /**
@@ -101,6 +107,7 @@ export default class MainWorkspace {
     AuthEvents.listen(this.worker);
     AccountRecoveryEvents.listen(this.worker, account);
     ActionLogEvents.listen(this.worker, apiClientOptions);
+    ClipboardEvents.listen(this.worker);
     CommentEvents.listen(this.worker, apiClientOptions);
     ConfigEvents.listen(this.worker);
     DesktopEvents.listen(this.worker, apiClientOptions, account);
