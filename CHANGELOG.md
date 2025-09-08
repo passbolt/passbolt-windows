@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.3.1] - 2025-09-04
 
 ### Fixed
-- feature/PB-45095_Windows-app-copy-username-or-password-does-nothing
+- PB-45095: Copy username or password did nothing
 
 ## [2.3.0] - 2025-08-27
 
@@ -42,8 +42,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - PB-44079: Update/Create a method in resourceLocalStorage.js to bulk delete resources
 - PB-44161: As a user I should not see the resource description and note warning message if only one of them is concerned
 - PB-44273: Activities are not loaded when new resource is clicked after load more activities of a previous resource
-PB-44638 Password expiry should not be removed when password is not updated
-PB-44668 The create menu import operation should be actionable when encrypted metadata plugin is not available
+- PB-44638: Password expiry should not be removed when password is not updated
+- PB-44668: The create menu import operation should be actionable when encrypted metadata plugin is not available
 
 ### Maintenance
 - PB-43908: Move logic of commentModel file to a service and update assertions in controllers
