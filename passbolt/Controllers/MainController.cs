@@ -155,9 +155,6 @@ namespace passbolt.Controllers
             await webviewRendered.EnsureCoreWebView2Async();
             await webviewBackground.EnsureCoreWebView2Async();
 
-            webviewRendered.CoreWebView2.OpenDevToolsWindow();
-            webviewBackground.CoreWebView2.OpenDevToolsWindow();
-
             this.renderedWebviewService = new RenderedWebviewService(this.webviewRendered.CoreWebView2);
             this.backgroundWebviewService = new BackgroundWebviewService(this.webviewBackground.CoreWebView2);
             this.backgroundNavigationService = BackgroundNavigationService.Instance;

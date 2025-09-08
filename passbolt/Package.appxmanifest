@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -7,9 +7,9 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="Passbolt.Debugger.Edition"
+    Name="Passbolt.Passbolt"
     Publisher="CN=741D8DC2-3150-4E31-91A8-695906ECE6D2"
-    Version="2.3.2.0" />
+    Version="2.3.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="7a57bbf2-aa18-46c4-a24d-67165674edc0" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -32,7 +32,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="passbolt.App">
       <uap:VisualElements
-        DisplayName="Passbolt Debugger Edition"
+        DisplayName="ms-resource:AppDisplayName"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
         Description="Passbolt - Open source password manager"
