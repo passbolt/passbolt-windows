@@ -12,11 +12,6 @@
  * @since         0.0.1
  */
 
-using System;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Exceptions;
@@ -31,6 +26,11 @@ using passbolt.Services.Mfa;
 using passbolt.Services.NavigationService;
 using passbolt.Services.WebviewService;
 using passbolt.Utils;
+using System;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace passbolt.Controllers
 {
@@ -103,7 +103,7 @@ namespace passbolt.Controllers
                 this.SetWebviewSettings(webviewBackground);
             }
             //When credentials are saved from import and we navigate to auth application we init the trusted domain to check API calls
-            if(currentAccountMetaData == null && this.backgroundNavigationService.IsAuthApplication(args.Uri))
+            if (currentAccountMetaData == null && this.backgroundNavigationService.IsAuthApplication(args.Uri))
             {
                 currentAccountMetaData = await this.credentialLockerService.GetAccountMetadata();
                 this.httpService.setTrustedDomain(currentAccountMetaData.domain);
@@ -154,6 +154,9 @@ namespace passbolt.Controllers
         {
             await webviewRendered.EnsureCoreWebView2Async();
             await webviewBackground.EnsureCoreWebView2Async();
+
+            webviewRendered.CoreWebView2.OpenDevToolsWindow();
+            webviewBackground.CoreWebView2.OpenDevToolsWindow();
 
             this.renderedWebviewService = new RenderedWebviewService(this.webviewRendered.CoreWebView2);
             this.backgroundWebviewService = new BackgroundWebviewService(this.webviewBackground.CoreWebView2);
@@ -211,7 +214,7 @@ namespace passbolt.Controllers
         /// </summary>
         public virtual void NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
         {
-            if(sender.Source == webviewRendered.Source.AbsoluteUri)
+            if (sender.Source == webviewRendered.Source.AbsoluteUri)
             {
                 this.renderedNavigationService.CanOpenBrowser(args.Uri);
             }
@@ -230,7 +233,7 @@ namespace passbolt.Controllers
             {
                 //When session is expired we are redirected to the API
                 //To avoid this we catch the navigation and replicate the behaviour done during logout
-                if(args.Uri.EndsWith("/auth/login"))
+                if (args.Uri.EndsWith("/auth/login"))
                 {
                     backgroundTopic.ProceedMessage(new IPC(AuthenticationTopics.LOG_OUT));
                 }
@@ -296,7 +299,7 @@ namespace passbolt.Controllers
             IPC ipc = SerializationHelper.DeserializeFromJson<IPC>(message);
 
             //Validate requestId to be an uuid
-            if(ipc.requestId != null && !this.validateUUIDRegex.IsMatch(ipc.requestId))
+            if (ipc.requestId != null && !this.validateUUIDRegex.IsMatch(ipc.requestId))
             {
                 throw new UnauthorizedTopicException(ipc.topic);
             }
@@ -345,7 +348,7 @@ namespace passbolt.Controllers
                     this.backgroundTopic = new BackgroundTopic(webviewBackground, webviewRendered, localFolderService, backgroundWebviewService);
                 }
                 //Webview can be not initialized at this step so we wait it
-                if(backgroundNavigationService != null)
+                if (backgroundNavigationService != null)
                 {
                     backgroundNavigationService.SetPreviousNavigation(sender.CoreWebView2.Source);
                 }

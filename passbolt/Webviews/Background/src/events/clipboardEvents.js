@@ -13,7 +13,6 @@
  */
 
 import CopyToClipboardController from "passbolt-browser-extension/src/all/background_page/controller/clipboard/copyToClipboardController";
-import CopyTemporarilyToClipboardController from "passbolt-browser-extension/src/all/background_page/controller/clipboard/copyTemporarilyToClipboardController";
 
 const listen = function(worker) {
   /**
@@ -36,7 +35,7 @@ const listen = function(worker) {
    * @param {string} text the content to copy
    */
   worker.port.on('passbolt.clipboard.copy-temporarily', async(requestId, text) => {
-    const clipboardController = new CopyTemporarilyToClipboardController(worker, requestId);
+    const clipboardController = new CopyToClipboardController(worker, requestId);
     await clipboardController._exec(text);
   }); 
 }
