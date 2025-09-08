@@ -7,4 +7,4 @@ Many thanks to everyone who reported issues. Your feedback made this release pos
 ## [2.3.1] - 2025-09-04
 
 ### Fixed
-- feature/PB-45095_Windows-app-copy-username-or-password-does-nothing
+- PB-45095: Copy username or password did nothing
