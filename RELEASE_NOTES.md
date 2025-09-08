@@ -1,8 +1,10 @@
-Passbolt Windows application 2.2.1 is a hot fix release that restores protected actions like creating and editing resources on some API servers behind a proxy. If you saw CSRF errors, install 2.2.1 and try again.
+Passbolt Windows Application 2.3.1 is fixing an issue introduced during the version 2.1.0. When a user wanted to copy its password or its username, the clipboard was not working anymore and we solved it by adding the Clipboard feature done during the bext version 5.3.2 . 
 
-Thanks to everyone who reported the issue. See the changelog for details.
+The new clipboard flush timer lets you copy secrets just long enough to use them; clipboard data is automatically cleared when the countdown (30s) expires, significantly reducing the risk of accidental exposure or leaks from forgotten clipboard content.
 
-## [2.2.1] - 2025-08-01
+Many thanks to everyone who reported issues. Your feedback made this release possible and solves issues to all users today.
+
+## [2.3.1] - 2025-09-04
 
 ### Fixed
-- PB-43969 CSRF token in request body or headers does not match or is missing on the windows app
+- PB-45095: Copy username or password did nothing
