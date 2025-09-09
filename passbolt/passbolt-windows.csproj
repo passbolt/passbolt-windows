@@ -152,6 +152,7 @@
     <Compile Include="Models\Messaging\Messaging.cs" />
     <Compile Include="Models\Messaging\Topics\AccountTopics.cs" />
     <Compile Include="Models\Messaging\Topics\AuthImportTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\ClipboardTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ImportExportTopics.cs" />
     <Compile Include="Models\Messaging\Topics\AccountRecoveryTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ActionLogsTopics.cs" />

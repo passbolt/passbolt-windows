@@ -33,6 +33,7 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthenticationTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AuthImportTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(ClipboardTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(CommentTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FavoriteTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(FolderTopics)));
