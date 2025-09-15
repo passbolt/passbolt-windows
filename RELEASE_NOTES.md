@@ -1,10 +1,8 @@
-Passbolt Windows Application 2.3.1 is fixing an issue introduced during the version 2.1.0. When a user wanted to copy its password or its username, the clipboard was not working anymore and we solved it by adding the Clipboard feature done during the bext version 5.3.2 . 
+Passbolt Windows Application 2.3.2 fixes an issue introduced in version 2.3.0. The clipboard protection feature, which cleared the clipboard 30s after copying a secret, was causing the application to crash. Clipboard flushing has been temporarily disabled to allow users to access their secrets. We are investigating how to fix the crash and re-enable this security feature in a future release. 
 
-The new clipboard flush timer lets you copy secrets just long enough to use them; clipboard data is automatically cleared when the countdown (30s) expires, significantly reducing the risk of accidental exposure or leaks from forgotten clipboard content.
+Many thanks to everyone who reported the issue.
 
-Many thanks to everyone who reported issues. Your feedback made this release possible and solves issues to all users today.
-
-## [2.3.1] - 2025-09-04
+## [2.3.2] - 2025-09-10
 
 ### Fixed
-- PB-45095: Copy username or password did nothing
+- PB-45154 - Windows app : Clipboard should persist to unblock alarm issue
