@@ -35,6 +35,7 @@ const listen = function(worker) {
    * @param {string} text the content to copy
    */
   worker.port.on('passbolt.clipboard.copy-temporarily', async(requestId, text) => {
+    // We cannot use copy temporarily because the alarm is causing the application to crash. See PB-45142.
     const clipboardController = new CopyToClipboardController(worker, requestId);
     await clipboardController._exec(text);
   }); 
