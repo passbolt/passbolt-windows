@@ -57,6 +57,7 @@ import ProgressContextProvider from "passbolt-styleguide/src/react-extension/con
 import MetadataTypesSettingsLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/MetadataTypesSettingsLocalStorageContext/MetadataTypesSettingsLocalStorageContext";
 import ResourceTypesLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/ResourceTypesLocalStorageContext/ResourceTypesLocalStorageContext";
 import DisplayUserSettingsWorkspace from "passbolt-styleguide/src/react-extension/components/UserSetting/DisplayUserSettingsWorkspace/DisplayUserSettingsWorkspace";
+import { ResizableSidebarContextProvider } from "passbolt-styleguide/src/react-extension/contexts/ResizeSidebar/ResizeSidebarContext";
 
 /**
  * The passbolt application served by the desktop.
@@ -123,12 +124,14 @@ class AppWorkspace extends Component {
                                                             <ManageContextualMenu />
                                                             <ManageAnnouncements />
                                                             <DragContextProvider>
-                                                              <div id="container" className="page password">
-                                                                <div id="app" className="app ready" tabIndex="1000">
-                                                                  <ResourcesWebviewContext />
-                                                                  <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
+                                                              <ResizableSidebarContextProvider>
+                                                                <div id="container" className="page password">
+                                                                  <div id="app" className="app ready" tabIndex="1000">
+                                                                    <ResourcesWebviewContext />
+                                                                    <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
+                                                                  </div>
                                                                 </div>
-                                                              </div>
+                                                                </ResizableSidebarContextProvider>
                                                             </DragContextProvider>
                                                           </ResourcePasswordGeneratorContextProvider>
                                                         </ResourceTypesLocalStorageContextProvider>
@@ -148,11 +151,13 @@ class AppWorkspace extends Component {
                                                     <ManageWorkflows />
                                                     <ManageContextualMenu />
                                                     <ManageAnnouncements />
-                                                    <div id="container" className="page user">
-                                                      <div id="app" className="app ready" tabIndex="1000">
-                                                        <DisplayUserWorkspace />
+                                                    <ResizableSidebarContextProvider>
+                                                      <div id="container" className="page user">
+                                                        <div id="app" className="app ready" tabIndex="1000">
+                                                          <DisplayUserWorkspace />
+                                                        </div>
                                                       </div>
-                                                    </div>
+                                                    </ResizableSidebarContextProvider>
                                                   </UserWorkspaceContextProvider>
                                                 </Route>
                                                 {/* User settings workspace */}
