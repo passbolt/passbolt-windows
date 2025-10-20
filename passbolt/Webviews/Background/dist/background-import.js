@@ -9082,6 +9082,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _collectionValidationError__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./collectionValidationError */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/collectionValidationError.js");
 /* harmony import */ var _entityCollectionError__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./entityCollectionError */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entityCollectionError.js");
 /* harmony import */ var _entitySchema__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./entitySchema */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/entitySchema.js");
+/* harmony import */ var _utils_logger__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../utils/logger */ "./node_modules/passbolt-styleguide/src/shared/utils/logger.js");
 /**
  * Passbolt ~ Open source password manager for teams
  * Copyright (c) Passbolt SA (https://www.passbolt.com)
@@ -9095,6 +9096,7 @@ __webpack_require__.r(__webpack_exports__);
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         4.7.0
  */
+
 
 
 
@@ -9357,7 +9359,8 @@ class EntityV2Collection extends _entityCollection__WEBPACK_IMPORTED_MODULE_1__[
         collectionValidationError.addItemValidationError(index, error);
         throw collectionValidationError;
       } else {
-        console.debug(`${this.entityClass.name}::pushMany ignore item (${index}) due to validation error ${JSON.stringify(error?.details)}`);
+        const errorMessage = `${this.entityClass.name}::pushMany ignored item (${index}) due to validation error.`;
+        _utils_logger__WEBPACK_IMPORTED_MODULE_5__["default"].error(new Error(errorMessage, {cause: error}));
       }
     } else {
       throw error;
@@ -11679,6 +11682,82 @@ const deduplicateObjects = (arr, key) => {
 };
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (deduplicateObjects);
+
+
+/***/ }),
+
+/***/ "./node_modules/passbolt-styleguide/src/shared/utils/logger.js":
+/*!*********************************************************************!*\
+  !*** ./node_modules/passbolt-styleguide/src/shared/utils/logger.js ***!
+  \*********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Logger)
+/* harmony export */ });
+/* harmony import */ var _models_entity_abstract_collectionValidationError__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../models/entity/abstract/collectionValidationError */ "./node_modules/passbolt-styleguide/src/shared/models/entity/abstract/collectionValidationError.js");
+/**
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         5.6.0
+ */
+
+
+class Logger {
+  /**
+   * Error logger to log errors.
+   * todo: API applications & React application need the error.toJSON polyfill to be loaded. See
+   *   browser extension src/all/background_page/error/error.js
+   * @param {Error|string|*} error The information to log. Can be an Error, a string, or any other serializable value.
+   * @static
+   */
+  static error(error) {
+    // Keep the native interactive stack trace (clickable in the console).
+    console.error(error);
+
+    // Avoid an additional accident.
+    try {
+      // If the provided value is an Error, output additional properties not shown by the console API.
+      if (error instanceof Error && typeof error.toJSON === "function") {
+        console.log(
+          `Error: ${error.message}\nError structure: ${JSON.stringify(Logger.serializeError(error))}`
+        );
+      }
+    } catch (error) {
+      console.error("The logger was unable to extract additional error information", error);
+    }
+  }
+
+  /**
+   * Serialize the error for the console and remove any stack reference.
+   * @param {Error} error The error to serialize.
+   * @returns {object}
+   */
+  static serializeError(error) {
+    // Exclude the stack since it is already pretty-printed by the default console API.
+    // eslint-disable-next-line no-unused-vars
+    const {stack, cause, ...errorProperties} = error.toJSON();
+    // Serialize the error cause as well.
+    if (error.cause && error.cause instanceof Error) {
+      errorProperties.cause = Logger.serializeError(error.cause);
+    }
+    // Serialize passbolt collection validation errors.
+    if (error instanceof _models_entity_abstract_collectionValidationError__WEBPACK_IMPORTED_MODULE_0__["default"] && Array.isArray(error.errors)) {
+      errorProperties.errors = error.errors.map(collectionError => Logger.serializeError(collectionError));
+    }
+    return errorProperties;
+  }
+}
 
 
 /***/ }),
@@ -29847,10 +29926,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.45.1',
+  version: '3.46.0',
   mode: IS_PURE ? 'pure' : 'global',
-  copyright: '© 2014-2025 Denis Pushkarev (zloirock.ru)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.45.1/LICENSE',
+  copyright: '© 2014-2025 Denis Pushkarev (zloirock.ru), 2025 CoreJS Company (core-js.io)',
+  license: 'https://github.com/zloirock/core-js/blob/v3.46.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -32985,7 +33064,123 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   t: () => (/* binding */ t),
 /* harmony export */   use: () => (/* binding */ use)
 /* harmony export */ });
-const isString = obj => typeof obj === 'string';
+const consoleLogger = {
+  type: 'logger',
+  log(args) {
+    this.output('log', args);
+  },
+  warn(args) {
+    this.output('warn', args);
+  },
+  error(args) {
+    this.output('error', args);
+  },
+  output(type, args) {
+    if (console && console[type]) console[type].apply(console, args);
+  }
+};
+class Logger {
+  constructor(concreteLogger) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    this.init(concreteLogger, options);
+  }
+  init(concreteLogger) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    this.prefix = options.prefix || 'i18next:';
+    this.logger = concreteLogger || consoleLogger;
+    this.options = options;
+    this.debug = options.debug;
+  }
+  log() {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    return this.forward(args, 'log', '', true);
+  }
+  warn() {
+    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+    return this.forward(args, 'warn', '', true);
+  }
+  error() {
+    for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      args[_key3] = arguments[_key3];
+    }
+    return this.forward(args, 'error', '');
+  }
+  deprecate() {
+    for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      args[_key4] = arguments[_key4];
+    }
+    return this.forward(args, 'warn', 'WARNING DEPRECATED: ', true);
+  }
+  forward(args, lvl, prefix, debugOnly) {
+    if (debugOnly && !this.debug) return null;
+    if (typeof args[0] === 'string') args[0] = `${prefix}${this.prefix} ${args[0]}`;
+    return this.logger[lvl](args);
+  }
+  create(moduleName) {
+    return new Logger(this.logger, {
+      ...{
+        prefix: `${this.prefix}:${moduleName}:`
+      },
+      ...this.options
+    });
+  }
+  clone(options) {
+    options = options || this.options;
+    options.prefix = options.prefix || this.prefix;
+    return new Logger(this.logger, options);
+  }
+}
+var baseLogger = new Logger();
+
+class EventEmitter {
+  constructor() {
+    this.observers = {};
+  }
+  on(events, listener) {
+    events.split(' ').forEach(event => {
+      if (!this.observers[event]) this.observers[event] = new Map();
+      const numListeners = this.observers[event].get(listener) || 0;
+      this.observers[event].set(listener, numListeners + 1);
+    });
+    return this;
+  }
+  off(event, listener) {
+    if (!this.observers[event]) return;
+    if (!listener) {
+      delete this.observers[event];
+      return;
+    }
+    this.observers[event].delete(listener);
+  }
+  emit(event) {
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+    if (this.observers[event]) {
+      const cloned = Array.from(this.observers[event].entries());
+      cloned.forEach(_ref => {
+        let [observer, numTimesAdded] = _ref;
+        for (let i = 0; i < numTimesAdded; i++) {
+          observer(...args);
+        }
+      });
+    }
+    if (this.observers['*']) {
+      const cloned = Array.from(this.observers['*'].entries());
+      cloned.forEach(_ref2 => {
+        let [observer, numTimesAdded] = _ref2;
+        for (let i = 0; i < numTimesAdded; i++) {
+          observer.apply(observer, [event, ...args]);
+        }
+      });
+    }
+  }
+}
+
 const defer = () => {
   let res;
   let rej;
@@ -33008,9 +33203,9 @@ const copy = (a, s, t) => {
 };
 const lastOfPathSeparatorRegExp = /###/g;
 const cleanKey = key => key && key.indexOf('###') > -1 ? key.replace(lastOfPathSeparatorRegExp, '.') : key;
-const canNotTraverseDeeper = object => !object || isString(object);
+const canNotTraverseDeeper = object => !object || typeof object === 'string';
 const getLastOfPath = (object, path, Empty) => {
-  const stack = !isString(path) ? path : path.split('.');
+  const stack = typeof path !== 'string' ? path : path.split('.');
   let stackIndex = 0;
   while (stackIndex < stack.length - 1) {
     if (canNotTraverseDeeper(object)) return {};
@@ -33078,7 +33273,7 @@ const deepExtend = (target, source, overwrite) => {
   for (const prop in source) {
     if (prop !== '__proto__' && prop !== 'constructor') {
       if (prop in target) {
-        if (isString(target[prop]) || target[prop] instanceof String || isString(source[prop]) || source[prop] instanceof String) {
+        if (typeof target[prop] === 'string' || target[prop] instanceof String || typeof source[prop] === 'string' || source[prop] instanceof String) {
           if (overwrite) target[prop] = source[prop];
         } else {
           deepExtend(target[prop], source[prop], overwrite);
@@ -33100,7 +33295,7 @@ var _entityMap = {
   '/': '&#x2F;'
 };
 const escape = data => {
-  if (isString(data)) {
+  if (typeof data === 'string') {
     return data.replace(/[&<>"'\/]/g, s => _entityMap[s]);
   }
   return data;
@@ -33172,124 +33367,10 @@ const deepFind = function (obj, path) {
   }
   return current;
 };
-const getCleanedCode = code => code && code.replace('_', '-');
-
-const consoleLogger = {
-  type: 'logger',
-  log(args) {
-    this.output('log', args);
-  },
-  warn(args) {
-    this.output('warn', args);
-  },
-  error(args) {
-    this.output('error', args);
-  },
-  output(type, args) {
-    if (console && console[type]) console[type].apply(console, args);
-  }
+const getCleanedCode = code => {
+  if (code && code.indexOf('_') > 0) return code.replace('_', '-');
+  return code;
 };
-class Logger {
-  constructor(concreteLogger) {
-    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    this.init(concreteLogger, options);
-  }
-  init(concreteLogger) {
-    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    this.prefix = options.prefix || 'i18next:';
-    this.logger = concreteLogger || consoleLogger;
-    this.options = options;
-    this.debug = options.debug;
-  }
-  log() {
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-    return this.forward(args, 'log', '', true);
-  }
-  warn() {
-    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-      args[_key2] = arguments[_key2];
-    }
-    return this.forward(args, 'warn', '', true);
-  }
-  error() {
-    for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-      args[_key3] = arguments[_key3];
-    }
-    return this.forward(args, 'error', '');
-  }
-  deprecate() {
-    for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-      args[_key4] = arguments[_key4];
-    }
-    return this.forward(args, 'warn', 'WARNING DEPRECATED: ', true);
-  }
-  forward(args, lvl, prefix, debugOnly) {
-    if (debugOnly && !this.debug) return null;
-    if (isString(args[0])) args[0] = `${prefix}${this.prefix} ${args[0]}`;
-    return this.logger[lvl](args);
-  }
-  create(moduleName) {
-    return new Logger(this.logger, {
-      ...{
-        prefix: `${this.prefix}:${moduleName}:`
-      },
-      ...this.options
-    });
-  }
-  clone(options) {
-    options = options || this.options;
-    options.prefix = options.prefix || this.prefix;
-    return new Logger(this.logger, options);
-  }
-}
-var baseLogger = new Logger();
-
-class EventEmitter {
-  constructor() {
-    this.observers = {};
-  }
-  on(events, listener) {
-    events.split(' ').forEach(event => {
-      if (!this.observers[event]) this.observers[event] = new Map();
-      const numListeners = this.observers[event].get(listener) || 0;
-      this.observers[event].set(listener, numListeners + 1);
-    });
-    return this;
-  }
-  off(event, listener) {
-    if (!this.observers[event]) return;
-    if (!listener) {
-      delete this.observers[event];
-      return;
-    }
-    this.observers[event].delete(listener);
-  }
-  emit(event) {
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-    if (this.observers[event]) {
-      const cloned = Array.from(this.observers[event].entries());
-      cloned.forEach(_ref => {
-        let [observer, numTimesAdded] = _ref;
-        for (let i = 0; i < numTimesAdded; i++) {
-          observer(...args);
-        }
-      });
-    }
-    if (this.observers['*']) {
-      const cloned = Array.from(this.observers['*'].entries());
-      cloned.forEach(_ref2 => {
-        let [observer, numTimesAdded] = _ref2;
-        for (let i = 0; i < numTimesAdded; i++) {
-          observer.apply(observer, [event, ...args]);
-        }
-      });
-    }
-  }
-}
 
 class ResourceStore extends EventEmitter {
   constructor(data) {
@@ -33330,7 +33411,7 @@ class ResourceStore extends EventEmitter {
       if (key) {
         if (Array.isArray(key)) {
           path.push(...key);
-        } else if (isString(key) && keySeparator) {
+        } else if (typeof key === 'string' && keySeparator) {
           path.push(...key.split(keySeparator));
         } else {
           path.push(key);
@@ -33343,7 +33424,7 @@ class ResourceStore extends EventEmitter {
       ns = path[1];
       key = path.slice(2).join('.');
     }
-    if (result || !ignoreJSONStructure || !isString(key)) return result;
+    if (result || !ignoreJSONStructure || typeof key !== 'string') return result;
     return deepFind(this.data && this.data[lng] && this.data[lng][ns], key, keySeparator);
   }
   addResource(lng, ns, key, value) {
@@ -33367,7 +33448,7 @@ class ResourceStore extends EventEmitter {
       silent: false
     };
     for (const m in resources) {
-      if (isString(resources[m]) || Array.isArray(resources[m])) this.addResource(lng, ns, m, resources[m], {
+      if (typeof resources[m] === 'string' || Array.isArray(resources[m])) this.addResource(lng, ns, m, resources[m], {
         silent: true
       });
     }
@@ -33480,16 +33561,17 @@ class Translator extends EventEmitter {
       if (m && m.length > 0) {
         return {
           key,
-          namespaces: isString(namespaces) ? [namespaces] : namespaces
+          namespaces
         };
       }
       const parts = key.split(nsSeparator);
       if (nsSeparator !== keySeparator || nsSeparator === keySeparator && this.options.ns.indexOf(parts[0]) > -1) namespaces = parts.shift();
       key = parts.join(keySeparator);
     }
+    if (typeof namespaces === 'string') namespaces = [namespaces];
     return {
       key,
-      namespaces: isString(namespaces) ? [namespaces] : namespaces
+      namespaces
     };
   }
   translate(keys, options, lastKey) {
@@ -33546,8 +33628,8 @@ class Translator extends EventEmitter {
     const noObject = ['[object Number]', '[object Function]', '[object RegExp]'];
     const joinArrays = options.joinArrays !== undefined ? options.joinArrays : this.options.joinArrays;
     const handleAsObjectInI18nFormat = !this.i18nFormat || this.i18nFormat.handleAsObject;
-    const handleAsObject = !isString(res) && typeof res !== 'boolean' && typeof res !== 'number';
-    if (handleAsObjectInI18nFormat && res && handleAsObject && noObject.indexOf(resType) < 0 && !(isString(joinArrays) && Array.isArray(res))) {
+    const handleAsObject = typeof res !== 'string' && typeof res !== 'boolean' && typeof res !== 'number';
+    if (handleAsObjectInI18nFormat && res && handleAsObject && noObject.indexOf(resType) < 0 && !(typeof joinArrays === 'string' && Array.isArray(res))) {
       if (!options.returnObjects && !this.options.returnObjects) {
         if (!this.options.returnedObjectHandler) {
           this.logger.warn('accessing an object - but returnObjects options is not enabled!');
@@ -33582,13 +33664,13 @@ class Translator extends EventEmitter {
         }
         res = copy;
       }
-    } else if (handleAsObjectInI18nFormat && isString(joinArrays) && Array.isArray(res)) {
+    } else if (handleAsObjectInI18nFormat && typeof joinArrays === 'string' && Array.isArray(res)) {
       res = res.join(joinArrays);
       if (res) res = this.extendTranslation(res, keys, options, lastKey);
     } else {
       let usedDefault = false;
       let usedKey = false;
-      const needsPluralHandling = options.count !== undefined && !isString(options.count);
+      const needsPluralHandling = options.count !== undefined && typeof options.count !== 'string';
       const hasDefaultValue = Translator.hasDefaultValue(options);
       const defaultValueSuffix = needsPluralHandling ? this.pluralResolver.getSuffix(lng, options.count, options) : '';
       const defaultValueSuffixOrdinalFallback = options.ordinal && needsPluralHandling ? this.pluralResolver.getSuffix(lng, options.count, {
@@ -33688,13 +33770,13 @@ class Translator extends EventEmitter {
           }
         }
       });
-      const skipOnVariables = isString(res) && (options && options.interpolation && options.interpolation.skipOnVariables !== undefined ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables);
+      const skipOnVariables = typeof res === 'string' && (options && options.interpolation && options.interpolation.skipOnVariables !== undefined ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables);
       let nestBef;
       if (skipOnVariables) {
         const nb = res.match(this.interpolator.nestingRegexp);
         nestBef = nb && nb.length;
       }
-      let data = options.replace && !isString(options.replace) ? options.replace : options;
+      let data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
       if (this.options.interpolation.defaultVariables) data = {
         ...this.options.interpolation.defaultVariables,
         ...data
@@ -33719,7 +33801,7 @@ class Translator extends EventEmitter {
       if (options.interpolation) this.interpolator.reset();
     }
     const postProcess = options.postProcess || this.options.postProcess;
-    const postProcessorNames = isString(postProcess) ? [postProcess] : postProcess;
+    const postProcessorNames = typeof postProcess === 'string' ? [postProcess] : postProcess;
     if (res !== undefined && res !== null && postProcessorNames && postProcessorNames.length && options.applyPostProcessor !== false) {
       res = postProcessor.handle(postProcessorNames, res, key, this.options && this.options.postProcessPassResolved ? {
         i18nResolved: {
@@ -33738,7 +33820,7 @@ class Translator extends EventEmitter {
     let exactUsedKey;
     let usedLng;
     let usedNS;
-    if (isString(keys)) keys = [keys];
+    if (typeof keys === 'string') keys = [keys];
     keys.forEach(k => {
       if (this.isValidLookup(found)) return;
       const extracted = this.extractFromKey(k, options);
@@ -33746,9 +33828,9 @@ class Translator extends EventEmitter {
       usedKey = key;
       let namespaces = extracted.namespaces;
       if (this.options.fallbackNS) namespaces = namespaces.concat(this.options.fallbackNS);
-      const needsPluralHandling = options.count !== undefined && !isString(options.count);
+      const needsPluralHandling = options.count !== undefined && typeof options.count !== 'string';
       const needsZeroSuffixLookup = needsPluralHandling && !options.ordinal && options.count === 0 && this.pluralResolver.shouldUseIntlApi();
-      const needsContextHandling = options.context !== undefined && (isString(options.context) || typeof options.context === 'number') && options.context !== '';
+      const needsContextHandling = options.context !== undefined && (typeof options.context === 'string' || typeof options.context === 'number') && options.context !== '';
       const codes = options.lngs ? options.lngs : this.languageUtils.toResolveHierarchy(options.lng || this.language, options.fallbackLng);
       namespaces.forEach(ns => {
         if (this.isValidLookup(found)) return;
@@ -33820,7 +33902,7 @@ class Translator extends EventEmitter {
   getUsedParamsDetails() {
     let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     const optionsKeys = ['defaultValue', 'ordinal', 'context', 'replace', 'lng', 'lngs', 'fallbackLng', 'ns', 'keySeparator', 'nsSeparator', 'returnObjects', 'returnDetails', 'joinArrays', 'postProcess', 'interpolation'];
-    const useOptionsReplaceForData = options.replace && !isString(options.replace);
+    const useOptionsReplaceForData = options.replace && typeof options.replace !== 'string';
     let data = useOptionsReplaceForData ? options.replace : options;
     if (useOptionsReplaceForData && typeof options.count !== 'undefined') {
       data.count = options.count;
@@ -33875,16 +33957,7 @@ class LanguageUtil {
     return this.formatLanguageCode(p[0]);
   }
   formatLanguageCode(code) {
-    if (isString(code) && code.indexOf('-') > -1) {
-      if (typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales !== 'undefined') {
-        try {
-          let formattedCode = Intl.getCanonicalLocales(code)[0];
-          if (formattedCode && this.options.lowerCaseLng) {
-            formattedCode = formattedCode.toLowerCase();
-          }
-          if (formattedCode) return formattedCode;
-        } catch (e) {}
-      }
+    if (typeof code === 'string' && code.indexOf('-') > -1) {
       const specialCases = ['hans', 'hant', 'latn', 'cyrl', 'cans', 'mong', 'arab'];
       let p = code.split('-');
       if (this.options.lowerCaseLng) {
@@ -33937,7 +34010,7 @@ class LanguageUtil {
   getFallbackCodes(fallbacks, code) {
     if (!fallbacks) return [];
     if (typeof fallbacks === 'function') fallbacks = fallbacks(code);
-    if (isString(fallbacks)) fallbacks = [fallbacks];
+    if (typeof fallbacks === 'string') fallbacks = [fallbacks];
     if (Array.isArray(fallbacks)) return fallbacks;
     if (!code) return fallbacks.default || [];
     let found = fallbacks[code];
@@ -33958,11 +34031,11 @@ class LanguageUtil {
         this.logger.warn(`rejecting language code not found in supportedLngs: ${c}`);
       }
     };
-    if (isString(code) && (code.indexOf('-') > -1 || code.indexOf('_') > -1)) {
+    if (typeof code === 'string' && (code.indexOf('-') > -1 || code.indexOf('_') > -1)) {
       if (this.options.load !== 'languageOnly') addCode(this.formatLanguageCode(code));
       if (this.options.load !== 'languageOnly' && this.options.load !== 'currentOnly') addCode(this.getScriptPartFromCode(code));
       if (this.options.load !== 'currentOnly') addCode(this.getLanguagePartFromCode(code));
-    } else if (isString(code)) {
+    } else if (typeof code === 'string') {
       addCode(this.formatLanguageCode(code));
     }
     fallbackCodes.forEach(fc => {
@@ -34133,27 +34206,24 @@ class PluralResolver {
   getRule(code) {
     let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     if (this.shouldUseIntlApi()) {
-      const cleanedCode = getCleanedCode(code === 'dev' ? 'en' : code);
-      const type = options.ordinal ? 'ordinal' : 'cardinal';
-      const cacheKey = JSON.stringify({
-        cleanedCode,
-        type
-      });
-      if (cacheKey in this.pluralRulesCache) {
-        return this.pluralRulesCache[cacheKey];
-      }
-      let rule;
       try {
-        rule = new Intl.PluralRules(cleanedCode, {
+        const cleanedCode = getCleanedCode(code === 'dev' ? 'en' : code);
+        const type = options.ordinal ? 'ordinal' : 'cardinal';
+        const cacheKey = JSON.stringify({
+          cleanedCode,
           type
         });
+        if (cacheKey in this.pluralRulesCache) {
+          return this.pluralRulesCache[cacheKey];
+        }
+        const rule = new Intl.PluralRules(cleanedCode, {
+          type
+        });
+        this.pluralRulesCache[cacheKey] = rule;
+        return rule;
       } catch (err) {
-        if (!code.match(/-|_/)) return;
-        const lngPart = this.languageUtils.getLanguagePartFromCode(code);
-        rule = this.getRule(lngPart, options);
+        return;
       }
-      this.pluralRulesCache[cacheKey] = rule;
-      return rule;
     }
     return this.rules[code] || this.rules[this.languageUtils.getLanguagePartFromCode(code)];
   }
@@ -34223,7 +34293,7 @@ const deepFindWithDefaults = function (data, defaultData, key) {
   let keySeparator = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '.';
   let ignoreJSONStructure = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
   let path = getPathWithDefaults(data, defaultData, key);
-  if (!path && ignoreJSONStructure && isString(key)) {
+  if (!path && ignoreJSONStructure && typeof key === 'string') {
     path = deepFind(data, key, keySeparator);
     if (path === undefined) path = deepFind(defaultData, key, keySeparator);
   }
@@ -34333,7 +34403,7 @@ class Interpolator {
         if (value === undefined) {
           if (typeof missingInterpolationHandler === 'function') {
             const temp = missingInterpolationHandler(str, match, options);
-            value = isString(temp) ? temp : '';
+            value = typeof temp === 'string' ? temp : '';
           } else if (options && Object.prototype.hasOwnProperty.call(options, matchedVar)) {
             value = '';
           } else if (skipOnVariables) {
@@ -34343,7 +34413,7 @@ class Interpolator {
             this.logger.warn(`missed to pass in variable ${matchedVar} for interpolating ${str}`);
             value = '';
           }
-        } else if (!isString(value) && !this.useRawValueToEscape) {
+        } else if (typeof value !== 'string' && !this.useRawValueToEscape) {
           value = makeString(value);
         }
         const safeValue = todo.safeValue(value);
@@ -34397,7 +34467,7 @@ class Interpolator {
       clonedOptions = {
         ...options
       };
-      clonedOptions = clonedOptions.replace && !isString(clonedOptions.replace) ? clonedOptions.replace : clonedOptions;
+      clonedOptions = clonedOptions.replace && typeof clonedOptions.replace !== 'string' ? clonedOptions.replace : clonedOptions;
       clonedOptions.applyPostProcessor = false;
       delete clonedOptions.defaultValue;
       let doReduce = false;
@@ -34408,8 +34478,8 @@ class Interpolator {
         doReduce = true;
       }
       value = fc(handleHasOptions.call(this, match[1].trim(), clonedOptions), clonedOptions);
-      if (value && match[0] === str && !isString(value)) return value;
-      if (!isString(value)) value = makeString(value);
+      if (value && match[0] === str && typeof value !== 'string') return value;
+      if (typeof value !== 'string') value = makeString(value);
       if (!value) {
         this.logger.warn(`missed to resolve ${match[1]} for nesting ${str}`);
         value = '';
@@ -34521,7 +34591,8 @@ class Formatter {
     let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
       interpolation: {}
     };
-    this.formatSeparator = options.interpolation.formatSeparator || ',';
+    const iOpts = options.interpolation;
+    this.formatSeparator = iOpts.formatSeparator ? iOpts.formatSeparator : iOpts.formatSeparator || ',';
   }
   add(name, fc) {
     this.formats[name.toLowerCase().trim()] = fc;
@@ -34722,8 +34793,8 @@ class Connector extends EventEmitter {
       this.logger.warn('No backend was added via i18next.use. Will not load resources.');
       return callback && callback();
     }
-    if (isString(languages)) languages = this.languageUtils.toResolveHierarchy(languages);
-    if (isString(namespaces)) namespaces = [namespaces];
+    if (typeof languages === 'string') languages = this.languageUtils.toResolveHierarchy(languages);
+    if (typeof namespaces === 'string') namespaces = [namespaces];
     const toLoad = this.queueLoad(languages, namespaces, options, callback);
     if (!toLoad.toLoad.length) {
       if (!toLoad.pending.length) callback();
@@ -34827,8 +34898,8 @@ const get = () => ({
   overloadTranslationOptionHandler: args => {
     let ret = {};
     if (typeof args[1] === 'object') ret = args[1];
-    if (isString(args[1])) ret.defaultValue = args[1];
-    if (isString(args[2])) ret.tDescription = args[2];
+    if (typeof args[1] === 'string') ret.defaultValue = args[1];
+    if (typeof args[2] === 'string') ret.tDescription = args[2];
     if (typeof args[2] === 'object' || typeof args[3] === 'object') {
       const options = args[3] || args[2];
       Object.keys(options).forEach(key => {
@@ -34852,9 +34923,9 @@ const get = () => ({
   }
 });
 const transformOptions = options => {
-  if (isString(options.ns)) options.ns = [options.ns];
-  if (isString(options.fallbackLng)) options.fallbackLng = [options.fallbackLng];
-  if (isString(options.fallbackNS)) options.fallbackNS = [options.fallbackNS];
+  if (typeof options.ns === 'string') options.ns = [options.ns];
+  if (typeof options.fallbackLng === 'string') options.fallbackLng = [options.fallbackLng];
+  if (typeof options.fallbackNS === 'string') options.fallbackNS = [options.fallbackNS];
   if (options.supportedLngs && options.supportedLngs.indexOf('cimode') < 0) {
     options.supportedLngs = options.supportedLngs.concat(['cimode']);
   }
@@ -34902,7 +34973,7 @@ class I18n extends EventEmitter {
       options = {};
     }
     if (!options.defaultNS && options.defaultNS !== false && options.ns) {
-      if (isString(options.ns)) {
+      if (typeof options.ns === 'string') {
         options.defaultNS = options.ns;
       } else if (options.ns.indexOf('translation') < 0) {
         options.defaultNS = options.ns[0];
@@ -35035,7 +35106,7 @@ class I18n extends EventEmitter {
   loadResources(language) {
     let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop;
     let usedCallback = callback;
-    const usedLng = isString(language) ? language : this.language;
+    const usedLng = typeof language === 'string' ? language : this.language;
     if (typeof language === 'function') usedCallback = language;
     if (!this.options.resources || this.options.partialBundledLanguages) {
       if (usedLng && usedLng.toLowerCase() === 'cimode' && (!this.options.preload || this.options.preload.length === 0)) return usedCallback();
@@ -35153,7 +35224,7 @@ class I18n extends EventEmitter {
     };
     const setLng = lngs => {
       if (!lng && !lngs && this.services.languageDetector) lngs = [];
-      const l = isString(lngs) ? lngs : this.services.languageUtils.getBestMatchFromCodes(lngs);
+      const l = typeof lngs === 'string' ? lngs : this.services.languageUtils.getBestMatchFromCodes(lngs);
       if (l) {
         if (!this.language) {
           setLngProps(l);
@@ -35205,7 +35276,7 @@ class I18n extends EventEmitter {
       }
       return _this3.t(resultKey, options);
     };
-    if (isString(lng)) {
+    if (typeof lng === 'string') {
       fixedT.lng = lng;
     } else {
       fixedT.lngs = lng;
@@ -35256,7 +35327,7 @@ class I18n extends EventEmitter {
       if (callback) callback();
       return Promise.resolve();
     }
-    if (isString(ns)) ns = [ns];
+    if (typeof ns === 'string') ns = [ns];
     ns.forEach(n => {
       if (this.options.ns.indexOf(n) < 0) this.options.ns.push(n);
     });
@@ -35268,7 +35339,7 @@ class I18n extends EventEmitter {
   }
   loadLanguages(lngs, callback) {
     const deferred = defer();
-    if (isString(lngs)) lngs = [lngs];
+    if (typeof lngs === 'string') lngs = [lngs];
     const preloaded = this.options.preload || [];
     const newLngs = lngs.filter(lng => preloaded.indexOf(lng) < 0 && this.services.languageUtils.isSupportedCode(lng));
     if (!newLngs.length) {
@@ -35484,7 +35555,7 @@ const dl=BigInt("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffff
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"background-webview","version":"2.4.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.26.10","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-localstorage-mock":"^2.4.26","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.14.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.94.0","webpack-cli":"^5.1.4"},"overrides":{"brace-expansion":"^1.1.12"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","formdata-node":"^6.0.3","openpgp":"^6.1.1","passbolt-browser-extension":"5.5.0","passbolt-styleguide":"^5.5.2","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"background-webview","version":"2.4.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.26.10","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-localstorage-mock":"^2.4.26","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.14.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.94.0","webpack-cli":"^5.1.4"},"overrides":{"brace-expansion":"^1.1.12"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","formdata-node":"^6.0.3","openpgp":"^6.1.1","passbolt-browser-extension":"5.6.0","passbolt-styleguide":"^5.6.2","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
 
 /***/ })
 
