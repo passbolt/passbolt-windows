@@ -298,7 +298,7 @@ namespace passbolt.Controllers
             //Validate requestId to be an uuid
             if (ipc.requestId != null && !this.validateUUIDRegex.IsMatch(ipc.requestId))
             {
-                throw new UnauthorizedTopicException(ipc.topic);
+                return;
             }
 
             //Checks if we have data before going futher
