@@ -90,6 +90,7 @@ class AppAuthentication extends Component {
       storage: props.storage, // The storage
       siteSettings: null, // The site settings
       extensionVersion: null, // The extension version
+      userSettings: null, // The user settings
       locale: null, // The locale
       // Locale
       onUpdateLocaleRequested: this.onUpdateLocaleRequested.bind(this),

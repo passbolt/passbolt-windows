@@ -2554,7 +2554,7 @@ class AppImport extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(passbolt_styleguide_src_shared_context_AppContext_AppContext__WEBPACK_IMPORTED_MODULE_1__["default"].Provider, {
       value: this.state
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(passbolt_styleguide_src_react_extension_components_Common_Internationalisation_TranslationProvider__WEBPACK_IMPORTED_MODULE_2__["default"], {
-      loadingPath: "https://rendered.dist/Rendered/dist/locales/{{lng}}/{{ns}}.json"
+      loadingPath: "https://rendered.dist/Rendered/dist/locales/passbolt-{{lng}}/{{ns}}.json"
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_9__.BrowserRouter, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
       id: "container",
       className: "container page login"
