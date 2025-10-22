@@ -185,7 +185,7 @@ namespace passbolt.Models.Messaging
                 default:
                     if (!AllowedTopics.proceedRequestId(ipc.topic))
                     {
-                        throw new UnauthorizedTopicException("Rendered webview");
+                        return;
                     } else if (AllowedTopics.HasPendingRequest(ipc.topic))
                     {
                         var value = AllowedTopics.GetPendingRequest(ipc.topic);

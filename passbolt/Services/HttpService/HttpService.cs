@@ -62,7 +62,7 @@ namespace passbolt.Services.HttpService
         {
             if (!this.isCallToServer(webviewRequest) && !this.isCallToPownedService(webviewRequest))
             {
-                throw new UnauthorizedAPICallException();
+                return;
             }
         }
 
