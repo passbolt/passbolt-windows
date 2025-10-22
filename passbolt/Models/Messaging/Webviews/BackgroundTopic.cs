@@ -289,7 +289,6 @@ namespace passbolt.Models.Messaging
             if (!WebviewOrchestratorService.Instance.IsRenderedReady() && ipc.topic != AllowedTopics.BACKGROUND_READY)
             {
                 pendingMessages.Add(ipc);
-                return false;
             }
 
             return true;
