@@ -18,8 +18,8 @@ namespace passbolt.Services.WebviewService
 {
     public sealed class WebviewOrchestratorService
     {
-        public bool Rendered { get; private set; }
-        public bool Background { get; private set; }
+        private bool Rendered;
+        private bool Background;
 
         private static readonly Lazy<WebviewOrchestratorService> _instance = new Lazy<WebviewOrchestratorService>(() => new WebviewOrchestratorService());
 
