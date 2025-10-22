@@ -1,6 +1,3 @@
-﻿
-
-using System;
 /**
 * Passbolt ~ Open source password manager for teams
 * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
@@ -14,6 +11,9 @@ using System;
 * @link          https://www.passbolt.com Passbolt(tm)
 * @since         2.5.0
 */
+﻿
+using System;
+
 namespace passbolt.Services.WebviewService
 {
     public sealed class WebviewOrchestratorService
