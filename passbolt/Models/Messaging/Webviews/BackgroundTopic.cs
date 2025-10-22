@@ -148,16 +148,22 @@ namespace passbolt.Models.Messaging
                     await downloadService.Download(ipc);
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_UPDATE:
-                    this.canProceedMessage(ipc);
-                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_UPDATE, SerializationHelper.SerializeToJson(ipc.message))));
+                    if(this.canProceedMessage(ipc))
+                    {
+                        rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_UPDATE, SerializationHelper.SerializeToJson(ipc.message))));
+                    }
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_DELETE:
-                    this.canProceedMessage(ipc);
-                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_DELETE, (string)ipc.message)));
+                    if (this.canProceedMessage(ipc))
+                    {
+                        rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_DELETE, (string)ipc.message)));
+                    }
                     break;
                 case LocalStorageTopics.BACKGROUND_LOCALSTORAGE_CLEAR:
-                    this.canProceedMessage(ipc);
-                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_CLEAR)));
+                    if (this.canProceedMessage(ipc))
+                    {
+                        rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(LocalStorageTopics.RENDERED_LOCALSTORAGE_CLEAR)));
+                    }
                     break;
                 case AuthenticationTopics.LOG_OUT:
                     this.currentIndexBackground = "index-auth.html";
@@ -184,8 +190,10 @@ namespace passbolt.Models.Messaging
                     {
                         AllowedTopics.AddRequestId(ipc.requestId);
                     }
-                    this.canProceedMessage(ipc);
-                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
+                    if (this.canProceedMessage(ipc))
+                    {
+                        rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
+                    }
                     break;
                 case AllowedTopics.BACKGROUND_CLIPBOARD_SET_TEXT:
                     DataPackage dataPackage = new DataPackage();
@@ -202,8 +210,8 @@ namespace passbolt.Models.Messaging
                         this.mapResponse(ipc, value);
                         AllowedTopics.RemovePendingRequest(ipc.topic);
                     }
-                    this.canProceedMessage(ipc);
                     rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(ipc));
+
                     break;
             }
         }
@@ -275,13 +283,16 @@ namespace passbolt.Models.Messaging
         /// This method should be added before calling each topic calling the rendered webview
         /// </summary>
         /// <param name="ipc"></param>
-        private void canProceedMessage(IPC ipc)
+        /// <returns bool></returns>
+        private bool canProceedMessage(IPC ipc)
         {
             if (!WebviewOrchestratorService.Instance.IsRenderedReady() && ipc.topic != AllowedTopics.BACKGROUND_READY)
             {
                 pendingMessages.Add(ipc);
-                return;
+                return false;
             }
+
+            return true;
         }
     }
 }
