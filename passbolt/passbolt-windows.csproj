@@ -201,6 +201,7 @@
     <Compile Include="Services\NavigationService\RenderedNavigationService.cs" />
     <Compile Include="Services\RbacService\RbacService.cs" />
     <Compile Include="Services\WebviewService\BackgroundWebviewService.cs" />
+    <Compile Include="Services\WebviewService\WebviewOrchestratorService.cs" />
     <Compile Include="Services\WebviewService\RenderedWebviewService.cs" />
     <Compile Include="Utils\ListHelper.cs" />
     <Compile Include="Utils\SerializationHelper.cs" />

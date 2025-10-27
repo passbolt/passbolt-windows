@@ -76,6 +76,15 @@ namespace passbolt.Models.Messaging
                 new UnauthorizedTopicException("Rendered webview");
                 return;
             }
+            else if (ipc.topic == AllowedTopics.RENDERED_READY)
+            {
+                WebviewOrchestratorService.Instance.SetRenderedStatus(true);
+                if (WebviewOrchestratorService.Instance.AreAllReady())
+                {
+                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_READY)));
+                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.RENDERED_READY)));
+                }
+            }
             else if (CanOpenToBrowser(ipc))
             {
                 var url = (string)ipc.message;
