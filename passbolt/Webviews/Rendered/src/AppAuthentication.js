@@ -48,6 +48,7 @@ class AppAuthentication extends Component {
    */
   async listen() {
     await localStorage.clear();
+    this.props.port.request("passbolt.rendered.is-ready");
     this.props.port.on("passbolt.background.is-ready", this.handleBackgroundReady);
   }
 
@@ -68,7 +69,6 @@ class AppAuthentication extends Component {
     await this.getSiteSettings();
     await this.getExtensionVersion();
     this.initLocale();
-    this.setState({isReady: true});
   }
 
   /**
@@ -90,8 +90,8 @@ class AppAuthentication extends Component {
       storage: props.storage, // The storage
       siteSettings: null, // The site settings
       extensionVersion: null, // The extension version
+      userSettings: null, // The user settings
       locale: null, // The locale
-      isReady: false, // Check if component is ready to be displayed
       // Locale
       onUpdateLocaleRequested: this.onUpdateLocaleRequested.bind(this),
     };
@@ -144,12 +144,19 @@ class AppAuthentication extends Component {
   }
 
   /**
+   * Check if all states are initialised before continuing
+   */
+  get isReady() {
+    return this.state.locale && this.state.extensionVersion && this.state.siteSettings && this.state.userSettings
+  }
+
+  /**
    * Renders the component
    */
   render() {
     return (
       <RenderedWebview port={this.props.port}>
-        {this.state.isReady && <AppContext.Provider value={this.state}>
+        {this.isReady && <AppContext.Provider value={this.state}>
           <TranslationProvider loadingPath="https://rendered.dist/Rendered/dist/locales/{{lng}}/{{ns}}.json">
             <Router>
               <AuthenticationLoginContextProvider>

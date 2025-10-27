@@ -101,6 +101,9 @@ namespace passbolt.Controllers
 
                 await this.LoadWebviews();
                 this.SetWebviewSettings(webviewBackground);
+            } else
+            {
+                WebviewOrchestratorService.Instance.SetRenderedStatus(false);
             }
             //When credentials are saved from import and we navigate to auth application we init the trusted domain to check API calls
             if (currentAccountMetaData == null && this.backgroundNavigationService.IsAuthApplication(args.Uri))
@@ -134,6 +137,9 @@ namespace passbolt.Controllers
             if (args.Uri == this.blankPage)
             {
                 this.SetWebviewSettings(webviewRendered);
+            }  else if(!MfaService.Instance.IsMfaUrls(args.Uri))
+            {
+                WebviewOrchestratorService.Instance.SetRenderedStatus(false);
             }
 
             //Check if the Mfa is completed 
@@ -298,7 +304,7 @@ namespace passbolt.Controllers
             //Validate requestId to be an uuid
             if (ipc.requestId != null && !this.validateUUIDRegex.IsMatch(ipc.requestId))
             {
-                throw new UnauthorizedTopicException(ipc.topic);
+                return;
             }
 
             //Checks if we have data before going futher
@@ -314,6 +320,11 @@ namespace passbolt.Controllers
             }
             else if (renderedNavigationService.canNavigate(webviewSender.Source))
             {
+                if (ipc.topic == AllowedTopics.RENDERED_READY)
+                {
+                    WebviewOrchestratorService.Instance.SetRenderedStatus(true);
+                    backgroundTopic.ProcessPendingMessages();
+                }
                 renderedTopic.ProceedMessage(ipc);
             }
         }
