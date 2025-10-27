@@ -41,6 +41,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - PB-45450 Fix account kit export with big private armored keys
 - PB-45458 Remove Organisation Settings max-width
 - PB-45733 Fix quickaccess resource creation with encrypted metadata
+- PB-45984 Fix webviews synchronization can lead to black screen
+- PB-45998 Fix Windows app should not crash when an unexpected requestId is received
 
 ### Maintenance
 - PB-44253 Upgrade vulnerable library form-data
