@@ -35,7 +35,9 @@ namespace passbolt
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+            this.UnhandledException += App_UnhandledException;
         }
+
 
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
@@ -106,5 +108,45 @@ namespace passbolt
             //TODO: Save application state and stop any background activity
             deferral.Complete();
         }
+
+        /// <summary>
+        /// Handles unhandled exceptions in the application
+        /// </summary>
+        /// <param name="sender">The source of the unhandled exception</param>
+        /// <param name="e">Details about the unhandled exception</param>
+        private async void App_UnhandledException(object sender, Windows.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            // Mark the exception as handled to prevent the app from crashing immediately
+            e.Handled = true;
+            try
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = "Critical Error",
+                    Content = new ScrollViewer
+                    {
+                        Content = new TextBlock
+                        {
+                            Text = $"An unexpected error has occurred:\n\n" +
+                                   $"Message: {e.Message}\n\n" +
+                                   $"Stack Trace:\n{e.Exception}",
+                            TextWrapping = TextWrapping.Wrap,
+                            IsTextSelectionEnabled = true,
+                            FontFamily = new Windows.UI.Xaml.Media.FontFamily("Consolas"),
+                            FontSize = 12
+                        },
+                    },
+                    CloseButtonText = "Close Application",
+                    DefaultButton = ContentDialogButton.Close
+                };
+
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                Application.Current.Exit();
+            }
+        }
+
     }
 }
