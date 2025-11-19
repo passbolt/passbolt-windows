@@ -15,7 +15,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
-using passbolt.Controllers;
+using passbolt_windows_winui3.Controllers;
 
 namespace passbolt_windows_winui3
 {
@@ -41,9 +41,9 @@ namespace passbolt_windows_winui3
         /// <summary>
         /// This method is called when the rendered web view completes navigation.
         /// </summary>
-        private void Rendered_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+        private async void Rendered_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
-            this.mainController.RenderedNavigationStarting(sender, args);
+            await this.mainController.RenderedNavigationStarting(sender, args);
         }
 
         /// <summary>
