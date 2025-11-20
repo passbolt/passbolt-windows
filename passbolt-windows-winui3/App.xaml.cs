@@ -1,24 +1,23 @@
 ﻿/**
- * Passbolt ~ Open source password manager for teams
- * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
- *
- * Licensed under GNU Affero General Public License version 3 of the or any later version.
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
- * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
- * @link          https://www.passbolt.com Passbolt(tm)
- * @since         0.0.1
+* Passbolt ~ Open source password manager for teams
+* Copyright (c) Passbolt SA (https://www.passbolt.com)
+*
+* Licensed under GNU Affero General Public License version 3 of the or any later version.
+* For full copyright and license information, please see the LICENSE.txt
+* Redistributions of files must retain the above copyright notice.
+*
+* @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+* @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+* @link          https://www.passbolt.com Passbolt(tm)
+* @since         0.0.1
  */
 
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using passbolt_windows_winui3.Services.LocalFolder;
 using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using Windows.ApplicationModel.Activation;
+
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -39,7 +38,45 @@ namespace passbolt_windows_winui3
         public App()
         {
             this.InitializeComponent();
+            this.UnhandledException += App_UnhandledException;
         }
+
+        /// <summary>
+        /// Man
+        /// </summary>
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Debug.WriteLine($"Unhandled Exception: {e.Exception.Message}");
+            Debug.WriteLine($"Stack Trace: {e.Exception.StackTrace}");
+            e.Handled = true;
+            ShowErrorDialog(e.Exception);
+        }
+
+        private async void ShowErrorDialog(Exception ex)
+        {
+            try
+            {
+                var window = (Application.Current as App)?.m_window;
+                if (window == null) return;
+
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                {
+                    Title = "Critical Error",
+                    Content = $"An unexpected error has occurred:\n\n" +
+                              $"Message: {ex.Message}\n\n" +
+                              $"Stack Trace:\n{ex.StackTrace}",
+                    CloseButtonText = "Close application",
+                    XamlRoot = window.Content.XamlRoot
+                };
+
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                Application.Current.Exit();
+            }
+        }
+
 
 
         /// <summary>
