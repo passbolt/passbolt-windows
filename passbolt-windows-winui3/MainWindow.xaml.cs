@@ -36,6 +36,7 @@ namespace passbolt_windows_winui3
             // Initialize the page
             this.InitializeComponent();
             this.mainController = new MainController(webviewRendered, webviewBackground);
+            this.AppWindow.SetIcon(@"Assets/favicon.ico");
         }
 
         /// <summary>
