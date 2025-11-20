@@ -17,7 +17,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Controllers;
 
-namespace passbolt
+namespace passbolt_windows_winui3
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.

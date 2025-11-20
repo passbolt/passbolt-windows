@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "passbolt-windows-winui3 (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "passbolt-windows-winui3 (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
