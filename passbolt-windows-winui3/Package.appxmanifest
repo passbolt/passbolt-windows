@@ -9,15 +9,15 @@
   IgnorableNamespaces="uap rescap uap18">
   
   <Identity
-    Name="5c5b8ea1-186e-45fa-8e14-82ced85fd832"
-    Publisher="CN=pierrecolart"
-    Version="1.0.0.0" />
+    Name="Passbolt.Passbolt"
+    Publisher="CN=741D8DC2-3150-4E31-91A8-695906ECE6D2"
+    Version="2.5.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="5c5b8ea1-186e-45fa-8e14-82ced85fd832" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="7a57bbf2-aa18-46c4-a24d-67165674edc0" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>passbolt-windows-winui3</DisplayName>
-    <PublisherDisplayName>pierrecolart</PublisherDisplayName>
+    <DisplayName>Passbolt</DisplayName>
+    <PublisherDisplayName>Passbolt</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -35,8 +35,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$" uap18:TrustLevel="appContainer" uap18:RuntimeBehavior="appSilo">
       <uap:VisualElements
-        DisplayName="passbolt-windows-winui3"
-        Description="passbolt-windows-winui3"
+        DisplayName="ms-resource:AppDisplayName"
+        Description="Passbolt - Password manager"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
