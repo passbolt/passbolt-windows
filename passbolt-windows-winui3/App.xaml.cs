@@ -42,7 +42,7 @@ namespace passbolt_windows_winui3
         }
 
         /// <summary>
-        /// Man
+        /// Displays a modal error dialog with exception details and terminates the application.
         /// </summary>
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
@@ -52,6 +52,9 @@ namespace passbolt_windows_winui3
             ShowErrorDialog(e.Exception);
         }
 
+        /// <summary>
+        /// Displays a modal error dialog with exception details and terminates the application.
+        /// </summary>
         private async void ShowErrorDialog(Exception ex)
         {
             try
