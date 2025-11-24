@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="452px" height="7px" viewBox="0 0 452 7" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="Login" transform="translate(-374.000000, -251.000000)" fill-rule="nonzero">
+        <g id="Group-6" transform="translate(374.000000, 170.000000)">
+            <g id="Loading-bar" transform="translate(226.000000, 84.500000) scale(1, -1) translate(-226.000000, -84.500000) translate(0.000000, 81.000000)">
+                <path d="M3,0 L449,0 C450.656854,-3.04359188e-16 452,1.34314575 452,3 L452,7 L0,7 L0,3 C-2.02906125e-16,1.34314575 1.34314575,3.04359188e-16 3,0 Z" id="Background" fill="#D40000" transform="translate(226.000000, 3.500000) scale(1, -1) translate(-226.000000, -3.500000) "></path>
+                <path d="M7.5,3.5 L444.5,3.5" id="Line1" stroke="#D40000" stroke-width="7" stroke-linecap="square"></path>
+                <path d="M7.5,3.5 L444.5,3.5" id="Line2" stroke="#D40000" stroke-width="7" stroke-linecap="square"></path>
+            </g>
+        </g>
+    </g>
+</g>
+</svg>
