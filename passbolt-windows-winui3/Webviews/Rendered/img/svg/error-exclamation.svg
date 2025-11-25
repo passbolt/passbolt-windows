@@ -1,5 +1,0 @@
-<svg viewBox="0 0 128 128" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
-  <circle id="attention-circle" r="62.5" transform="matrix(0-1 1 0 64 64)" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dashoffset="392.7" stroke-dasharray="392.7"/>
-  <path id="attention-dot" d="M63.9561,40.5879v23.4118" transform="matrix(-1 0 0-1 127.9122 104.587596)" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dashoffset="23.42" stroke-dasharray="23.42"/>
-  <path id="attention-bar" d="M63.9561,87.4121h.0878" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dashoffset="0.09" stroke-dasharray="0.09"/>
-</svg>

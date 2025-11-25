@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
-    <path d="M26 8H32C33.0609 8 34.0783 8.42143 34.8284 9.17157C35.5786 9.92172 36 10.9391 36 12V40" stroke="var(--icon-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M4 40H10" stroke="var(--icon-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M26 40H44" stroke="var(--icon-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M20 24V24.02" stroke="var(--icon-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M26 9.12439V41.4384C25.9999 41.7422 25.9306 42.042 25.7974 42.315C25.6642 42.588 25.4705 42.8271 25.231 43.0141C24.9916 43.2011 24.7127 43.3311 24.4156 43.3942C24.1184 43.4573 23.8108 43.4519 23.516 43.3784L10 40.0004V11.1244C10.0001 10.2324 10.2984 9.36607 10.8474 8.66306C11.3964 7.96004 12.1646 7.4607 13.03 7.24439L21.03 5.24439C21.6195 5.09704 22.2348 5.08593 22.8293 5.2119C23.4237 5.33788 23.9816 5.59762 24.4607 5.97142C24.9397 6.34522 25.3273 6.82325 25.5941 7.36922C25.8608 7.9152 25.9996 8.51676 26 9.12439Z" stroke="var(--icon-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>

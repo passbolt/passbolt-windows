@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "passbolt (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "passbolt (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

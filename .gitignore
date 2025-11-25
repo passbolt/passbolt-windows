@@ -43,3 +43,5 @@ passbolt-windows-winui3/bin/
 passbolt-windows-winui3/Webviews/Background/node_modules/
 
 passbolt-windows-winui3/Webviews/Rendered/node_modules/
+
+passbolt/.vs/

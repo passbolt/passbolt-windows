@@ -1,24 +1,26 @@
 ﻿/**
- * Passbolt ~ Open source password manager for teams
- * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
- *
- * Licensed under GNU Affero General Public License version 3 of the or any later version.
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
- * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
- * @link          https://www.passbolt.com Passbolt(tm)
- * @since         0.0.1
+* Passbolt ~ Open source password manager for teams
+* Copyright (c) Passbolt SA (https://www.passbolt.com)
+*
+* Licensed under GNU Affero General Public License version 3 of the or any later version.
+* For full copyright and license information, please see the LICENSE.txt
+* Redistributions of files must retain the above copyright notice.
+*
+* @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+* @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+* @link          https://www.passbolt.com Passbolt(tm)
+* @since         0.0.1
  */
 
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Navigation;
 using passbolt.Services.LocalFolder;
 using System;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Navigation;
+using System.Diagnostics;
+
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace passbolt
 {
@@ -27,6 +29,8 @@ namespace passbolt
     /// </summary>
     sealed partial class App : Application
     {
+        private Window m_window;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -34,7 +38,66 @@ namespace passbolt
         public App()
         {
             this.InitializeComponent();
-            this.Suspending += OnSuspending;
+            this.UnhandledException += App_UnhandledException;
+        }
+
+        /// <summary>
+        /// Displays a modal error dialog with exception details and terminates the application.
+        /// </summary>
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Debug.WriteLine($"Unhandled Exception: {e.Exception.Message}");
+            Debug.WriteLine($"Stack Trace: {e.Exception.StackTrace}");
+            e.Handled = true;
+            ShowErrorDialog(e.Exception);
+        }
+
+        /// <summary>
+        /// Displays a modal error dialog with exception details and terminates the application.
+        /// </summary>
+        private async void ShowErrorDialog(Exception ex)
+        {
+            try
+            {
+                var window = (Application.Current as App)?.m_window;
+                if (window == null) return;
+
+                var errorText = ex.ToString();
+
+                var textBox = new Microsoft.UI.Xaml.Controls.TextBox
+                {
+                    Text = errorText,
+                    IsReadOnly = true,
+                    TextWrapping = TextWrapping.Wrap,
+                    AcceptsReturn = true,
+                    BorderThickness = new Microsoft.UI.Xaml.Thickness(0),
+                    Background = null,
+                };
+
+
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                {
+                    Title = "Critical Error",
+                    Content = errorText,
+                    CloseButtonText = "Close application",
+                    PrimaryButtonText = "Copy to clipboard",
+                    XamlRoot = window.Content.XamlRoot
+                };
+
+                dialog.PrimaryButtonClick += (s, e) =>
+                {
+                    var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+                    dataPackage.SetText(errorText);
+                    Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+                    e.Cancel = true;
+                };
+
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                Application.Current.Exit();
+            }
         }
 
         /// <summary>
@@ -42,45 +105,11 @@ namespace passbolt
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="e">Details about the launch request and process.</param>
-        protected async override void OnLaunched(LaunchActivatedEventArgs e)
+        protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs e)
         {
             await LocalFolderService.Instance.InitiateLocalFolder();
-
-            // To remove
-            //await new CredentialLockerService().CreateAccount();
-
-            Frame rootFrame = Window.Current.Content as Frame;
-
-            // Do not repeat app initialization when the Window already has content,
-            // just ensure that the window is active
-            if (rootFrame == null)
-            {
-                // Create a Frame to act as the navigation context and navigate to the first page
-                rootFrame = new Frame();
-
-                rootFrame.NavigationFailed += OnNavigationFailed;
-
-                if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
-                {
-                    //TODO: Load state from previously suspended application
-                }
-
-                // Place the frame in the current Window
-                Window.Current.Content = rootFrame;
-            }
-
-            if (e.PrelaunchActivated == false)
-            {
-                if (rootFrame.Content == null)
-                {
-                    // When the navigation stack isn't restored navigate to the first page,
-                    // configuring the new page by passing required information as a navigation
-                    // parameter
-                    rootFrame.Navigate(typeof(MainPage), e.Arguments);
-                }
-                // Ensure the current window is active
-                Window.Current.Activate();
-            }
+            m_window = new MainWindow();
+            m_window.Activate();
         }
 
         /// <summary>
@@ -91,20 +120,6 @@ namespace passbolt
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
-        }
-
-        /// <summary>
-        /// Invoked when application execution is being suspended.  Application state is saved
-        /// without knowing whether the application will be terminated or resumed with the contents
-        /// of memory still intact.
-        /// </summary>
-        /// <param name="sender">The source of the suspend request.</param>
-        /// <param name="e">Details about the suspend request.</param>
-        private void OnSuspending(object sender, SuspendingEventArgs e)
-        {
-            SuspendingDeferral deferral = e.SuspendingOperation.GetDeferral();
-            //TODO: Save application state and stop any background activity
-            deferral.Complete();
         }
     }
 }

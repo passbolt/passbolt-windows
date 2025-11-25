@@ -1,5 +1,0 @@
-<svg viewBox="0 0 128 128" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
-  <circle id="error-circle" r="62.5" transform="matrix(0-1 1 0 64 64)" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dashoffset="392.7" stroke-dasharray="392.7"/>
-  <path id="error-stroke-1" d="M50.5802,50.5801L77.4198,77.4197" transform="matrix(-1 0 0-1 128.000002 127.9998)" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dashoffset="37.96" stroke-dasharray="37.96"/>
-  <path id="error-stroke-2" d="M77.4198,50.5801L50.5802,77.4197" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dashoffset="37.96" stroke-dasharray="37.96"/>
-</svg>
