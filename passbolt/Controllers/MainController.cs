@@ -1,15 +1,15 @@
 /**
- * Passbolt ~ Open source password manager for teams
- * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
- *
- * Licensed under GNU Affero General Public License version 3 of the or any later version.
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
- * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
- * @link          https://www.passbolt.com Passbolt(tm)
- * @since         0.0.1
+* Passbolt ~ Open source password manager for teams
+* Copyright (c) Passbolt SA (https://www.passbolt.com)
+*
+* Licensed under GNU Affero General Public License version 3 of the or any later version.
+* For full copyright and license information, please see the LICENSE.txt
+* Redistributions of files must retain the above copyright notice.
+*
+* @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+* @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+* @link          https://www.passbolt.com Passbolt(tm)
+* @since         0.0.1
  */
 
 using Microsoft.UI.Xaml.Controls;
@@ -101,9 +101,6 @@ namespace passbolt.Controllers
 
                 await this.LoadWebviews();
                 this.SetWebviewSettings(webviewBackground);
-            } else
-            {
-                WebviewOrchestratorService.Instance.SetRenderedStatus(false);
             }
             //When credentials are saved from import and we navigate to auth application we init the trusted domain to check API calls
             if (currentAccountMetaData == null && this.backgroundNavigationService.IsAuthApplication(args.Uri))
@@ -137,9 +134,6 @@ namespace passbolt.Controllers
             if (args.Uri == this.blankPage)
             {
                 this.SetWebviewSettings(webviewRendered);
-            }  else if(!MfaService.Instance.IsMfaUrls(args.Uri))
-            {
-                WebviewOrchestratorService.Instance.SetRenderedStatus(false);
             }
 
             //Check if the Mfa is completed 
@@ -160,6 +154,7 @@ namespace passbolt.Controllers
         {
             await webviewRendered.EnsureCoreWebView2Async();
             await webviewBackground.EnsureCoreWebView2Async();
+
 
             this.renderedWebviewService = new RenderedWebviewService(this.webviewRendered.CoreWebView2);
             this.backgroundWebviewService = new BackgroundWebviewService(this.webviewBackground.CoreWebView2);
@@ -249,45 +244,45 @@ namespace passbolt.Controllers
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected virtual void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
+        protected virtual async void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
         {
-            httpService.CheckAPICall(sender, resource);
-            if (resource.ResourceContext == CoreWebView2WebResourceContext.XmlHttpRequest)
-            {
-                //Check if the request is allowed with the trusted domain
-                // API does not support OPTIONS method, we need to intercept it and return the correct headers
-                if (resource.Request.Method == HttpMethod.Options.Method)
-                {
-                    httpService.ResolveOptionMethod(sender, resource);
-                }
-                else if (httpService.isCallToPownedService(resource))
-                {
-                    resource.GetDeferral().Complete();
-                }
-                else
-                {
-                    HttpRequestMessage request = httpService.BuildHttpRequest(resource);
-                    try
-                    {
-                        HttpResponseMessage response = httpService.SendRequest(request).Result;
-                        httpService.SendResponseToWebview(sender, resource, response);
-                    }
-                    catch (AggregateException ex)
-                    {
-                        foreach (var innerException in ex.InnerExceptions)
-                        {
-                            // Handle each inner exception based on its type
-                            if (innerException is HttpRequestException httpRequestException)
-                            {
-                                httpService.SendErrorToWebview(sender, resource, request, httpRequestException.InnerException.Message);
-                            }
-                        }
-                    }
+            var deferral = resource.GetDeferral();
 
+            try
+            {
+                httpService.CheckAPICall(sender, resource);
+
+                if (resource.ResourceContext == CoreWebView2WebResourceContext.XmlHttpRequest)
+                {
+                    if (resource.Request.Method == HttpMethod.Options.Method)
+                    {
+                        await httpService.ResolveOptionMethod(sender, resource);
+                    }
+                    else if (!httpService.isCallToPownedService(resource))
+                    {
+                        HttpRequestMessage request = httpService.BuildHttpRequest(resource);
+                        HttpResponseMessage response = await httpService.SendRequest(request);
+                        await httpService.SendResponseToWebviewAsync(sender, resource, response);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ WebResourceRequested error: {ex.Message}");
+                try
+                {
+                    await httpService.SendErrorToWebview(sender, resource, null, ex.Message);
+                }
+                catch (Exception errorEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Failed to send error: {errorEx.Message}");
+                }
+            }
+            finally
+            {
+                deferral.Complete();
+            }
         }
-
         /// <summary>
         /// Listener for webviews message received
         /// </summary>
@@ -304,7 +299,7 @@ namespace passbolt.Controllers
             //Validate requestId to be an uuid
             if (ipc.requestId != null && !this.validateUUIDRegex.IsMatch(ipc.requestId))
             {
-                return;
+                throw new UnauthorizedTopicException(ipc.topic);
             }
 
             //Checks if we have data before going futher
@@ -320,11 +315,6 @@ namespace passbolt.Controllers
             }
             else if (renderedNavigationService.canNavigate(webviewSender.Source))
             {
-                if (ipc.topic == AllowedTopics.RENDERED_READY)
-                {
-                    WebviewOrchestratorService.Instance.SetRenderedStatus(true);
-                    backgroundTopic.ProcessPendingMessages();
-                }
                 renderedTopic.ProceedMessage(ipc);
             }
         }

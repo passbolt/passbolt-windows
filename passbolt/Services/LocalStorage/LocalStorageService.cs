@@ -1,4 +1,4 @@
-﻿/**
+/**
 * Passbolt ~ Open source password manager for teams
 * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
 *
@@ -41,7 +41,8 @@ namespace passbolt.Services.LocalStorage
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public async Task SetLocalStorage(WebView2 webviewTarget, string key, string value) {
+        public async Task SetLocalStorage(WebView2 webviewTarget, string key, string value)
+        {
             var storageEvent = $"window.dispatchEvent( new StorageEvent('storage', {{key: '{key}', newValue: {value} }}))";
             await webviewTarget.CoreWebView2.ExecuteScriptAsync($"localStorage.setItem('{key}', {value}); {storageEvent};");
         }
