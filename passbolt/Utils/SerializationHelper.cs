@@ -39,10 +39,10 @@ namespace passbolt.Utils
 
             JsonSerializerSettings settings = new JsonSerializerSettings
             {
-                TypeNameHandling = TypeNameHandling.Auto,
-                StringEscapeHandling = StringEscapeHandling.EscapeHtml,
-                Binder = new SingleTypeBinder(typeof(T))
+                TypeNameHandling = TypeNameHandling.None,
+                StringEscapeHandling = StringEscapeHandling.EscapeHtml
             };
+
             try
             {
                 T obj = JsonConvert.DeserializeObject<T>(SanitizeData(data), settings);
@@ -54,7 +54,7 @@ namespace passbolt.Utils
             }
             catch (JsonSerializationException ex)
             {
-                throw new InvalidOperationException(ex.InnerException.Message);
+                throw new InvalidOperationException(ex.InnerException?.Message ?? ex.Message);
             }
         }
 
