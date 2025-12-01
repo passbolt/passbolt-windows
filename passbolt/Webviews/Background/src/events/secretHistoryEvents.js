@@ -26,7 +26,6 @@ const listen = function(worker, apiClientOptions, account) {
    * @param requestId {uuid} The request identifier
    */
   worker.port.on('passbolt.secret-revisions.find-settings', async requestId => {
-    console.log("called")
     const controller = new FindSecretRevisionsSettingsController(worker, requestId, apiClientOptions);
     await controller._exec();
   });
