@@ -57,6 +57,7 @@ import ProgressContextProvider from "passbolt-styleguide/src/react-extension/con
 import MetadataTypesSettingsLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/MetadataTypesSettingsLocalStorageContext/MetadataTypesSettingsLocalStorageContext";
 import ResourceTypesLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/ResourceTypesLocalStorageContext/ResourceTypesLocalStorageContext";
 import DisplayUserSettingsWorkspace from "passbolt-styleguide/src/react-extension/components/UserSetting/DisplayUserSettingsWorkspace/DisplayUserSettingsWorkspace";
+import SecretRevisionsSettingsContextProvider from "passbolt-styleguide/src/shared/context/SecretRevisionSettingsContext/SecretRevisionsSettingsContext";
 
 /**
  * The passbolt application served by the desktop.
@@ -117,20 +118,22 @@ class AppWorkspace extends Component {
                                                     <ResourceWorkspaceContextProvider>
                                                       <MetadataTypesSettingsLocalStorageContextProvider>
                                                         <ResourceTypesLocalStorageContextProvider>
-                                                          <ResourcePasswordGeneratorContextProvider>
-                                                            <ManageDialogs />
-                                                            <ManageWorkflows />
-                                                            <ManageContextualMenu />
-                                                            <ManageAnnouncements />
-                                                            <DragContextProvider>
-                                                              <div id="container" className="page password">
-                                                                <div id="app" className="app ready" tabIndex="1000">
-                                                                  <ResourcesWebviewContext />
-                                                                  <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
+                                                          <SecretRevisionsSettingsContextProvider>
+                                                            <ResourcePasswordGeneratorContextProvider>
+                                                              <ManageDialogs />
+                                                              <ManageWorkflows />
+                                                              <ManageContextualMenu />
+                                                              <ManageAnnouncements />
+                                                              <DragContextProvider>
+                                                                <div id="container" className="page password">
+                                                                  <div id="app" className="app ready" tabIndex="1000">
+                                                                    <ResourcesWebviewContext />
+                                                                    <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
+                                                                  </div>
                                                                 </div>
-                                                              </div>
-                                                            </DragContextProvider>
-                                                          </ResourcePasswordGeneratorContextProvider>
+                                                              </DragContextProvider>
+                                                            </ResourcePasswordGeneratorContextProvider>
+                                                          </SecretRevisionsSettingsContextProvider>
                                                         </ResourceTypesLocalStorageContextProvider>
                                                       </MetadataTypesSettingsLocalStorageContextProvider>
                                                     </ResourceWorkspaceContextProvider>
