@@ -15,7 +15,6 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Windows.ApplicationModel;
 using Windows.Storage;
 
 namespace passbolt.Services.LocalFolder
@@ -40,11 +39,11 @@ namespace passbolt.Services.LocalFolder
         /// <returns></returns>
         public async Task InitiateLocalFolder()
         {
-            StorageFolder installationFolder = Package.Current.InstalledLocation;
+            StorageFolder installationFolder = Windows.ApplicationModel.Package.Current.InstalledLocation;
             localFolder = ApplicationData.Current.LocalFolder;
             webviewsFolderInstallation = await installationFolder.GetFolderAsync(webviewsFolderName);
             webviewsFolder = await localFolder.CreateFolderAsync(webviewsFolderName, CreationCollisionOption.ReplaceExisting);
-            await  webviewsFolder.CreateFolderAsync("Rendered", CreationCollisionOption.ReplaceExisting);
+            await webviewsFolder.CreateFolderAsync("Rendered", CreationCollisionOption.ReplaceExisting);
             await webviewsFolder.CreateFolderAsync("Background", CreationCollisionOption.ReplaceExisting);
         }
 
@@ -98,7 +97,7 @@ namespace passbolt.Services.LocalFolder
         /// <returns></returns>
         async Task<StorageFile> CreateFile(String Webview, String name)
         {
-            StorageFolder webviewFolder= await webviewsFolder.GetFolderAsync(Webview);
+            StorageFolder webviewFolder = await webviewsFolder.GetFolderAsync(Webview);
             return await webviewFolder.CreateFileAsync(name, CreationCollisionOption.ReplaceExisting);
         }
 
@@ -132,7 +131,7 @@ namespace passbolt.Services.LocalFolder
             // return the common csp with specific by apps
             return $@"<meta http-equiv=""Content-Security-Policy"" content=""{this.commonCSP} script-src https://rendered.dist/Rendered/; style-src 'self' https://rendered.dist/Rendered/dist/themes/; font-src https://rendered.dist/Rendered/fonts/; {csp}"" />";
         }
-         
+
 
         /// <summary>
         /// Get the background csp content

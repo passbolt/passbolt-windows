@@ -98,15 +98,6 @@ module.exports = {
           replace: 'https://rendered.dist/Rendered/dist/locales/passbolt-{{lng}}/'
         },
       ]
-    },{
-      dir: 'dist/themes',
-      files: ['default/ext_app.min.css', 'midgar/ext_app.min.css', 'solarized_dark/ext_app.min.css', 'solarized_light/ext_app.min.css'],
-      rules: [
-        {
-          search: /cursor:\s*col-resize/g,
-          replace: 'cursor: ew-resize'
-        },
-      ]
     }]),
   ],
   devtool: "inline-source-map"

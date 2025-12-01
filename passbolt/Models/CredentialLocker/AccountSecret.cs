@@ -1,4 +1,4 @@
-﻿/**
+/**
 * Passbolt ~ Open source password manager for teams
 * Copyright (c) Passbolt SA (https://www.passbolt.com)
 *
@@ -18,7 +18,6 @@ namespace passbolt.Models.CredentialLocker
     public class AccountSecret
     {
         public AccountSecret() { }
-
         [JsonProperty("user_id")]
         public string userId { get; set; }
         [JsonProperty("user_private_armored_key")]

@@ -1,15 +1,15 @@
 /**
- * Passbolt ~ Open source password manager for teams
- * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
- *
- * Licensed under GNU Affero General Public License version 3 of the or any later version.
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
- * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
- * @link          https://www.passbolt.com Passbolt(tm)
- * @since         0.0.1
+* Passbolt ~ Open source password manager for teams
+* Copyright (c) Passbolt SA (https://www.passbolt.com)
+*
+* Licensed under GNU Affero General Public License version 3 of the or any later version.
+* For full copyright and license information, please see the LICENSE.txt
+* Redistributions of files must retain the above copyright notice.
+*
+* @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
+* @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+* @link          https://www.passbolt.com Passbolt(tm)
+* @since         0.0.1
  */
 
 using System;
@@ -27,7 +27,8 @@ namespace passbolt.Models.Messaging
     {
         private List<string> topics = new List<string>();
 
-        public RenderedTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService, RenderedWebviewService renderedWebviewService) : base(background, rendered, localFolderService, renderedWebviewService) {
+        public RenderedTopic(WebView2 background, WebView2 rendered, LocalFolderService localFolderService, RenderedWebviewService renderedWebviewService) : base(background, rendered, localFolderService, renderedWebviewService)
+        {
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AccountTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(AccountRecoveryTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ActionLogsTopics)));
@@ -54,6 +55,7 @@ namespace passbolt.Models.Messaging
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ResourceTypeTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(RoleTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SecretTopics)));
+            topics.AddRange(ListHelper.GetClassContantsToList(typeof(SecretHistoryTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(SettingTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(ShareTopics)));
             topics.AddRange(ListHelper.GetClassContantsToList(typeof(TagTopics)));
@@ -76,15 +78,6 @@ namespace passbolt.Models.Messaging
                 new UnauthorizedTopicException("Rendered webview");
                 return;
             }
-            else if (ipc.topic == AllowedTopics.RENDERED_READY)
-            {
-                WebviewOrchestratorService.Instance.SetRenderedStatus(true);
-                if (WebviewOrchestratorService.Instance.AreAllReady())
-                {
-                    rendered.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.BACKGROUND_READY)));
-                    background.CoreWebView2.PostWebMessageAsJson(SerializationHelper.SerializeToJson(new IPC(AllowedTopics.RENDERED_READY)));
-                }
-            }
             else if (CanOpenToBrowser(ipc))
             {
                 var url = (string)ipc.message;
@@ -99,7 +92,7 @@ namespace passbolt.Models.Messaging
                 //We intercept the requestId and save it to map the response
                 AllowedTopics.AddPendingRequest(ipc.requestId, RbacTopics.FIND_ME);
             }
-            if(ipc.topic == AllowedTopics.RENDERED_RELOAD)
+            if (ipc.topic == AllowedTopics.RENDERED_RELOAD)
             {
                 rendered.CoreWebView2.Reload();
                 background.CoreWebView2.Reload();
