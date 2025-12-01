@@ -1,4 +1,4 @@
-﻿/**
+/**
 * Passbolt ~ Open source password manager for teams
 * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
 *
@@ -12,7 +12,6 @@
 * @since         0.0.2
 */
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
 using passbolt.Services.NavigationService;
@@ -20,11 +19,11 @@ using Windows.Storage;
 
 namespace passbolt.Services.WebviewService
 {
-    public class RenderedWebviewService: WebviewService
+    public class RenderedWebviewService : WebviewService
     {
         private RenderedNavigationService renderedNavigationService;
 
-        public RenderedWebviewService(CoreWebView2 rendered): base(rendered)
+        public RenderedWebviewService(CoreWebView2 rendered) : base(rendered)
         {
             this.renderedNavigationService = RenderedNavigationService.Instance;
         }
