@@ -62,7 +62,7 @@ namespace passbolt.Services.DownloadService
             var base64EncodedBytes = Convert.FromBase64String(input);
             return base64EncodedBytes;
         }
-
+        
         /// <summary>
         /// Data url to blob
         /// </summary>

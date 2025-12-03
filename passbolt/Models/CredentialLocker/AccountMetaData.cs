@@ -1,4 +1,4 @@
-/**
+﻿/**
 * Passbolt ~ Open source password manager for teams
 * Copyright (c) Passbolt SA (https://www.passbolt.com)
 *
@@ -14,10 +14,12 @@
 
 using Newtonsoft.Json;
 
+
 namespace passbolt.Models.CredentialLocker
 {
     public class AccountMetaData
     {
+
         public AccountMetaData() { }
 
         [JsonProperty("domain")]

@@ -1,15 +1,15 @@
 /**
-* Passbolt ~ Open source password manager for teams
-* Copyright (c) Passbolt SA (https://www.passbolt.com)
-*
-* Licensed under GNU Affero General Public License version 3 of the or any later version.
-* For full copyright and license information, please see the LICENSE.txt
-* Redistributions of files must retain the above copyright notice.
-*
-* @copyright     Copyright (c) Passbolt SA (https://www.passbolt.com)
-* @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
-* @link          https://www.passbolt.com Passbolt(tm)
-* @since         0.0.1
+ * Passbolt ~ Open source password manager for teams
+ * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
+ *
+ * Licensed under GNU Affero General Public License version 3 of the or any later version.
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
+ * @license       https://opensource.org/licenses/AGPL-3.0 AGPL License
+ * @link          https://www.passbolt.com Passbolt(tm)
+ * @since         0.0.1
  */
 
 using System.Collections.Generic;
@@ -62,7 +62,7 @@ namespace passbolt.Services.HttpService
         {
             if (!this.isCallToServer(webviewRequest) && !this.isCallToPownedService(webviewRequest))
             {
-                throw new UnauthorizedAPICallException();
+                return;
             }
         }
 
@@ -73,7 +73,7 @@ namespace passbolt.Services.HttpService
         public void setTrustedDomain(String trustedDomainFromMetadata)
         {
             // Only init trustedDomain if not set yet
-            if (this.trustedDomain == null)
+            if(this.trustedDomain == null)
             {
                 this.trustedDomain = trustedDomainFromMetadata;
             }
@@ -143,7 +143,7 @@ namespace passbolt.Services.HttpService
         /// Resolve option method, this method is not supported by API
         /// </summary>
         /// <param name="resource"></param>
-        public async Task ResolveOptionMethod(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
+        public void ResolveOptionMethod(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
         {
             var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -151,7 +151,7 @@ namespace passbolt.Services.HttpService
                 ReasonPhrase = "Option method"
             };
 
-            await this.SendResponseToWebviewAsync(sender, resource, response);
+            this.SendResponseToWebview(sender, resource, response);
         }
 
         /// <summary>
@@ -177,67 +177,38 @@ namespace passbolt.Services.HttpService
         /// <param name="sender"></param>
         /// <param name="resource"></param>
         /// <param name="response"></param>
-        /// <summary>
-        /// Send response to webview (VERSION ASYNC)
-        /// </summary>
-        /// <summary>
-        /// Send response to webview (VERSION ASYNC - Compatible WinUI 3)
-        /// </summary>
-        public async Task SendResponseToWebviewAsync(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource, HttpResponseMessage response)
+        public void SendResponseToWebview(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource, HttpResponseMessage response)
         {
-            try
+            IRandomAccessStream content = null;
+
+            if (response.Content != null)
             {
-                IRandomAccessStream content = null;
-
-                if (response.Content != null)
-                {
-                    byte[] contentBytes = await response.Content.ReadAsByteArrayAsync();
-
-                    if (contentBytes != null && contentBytes.Length > 0)
-                    {
-                        var randomAccessStream = new InMemoryRandomAccessStream();
-                        await randomAccessStream.WriteAsync(contentBytes.AsBuffer());
-                        randomAccessStream.Seek(0);
-                        content = randomAccessStream;
-                    }
-                }
-
-                // Add cors headers to avoid cors issue
-                this.AddCorsHeaders(sender, response);
-
-                // Split headers entries per line 
-                List<string> headers = response.Headers
-                    .SelectMany(h => h.Value.Select(value => $"{h.Key}: {value}"))
-                    .ToList();
-
-                if (response.Content?.Headers != null)
-                {
-                    var contentHeaders = response.Content.Headers
-                        .SelectMany(h => h.Value.Select(value => $"{h.Key}: {value}"))
-                        .ToList();
-                    headers.AddRange(contentHeaders);
-                }
-
-                List<string> cookies = extractCookieFromHeader(headers);
-                addCookiesToManager(cookies);
-
-                // Create Webview2 response
-                CoreWebView2WebResourceResponse webView2WebResourceResponse = sender.Environment.CreateWebResourceResponse(
-                    content,
-                    (int)response.StatusCode,
-                    !string.IsNullOrEmpty(response.ReasonPhrase) ? response.ReasonPhrase : response.StatusCode.ToString(),
-                    string.Join('\n', headers));
-
-                resource.Response = webView2WebResourceResponse;
+                var stream = response.Content.ReadAsStreamAsync().Result;
+                content = StreamHelper.ConvertStreamToAccessStream(stream).Result;
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in SendResponseToWebviewAsync: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
-                throw;
-            }
+
+            // Add cors headers to avoid cors issue
+            this.AddCorsHeaders(sender, response);
+
+            //Split headers entries per line 
+            List<string> headers = response.Headers
+                .SelectMany(h => h.Value.Select(value => $"{h.Key}: {value}"))                                             
+                .ToList();
+
+            List<string> cookies = extractCookieFromHeader(headers);
+            addCookiesToManager(cookies);
+
+            // Create Webview2 response
+            CoreWebView2WebResourceResponse webView2WebResourceResponse = sender.Environment.CreateWebResourceResponse(
+                content,
+                (int)response.StatusCode,
+                !string.IsNullOrEmpty(response.ReasonPhrase) ? response.ReasonPhrase : response.StatusCode.ToString(),
+                string.Join('\n', headers));
+
+            resource.Response = webView2WebResourceResponse;
         }
-        public async Task SendErrorToWebview(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource, HttpRequestMessage request, String errorMessage)
+
+        public void SendErrorToWebview(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource, HttpRequestMessage request, String errorMessage)
         {
             //Create a single line message
             string[] substrings = errorMessage.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
@@ -258,7 +229,7 @@ namespace passbolt.Services.HttpService
                 StatusCode = HttpStatusCode.BadRequest,
                 RequestMessage = request
             };
-            await this.SendResponseToWebviewAsync(sender, resource, response);
+            this.SendResponseToWebview(sender, resource, response);
         }
 
         /// <summary>

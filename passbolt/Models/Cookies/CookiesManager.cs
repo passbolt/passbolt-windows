@@ -1,4 +1,4 @@
-/**
+﻿/**
 * Passbolt ~ Open source password manager for teams
 * Copyright (c) Passbolt SA (https://www.passbolt.com)
 *
@@ -12,6 +12,7 @@
 * @since         0.6.0
 */
 
+using passbolt.Exceptions;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -24,7 +25,7 @@ namespace passbolt.Models.Cookies
         private static readonly CookiesManager instance = new CookiesManager();
         public static CookiesManager Instance { get => instance; }
 
-        private Dictionary<string, string> cookies = new Dictionary<string, string>();
+        private Dictionary<string, string> cookies =  new Dictionary<string, string>();
 
         public void addCookie(string setCookieHeader)
         {

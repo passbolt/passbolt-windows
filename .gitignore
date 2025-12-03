@@ -27,21 +27,3 @@ Package.StoreAssociation.xml
 
 passbolt/Webviews/Background/junit.xml 
 passbolt/Webviews/Rendered/junit.xml 
-
-passbolt-windows-winui3/passbolt-windows-winui3/bin/
-
-passbolt-windows-winui3/passbolt-windows-winui3/obj/
-
-passbolt-windows-winui3/passbolt-windows-winui3 (Package)/bin/
-
-passbolt-windows-winui3/passbolt-windows-winui3 (Package)/obj/
-
-passbolt-windows-winui3/obj/
-
-passbolt-windows-winui3/bin/
-
-passbolt-windows-winui3/Webviews/Background/node_modules/
-
-passbolt-windows-winui3/Webviews/Rendered/node_modules/
-
-passbolt/.vs/

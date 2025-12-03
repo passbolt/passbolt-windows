@@ -57,6 +57,7 @@ import ProgressContextProvider from "passbolt-styleguide/src/react-extension/con
 import MetadataTypesSettingsLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/MetadataTypesSettingsLocalStorageContext/MetadataTypesSettingsLocalStorageContext";
 import ResourceTypesLocalStorageContextProvider from "passbolt-styleguide/src/shared/context/ResourceTypesLocalStorageContext/ResourceTypesLocalStorageContext";
 import DisplayUserSettingsWorkspace from "passbolt-styleguide/src/react-extension/components/UserSetting/DisplayUserSettingsWorkspace/DisplayUserSettingsWorkspace";
+import {ResizableSidebarContextProvider} from "passbolt-styleguide/src/react-extension/contexts/ResizeSidebar/ResizeSidebarContext";
 import SecretRevisionsSettingsContextProvider from "passbolt-styleguide/src/shared/context/SecretRevisionSettingsContext/SecretRevisionsSettingsContext";
 
 /**
@@ -89,103 +90,107 @@ class AppWorkspace extends Component {
                     <PasswordPoliciesContext>
                       <WorkflowContextProvider>
                         <MfaContextProvider>
-                            <ActionFeedbackContextProvider>
-                              <ManagedClipboardServiceProvider>
-                                <DialogContextProvider>
-                                  <AnnouncementContextProvider>
-                                    <ContextualMenuContextProvider>
-                                      <LoadingContextProvider>
-                                        <ProgressContextProvider>
-                                          { /* Action Feedback Management */}
-                                          <DisplayActionFeedbacks />
+                          <ActionFeedbackContextProvider>
+                            <ManagedClipboardServiceProvider>
+                              <DialogContextProvider>
+                                <AnnouncementContextProvider>
+                                  <ContextualMenuContextProvider>
+                                    <LoadingContextProvider>
+                                      <ProgressContextProvider>
+                                        { /* Action Feedback Management */}
+                                        <DisplayActionFeedbacks />
 
-                                          { /* Dialogs Management */}
-                                          <HandleFolderMoveStrategyEvents />
-                                          <HandleProgressEvents />
-                                          <HandleSessionExpired />
-                                          <HandlePassphraseEntryEvents/>
+                                        { /* Dialogs Management */}
+                                        <HandleFolderMoveStrategyEvents />
+                                        <HandleProgressEvents />
+                                        <HandleSessionExpired />
+                                        <HandlePassphraseEntryEvents/>
 
-                                          <Router>
-                                            <NavigationContextProvider>
-                                              <Switch>
-                                                {/* Passwords workspace */}
-                                                <Route path={[
-                                                  "/app/folders/view/:filterByFolderId",
-                                                  "/app/passwords/view/:selectedResourceId",
-                                                  "/app/passwords",
-                                                ]}>
-                                                  <PasswordExpirySettingsContextProvider>
-                                                    <ResourceWorkspaceContextProvider>
-                                                      <MetadataTypesSettingsLocalStorageContextProvider>
-                                                        <ResourceTypesLocalStorageContextProvider>
-                                                          <SecretRevisionsSettingsContextProvider>
-                                                            <ResourcePasswordGeneratorContextProvider>
-                                                              <ManageDialogs />
-                                                              <ManageWorkflows />
-                                                              <ManageContextualMenu />
-                                                              <ManageAnnouncements />
-                                                              <DragContextProvider>
+                                        <Router>
+                                          <NavigationContextProvider>
+                                            <Switch>
+                                              {/* Passwords workspace */}
+                                              <Route path={[
+                                                "/app/folders/view/:filterByFolderId",
+                                                "/app/passwords/view/:selectedResourceId",
+                                                "/app/passwords",
+                                              ]}>
+                                                <PasswordExpirySettingsContextProvider>
+                                                  <ResourceWorkspaceContextProvider>
+                                                    <MetadataTypesSettingsLocalStorageContextProvider>
+                                                      <ResourceTypesLocalStorageContextProvider>
+                                                        <SecretRevisionsSettingsContextProvider>
+                                                          <ResourcePasswordGeneratorContextProvider>
+                                                            <ManageDialogs />
+                                                            <ManageWorkflows />
+                                                            <ManageContextualMenu />
+                                                            <ManageAnnouncements />
+                                                            <DragContextProvider>
+                                                              <ResizableSidebarContextProvider>
                                                                 <div id="container" className="page password">
                                                                   <div id="app" className="app ready" tabIndex="1000">
                                                                     <ResourcesWebviewContext />
                                                                     <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
                                                                   </div>
                                                                 </div>
-                                                              </DragContextProvider>
-                                                            </ResourcePasswordGeneratorContextProvider>
-                                                          </SecretRevisionsSettingsContextProvider>
-                                                        </ResourceTypesLocalStorageContextProvider>
-                                                      </MetadataTypesSettingsLocalStorageContextProvider>
-                                                    </ResourceWorkspaceContextProvider>
-                                                  </PasswordExpirySettingsContextProvider>
-                                                </Route>
-                                                {/* Users workspace */}
-                                                <Route path={[
-                                                  "/app/groups/view/:selectedGroupId",
-                                                  "/app/groups/edit/:selectedGroupId",
-                                                  "/app/users/view/:selectedUserId",
-                                                  "/app/users"
-                                                ]}>
-                                                  <UserWorkspaceContextProvider>
-                                                    <ManageDialogs />
-                                                    <ManageWorkflows />
-                                                    <ManageContextualMenu />
-                                                    <ManageAnnouncements />
+                                                              </ResizableSidebarContextProvider>
+                                                            </DragContextProvider>
+                                                          </ResourcePasswordGeneratorContextProvider>
+                                                        </SecretRevisionsSettingsContextProvider>
+                                                      </ResourceTypesLocalStorageContextProvider>
+                                                    </MetadataTypesSettingsLocalStorageContextProvider>
+                                                  </ResourceWorkspaceContextProvider>
+                                                </PasswordExpirySettingsContextProvider>
+                                              </Route>
+                                              {/* Users workspace */}
+                                              <Route path={[
+                                                "/app/groups/view/:selectedGroupId",
+                                                "/app/groups/edit/:selectedGroupId",
+                                                "/app/users/view/:selectedUserId",
+                                                "/app/users"
+                                              ]}>
+                                                <UserWorkspaceContextProvider>
+                                                  <ManageDialogs />
+                                                  <ManageWorkflows />
+                                                  <ManageContextualMenu />
+                                                  <ManageAnnouncements />
+                                                  <ResizableSidebarContextProvider>
                                                     <div id="container" className="page user">
                                                       <div id="app" className="app ready" tabIndex="1000">
                                                         <DisplayUserWorkspace />
                                                       </div>
                                                     </div>
-                                                  </UserWorkspaceContextProvider>
-                                                </Route>
-                                                {/* User settings workspace */}
-                                                <Route path={"/app/settings"}>
-                                                  <UserSettingsContextProvider>
-                                                    <UserPassphrasePoliciesContextProvider>
-                                                      <ManageDialogs />
-                                                      <ManageAnnouncements />
-                                                      <div id="container" className="page settings">
-                                                        <div id="app" className="app ready" tabIndex="1000">
-                                                          <DisplayUserSettingsWorkspace />
-                                                        </div>
+                                                  </ResizableSidebarContextProvider>
+                                                </UserWorkspaceContextProvider>
+                                              </Route>
+                                              {/* User settings workspace */}
+                                              <Route path={"/app/settings"}>
+                                                <UserSettingsContextProvider>
+                                                  <UserPassphrasePoliciesContextProvider>
+                                                    <ManageDialogs />
+                                                    <ManageAnnouncements />
+                                                    <div id="container" className="page settings">
+                                                      <div id="app" className="app ready" tabIndex="1000">
+                                                        <DisplayUserSettingsWorkspace />
                                                       </div>
-                                                    </UserPassphrasePoliciesContextProvider>
-                                                  </UserSettingsContextProvider>
-                                                </Route>
-                                                {/* Fallback */}
-                                                <Route path="/">
-                                                  <HandleRouteFallback />
-                                                </Route>
-                                              </Switch>
-                                            </NavigationContextProvider>
-                                          </Router>
-                                        </ProgressContextProvider>
-                                      </LoadingContextProvider>
-                                    </ContextualMenuContextProvider>
-                                  </AnnouncementContextProvider>
-                                </DialogContextProvider>
-                              </ManagedClipboardServiceProvider>
-                            </ActionFeedbackContextProvider>
+                                                    </div>
+                                                  </UserPassphrasePoliciesContextProvider>
+                                                </UserSettingsContextProvider>
+                                              </Route>
+                                              {/* Fallback */}
+                                              <Route path="/">
+                                                <HandleRouteFallback />
+                                              </Route>
+                                            </Switch>
+                                          </NavigationContextProvider>
+                                        </Router>
+                                      </ProgressContextProvider>
+                                    </LoadingContextProvider>
+                                  </ContextualMenuContextProvider>
+                                </AnnouncementContextProvider>
+                              </DialogContextProvider>
+                            </ManagedClipboardServiceProvider>
+                          </ActionFeedbackContextProvider>
                         </MfaContextProvider>
                       </WorkflowContextProvider>
                     </PasswordPoliciesContext>
