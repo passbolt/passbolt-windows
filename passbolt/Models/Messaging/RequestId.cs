@@ -1,4 +1,4 @@
-/**
+﻿/**
 * Passbolt ~ Open source password manager for teams
 * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
 *
@@ -19,3 +19,4 @@ namespace passbolt.Models.Messaging
         public string requestId { get; set; }
     }
 }
+

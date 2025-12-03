@@ -4783,18 +4783,18 @@ class I18n {
   /**
    * Initialize I18n
    * @param {string} locale The locale. i.e. en-UK
-   * @param {array<string>} locales The supported locales. i.e. ['en-UK', 'fr-FR']
+   * @param {array<string>} supportedLocales The supported locales. i.e. ['en-UK', 'fr-FR']
    */
-  static init(locale, locales) {
+  static init(locale, supportedLocales) {
     _i18next = i18next__WEBPACK_IMPORTED_MODULE_0__["default"].createInstance();
     _i18next.use(i18next_http_backend__WEBPACK_IMPORTED_MODULE_1__["default"])
       .init({
         lng: locale,
         load: 'currentOnly',
         backend: {
-          loadPath: (lngs, namespaces) => I18n.getTranslationPath(lngs, namespaces)
+          loadPath: 'https://background.dist/Background/dist/locales/passbolt-{{lng}}/{{ns}}.json'
         },
-        supportedLngs: I18n.supportedLocales(locales),
+        supportedLngs: supportedLocales,
         fallbackLng: false,
         ns: ['common'],
         defaultNS: 'common',
@@ -4803,50 +4803,6 @@ class I18n {
         debug: false,
       });
   }
-
-  /**
-   * Generates the translation file path for i18next with en-GB to en-UK locale mapping.
-   *
-   * i18next no longer supports the non-canonical locale code 'en-UK' and automatically
-   * falls back to the canonical 'en-GB' code. To maintain our existing implementation
-   * which uses 'en-UK' folder structure, this method intercepts the en-GB fallback
-   * and redirects it to our en-UK translation files.
-   * See: https://www.i18next.com/misc/migration-guide#v23.x.x-to-v24.0.0
-   *
-   * @param {string[]} lngs - Array of language codes from i18next
-   * @param {string[]} namespaces - Array of namespace identifiers
-   * @returns {string} The resolved translation file path with en-GB mapped to en-UK
-   */
-  static getTranslationPath(lngs, namespaces) {
-    const lng = lngs[0];
-    const ns = namespaces[0];
-    //i18next is doing a fallback on en-GB we are redirecting to our en-UK folder
-    const actualLng = lng === 'en-GB' ? 'en-UK' : lng;
-    const basePath = 'https://background.dist/Background/dist/locales/passbolt-{{lng}}/{{ns}}.json';
-    return basePath
-      .replace('{{lng}}', actualLng)
-      .replace('{{ns}}', ns);
-  }
-
-  /**
-   * Add fallback locales for i18next compatibility
-   *
-   * i18next no longer supports the non-canonical locale code 'en-UK' and automatically
-   * falls back to the canonical 'en-GB' code. To maintain our existing implementation
-   * which uses 'en-UK' folder structure, this method intercepts the en-GB fallback
-   * and redirects it to our en-UK translation files.
-   * See: https://www.i18next.com/misc/migration-guide#v23.x.x-to-v24.0.0
-   *
-   * @param {array<string>} locales The supported locales. i.e. ['en-UK', 'fr-FR']
-   * @returns {array<string>} The locales with fallback locales added
-   */
-  static supportedLocales(locales) {
-    if (locales.includes('en-UK')) {
-      locales.push('en-GB'); //Need to add the locale to support i18next fallback as en-UK is not supported
-    }
-    return locales;
-  }
-
 
   /**
    * Initialize the library with the default locale.
@@ -5368,7 +5324,6 @@ class DecryptPrivateKeyService {
         passphrase: passphrase
       }));
     } catch (error) {
-      console.error(error);
       throw new _error_invalidMasterPasswordError__WEBPACK_IMPORTED_MODULE_2__["default"]();
     }
   }
@@ -5525,8 +5480,7 @@ class PownedPasswordService {
     let response;
     try {
       response = await fetch(url);
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
       throw new _error_externalServiceUnavailableError__WEBPACK_IMPORTED_MODULE_0__["default"]("pwnedpasswords API service is not available");
     }
 
@@ -6028,7 +5982,6 @@ const readKeyOrFail = async armoredKey => {
   try {
     return await openpgp__WEBPACK_IMPORTED_MODULE_0__.readKey({armoredKey: armoredKey});
   } catch (error) {
-    console.error(error);
     throw new Error(_sdk_i18n__WEBPACK_IMPORTED_MODULE_1__["default"].t("The key should be a valid openpgp armored key string."));
   }
 };
@@ -6112,7 +6065,6 @@ const readMessageOrFail = async message => {
   try {
     return await openpgp__WEBPACK_IMPORTED_MODULE_0__.readMessage({armoredMessage: message});
   } catch (error) {
-    console.error(error);
     throw new Error(_sdk_i18n__WEBPACK_IMPORTED_MODULE_1__["default"].t("The message should be a valid openpgp message."));
   }
 };
@@ -6132,7 +6084,6 @@ const readClearMessageOrFail = async cleartextMessage => {
   try {
     return await openpgp__WEBPACK_IMPORTED_MODULE_0__.readCleartextMessage({cleartextMessage});
   } catch (error) {
-    console.error(error);
     throw new Error(_sdk_i18n__WEBPACK_IMPORTED_MODULE_1__["default"].t("The message should be a valid openpgp message."));
   }
 };
@@ -6929,8 +6880,8 @@ class ApiClient {
       }
       this.baseUrl = `${rawBaseUrl}/${resourceName}`;
       this.baseUrl = new URL(this.baseUrl);
-    } catch (error) {
-      throw new TypeError('ApiClient constructor error: b.', {cause: error});
+    } catch (typeError) {
+      throw new TypeError('ApiClient constructor error: b.');
     }
 
     this.apiVersion = 'api-version=v2';
@@ -7496,7 +7447,6 @@ class Entity {
       this._getPropByPath(propName);
       return true;
     } catch (error) {
-      console.error(`Failed to check if property "${propName}" is set:`, error);
       return false;
     }
   }
@@ -8406,7 +8356,7 @@ class EntitySchema {
       try {
         EntitySchema.validateProp(propName, prop, anyOf[i]);
         return;
-      } catch {
+      } catch (error) {
         // All must fail...
       }
     }
@@ -8485,6 +8435,8 @@ class EntitySchema {
        * Not in json-schema but needed by passbolt
        * cowboy style section 🤠
        */
+      case 'x-url':
+        return validator__WEBPACK_IMPORTED_MODULE_2___default().isURL(prop, {require_tld: false});
       case 'x-hex-color':
         return validator__WEBPACK_IMPORTED_MODULE_2___default().isHexColor(prop);
       case 'x-base64':
@@ -12273,9 +12225,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ assertString)
 /* harmony export */ });
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 function assertString(input) {
-  if (input === undefined || input === null) throw new TypeError("Expected a string but received a ".concat(input));
-  if (input.constructor.name !== 'String') throw new TypeError("Expected a string but received a ".concat(input.constructor.name));
+  var isString = typeof input === 'string' || input instanceof String;
+
+  if (!isString) {
+    var invalidType = _typeof(input);
+
+    if (input === null) invalidType = 'null';else if (invalidType === 'object') invalidType = input.constructor.name;
+    throw new TypeError("Expected a string but received a ".concat(invalidType));
+  }
 }
 
 /***/ }),
@@ -12289,116 +12249,212 @@ function assertString(input) {
 "use strict";
 
 
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
+
 var _toDate = _interopRequireDefault(__webpack_require__(/*! ./lib/toDate */ "./node_modules/validator/lib/toDate.js"));
+
 var _toFloat = _interopRequireDefault(__webpack_require__(/*! ./lib/toFloat */ "./node_modules/validator/lib/toFloat.js"));
+
 var _toInt = _interopRequireDefault(__webpack_require__(/*! ./lib/toInt */ "./node_modules/validator/lib/toInt.js"));
+
 var _toBoolean = _interopRequireDefault(__webpack_require__(/*! ./lib/toBoolean */ "./node_modules/validator/lib/toBoolean.js"));
+
 var _equals = _interopRequireDefault(__webpack_require__(/*! ./lib/equals */ "./node_modules/validator/lib/equals.js"));
+
 var _contains = _interopRequireDefault(__webpack_require__(/*! ./lib/contains */ "./node_modules/validator/lib/contains.js"));
+
 var _matches = _interopRequireDefault(__webpack_require__(/*! ./lib/matches */ "./node_modules/validator/lib/matches.js"));
+
 var _isEmail = _interopRequireDefault(__webpack_require__(/*! ./lib/isEmail */ "./node_modules/validator/lib/isEmail.js"));
+
 var _isURL = _interopRequireDefault(__webpack_require__(/*! ./lib/isURL */ "./node_modules/validator/lib/isURL.js"));
+
 var _isMACAddress = _interopRequireDefault(__webpack_require__(/*! ./lib/isMACAddress */ "./node_modules/validator/lib/isMACAddress.js"));
+
 var _isIP = _interopRequireDefault(__webpack_require__(/*! ./lib/isIP */ "./node_modules/validator/lib/isIP.js"));
+
 var _isIPRange = _interopRequireDefault(__webpack_require__(/*! ./lib/isIPRange */ "./node_modules/validator/lib/isIPRange.js"));
+
 var _isFQDN = _interopRequireDefault(__webpack_require__(/*! ./lib/isFQDN */ "./node_modules/validator/lib/isFQDN.js"));
+
 var _isDate = _interopRequireDefault(__webpack_require__(/*! ./lib/isDate */ "./node_modules/validator/lib/isDate.js"));
+
 var _isTime = _interopRequireDefault(__webpack_require__(/*! ./lib/isTime */ "./node_modules/validator/lib/isTime.js"));
+
 var _isBoolean = _interopRequireDefault(__webpack_require__(/*! ./lib/isBoolean */ "./node_modules/validator/lib/isBoolean.js"));
+
 var _isLocale = _interopRequireDefault(__webpack_require__(/*! ./lib/isLocale */ "./node_modules/validator/lib/isLocale.js"));
-var _isAbaRouting = _interopRequireDefault(__webpack_require__(/*! ./lib/isAbaRouting */ "./node_modules/validator/lib/isAbaRouting.js"));
+
 var _isAlpha = _interopRequireWildcard(__webpack_require__(/*! ./lib/isAlpha */ "./node_modules/validator/lib/isAlpha.js"));
+
 var _isAlphanumeric = _interopRequireWildcard(__webpack_require__(/*! ./lib/isAlphanumeric */ "./node_modules/validator/lib/isAlphanumeric.js"));
+
 var _isNumeric = _interopRequireDefault(__webpack_require__(/*! ./lib/isNumeric */ "./node_modules/validator/lib/isNumeric.js"));
-var _isPassportNumber = _interopRequireWildcard(__webpack_require__(/*! ./lib/isPassportNumber */ "./node_modules/validator/lib/isPassportNumber.js"));
+
+var _isPassportNumber = _interopRequireDefault(__webpack_require__(/*! ./lib/isPassportNumber */ "./node_modules/validator/lib/isPassportNumber.js"));
+
 var _isPort = _interopRequireDefault(__webpack_require__(/*! ./lib/isPort */ "./node_modules/validator/lib/isPort.js"));
+
 var _isLowercase = _interopRequireDefault(__webpack_require__(/*! ./lib/isLowercase */ "./node_modules/validator/lib/isLowercase.js"));
+
 var _isUppercase = _interopRequireDefault(__webpack_require__(/*! ./lib/isUppercase */ "./node_modules/validator/lib/isUppercase.js"));
+
 var _isIMEI = _interopRequireDefault(__webpack_require__(/*! ./lib/isIMEI */ "./node_modules/validator/lib/isIMEI.js"));
+
 var _isAscii = _interopRequireDefault(__webpack_require__(/*! ./lib/isAscii */ "./node_modules/validator/lib/isAscii.js"));
+
 var _isFullWidth = _interopRequireDefault(__webpack_require__(/*! ./lib/isFullWidth */ "./node_modules/validator/lib/isFullWidth.js"));
+
 var _isHalfWidth = _interopRequireDefault(__webpack_require__(/*! ./lib/isHalfWidth */ "./node_modules/validator/lib/isHalfWidth.js"));
+
 var _isVariableWidth = _interopRequireDefault(__webpack_require__(/*! ./lib/isVariableWidth */ "./node_modules/validator/lib/isVariableWidth.js"));
+
 var _isMultibyte = _interopRequireDefault(__webpack_require__(/*! ./lib/isMultibyte */ "./node_modules/validator/lib/isMultibyte.js"));
+
 var _isSemVer = _interopRequireDefault(__webpack_require__(/*! ./lib/isSemVer */ "./node_modules/validator/lib/isSemVer.js"));
+
 var _isSurrogatePair = _interopRequireDefault(__webpack_require__(/*! ./lib/isSurrogatePair */ "./node_modules/validator/lib/isSurrogatePair.js"));
+
 var _isInt = _interopRequireDefault(__webpack_require__(/*! ./lib/isInt */ "./node_modules/validator/lib/isInt.js"));
+
 var _isFloat = _interopRequireWildcard(__webpack_require__(/*! ./lib/isFloat */ "./node_modules/validator/lib/isFloat.js"));
+
 var _isDecimal = _interopRequireDefault(__webpack_require__(/*! ./lib/isDecimal */ "./node_modules/validator/lib/isDecimal.js"));
+
 var _isHexadecimal = _interopRequireDefault(__webpack_require__(/*! ./lib/isHexadecimal */ "./node_modules/validator/lib/isHexadecimal.js"));
+
 var _isOctal = _interopRequireDefault(__webpack_require__(/*! ./lib/isOctal */ "./node_modules/validator/lib/isOctal.js"));
+
 var _isDivisibleBy = _interopRequireDefault(__webpack_require__(/*! ./lib/isDivisibleBy */ "./node_modules/validator/lib/isDivisibleBy.js"));
+
 var _isHexColor = _interopRequireDefault(__webpack_require__(/*! ./lib/isHexColor */ "./node_modules/validator/lib/isHexColor.js"));
+
 var _isRgbColor = _interopRequireDefault(__webpack_require__(/*! ./lib/isRgbColor */ "./node_modules/validator/lib/isRgbColor.js"));
+
 var _isHSL = _interopRequireDefault(__webpack_require__(/*! ./lib/isHSL */ "./node_modules/validator/lib/isHSL.js"));
+
 var _isISRC = _interopRequireDefault(__webpack_require__(/*! ./lib/isISRC */ "./node_modules/validator/lib/isISRC.js"));
+
 var _isIBAN = _interopRequireWildcard(__webpack_require__(/*! ./lib/isIBAN */ "./node_modules/validator/lib/isIBAN.js"));
+
 var _isBIC = _interopRequireDefault(__webpack_require__(/*! ./lib/isBIC */ "./node_modules/validator/lib/isBIC.js"));
+
 var _isMD = _interopRequireDefault(__webpack_require__(/*! ./lib/isMD5 */ "./node_modules/validator/lib/isMD5.js"));
+
 var _isHash = _interopRequireDefault(__webpack_require__(/*! ./lib/isHash */ "./node_modules/validator/lib/isHash.js"));
+
 var _isJWT = _interopRequireDefault(__webpack_require__(/*! ./lib/isJWT */ "./node_modules/validator/lib/isJWT.js"));
+
 var _isJSON = _interopRequireDefault(__webpack_require__(/*! ./lib/isJSON */ "./node_modules/validator/lib/isJSON.js"));
+
 var _isEmpty = _interopRequireDefault(__webpack_require__(/*! ./lib/isEmpty */ "./node_modules/validator/lib/isEmpty.js"));
+
 var _isLength = _interopRequireDefault(__webpack_require__(/*! ./lib/isLength */ "./node_modules/validator/lib/isLength.js"));
+
 var _isByteLength = _interopRequireDefault(__webpack_require__(/*! ./lib/isByteLength */ "./node_modules/validator/lib/isByteLength.js"));
-var _isULID = _interopRequireDefault(__webpack_require__(/*! ./lib/isULID */ "./node_modules/validator/lib/isULID.js"));
+
 var _isUUID = _interopRequireDefault(__webpack_require__(/*! ./lib/isUUID */ "./node_modules/validator/lib/isUUID.js"));
+
 var _isMongoId = _interopRequireDefault(__webpack_require__(/*! ./lib/isMongoId */ "./node_modules/validator/lib/isMongoId.js"));
+
 var _isAfter = _interopRequireDefault(__webpack_require__(/*! ./lib/isAfter */ "./node_modules/validator/lib/isAfter.js"));
+
 var _isBefore = _interopRequireDefault(__webpack_require__(/*! ./lib/isBefore */ "./node_modules/validator/lib/isBefore.js"));
+
 var _isIn = _interopRequireDefault(__webpack_require__(/*! ./lib/isIn */ "./node_modules/validator/lib/isIn.js"));
+
 var _isLuhnNumber = _interopRequireDefault(__webpack_require__(/*! ./lib/isLuhnNumber */ "./node_modules/validator/lib/isLuhnNumber.js"));
+
 var _isCreditCard = _interopRequireDefault(__webpack_require__(/*! ./lib/isCreditCard */ "./node_modules/validator/lib/isCreditCard.js"));
+
 var _isIdentityCard = _interopRequireDefault(__webpack_require__(/*! ./lib/isIdentityCard */ "./node_modules/validator/lib/isIdentityCard.js"));
+
 var _isEAN = _interopRequireDefault(__webpack_require__(/*! ./lib/isEAN */ "./node_modules/validator/lib/isEAN.js"));
+
 var _isISIN = _interopRequireDefault(__webpack_require__(/*! ./lib/isISIN */ "./node_modules/validator/lib/isISIN.js"));
+
 var _isISBN = _interopRequireDefault(__webpack_require__(/*! ./lib/isISBN */ "./node_modules/validator/lib/isISBN.js"));
+
 var _isISSN = _interopRequireDefault(__webpack_require__(/*! ./lib/isISSN */ "./node_modules/validator/lib/isISSN.js"));
+
 var _isTaxID = _interopRequireDefault(__webpack_require__(/*! ./lib/isTaxID */ "./node_modules/validator/lib/isTaxID.js"));
+
 var _isMobilePhone = _interopRequireWildcard(__webpack_require__(/*! ./lib/isMobilePhone */ "./node_modules/validator/lib/isMobilePhone.js"));
+
 var _isEthereumAddress = _interopRequireDefault(__webpack_require__(/*! ./lib/isEthereumAddress */ "./node_modules/validator/lib/isEthereumAddress.js"));
+
 var _isCurrency = _interopRequireDefault(__webpack_require__(/*! ./lib/isCurrency */ "./node_modules/validator/lib/isCurrency.js"));
+
 var _isBtcAddress = _interopRequireDefault(__webpack_require__(/*! ./lib/isBtcAddress */ "./node_modules/validator/lib/isBtcAddress.js"));
-var _isISO = __webpack_require__(/*! ./lib/isISO6346 */ "./node_modules/validator/lib/isISO6346.js");
-var _isISO2 = _interopRequireDefault(__webpack_require__(/*! ./lib/isISO6391 */ "./node_modules/validator/lib/isISO6391.js"));
-var _isISO3 = _interopRequireDefault(__webpack_require__(/*! ./lib/isISO8601 */ "./node_modules/validator/lib/isISO8601.js"));
+
+var _isISO = _interopRequireDefault(__webpack_require__(/*! ./lib/isISO6391 */ "./node_modules/validator/lib/isISO6391.js"));
+
+var _isISO2 = _interopRequireDefault(__webpack_require__(/*! ./lib/isISO8601 */ "./node_modules/validator/lib/isISO8601.js"));
+
 var _isRFC = _interopRequireDefault(__webpack_require__(/*! ./lib/isRFC3339 */ "./node_modules/validator/lib/isRFC3339.js"));
-var _isISO4 = _interopRequireDefault(__webpack_require__(/*! ./lib/isISO15924 */ "./node_modules/validator/lib/isISO15924.js"));
+
 var _isISO31661Alpha = _interopRequireDefault(__webpack_require__(/*! ./lib/isISO31661Alpha2 */ "./node_modules/validator/lib/isISO31661Alpha2.js"));
+
 var _isISO31661Alpha2 = _interopRequireDefault(__webpack_require__(/*! ./lib/isISO31661Alpha3 */ "./node_modules/validator/lib/isISO31661Alpha3.js"));
-var _isISO31661Numeric = _interopRequireDefault(__webpack_require__(/*! ./lib/isISO31661Numeric */ "./node_modules/validator/lib/isISO31661Numeric.js"));
-var _isISO5 = _interopRequireDefault(__webpack_require__(/*! ./lib/isISO4217 */ "./node_modules/validator/lib/isISO4217.js"));
+
+var _isISO3 = _interopRequireDefault(__webpack_require__(/*! ./lib/isISO4217 */ "./node_modules/validator/lib/isISO4217.js"));
+
 var _isBase = _interopRequireDefault(__webpack_require__(/*! ./lib/isBase32 */ "./node_modules/validator/lib/isBase32.js"));
+
 var _isBase2 = _interopRequireDefault(__webpack_require__(/*! ./lib/isBase58 */ "./node_modules/validator/lib/isBase58.js"));
+
 var _isBase3 = _interopRequireDefault(__webpack_require__(/*! ./lib/isBase64 */ "./node_modules/validator/lib/isBase64.js"));
+
 var _isDataURI = _interopRequireDefault(__webpack_require__(/*! ./lib/isDataURI */ "./node_modules/validator/lib/isDataURI.js"));
+
 var _isMagnetURI = _interopRequireDefault(__webpack_require__(/*! ./lib/isMagnetURI */ "./node_modules/validator/lib/isMagnetURI.js"));
-var _isMailtoURI = _interopRequireDefault(__webpack_require__(/*! ./lib/isMailtoURI */ "./node_modules/validator/lib/isMailtoURI.js"));
+
 var _isMimeType = _interopRequireDefault(__webpack_require__(/*! ./lib/isMimeType */ "./node_modules/validator/lib/isMimeType.js"));
+
 var _isLatLong = _interopRequireDefault(__webpack_require__(/*! ./lib/isLatLong */ "./node_modules/validator/lib/isLatLong.js"));
+
 var _isPostalCode = _interopRequireWildcard(__webpack_require__(/*! ./lib/isPostalCode */ "./node_modules/validator/lib/isPostalCode.js"));
+
 var _ltrim = _interopRequireDefault(__webpack_require__(/*! ./lib/ltrim */ "./node_modules/validator/lib/ltrim.js"));
+
 var _rtrim = _interopRequireDefault(__webpack_require__(/*! ./lib/rtrim */ "./node_modules/validator/lib/rtrim.js"));
+
 var _trim = _interopRequireDefault(__webpack_require__(/*! ./lib/trim */ "./node_modules/validator/lib/trim.js"));
+
 var _escape = _interopRequireDefault(__webpack_require__(/*! ./lib/escape */ "./node_modules/validator/lib/escape.js"));
+
 var _unescape = _interopRequireDefault(__webpack_require__(/*! ./lib/unescape */ "./node_modules/validator/lib/unescape.js"));
+
 var _stripLow = _interopRequireDefault(__webpack_require__(/*! ./lib/stripLow */ "./node_modules/validator/lib/stripLow.js"));
+
 var _whitelist = _interopRequireDefault(__webpack_require__(/*! ./lib/whitelist */ "./node_modules/validator/lib/whitelist.js"));
+
 var _blacklist = _interopRequireDefault(__webpack_require__(/*! ./lib/blacklist */ "./node_modules/validator/lib/blacklist.js"));
+
 var _isWhitelisted = _interopRequireDefault(__webpack_require__(/*! ./lib/isWhitelisted */ "./node_modules/validator/lib/isWhitelisted.js"));
+
 var _normalizeEmail = _interopRequireDefault(__webpack_require__(/*! ./lib/normalizeEmail */ "./node_modules/validator/lib/normalizeEmail.js"));
+
 var _isSlug = _interopRequireDefault(__webpack_require__(/*! ./lib/isSlug */ "./node_modules/validator/lib/isSlug.js"));
+
 var _isLicensePlate = _interopRequireDefault(__webpack_require__(/*! ./lib/isLicensePlate */ "./node_modules/validator/lib/isLicensePlate.js"));
+
 var _isStrongPassword = _interopRequireDefault(__webpack_require__(/*! ./lib/isStrongPassword */ "./node_modules/validator/lib/isStrongPassword.js"));
+
 var _isVAT = _interopRequireDefault(__webpack_require__(/*! ./lib/isVAT */ "./node_modules/validator/lib/isVAT.js"));
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var version = '13.15.23';
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var version = '13.9.0';
 var validator = {
   version: version,
   toDate: _toDate.default,
@@ -12417,14 +12473,12 @@ var validator = {
   isBoolean: _isBoolean.default,
   isIBAN: _isIBAN.default,
   isBIC: _isBIC.default,
-  isAbaRouting: _isAbaRouting.default,
   isAlpha: _isAlpha.default,
   isAlphaLocales: _isAlpha.locales,
   isAlphanumeric: _isAlphanumeric.default,
   isAlphanumericLocales: _isAlphanumeric.locales,
   isNumeric: _isNumeric.default,
   isPassportNumber: _isPassportNumber.default,
-  passportNumberLocales: _isPassportNumber.locales,
   isPort: _isPort.default,
   isLowercase: _isLowercase.default,
   isUppercase: _isUppercase.default,
@@ -12455,7 +12509,6 @@ var validator = {
   isLength: _isLength.default,
   isLocale: _isLocale.default,
   isByteLength: _isByteLength.default,
-  isULID: _isULID.default,
   isUUID: _isUUID.default,
   isMongoId: _isMongoId.default,
   isAfter: _isAfter.default,
@@ -12475,22 +12528,17 @@ var validator = {
   isEthereumAddress: _isEthereumAddress.default,
   isCurrency: _isCurrency.default,
   isBtcAddress: _isBtcAddress.default,
-  isISO6346: _isISO.isISO6346,
-  isFreightContainerID: _isISO.isFreightContainerID,
-  isISO6391: _isISO2.default,
-  isISO8601: _isISO3.default,
-  isISO15924: _isISO4.default,
+  isISO6391: _isISO.default,
+  isISO8601: _isISO2.default,
   isRFC3339: _isRFC.default,
   isISO31661Alpha2: _isISO31661Alpha.default,
   isISO31661Alpha3: _isISO31661Alpha2.default,
-  isISO31661Numeric: _isISO31661Numeric.default,
-  isISO4217: _isISO5.default,
+  isISO4217: _isISO3.default,
   isBase32: _isBase.default,
   isBase58: _isBase2.default,
   isBase64: _isBase3.default,
   isDataURI: _isDataURI.default,
   isMagnetURI: _isMagnetURI.default,
-  isMailtoURI: _isMailtoURI.default,
   isMimeType: _isMimeType.default,
   isLatLong: _isLatLong.default,
   ltrim: _ltrim.default,
@@ -12513,7 +12561,8 @@ var validator = {
   isVAT: _isVAT.default,
   ibanLocales: _isIBAN.locales
 };
-var _default = exports["default"] = validator;
+var _default = validator;
+exports["default"] = _default;
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -12531,8 +12580,8 @@ module.exports["default"] = exports.default;
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
-exports.farsiLocales = exports.englishLocales = exports.dotDecimal = exports.decimal = exports.commaDecimal = exports.bengaliLocales = exports.arabicLocales = exports.alphanumeric = exports.alpha = void 0;
-var alpha = exports.alpha = {
+exports.commaDecimal = exports.dotDecimal = exports.bengaliLocales = exports.farsiLocales = exports.arabicLocales = exports.englishLocales = exports.decimal = exports.alphanumeric = exports.alpha = void 0;
+var alpha = {
   'en-US': /^[A-Z]+$/i,
   'az-AZ': /^[A-VXYZÇƏĞİıÖŞÜ]+$/i,
   'bg-BG': /^[А-Я]+$/i,
@@ -12553,7 +12602,6 @@ var alpha = exports.alpha = {
   'pl-PL': /^[A-ZĄĆĘŚŁŃÓŻŹ]+$/i,
   'pt-PT': /^[A-ZÃÁÀÂÄÇÉÊËÍÏÕÓÔÖÚÜ]+$/i,
   'ru-RU': /^[А-ЯЁ]+$/i,
-  'kk-KZ': /^[А-ЯЁ\u04D8\u04B0\u0406\u04A2\u0492\u04AE\u049A\u04E8\u04BA]+$/i,
   'sl-SI': /^[A-ZČĆĐŠŽ]+$/i,
   'sk-SK': /^[A-ZÁČĎÉÍŇÓŠŤÚÝŽĹŔĽÄÔ]+$/i,
   'sr-RS@latin': /^[A-ZČĆŽŠĐ]+$/i,
@@ -12569,18 +12617,11 @@ var alpha = exports.alpha = {
   he: /^[א-ת]+$/,
   fa: /^['آاءأؤئبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهةی']+$/i,
   bn: /^['ঀঁংঃঅআইঈউঊঋঌএঐওঔকখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহ়ঽািীুূৃৄেৈোৌ্ৎৗড়ঢ়য়ৠৡৢৣৰৱ৲৳৴৵৶৷৸৹৺৻']+$/,
-  eo: /^[ABCĈD-GĜHĤIJĴK-PRSŜTUŬVZ]+$/i,
   'hi-IN': /^[\u0900-\u0961]+[\u0972-\u097F]*$/i,
-  'si-LK': /^[\u0D80-\u0DFF]+$/,
-  'ta-IN': /^[\u0B80-\u0BFF]+$/i,
-  'te-IN': /^[\u0C00-\u0C7F]+$/i,
-  'kn-IN': /^[\u0C80-\u0CFF]+$/i,
-  'ml-IN': /^[\u0D00-\u0D7F]+$/i,
-  'gu-IN': /^[\u0A80-\u0AFF]+$/i,
-  'pa-IN': /^[\u0A00-\u0A7F]+$/i,
-  'or-IN': /^[\u0B00-\u0B7F]+$/i
+  'si-LK': /^[\u0D80-\u0DFF]+$/
 };
-var alphanumeric = exports.alphanumeric = {
+exports.alpha = alpha;
+var alphanumeric = {
   'en-US': /^[0-9A-Z]+$/i,
   'az-AZ': /^[0-9A-VXYZÇƏĞİıÖŞÜ]+$/i,
   'bg-BG': /^[0-9А-Я]+$/i,
@@ -12600,7 +12641,6 @@ var alphanumeric = exports.alphanumeric = {
   'pl-PL': /^[0-9A-ZĄĆĘŚŁŃÓŻŹ]+$/i,
   'pt-PT': /^[0-9A-ZÃÁÀÂÄÇÉÊËÍÏÕÓÔÖÚÜ]+$/i,
   'ru-RU': /^[0-9А-ЯЁ]+$/i,
-  'kk-KZ': /^[0-9А-ЯЁ\u04D8\u04B0\u0406\u04A2\u0492\u04AE\u049A\u04E8\u04BA]+$/i,
   'sl-SI': /^[0-9A-ZČĆĐŠŽ]+$/i,
   'sk-SK': /^[0-9A-ZÁČĎÉÍŇÓŠŤÚÝŽĹŔĽÄÔ]+$/i,
   'sr-RS@latin': /^[0-9A-ZČĆŽŠĐ]+$/i,
@@ -12616,72 +12656,79 @@ var alphanumeric = exports.alphanumeric = {
   he: /^[0-9א-ת]+$/,
   fa: /^['0-9آاءأؤئبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهةی۱۲۳۴۵۶۷۸۹۰']+$/i,
   bn: /^['ঀঁংঃঅআইঈউঊঋঌএঐওঔকখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহ়ঽািীুূৃৄেৈোৌ্ৎৗড়ঢ়য়ৠৡৢৣ০১২৩৪৫৬৭৮৯ৰৱ৲৳৴৵৶৷৸৹৺৻']+$/,
-  eo: /^[0-9ABCĈD-GĜHĤIJĴK-PRSŜTUŬVZ]+$/i,
   'hi-IN': /^[\u0900-\u0963]+[\u0966-\u097F]*$/i,
-  'si-LK': /^[0-9\u0D80-\u0DFF]+$/,
-  'ta-IN': /^[0-9\u0B80-\u0BFF.]+$/i,
-  'te-IN': /^[0-9\u0C00-\u0C7F.]+$/i,
-  'kn-IN': /^[0-9\u0C80-\u0CFF.]+$/i,
-  'ml-IN': /^[0-9\u0D00-\u0D7F.]+$/i,
-  'gu-IN': /^[0-9\u0A80-\u0AFF.]+$/i,
-  'pa-IN': /^[0-9\u0A00-\u0A7F.]+$/i,
-  'or-IN': /^[0-9\u0B00-\u0B7F.]+$/i
+  'si-LK': /^[0-9\u0D80-\u0DFF]+$/
 };
-var decimal = exports.decimal = {
+exports.alphanumeric = alphanumeric;
+var decimal = {
   'en-US': '.',
   ar: '٫'
 };
-var englishLocales = exports.englishLocales = ['AU', 'GB', 'HK', 'IN', 'NZ', 'ZA', 'ZM'];
+exports.decimal = decimal;
+var englishLocales = ['AU', 'GB', 'HK', 'IN', 'NZ', 'ZA', 'ZM'];
+exports.englishLocales = englishLocales;
+
 for (var locale, i = 0; i < englishLocales.length; i++) {
   locale = "en-".concat(englishLocales[i]);
   alpha[locale] = alpha['en-US'];
   alphanumeric[locale] = alphanumeric['en-US'];
   decimal[locale] = decimal['en-US'];
-}
+} // Source: http://www.localeplanet.com/java/
 
-// Source: http://www.localeplanet.com/java/
-var arabicLocales = exports.arabicLocales = ['AE', 'BH', 'DZ', 'EG', 'IQ', 'JO', 'KW', 'LB', 'LY', 'MA', 'QM', 'QA', 'SA', 'SD', 'SY', 'TN', 'YE'];
+
+var arabicLocales = ['AE', 'BH', 'DZ', 'EG', 'IQ', 'JO', 'KW', 'LB', 'LY', 'MA', 'QM', 'QA', 'SA', 'SD', 'SY', 'TN', 'YE'];
+exports.arabicLocales = arabicLocales;
+
 for (var _locale, _i = 0; _i < arabicLocales.length; _i++) {
   _locale = "ar-".concat(arabicLocales[_i]);
   alpha[_locale] = alpha.ar;
   alphanumeric[_locale] = alphanumeric.ar;
   decimal[_locale] = decimal.ar;
 }
-var farsiLocales = exports.farsiLocales = ['IR', 'AF'];
+
+var farsiLocales = ['IR', 'AF'];
+exports.farsiLocales = farsiLocales;
+
 for (var _locale2, _i2 = 0; _i2 < farsiLocales.length; _i2++) {
   _locale2 = "fa-".concat(farsiLocales[_i2]);
   alphanumeric[_locale2] = alphanumeric.fa;
   decimal[_locale2] = decimal.ar;
 }
-var bengaliLocales = exports.bengaliLocales = ['BD', 'IN'];
+
+var bengaliLocales = ['BD', 'IN'];
+exports.bengaliLocales = bengaliLocales;
+
 for (var _locale3, _i3 = 0; _i3 < bengaliLocales.length; _i3++) {
   _locale3 = "bn-".concat(bengaliLocales[_i3]);
   alpha[_locale3] = alpha.bn;
   alphanumeric[_locale3] = alphanumeric.bn;
   decimal[_locale3] = decimal['en-US'];
-}
+} // Source: https://en.wikipedia.org/wiki/Decimal_mark
 
-// Source: https://en.wikipedia.org/wiki/Decimal_mark
-var dotDecimal = exports.dotDecimal = ['ar-EG', 'ar-LB', 'ar-LY'];
-var commaDecimal = exports.commaDecimal = ['bg-BG', 'cs-CZ', 'da-DK', 'de-DE', 'el-GR', 'en-ZM', 'eo', 'es-ES', 'fr-CA', 'fr-FR', 'gu-IN', 'hi-IN', 'hu-HU', 'id-ID', 'it-IT', 'kk-KZ', 'kn-IN', 'ku-IQ', 'ml-IN', 'nb-NO', 'nl-NL', 'nn-NO', 'or-IN', 'pa-IN', 'pl-PL', 'pt-PT', 'ru-RU', 'si-LK', 'sl-SI', 'sr-RS', 'sr-RS@latin', 'sv-SE', 'ta-IN', 'te-IN', 'tr-TR', 'uk-UA', 'vi-VN'];
+
+var dotDecimal = ['ar-EG', 'ar-LB', 'ar-LY'];
+exports.dotDecimal = dotDecimal;
+var commaDecimal = ['bg-BG', 'cs-CZ', 'da-DK', 'de-DE', 'el-GR', 'en-ZM', 'es-ES', 'fr-CA', 'fr-FR', 'id-ID', 'it-IT', 'ku-IQ', 'hi-IN', 'hu-HU', 'nb-NO', 'nn-NO', 'nl-NL', 'pl-PL', 'pt-PT', 'ru-RU', 'si-LK', 'sl-SI', 'sr-RS@latin', 'sr-RS', 'sv-SE', 'tr-TR', 'uk-UA', 'vi-VN'];
+exports.commaDecimal = commaDecimal;
+
 for (var _i4 = 0; _i4 < dotDecimal.length; _i4++) {
   decimal[dotDecimal[_i4]] = decimal['en-US'];
 }
+
 for (var _i5 = 0; _i5 < commaDecimal.length; _i5++) {
   decimal[commaDecimal[_i5]] = ',';
 }
+
 alpha['fr-CA'] = alpha['fr-FR'];
 alphanumeric['fr-CA'] = alphanumeric['fr-FR'];
 alpha['pt-BR'] = alpha['pt-PT'];
 alphanumeric['pt-BR'] = alphanumeric['pt-PT'];
-decimal['pt-BR'] = decimal['pt-PT'];
+decimal['pt-BR'] = decimal['pt-PT']; // see #862
 
-// see #862
 alpha['pl-Pl'] = alpha['pl-PL'];
 alphanumeric['pl-Pl'] = alphanumeric['pl-PL'];
-decimal['pl-Pl'] = decimal['pl-PL'];
+decimal['pl-Pl'] = decimal['pl-PL']; // see #1455
 
-// see #1455
 alpha['fa-AF'] = alpha.fa;
 
 /***/ }),
@@ -12699,12 +12746,16 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = blacklist;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function blacklist(str, chars) {
   (0, _assertString.default)(str);
   return str.replace(new RegExp("[".concat(chars, "]+"), 'g'), '');
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -12723,22 +12774,31 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = contains;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _toString = _interopRequireDefault(__webpack_require__(/*! ./util/toString */ "./node_modules/validator/lib/util/toString.js"));
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var defaultContainsOptions = {
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var defaulContainsOptions = {
   ignoreCase: false,
   minOccurrences: 1
 };
+
 function contains(str, elem, options) {
   (0, _assertString.default)(str);
-  options = (0, _merge.default)(options, defaultContainsOptions);
+  options = (0, _merge.default)(options, defaulContainsOptions);
+
   if (options.ignoreCase) {
     return str.toLowerCase().split((0, _toString.default)(elem).toLowerCase()).length > options.minOccurrences;
   }
+
   return str.split((0, _toString.default)(elem)).length > options.minOccurrences;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -12757,12 +12817,16 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = equals;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function equals(str, comparison) {
   (0, _assertString.default)(str);
   return str === comparison;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -12781,45 +12845,16 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = escape;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function escape(str) {
   (0, _assertString.default)(str);
   return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\//g, '&#x2F;').replace(/\\/g, '&#x5C;').replace(/`/g, '&#96;');
 }
-module.exports = exports.default;
-module.exports["default"] = exports.default;
 
-/***/ }),
-
-/***/ "./node_modules/validator/lib/isAbaRouting.js":
-/*!****************************************************!*\
-  !*** ./node_modules/validator/lib/isAbaRouting.js ***!
-  \****************************************************/
-/***/ ((module, exports, __webpack_require__) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = isAbaRouting;
-var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-// http://www.brainjar.com/js/validation/
-// https://www.aba.com/news-research/research-analysis/routing-number-policy-procedures
-// series reserved for future use are excluded
-var isRoutingReg = /^(?!(1[3-9])|(20)|(3[3-9])|(4[0-9])|(5[0-9])|(60)|(7[3-9])|(8[1-9])|(9[0-2])|(9[3-9]))[0-9]{9}$/;
-function isAbaRouting(str) {
-  (0, _assertString.default)(str);
-  if (!isRoutingReg.test(str)) return false;
-  var checkSumVal = 0;
-  for (var i = 0; i < str.length; i++) {
-    if (i % 3 === 0) checkSumVal += str[i] * 3;else if (i % 3 === 1) checkSumVal += str[i] * 7;else checkSumVal += str[i] * 1;
-  }
-  return checkSumVal % 10 === 0;
-}
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -12838,17 +12873,20 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isAfter;
+
 var _toDate = _interopRequireDefault(__webpack_require__(/*! ./toDate */ "./node_modules/validator/lib/toDate.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isAfter(date, options) {
   // For backwards compatibility:
   // isAfter(str [, date]), i.e. `options` could be used as argument for the legacy `date`
-  var comparisonDate = (_typeof(options) === 'object' ? options.comparisonDate : options) || Date().toString();
+  var comparisonDate = (options === null || options === void 0 ? void 0 : options.comparisonDate) || options || Date().toString();
   var comparison = (0, _toDate.default)(comparisonDate);
   var original = (0, _toDate.default)(date);
   return !!(original && comparison && original > comparison);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -12868,15 +12906,20 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = isAlpha;
 exports.locales = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _alpha = __webpack_require__(/*! ./alpha */ "./node_modules/validator/lib/alpha.js");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isAlpha(_str) {
   var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'en-US';
   var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   (0, _assertString.default)(_str);
   var str = _str;
   var ignore = options.ignore;
+
   if (ignore) {
     if (ignore instanceof RegExp) {
       str = str.replace(ignore, '');
@@ -12886,12 +12929,16 @@ function isAlpha(_str) {
       throw new Error('ignore should be instance of a String or RegExp');
     }
   }
+
   if (locale in _alpha.alpha) {
     return _alpha.alpha[locale].test(str);
   }
+
   throw new Error("Invalid locale '".concat(locale, "'"));
 }
-var locales = exports.locales = Object.keys(_alpha.alpha);
+
+var locales = Object.keys(_alpha.alpha);
+exports.locales = locales;
 
 /***/ }),
 
@@ -12909,15 +12956,20 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = isAlphanumeric;
 exports.locales = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _alpha = __webpack_require__(/*! ./alpha */ "./node_modules/validator/lib/alpha.js");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isAlphanumeric(_str) {
   var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'en-US';
   var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   (0, _assertString.default)(_str);
   var str = _str;
   var ignore = options.ignore;
+
   if (ignore) {
     if (ignore instanceof RegExp) {
       str = str.replace(ignore, '');
@@ -12927,12 +12979,16 @@ function isAlphanumeric(_str) {
       throw new Error('ignore should be instance of a String or RegExp');
     }
   }
+
   if (locale in _alpha.alphanumeric) {
     return _alpha.alphanumeric[locale].test(str);
   }
+
   throw new Error("Invalid locale '".concat(locale, "'"));
 }
-var locales = exports.locales = Object.keys(_alpha.alphanumeric);
+
+var locales = Object.keys(_alpha.alphanumeric);
+exports.locales = locales;
 
 /***/ }),
 
@@ -12949,8 +13005,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isAscii;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /* eslint-disable no-control-regex */
 var ascii = /^[\x00-\x7F]+$/;
 /* eslint-enable no-control-regex */
@@ -12959,6 +13018,7 @@ function isAscii(str) {
   (0, _assertString.default)(str);
   return ascii.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -12977,22 +13037,29 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isBIC;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _isISO31661Alpha = __webpack_require__(/*! ./isISO31661Alpha2 */ "./node_modules/validator/lib/isISO31661Alpha2.js");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // https://en.wikipedia.org/wiki/ISO_9362
 var isBICReg = /^[A-Za-z]{6}[A-Za-z0-9]{2}([A-Za-z0-9]{3})?$/;
-function isBIC(str) {
-  (0, _assertString.default)(str);
 
-  // toUpperCase() should be removed when a new major version goes out that changes
+function isBIC(str) {
+  (0, _assertString.default)(str); // toUpperCase() should be removed when a new major version goes out that changes
   // the regex to [A-Z] (per the spec).
+
   var countryCode = str.slice(4, 6).toUpperCase();
+
   if (!_isISO31661Alpha.CountryCodes.has(countryCode) && countryCode !== 'XK') {
     return false;
   }
+
   return isBICReg.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13011,26 +13078,36 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isBase32;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var base32 = /^[A-Z2-7]+=*$/;
 var crockfordBase32 = /^[A-HJKMNP-TV-Z0-9]+$/;
 var defaultBase32Options = {
   crockford: false
 };
+
 function isBase32(str, options) {
   (0, _assertString.default)(str);
   options = (0, _merge.default)(options, defaultBase32Options);
+
   if (options.crockford) {
     return crockfordBase32.test(str);
   }
+
   var len = str.length;
+
   if (len % 8 === 0 && base32.test(str)) {
     return true;
   }
+
   return false;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13049,17 +13126,24 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isBase58;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // Accepted chars - 123456789ABCDEFGH JKLMN PQRSTUVWXYZabcdefghijk mnopqrstuvwxyz
 var base58Reg = /^[A-HJ-NP-Za-km-z1-9]*$/;
+
 function isBase58(str) {
   (0, _assertString.default)(str);
+
   if (base58Reg.test(str)) {
     return true;
   }
+
   return false;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13078,30 +13162,36 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isBase64;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var base64WithPadding = /^[A-Za-z0-9+/]+={0,2}$/;
-var base64WithoutPadding = /^[A-Za-z0-9+/]+$/;
-var base64UrlWithPadding = /^[A-Za-z0-9_-]+={0,2}$/;
-var base64UrlWithoutPadding = /^[A-Za-z0-9_-]+$/;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var notBase64 = /[^A-Z0-9+\/=]/i;
+var urlSafeBase64 = /^[A-Z0-9_\-]*$/i;
+var defaultBase64Options = {
+  urlSafe: false
+};
+
 function isBase64(str, options) {
-  var _options;
   (0, _assertString.default)(str);
-  options = (0, _merge.default)(options, {
-    urlSafe: false,
-    padding: !((_options = options) !== null && _options !== void 0 && _options.urlSafe)
-  });
-  if (str === '') return true;
-  if (options.padding && str.length % 4 !== 0) return false;
-  var regex;
+  options = (0, _merge.default)(options, defaultBase64Options);
+  var len = str.length;
+
   if (options.urlSafe) {
-    regex = options.padding ? base64UrlWithPadding : base64UrlWithoutPadding;
-  } else {
-    regex = options.padding ? base64WithPadding : base64WithoutPadding;
+    return urlSafeBase64.test(str);
   }
-  return (!options.padding || str.length % 4 === 0) && regex.test(str);
+
+  if (len % 4 !== 0 || notBase64.test(str)) {
+    return false;
+  }
+
+  var firstPaddingChar = str.indexOf('=');
+  return firstPaddingChar === -1 || firstPaddingChar === len - 1 || firstPaddingChar === len - 2 && str[len - 1] === '=';
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13120,17 +13210,21 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isBefore;
+
+var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _toDate = _interopRequireDefault(__webpack_require__(/*! ./toDate */ "./node_modules/validator/lib/toDate.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function isBefore(date, options) {
-  // For backwards compatibility:
-  // isBefore(str [, date]), i.e. `options` could be used as argument for the legacy `date`
-  var comparisonDate = (_typeof(options) === 'object' ? options.comparisonDate : options) || Date().toString();
-  var comparison = (0, _toDate.default)(comparisonDate);
-  var original = (0, _toDate.default)(date);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function isBefore(str) {
+  var date = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : String(new Date());
+  (0, _assertString.default)(str);
+  var comparison = (0, _toDate.default)(date);
+  var original = (0, _toDate.default)(str);
   return !!(original && comparison && original < comparison);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13149,22 +13243,28 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isBoolean;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-var _includesArray = _interopRequireDefault(__webpack_require__(/*! ./util/includesArray */ "./node_modules/validator/lib/util/includesArray.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var defaultOptions = {
   loose: false
 };
 var strictBooleans = ['true', 'false', '1', '0'];
 var looseBooleans = [].concat(strictBooleans, ['yes', 'no']);
+
 function isBoolean(str) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : defaultOptions;
   (0, _assertString.default)(str);
+
   if (options.loose) {
-    return (0, _includesArray.default)(looseBooleans, str.toLowerCase());
+    return looseBooleans.includes(str.toLowerCase());
   }
-  return (0, _includesArray.default)(strictBooleans, str);
+
+  return strictBooleans.includes(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13183,14 +13283,19 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isBtcAddress;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var bech32 = /^(bc1|tb1|bc1p|tb1p)[ac-hj-np-z02-9]{39,58}$/;
-var base58 = /^(1|2|3|m)[A-HJ-NP-Za-km-z1-9]{25,39}$/;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var bech32 = /^(bc1)[a-z0-9]{25,39}$/;
+var base58 = /^(1|3)[A-HJ-NP-Za-km-z1-9]{25,39}$/;
+
 function isBtcAddress(str) {
   (0, _assertString.default)(str);
   return bech32.test(str) || base58.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13209,14 +13314,19 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isByteLength;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 /* eslint-disable prefer-rest-params */
 function isByteLength(str, options) {
   (0, _assertString.default)(str);
   var min;
   var max;
+
   if (_typeof(options) === 'object') {
     min = options.min || 0;
     max = options.max;
@@ -13225,9 +13335,11 @@ function isByteLength(str, options) {
     min = arguments[1];
     max = arguments[2];
   }
+
   var len = encodeURI(str).split(/%..|./).length - 1;
   return len >= min && (typeof max === 'undefined' || len <= max);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13246,9 +13358,13 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isCreditCard;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _isLuhnNumber = _interopRequireDefault(__webpack_require__(/*! ./isLuhnNumber */ "./node_modules/validator/lib/isLuhnNumber.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var cards = {
   amex: /^3[47][0-9]{13}$/,
   dinersclub: /^3(?:0[0-5]|[68][0-9])[0-9]{11}$/,
@@ -13259,21 +13375,17 @@ var cards = {
   unionpay: /^(6[27][0-9]{14}|^(81[0-9]{14,17}))$/,
   visa: /^(?:4[0-9]{12})(?:[0-9]{3,6})?$/
 };
-var allCards = function () {
-  var tmpCardsArray = [];
-  for (var cardProvider in cards) {
-    // istanbul ignore else
-    if (cards.hasOwnProperty(cardProvider)) {
-      tmpCardsArray.push(cards[cardProvider]);
-    }
-  }
-  return tmpCardsArray;
-}();
+/* eslint-disable max-len */
+
+var allCards = /^(?:4[0-9]{12}(?:[0-9]{3,6})?|5[1-5][0-9]{14}|(222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}|6(?:011|5[0-9][0-9])[0-9]{12,15}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11}|6[27][0-9]{14}|^(81[0-9]{14,17}))$/;
+/* eslint-enable max-len */
+
 function isCreditCard(card) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   (0, _assertString.default)(card);
   var provider = options.provider;
   var sanitized = card.replace(/[- ]+/g, '');
+
   if (provider && provider.toLowerCase() in cards) {
     // specific provider in the list
     if (!cards[provider.toLowerCase()].test(sanitized)) {
@@ -13282,14 +13394,14 @@ function isCreditCard(card) {
   } else if (provider && !(provider.toLowerCase() in cards)) {
     /* specific provider not in the list */
     throw new Error("".concat(provider, " is not a valid credit card provider."));
-  } else if (!allCards.some(function (cardProvider) {
-    return cardProvider.test(sanitized);
-  })) {
+  } else if (!allCards.test(sanitized)) {
     // no specific provider
     return false;
   }
+
   return (0, _isLuhnNumber.default)(card);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13308,35 +13420,38 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isCurrency;
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function currencyRegex(options) {
   var decimal_digits = "\\d{".concat(options.digits_after_decimal[0], "}");
   options.digits_after_decimal.forEach(function (digit, index) {
     if (index !== 0) decimal_digits = "".concat(decimal_digits, "|\\d{").concat(digit, "}");
   });
   var symbol = "(".concat(options.symbol.replace(/\W/, function (m) {
-      return "\\".concat(m);
-    }), ")").concat(options.require_symbol ? '' : '?'),
-    negative = '-?',
-    whole_dollar_amount_without_sep = '[1-9]\\d*',
-    whole_dollar_amount_with_sep = "[1-9]\\d{0,2}(\\".concat(options.thousands_separator, "\\d{3})*"),
-    valid_whole_dollar_amounts = ['0', whole_dollar_amount_without_sep, whole_dollar_amount_with_sep],
-    whole_dollar_amount = "(".concat(valid_whole_dollar_amounts.join('|'), ")?"),
-    decimal_amount = "(\\".concat(options.decimal_separator, "(").concat(decimal_digits, "))").concat(options.require_decimal ? '' : '?');
-  var pattern = whole_dollar_amount + (options.allow_decimal || options.require_decimal ? decimal_amount : '');
+    return "\\".concat(m);
+  }), ")").concat(options.require_symbol ? '' : '?'),
+      negative = '-?',
+      whole_dollar_amount_without_sep = '[1-9]\\d*',
+      whole_dollar_amount_with_sep = "[1-9]\\d{0,2}(\\".concat(options.thousands_separator, "\\d{3})*"),
+      valid_whole_dollar_amounts = ['0', whole_dollar_amount_without_sep, whole_dollar_amount_with_sep],
+      whole_dollar_amount = "(".concat(valid_whole_dollar_amounts.join('|'), ")?"),
+      decimal_amount = "(\\".concat(options.decimal_separator, "(").concat(decimal_digits, "))").concat(options.require_decimal ? '' : '?');
+  var pattern = whole_dollar_amount + (options.allow_decimal || options.require_decimal ? decimal_amount : ''); // default is negative sign before symbol, but there are two other options (besides parens)
 
-  // default is negative sign before symbol, but there are two other options (besides parens)
   if (options.allow_negatives && !options.parens_for_negatives) {
     if (options.negative_sign_after_digits) {
       pattern += negative;
     } else if (options.negative_sign_before_digits) {
       pattern = negative + pattern;
     }
-  }
+  } // South African Rand, for example, uses R 123 (space) and R-123 (no space)
 
-  // South African Rand, for example, uses R 123 (space) and R-123 (no space)
+
   if (options.allow_negative_sign_placeholder) {
     pattern = "( (?!\\-))?".concat(pattern);
   } else if (options.allow_space_after_symbol) {
@@ -13344,23 +13459,26 @@ function currencyRegex(options) {
   } else if (options.allow_space_after_digits) {
     pattern += '( (?!$))?';
   }
+
   if (options.symbol_after_digits) {
     pattern += symbol;
   } else {
     pattern = symbol + pattern;
   }
+
   if (options.allow_negatives) {
     if (options.parens_for_negatives) {
       pattern = "(\\(".concat(pattern, "\\)|").concat(pattern, ")");
     } else if (!(options.negative_sign_before_digits || options.negative_sign_after_digits)) {
       pattern = negative + pattern;
     }
-  }
-
-  // ensure there's a dollar and/or decimal amount, and that
+  } // ensure there's a dollar and/or decimal amount, and that
   // it doesn't start with a space or a negative sign followed by a space
+
+
   return new RegExp("^(?!-? )(?=.*\\d)".concat(pattern, "$"));
 }
+
 var default_currency_options = {
   symbol: '$',
   require_symbol: false,
@@ -13378,11 +13496,13 @@ var default_currency_options = {
   digits_after_decimal: [2],
   allow_space_after_digits: false
 };
+
 function isCurrency(str, options) {
   (0, _assertString.default)(str);
   options = (0, _merge.default)(options, default_currency_options);
   return currencyRegex(options).test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13401,38 +13521,51 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isDataURI;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var validMediaType = /^[a-z]+\/[a-z0-9\-\+\._]+$/i;
 var validAttribute = /^[a-z\-]+=[a-z0-9\-]+$/i;
 var validData = /^[a-z0-9!\$&'\(\)\*\+,;=\-\._~:@\/\?%\s]*$/i;
+
 function isDataURI(str) {
   (0, _assertString.default)(str);
   var data = str.split(',');
+
   if (data.length < 2) {
     return false;
   }
+
   var attributes = data.shift().trim().split(';');
   var schemeAndMediaType = attributes.shift();
+
   if (schemeAndMediaType.slice(0, 5) !== 'data:') {
     return false;
   }
+
   var mediaType = schemeAndMediaType.slice(5);
+
   if (mediaType !== '' && !validMediaType.test(mediaType)) {
     return false;
   }
+
   for (var i = 0; i < attributes.length; i++) {
     if (!(i === attributes.length - 1 && attributes[i].toLowerCase() === 'base64') && !validAttribute.test(attributes[i])) {
       return false;
     }
   }
+
   for (var _i = 0; _i < data.length; _i++) {
     if (!validData.test(data[_i])) {
       return false;
     }
   }
+
   return true;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13451,42 +13584,57 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isDate;
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 var default_date_options = {
   format: 'YYYY/MM/DD',
   delimiters: ['/', '-'],
   strictMode: false
 };
+
 function isValidFormat(format) {
   return /(^(y{4}|y{2})[.\/-](m{1,2})[.\/-](d{1,2})$)|(^(m{1,2})[.\/-](d{1,2})[.\/-]((y{4}|y{2})$))|(^(d{1,2})[.\/-](m{1,2})[.\/-]((y{4}|y{2})$))/gi.test(format);
 }
+
 function zip(date, format) {
   var zippedArr = [],
-    len = Math.max(date.length, format.length);
+      len = Math.min(date.length, format.length);
+
   for (var i = 0; i < len; i++) {
     zippedArr.push([date[i], format[i]]);
   }
+
   return zippedArr;
 }
+
 function isDate(input, options) {
   if (typeof options === 'string') {
-    // Allow backward compatibility for old format isDate(input [, format])
+    // Allow backward compatbility for old format isDate(input [, format])
     options = (0, _merge.default)({
       format: options
     }, default_date_options);
   } else {
     options = (0, _merge.default)(options, default_date_options);
   }
+
   if (typeof input === 'string' && isValidFormat(options.format)) {
-    if (options.strictMode && input.length !== options.format.length) return false;
     var formatDelimiter = options.delimiters.find(function (delimiter) {
       return options.format.indexOf(delimiter) !== -1;
     });
@@ -13495,16 +13643,20 @@ function isDate(input, options) {
     });
     var dateAndFormat = zip(input.split(dateDelimiter), options.format.toLowerCase().split(formatDelimiter));
     var dateObj = {};
+
     var _iterator = _createForOfIteratorHelper(dateAndFormat),
-      _step;
+        _step;
+
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var _step$value = _slicedToArray(_step.value, 2),
-          dateWord = _step$value[0],
-          formatWord = _step$value[1];
-        if (!dateWord || !formatWord || dateWord.length !== formatWord.length) {
+            dateWord = _step$value[0],
+            formatWord = _step$value[1];
+
+        if (dateWord.length !== formatWord.length) {
           return false;
         }
+
         dateObj[formatWord.charAt(0)] = dateWord;
       }
     } catch (err) {
@@ -13512,39 +13664,17 @@ function isDate(input, options) {
     } finally {
       _iterator.f();
     }
-    var fullYear = dateObj.y;
 
-    // Check if the year starts with a hyphen
-    if (fullYear.startsWith('-')) {
-      return false; // Hyphen before year is not allowed
-    }
-    if (dateObj.y.length === 2) {
-      var parsedYear = parseInt(dateObj.y, 10);
-      if (isNaN(parsedYear)) {
-        return false;
-      }
-      var currentYearLastTwoDigits = new Date().getFullYear() % 100;
-      if (parsedYear < currentYearLastTwoDigits) {
-        fullYear = "20".concat(dateObj.y);
-      } else {
-        fullYear = "19".concat(dateObj.y);
-      }
-    }
-    var month = dateObj.m;
-    if (dateObj.m.length === 1) {
-      month = "0".concat(dateObj.m);
-    }
-    var day = dateObj.d;
-    if (dateObj.d.length === 1) {
-      day = "0".concat(dateObj.d);
-    }
-    return new Date("".concat(fullYear, "-").concat(month, "-").concat(day, "T00:00:00.000Z")).getUTCDate() === +dateObj.d;
+    return new Date("".concat(dateObj.m, "/").concat(dateObj.d, "/").concat(dateObj.y)).getDate() === +dateObj.d;
   }
+
   if (!options.strictMode) {
     return Object.prototype.toString.call(input) === '[object Date]' && isFinite(input);
   }
+
   return false;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13563,29 +13693,40 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isDecimal;
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-var _includesArray = _interopRequireDefault(__webpack_require__(/*! ./util/includesArray */ "./node_modules/validator/lib/util/includesArray.js"));
+
+var _includes = _interopRequireDefault(__webpack_require__(/*! ./util/includes */ "./node_modules/validator/lib/util/includes.js"));
+
 var _alpha = __webpack_require__(/*! ./alpha */ "./node_modules/validator/lib/alpha.js");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function decimalRegExp(options) {
   var regExp = new RegExp("^[-+]?([0-9]+)?(\\".concat(_alpha.decimal[options.locale], "[0-9]{").concat(options.decimal_digits, "})").concat(options.force_decimal ? '' : '?', "$"));
   return regExp;
 }
+
 var default_decimal_options = {
   force_decimal: false,
   decimal_digits: '1,',
   locale: 'en-US'
 };
 var blacklist = ['', '-', '+'];
+
 function isDecimal(str, options) {
   (0, _assertString.default)(str);
   options = (0, _merge.default)(options, default_decimal_options);
+
   if (options.locale in _alpha.decimal) {
-    return !(0, _includesArray.default)(blacklist, str.replace(/ /g, '')) && decimalRegExp(options).test(str);
+    return !(0, _includes.default)(blacklist, str.replace(/ /g, '')) && decimalRegExp(options).test(str);
   }
+
   throw new Error("Invalid locale '".concat(options.locale, "'"));
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13604,13 +13745,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isDivisibleBy;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _toFloat = _interopRequireDefault(__webpack_require__(/*! ./toFloat */ "./node_modules/validator/lib/toFloat.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isDivisibleBy(str, num) {
   (0, _assertString.default)(str);
   return (0, _toFloat.default)(str) % parseInt(num, 10) === 0;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13629,8 +13775,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isEAN;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * The most commonly used EAN standard is
  * the thirteen-digit EAN-13, while the
@@ -13646,14 +13795,13 @@ function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e
  */
 
 /**
- * Define EAN Lengths; 8 for EAN-8; 13 for EAN-13; 14 for EAN-14
+ * Define EAN Lenghts; 8 for EAN-8; 13 for EAN-13; 14 for EAN-14
  * and Regular Expression for valid EANs (EAN-8, EAN-13, EAN-14),
- * with exact numeric matching of 8 or 13 or 14 digits [0-9]
+ * with exact numberic matching of 8 or 13 or 14 digits [0-9]
  */
 var LENGTH_EAN_8 = 8;
 var LENGTH_EAN_14 = 14;
 var validEanRegex = /^(\d{8}|\d{13}|\d{14})$/;
-
 /**
  * Get position weight given:
  * EAN length and digit index/position
@@ -13662,13 +13810,14 @@ var validEanRegex = /^(\d{8}|\d{13}|\d{14})$/;
  * @param {number} index
  * @return {number}
  */
+
 function getPositionWeightThroughLengthAndIndex(length, index) {
   if (length === LENGTH_EAN_8 || length === LENGTH_EAN_14) {
     return index % 2 === 0 ? 3 : 1;
   }
+
   return index % 2 === 0 ? 1 : 3;
 }
-
 /**
  * Calculate EAN Check Digit
  * Reference: https://en.wikipedia.org/wiki/International_Article_Number#Calculation_of_checksum_digit
@@ -13676,6 +13825,8 @@ function getPositionWeightThroughLengthAndIndex(length, index) {
  * @param {string} ean
  * @return {number}
  */
+
+
 function calculateCheckDigit(ean) {
   var checksum = ean.slice(0, -1).split('').map(function (char, index) {
     return Number(char) * getPositionWeightThroughLengthAndIndex(ean.length, index);
@@ -13685,7 +13836,6 @@ function calculateCheckDigit(ean) {
   var remainder = 10 - checksum % 10;
   return remainder < 10 ? remainder : 0;
 }
-
 /**
  * Check if string is valid EAN:
  * Matches EAN-8/EAN-13/EAN-14 regex
@@ -13694,11 +13844,14 @@ function calculateCheckDigit(ean) {
  * @param {string} str
  * @return {boolean}
  */
+
+
 function isEAN(str) {
   (0, _assertString.default)(str);
   var actualCheckDigit = Number(str.slice(-1));
   return validEanRegex.test(str) && actualCheckDigit === calculateCheckDigit(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13717,16 +13870,21 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isEmail;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-var _checkHost = _interopRequireDefault(__webpack_require__(/*! ./util/checkHost */ "./node_modules/validator/lib/util/checkHost.js"));
-var _isByteLength = _interopRequireDefault(__webpack_require__(/*! ./isByteLength */ "./node_modules/validator/lib/isByteLength.js"));
-var _isFQDN = _interopRequireDefault(__webpack_require__(/*! ./isFQDN */ "./node_modules/validator/lib/isFQDN.js"));
-var _isIP = _interopRequireDefault(__webpack_require__(/*! ./isIP */ "./node_modules/validator/lib/isIP.js"));
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+var _isByteLength = _interopRequireDefault(__webpack_require__(/*! ./isByteLength */ "./node_modules/validator/lib/isByteLength.js"));
+
+var _isFQDN = _interopRequireDefault(__webpack_require__(/*! ./isFQDN */ "./node_modules/validator/lib/isFQDN.js"));
+
+var _isIP = _interopRequireDefault(__webpack_require__(/*! ./isIP */ "./node_modules/validator/lib/isIP.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var default_email_options = {
   allow_display_name: false,
-  allow_underscores: false,
   require_display_name: false,
   allow_utf8_local_part: true,
   require_tld: true,
@@ -13735,66 +13893,74 @@ var default_email_options = {
   host_blacklist: [],
   host_whitelist: []
 };
-
 /* eslint-disable max-len */
+
 /* eslint-disable no-control-regex */
+
 var splitNameAddress = /^([^\x00-\x1F\x7F-\x9F\cX]+)</i;
 var emailUserPart = /^[a-z\d!#\$%&'\*\+\-\/=\?\^_`{\|}~]+$/i;
 var gmailUserPart = /^[a-z\d]+$/;
 var quotedEmailUser = /^([\s\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e]|(\\[\x01-\x09\x0b\x0c\x0d-\x7f]))*$/i;
-var emailUserUtf8Part = /^[a-z\d!#\$%&'\*\+\-\/=\?\^_`{\|}~\u00A1-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+$/i;
+var emailUserUtf8Part = /^[a-z\d!#\$%&'\*\+\-\/=\?\^_`{\|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+$/i;
 var quotedEmailUserUtf8 = /^([\s\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|(\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*$/i;
 var defaultMaxEmailLength = 254;
 /* eslint-enable max-len */
+
 /* eslint-enable no-control-regex */
 
 /**
  * Validate display name according to the RFC2822: https://tools.ietf.org/html/rfc2822#appendix-A.1.2
  * @param {String} display_name
  */
+
 function validateDisplayName(display_name) {
-  var display_name_without_quotes = display_name.replace(/^"(.+)"$/, '$1');
-  // display name with only spaces is not valid
+  var display_name_without_quotes = display_name.replace(/^"(.+)"$/, '$1'); // display name with only spaces is not valid
+
   if (!display_name_without_quotes.trim()) {
     return false;
-  }
+  } // check whether display name contains illegal character
 
-  // check whether display name contains illegal character
+
   var contains_illegal = /[\.";<>]/.test(display_name_without_quotes);
+
   if (contains_illegal) {
     // if contains illegal characters,
     // must to be enclosed in double-quotes, otherwise it's not a valid display name
     if (display_name_without_quotes === display_name) {
       return false;
-    }
+    } // the quotes in display name must start with character symbol \
 
-    // the quotes in display name must start with character symbol \
+
     var all_start_with_back_slash = display_name_without_quotes.split('"').length === display_name_without_quotes.split('\\"').length;
+
     if (!all_start_with_back_slash) {
       return false;
     }
   }
+
   return true;
 }
+
 function isEmail(str, options) {
   (0, _assertString.default)(str);
   options = (0, _merge.default)(options, default_email_options);
+
   if (options.require_display_name || options.allow_display_name) {
     var display_email = str.match(splitNameAddress);
+
     if (display_email) {
-      var display_name = display_email[1];
-
-      // Remove display name and angle brackets to get email address
+      var display_name = display_email[1]; // Remove display name and angle brackets to get email address
       // Can be done in the regex but will introduce a ReDOS (See  #1597 for more info)
-      str = str.replace(display_name, '').replace(/(^<|>$)/g, '');
 
-      // sometimes need to trim the last space to get the display name
+      str = str.replace(display_name, '').replace(/(^<|>$)/g, ''); // sometimes need to trim the last space to get the display name
       // because there may be a space between display name and email address
       // eg. myname <address@gmail.com>
       // the display name is `myname` instead of `myname `, so need to trim the last space
+
       if (display_name.endsWith(' ')) {
         display_name = display_name.slice(0, -1);
       }
+
       if (!validateDisplayName(display_name)) {
         return false;
       }
@@ -13802,46 +13968,53 @@ function isEmail(str, options) {
       return false;
     }
   }
+
   if (!options.ignore_max_length && str.length > defaultMaxEmailLength) {
     return false;
   }
+
   var parts = str.split('@');
   var domain = parts.pop();
   var lower_domain = domain.toLowerCase();
-  if (options.host_blacklist.length > 0 && (0, _checkHost.default)(lower_domain, options.host_blacklist)) {
+
+  if (options.host_blacklist.includes(lower_domain)) {
     return false;
   }
-  if (options.host_whitelist.length > 0 && !(0, _checkHost.default)(lower_domain, options.host_whitelist)) {
+
+  if (options.host_whitelist.length > 0 && !options.host_whitelist.includes(lower_domain)) {
     return false;
   }
+
   var user = parts.join('@');
+
   if (options.domain_specific_validation && (lower_domain === 'gmail.com' || lower_domain === 'googlemail.com')) {
     /*
-    Previously we removed dots for gmail addresses before validating.
-    This was removed because it allows `multiple..dots@gmail.com`
-    to be reported as valid, but it is not.
-    Gmail only normalizes single dots, removing them from here is pointless,
-    should be done in normalizeEmail
+      Previously we removed dots for gmail addresses before validating.
+      This was removed because it allows `multiple..dots@gmail.com`
+      to be reported as valid, but it is not.
+      Gmail only normalizes single dots, removing them from here is pointless,
+      should be done in normalizeEmail
     */
-    user = user.toLowerCase();
+    user = user.toLowerCase(); // Removing sub-address from username before gmail validation
 
-    // Removing sub-address from username before gmail validation
-    var username = user.split('+')[0];
+    var username = user.split('+')[0]; // Dots are not included in gmail length restriction
 
-    // Dots are not included in gmail length restriction
     if (!(0, _isByteLength.default)(username.replace(/\./g, ''), {
       min: 6,
       max: 30
     })) {
       return false;
     }
+
     var _user_parts = username.split('.');
+
     for (var i = 0; i < _user_parts.length; i++) {
       if (!gmailUserPart.test(_user_parts[i])) {
         return false;
       }
     }
   }
+
   if (options.ignore_max_length === false && (!(0, _isByteLength.default)(user, {
     max: 64
   }) || !(0, _isByteLength.default)(domain, {
@@ -13849,40 +14022,49 @@ function isEmail(str, options) {
   }))) {
     return false;
   }
+
   if (!(0, _isFQDN.default)(domain, {
     require_tld: options.require_tld,
-    ignore_max_length: options.ignore_max_length,
-    allow_underscores: options.allow_underscores
+    ignore_max_length: options.ignore_max_length
   })) {
     if (!options.allow_ip_domain) {
       return false;
     }
+
     if (!(0, _isIP.default)(domain)) {
       if (!domain.startsWith('[') || !domain.endsWith(']')) {
         return false;
       }
+
       var noBracketdomain = domain.slice(1, -1);
+
       if (noBracketdomain.length === 0 || !(0, _isIP.default)(noBracketdomain)) {
         return false;
       }
     }
   }
-  if (options.blacklisted_chars) {
-    if (user.search(new RegExp("[".concat(options.blacklisted_chars, "]+"), 'g')) !== -1) return false;
-  }
-  if (user[0] === '"' && user[user.length - 1] === '"') {
+
+  if (user[0] === '"') {
     user = user.slice(1, user.length - 1);
     return options.allow_utf8_local_part ? quotedEmailUserUtf8.test(user) : quotedEmailUser.test(user);
   }
+
   var pattern = options.allow_utf8_local_part ? emailUserUtf8Part : emailUserPart;
   var user_parts = user.split('.');
+
   for (var _i = 0; _i < user_parts.length; _i++) {
     if (!pattern.test(user_parts[_i])) {
       return false;
     }
   }
+
+  if (options.blacklisted_chars) {
+    if (user.search(new RegExp("[".concat(options.blacklisted_chars, "]+"), 'g')) !== -1) return false;
+  }
+
   return true;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13901,17 +14083,23 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isEmpty;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var default_is_empty_options = {
   ignore_whitespace: false
 };
+
 function isEmpty(str, options) {
   (0, _assertString.default)(str);
   options = (0, _merge.default)(options, default_is_empty_options);
   return (options.ignore_whitespace ? str.trim().length : str.length) === 0;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13930,13 +14118,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isEthereumAddress;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var eth = /^(0x)[0-9a-f]{40}$/i;
+
 function isEthereumAddress(str) {
   (0, _assertString.default)(str);
   return eth.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -13955,9 +14148,13 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isFQDN;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var default_fqdn_options = {
   require_tld: true,
   allow_underscores: false,
@@ -13966,63 +14163,73 @@ var default_fqdn_options = {
   allow_wildcard: false,
   ignore_max_length: false
 };
+
 function isFQDN(str, options) {
   (0, _assertString.default)(str);
   options = (0, _merge.default)(options, default_fqdn_options);
-
   /* Remove the optional trailing dot before checking validity */
+
   if (options.allow_trailing_dot && str[str.length - 1] === '.') {
     str = str.substring(0, str.length - 1);
   }
-
   /* Remove the optional wildcard before checking validity */
+
+
   if (options.allow_wildcard === true && str.indexOf('*.') === 0) {
     str = str.substring(2);
   }
+
   var parts = str.split('.');
   var tld = parts[parts.length - 1];
+
   if (options.require_tld) {
     // disallow fqdns without tld
     if (parts.length < 2) {
       return false;
     }
+
     if (!options.allow_numeric_tld && !/^([a-z\u00A1-\u00A8\u00AA-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,}|xn[a-z0-9-]{2,})$/i.test(tld)) {
       return false;
-    }
+    } // disallow spaces
 
-    // disallow spaces
+
     if (/\s/.test(tld)) {
       return false;
     }
-  }
+  } // reject numeric TLDs
 
-  // reject numeric TLDs
+
   if (!options.allow_numeric_tld && /^\d+$/.test(tld)) {
     return false;
   }
+
   return parts.every(function (part) {
     if (part.length > 63 && !options.ignore_max_length) {
       return false;
     }
+
     if (!/^[a-z_\u00a1-\uffff0-9-]+$/i.test(part)) {
       return false;
-    }
+    } // disallow full-width chars
 
-    // disallow full-width chars
+
     if (/[\uff01-\uff5e]/.test(part)) {
       return false;
-    }
+    } // disallow parts starting or ending with hyphen
 
-    // disallow parts starting or ending with hyphen
+
     if (/^-|-$/.test(part)) {
       return false;
     }
+
     if (!options.allow_underscores && /_/.test(part)) {
       return false;
     }
+
     return true;
   });
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14042,21 +14249,28 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = isFloat;
 exports.locales = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-var _nullUndefinedCheck = _interopRequireDefault(__webpack_require__(/*! ./util/nullUndefinedCheck */ "./node_modules/validator/lib/util/nullUndefinedCheck.js"));
+
 var _alpha = __webpack_require__(/*! ./alpha */ "./node_modules/validator/lib/alpha.js");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isFloat(str, options) {
   (0, _assertString.default)(str);
   options = options || {};
   var float = new RegExp("^(?:[-+])?(?:[0-9]+)?(?:\\".concat(options.locale ? _alpha.decimal[options.locale] : '.', "[0-9]*)?(?:[eE][\\+\\-]?(?:[0-9]+))?$"));
+
   if (str === '' || str === '.' || str === ',' || str === '-' || str === '+') {
     return false;
   }
+
   var value = parseFloat(str.replace(',', '.'));
-  return float.test(str) && (!options.hasOwnProperty('min') || (0, _nullUndefinedCheck.default)(options.min) || value >= options.min) && (!options.hasOwnProperty('max') || (0, _nullUndefinedCheck.default)(options.max) || value <= options.max) && (!options.hasOwnProperty('lt') || (0, _nullUndefinedCheck.default)(options.lt) || value < options.lt) && (!options.hasOwnProperty('gt') || (0, _nullUndefinedCheck.default)(options.gt) || value > options.gt);
+  return float.test(str) && (!options.hasOwnProperty('min') || value >= options.min) && (!options.hasOwnProperty('max') || value <= options.max) && (!options.hasOwnProperty('lt') || value < options.lt) && (!options.hasOwnProperty('gt') || value > options.gt);
 }
-var locales = exports.locales = Object.keys(_alpha.decimal);
+
+var locales = Object.keys(_alpha.decimal);
+exports.locales = locales;
 
 /***/ }),
 
@@ -14074,9 +14288,14 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = isFullWidth;
 exports.fullWidth = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var fullWidth = exports.fullWidth = /[^\u0020-\u007E\uFF61-\uFF9F\uFFA0-\uFFDC\uFFE8-\uFFEE0-9a-zA-Z]/;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var fullWidth = /[^\u0020-\u007E\uFF61-\uFF9F\uFFA0-\uFFDC\uFFE8-\uFFEE0-9a-zA-Z]/;
+exports.fullWidth = fullWidth;
+
 function isFullWidth(str) {
   (0, _assertString.default)(str);
   return fullWidth.test(str);
@@ -14097,20 +14316,26 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isHSL;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var hslComma = /^hsla?\(((\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?))(deg|grad|rad|turn)?(,(\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?)%){2}(,((\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?)%?))?\)$/i;
 var hslSpace = /^hsla?\(((\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?))(deg|grad|rad|turn)?(\s(\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?)%){2}\s?(\/\s((\+|\-)?([0-9]+(\.[0-9]+)?(e(\+|\-)?[0-9]+)?|\.[0-9]+(e(\+|\-)?[0-9]+)?)%?)\s?)?\)$/i;
-function isHSL(str) {
-  (0, _assertString.default)(str);
 
-  // Strip duplicate spaces before calling the validation regex (See  #1598 for more info)
+function isHSL(str) {
+  (0, _assertString.default)(str); // Strip duplicate spaces before calling the validation regex (See  #1598 for more info)
+
   var strippedStr = str.replace(/\s+/g, ' ').replace(/\s?(hsla?\(|\)|,)\s?/ig, '$1');
+
   if (strippedStr.indexOf(',') !== -1) {
     return hslComma.test(strippedStr);
   }
+
   return hslSpace.test(strippedStr);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14130,9 +14355,14 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = isHalfWidth;
 exports.halfWidth = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var halfWidth = exports.halfWidth = /[\u0020-\u007E\uFF61-\uFF9F\uFFA0-\uFFDC\uFFE8-\uFFEE0-9a-zA-Z]/;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var halfWidth = /[\u0020-\u007E\uFF61-\uFF9F\uFFA0-\uFFDC\uFFE8-\uFFEE0-9a-zA-Z]/;
+exports.halfWidth = halfWidth;
+
 function isHalfWidth(str) {
   (0, _assertString.default)(str);
   return halfWidth.test(str);
@@ -14153,8 +14383,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isHash;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var lengths = {
   md5: 32,
   md4: 32,
@@ -14170,11 +14403,13 @@ var lengths = {
   crc32: 8,
   crc32b: 8
 };
+
 function isHash(str, algorithm) {
   (0, _assertString.default)(str);
   var hash = new RegExp("^[a-fA-F0-9]{".concat(lengths[algorithm], "}$"));
   return hash.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14193,13 +14428,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isHexColor;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var hexcolor = /^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i;
+
 function isHexColor(str) {
   (0, _assertString.default)(str);
   return hexcolor.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14218,13 +14458,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isHexadecimal;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var hexadecimal = /^(0x|0h)?[0-9A-F]+$/i;
+
 function isHexadecimal(str) {
   (0, _assertString.default)(str);
   return hexadecimal.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14244,9 +14489,11 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = isIBAN;
 exports.locales = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-var _includesArray = _interopRequireDefault(__webpack_require__(/*! ./util/includesArray */ "./node_modules/validator/lib/util/includesArray.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * List of country codes with
  * corresponding IBAN regular expression
@@ -14271,7 +14518,6 @@ var ibanRegexThroughCountryCode = {
   DE: /^(DE[0-9]{2})\d{18}$/,
   DK: /^(DK[0-9]{2})\d{14}$/,
   DO: /^(DO[0-9]{2})[A-Z]{4}\d{20}$/,
-  DZ: /^(DZ\d{24})$/,
   EE: /^(EE[0-9]{2})\d{16}$/,
   EG: /^(EG[0-9]{2})\d{25}$/,
   ES: /^(ES[0-9]{2})\d{20}$/,
@@ -14286,7 +14532,7 @@ var ibanRegexThroughCountryCode = {
   GT: /^(GT[0-9]{2})[A-Z0-9]{4}[A-Z0-9]{20}$/,
   HR: /^(HR[0-9]{2})\d{17}$/,
   HU: /^(HU[0-9]{2})\d{24}$/,
-  IE: /^(IE[0-9]{2})[A-Z]{4}\d{14}$/,
+  IE: /^(IE[0-9]{2})[A-Z0-9]{4}\d{14}$/,
   IL: /^(IL[0-9]{2})\d{19}$/,
   IQ: /^(IQ[0-9]{2})[A-Z]{4}\d{15}$/,
   IR: /^(IR[0-9]{2})0\d{2}0\d{18}$/,
@@ -14301,7 +14547,6 @@ var ibanRegexThroughCountryCode = {
   LT: /^(LT[0-9]{2})\d{16}$/,
   LU: /^(LU[0-9]{2})\d{3}[A-Z0-9]{13}$/,
   LV: /^(LV[0-9]{2})[A-Z]{4}[A-Z0-9]{13}$/,
-  MA: /^(MA[0-9]{26})$/,
   MC: /^(MC[0-9]{2})\d{10}[A-Z0-9]{11}\d{2}$/,
   MD: /^(MD[0-9]{2})[A-Z0-9]{20}$/,
   ME: /^(ME[0-9]{2})\d{18}$/,
@@ -14314,7 +14559,7 @@ var ibanRegexThroughCountryCode = {
   NO: /^(NO[0-9]{2})\d{11}$/,
   PK: /^(PK[0-9]{2})[A-Z0-9]{4}\d{16}$/,
   PL: /^(PL[0-9]{2})\d{24}$/,
-  PS: /^(PS[0-9]{2})[A-Z]{4}[A-Z0-9]{21}$/,
+  PS: /^(PS[0-9]{2})[A-Z0-9]{4}\d{21}$/,
   PT: /^(PT[0-9]{2})\d{21}$/,
   QA: /^(QA[0-9]{2})[A-Z]{4}[A-Z0-9]{21}$/,
   RO: /^(RO[0-9]{2})[A-Z]{4}[A-Z0-9]{16}$/,
@@ -14331,28 +14576,9 @@ var ibanRegexThroughCountryCode = {
   TR: /^(TR[0-9]{2})\d{5}[A-Z0-9]{17}$/,
   UA: /^(UA[0-9]{2})\d{6}[A-Z0-9]{19}$/,
   VA: /^(VA[0-9]{2})\d{18}$/,
-  VG: /^(VG[0-9]{2})[A-Z]{4}\d{16}$/,
+  VG: /^(VG[0-9]{2})[A-Z0-9]{4}\d{16}$/,
   XK: /^(XK[0-9]{2})\d{16}$/
 };
-
-/**
- * Check if the country codes passed are valid using the
- * ibanRegexThroughCountryCode as a reference
- *
- * @param {array} countryCodeArray
- * @return {boolean}
- */
-
-function hasOnlyValidCountryCodes(countryCodeArray) {
-  var countryCodeArrayFilteredWithObjectIbanCode = countryCodeArray.filter(function (countryCode) {
-    return !(countryCode in ibanRegexThroughCountryCode);
-  });
-  if (countryCodeArrayFilteredWithObjectIbanCode.length > 0) {
-    return false;
-  }
-  return true;
-}
-
 /**
  * Check whether string has correct universal IBAN format
  * The IBAN consists of up to 34 alphanumeric characters, as follows:
@@ -14362,32 +14588,15 @@ function hasOnlyValidCountryCodes(countryCodeArray) {
  * NOTE: Permitted IBAN characters are: digits [0-9] and the 26 latin alphabetic [A-Z]
  *
  * @param {string} str - string under validation
- * @param {object} options - object to pass the countries to be either whitelisted or blacklisted
  * @return {boolean}
  */
-function hasValidIbanFormat(str, options) {
+
+function hasValidIbanFormat(str) {
   // Strip white spaces and hyphens
   var strippedStr = str.replace(/[\s\-]+/gi, '').toUpperCase();
   var isoCountryCode = strippedStr.slice(0, 2).toUpperCase();
-  var isoCountryCodeInIbanRegexCodeObject = isoCountryCode in ibanRegexThroughCountryCode;
-  if (options.whitelist) {
-    if (!hasOnlyValidCountryCodes(options.whitelist)) {
-      return false;
-    }
-    var isoCountryCodeInWhiteList = (0, _includesArray.default)(options.whitelist, isoCountryCode);
-    if (!isoCountryCodeInWhiteList) {
-      return false;
-    }
-  }
-  if (options.blacklist) {
-    var isoCountryCodeInBlackList = (0, _includesArray.default)(options.blacklist, isoCountryCode);
-    if (isoCountryCodeInBlackList) {
-      return false;
-    }
-  }
-  return isoCountryCodeInIbanRegexCodeObject && ibanRegexThroughCountryCode[isoCountryCode].test(strippedStr);
+  return isoCountryCode in ibanRegexThroughCountryCode && ibanRegexThroughCountryCode[isoCountryCode].test(strippedStr);
 }
-
 /**
    * Check whether string has valid IBAN Checksum
    * by performing basic mod-97 operation and
@@ -14401,8 +14610,11 @@ function hasValidIbanFormat(str, options) {
    * @param {string} str
    * @return {boolean}
    */
+
+
 function hasValidIbanChecksum(str) {
   var strippedStr = str.replace(/[^A-Z0-9]+/gi, '').toUpperCase(); // Keep only digits and A-Z latin alphabetic
+
   var rearranged = strippedStr.slice(4) + strippedStr.slice(0, 4);
   var alphaCapsReplacedWithDigits = rearranged.replace(/[A-Z]/g, function (char) {
     return char.charCodeAt(0) - 55;
@@ -14412,12 +14624,14 @@ function hasValidIbanChecksum(str) {
   }, '');
   return remainder === 1;
 }
+
 function isIBAN(str) {
-  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   (0, _assertString.default)(str);
-  return hasValidIbanFormat(str, options) && hasValidIbanChecksum(str);
+  return hasValidIbanFormat(str) && hasValidIbanChecksum(str);
 }
-var locales = exports.locales = Object.keys(ibanRegexThroughCountryCode);
+
+var locales = Object.keys(ibanRegexThroughCountryCode);
+exports.locales = locales;
 
 /***/ }),
 
@@ -14434,47 +14648,59 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isIMEI;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var imeiRegexWithoutHyphens = /^[0-9]{15}$/;
-var imeiRegexWithHyphens = /^\d{2}-\d{6}-\d{6}-\d{1}$/;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var imeiRegexWithoutHypens = /^[0-9]{15}$/;
+var imeiRegexWithHypens = /^\d{2}-\d{6}-\d{6}-\d{1}$/;
+
 function isIMEI(str, options) {
   (0, _assertString.default)(str);
-  options = options || {};
+  options = options || {}; // default regex for checking imei is the one without hyphens
 
-  // default regex for checking imei is the one without hyphens
+  var imeiRegex = imeiRegexWithoutHypens;
 
-  var imeiRegex = imeiRegexWithoutHyphens;
   if (options.allow_hyphens) {
-    imeiRegex = imeiRegexWithHyphens;
+    imeiRegex = imeiRegexWithHypens;
   }
+
   if (!imeiRegex.test(str)) {
     return false;
   }
+
   str = str.replace(/-/g, '');
   var sum = 0,
-    mul = 2,
-    l = 14;
+      mul = 2,
+      l = 14;
+
   for (var i = 0; i < l; i++) {
     var digit = str.substring(l - i - 1, l - i);
     var tp = parseInt(digit, 10) * mul;
+
     if (tp >= 10) {
       sum += tp % 10 + 1;
     } else {
       sum += tp;
     }
+
     if (mul === 1) {
       mul += 1;
     } else {
       mul -= 1;
     }
   }
+
   var chk = (10 - sum % 10) % 10;
+
   if (chk !== parseInt(str.substring(14, 15), 10)) {
     return false;
   }
+
   return true;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14493,9 +14719,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isIP;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
 11.3.  Examples
 
@@ -14529,29 +14757,28 @@ var IPv4SegmentFormat = '(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])';
 var IPv4AddressFormat = "(".concat(IPv4SegmentFormat, "[.]){3}").concat(IPv4SegmentFormat);
 var IPv4AddressRegExp = new RegExp("^".concat(IPv4AddressFormat, "$"));
 var IPv6SegmentFormat = '(?:[0-9a-fA-F]{1,4})';
-var IPv6AddressRegExp = new RegExp('^(' + "(?:".concat(IPv6SegmentFormat, ":){7}(?:").concat(IPv6SegmentFormat, "|:)|") + "(?:".concat(IPv6SegmentFormat, ":){6}(?:").concat(IPv4AddressFormat, "|:").concat(IPv6SegmentFormat, "|:)|") + "(?:".concat(IPv6SegmentFormat, ":){5}(?::").concat(IPv4AddressFormat, "|(:").concat(IPv6SegmentFormat, "){1,2}|:)|") + "(?:".concat(IPv6SegmentFormat, ":){4}(?:(:").concat(IPv6SegmentFormat, "){0,1}:").concat(IPv4AddressFormat, "|(:").concat(IPv6SegmentFormat, "){1,3}|:)|") + "(?:".concat(IPv6SegmentFormat, ":){3}(?:(:").concat(IPv6SegmentFormat, "){0,2}:").concat(IPv4AddressFormat, "|(:").concat(IPv6SegmentFormat, "){1,4}|:)|") + "(?:".concat(IPv6SegmentFormat, ":){2}(?:(:").concat(IPv6SegmentFormat, "){0,3}:").concat(IPv4AddressFormat, "|(:").concat(IPv6SegmentFormat, "){1,5}|:)|") + "(?:".concat(IPv6SegmentFormat, ":){1}(?:(:").concat(IPv6SegmentFormat, "){0,4}:").concat(IPv4AddressFormat, "|(:").concat(IPv6SegmentFormat, "){1,6}|:)|") + "(?::((?::".concat(IPv6SegmentFormat, "){0,5}:").concat(IPv4AddressFormat, "|(?::").concat(IPv6SegmentFormat, "){1,7}|:))") + ')(%[0-9a-zA-Z.]{1,})?$');
-function isIP(ipAddress) {
-  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  (0, _assertString.default)(ipAddress);
+var IPv6AddressRegExp = new RegExp('^(' + "(?:".concat(IPv6SegmentFormat, ":){7}(?:").concat(IPv6SegmentFormat, "|:)|") + "(?:".concat(IPv6SegmentFormat, ":){6}(?:").concat(IPv4AddressFormat, "|:").concat(IPv6SegmentFormat, "|:)|") + "(?:".concat(IPv6SegmentFormat, ":){5}(?::").concat(IPv4AddressFormat, "|(:").concat(IPv6SegmentFormat, "){1,2}|:)|") + "(?:".concat(IPv6SegmentFormat, ":){4}(?:(:").concat(IPv6SegmentFormat, "){0,1}:").concat(IPv4AddressFormat, "|(:").concat(IPv6SegmentFormat, "){1,3}|:)|") + "(?:".concat(IPv6SegmentFormat, ":){3}(?:(:").concat(IPv6SegmentFormat, "){0,2}:").concat(IPv4AddressFormat, "|(:").concat(IPv6SegmentFormat, "){1,4}|:)|") + "(?:".concat(IPv6SegmentFormat, ":){2}(?:(:").concat(IPv6SegmentFormat, "){0,3}:").concat(IPv4AddressFormat, "|(:").concat(IPv6SegmentFormat, "){1,5}|:)|") + "(?:".concat(IPv6SegmentFormat, ":){1}(?:(:").concat(IPv6SegmentFormat, "){0,4}:").concat(IPv4AddressFormat, "|(:").concat(IPv6SegmentFormat, "){1,6}|:)|") + "(?::((?::".concat(IPv6SegmentFormat, "){0,5}:").concat(IPv4AddressFormat, "|(?::").concat(IPv6SegmentFormat, "){1,7}|:))") + ')(%[0-9a-zA-Z-.:]{1,})?$');
 
-  // accessing 'arguments' for backwards compatibility: isIP(ipAddress [, version])
-  // eslint-disable-next-line prefer-rest-params
-  var version = (_typeof(options) === 'object' ? options.version : arguments[1]) || '';
+function isIP(str) {
+  var version = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+  (0, _assertString.default)(str);
+  version = String(version);
+
   if (!version) {
-    return isIP(ipAddress, {
-      version: 4
-    }) || isIP(ipAddress, {
-      version: 6
-    });
+    return isIP(str, 4) || isIP(str, 6);
   }
-  if (version.toString() === '4') {
-    return IPv4AddressRegExp.test(ipAddress);
+
+  if (version === '4') {
+    return IPv4AddressRegExp.test(str);
   }
-  if (version.toString() === '6') {
-    return IPv6AddressRegExp.test(ipAddress);
+
+  if (version === '6') {
+    return IPv6AddressRegExp.test(str);
   }
+
   return false;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14570,48 +14797,60 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isIPRange;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _isIP = _interopRequireDefault(__webpack_require__(/*! ./isIP */ "./node_modules/validator/lib/isIP.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var subnetMaybe = /^\d{1,3}$/;
 var v4Subnet = 32;
 var v6Subnet = 128;
+
 function isIPRange(str) {
   var version = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   (0, _assertString.default)(str);
-  var parts = str.split('/');
+  var parts = str.split('/'); // parts[0] -> ip, parts[1] -> subnet
 
-  // parts[0] -> ip, parts[1] -> subnet
   if (parts.length !== 2) {
     return false;
   }
+
   if (!subnetMaybe.test(parts[1])) {
     return false;
-  }
+  } // Disallow preceding 0 i.e. 01, 02, ...
 
-  // Disallow preceding 0 i.e. 01, 02, ...
+
   if (parts[1].length > 1 && parts[1].startsWith('0')) {
     return false;
   }
+
   var isValidIP = (0, _isIP.default)(parts[0], version);
+
   if (!isValidIP) {
     return false;
-  }
+  } // Define valid subnet according to IP's version
 
-  // Define valid subnet according to IP's version
+
   var expectedSubnet = null;
+
   switch (String(version)) {
     case '4':
       expectedSubnet = v4Subnet;
       break;
+
     case '6':
       expectedSubnet = v6Subnet;
       break;
+
     default:
       expectedSubnet = (0, _isIP.default)(parts[0], '6') ? v6Subnet : v4Subnet;
   }
+
   return parts[1] <= expectedSubnet && parts[1] >= 0;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14630,17 +14869,21 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isISBN;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var possibleIsbn10 = /^(?:[0-9]{9}X|[0-9]{10})$/;
 var possibleIsbn13 = /^(?:[0-9]{13})$/;
 var factor = [1, 3];
-function isISBN(isbn, options) {
-  (0, _assertString.default)(isbn);
 
-  // For backwards compatibility:
+function isISBN(isbn, options) {
+  (0, _assertString.default)(isbn); // For backwards compatibility:
   // isISBN(str [, version]), i.e. `options` could be used as argument for the legacy `version`
+
   var version = String((options === null || options === void 0 ? void 0 : options.version) || options);
+
   if (!(options !== null && options !== void 0 && options.version || options)) {
     return isISBN(isbn, {
       version: 10
@@ -14648,20 +14891,25 @@ function isISBN(isbn, options) {
       version: 13
     });
   }
+
   var sanitizedIsbn = isbn.replace(/[\s-]+/g, '');
   var checksum = 0;
+
   if (version === '10') {
     if (!possibleIsbn10.test(sanitizedIsbn)) {
       return false;
     }
+
     for (var i = 0; i < version - 1; i++) {
       checksum += (i + 1) * sanitizedIsbn.charAt(i);
     }
+
     if (sanitizedIsbn.charAt(9) === 'X') {
       checksum += 10 * 10;
     } else {
       checksum += 10 * sanitizedIsbn.charAt(9);
     }
+
     if (checksum % 11 === 0) {
       return true;
     }
@@ -14669,15 +14917,19 @@ function isISBN(isbn, options) {
     if (!possibleIsbn13.test(sanitizedIsbn)) {
       return false;
     }
+
     for (var _i = 0; _i < 12; _i++) {
       checksum += factor[_i % 2] * sanitizedIsbn.charAt(_i);
     }
+
     if (sanitizedIsbn.charAt(12) - (10 - checksum % 10) % 10 === 0) {
       return true;
     }
   }
+
   return false;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14696,11 +14948,12 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isISIN;
-var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var isin = /^[A-Z]{2}[0-9A-Z]{9}[0-9]$/;
 
-// this link details how the check digit is calculated:
+var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var isin = /^[A-Z]{2}[0-9A-Z]{9}[0-9]$/; // this link details how the check digit is calculated:
 // https://www.isin.org/isin-format/. it is a little bit
 // odd in that it works with digits, not numbers. in order
 // to make only one pass through the ISIN characters, the
@@ -14709,21 +14962,24 @@ var isin = /^[A-Z]{2}[0-9A-Z]{9}[0-9]$/;
 
 function isISIN(str) {
   (0, _assertString.default)(str);
+
   if (!isin.test(str)) {
     return false;
   }
+
   var double = true;
-  var sum = 0;
-  // convert values
+  var sum = 0; // convert values
+
   for (var i = str.length - 2; i >= 0; i--) {
     if (str[i] >= 'A' && str[i] <= 'Z') {
       var value = str[i].charCodeAt(0) - 55;
       var lo = value % 10;
-      var hi = Math.trunc(value / 10);
-      // letters have two digits, so handle the low order
+      var hi = Math.trunc(value / 10); // letters have two digits, so handle the low order
       // and high order digits separately.
+
       for (var _i = 0, _arr = [lo, hi]; _i < _arr.length; _i++) {
         var digit = _arr[_i];
+
         if (double) {
           if (digit >= 5) {
             sum += 1 + (digit - 5) * 2;
@@ -14733,10 +14989,12 @@ function isISIN(str) {
         } else {
           sum += digit;
         }
+
         double = !double;
       }
     } else {
       var _digit = str[i].charCodeAt(0) - '0'.charCodeAt(0);
+
       if (double) {
         if (_digit >= 5) {
           sum += 1 + (_digit - 5) * 2;
@@ -14746,40 +15004,17 @@ function isISIN(str) {
       } else {
         sum += _digit;
       }
+
       double = !double;
     }
   }
+
   var check = Math.trunc((sum + 9) / 10) * 10 - sum;
   return +str[str.length - 1] === check;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
-
-/***/ }),
-
-/***/ "./node_modules/validator/lib/isISO15924.js":
-/*!**************************************************!*\
-  !*** ./node_modules/validator/lib/isISO15924.js ***!
-  \**************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports.ScriptCodes = void 0;
-exports["default"] = isISO15924;
-var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-// from https://www.unicode.org/iso15924/iso15924-codes.html
-var validISO15924Codes = new Set(['Adlm', 'Afak', 'Aghb', 'Ahom', 'Arab', 'Aran', 'Armi', 'Armn', 'Avst', 'Bali', 'Bamu', 'Bass', 'Batk', 'Beng', 'Bhks', 'Blis', 'Bopo', 'Brah', 'Brai', 'Bugi', 'Buhd', 'Cakm', 'Cans', 'Cari', 'Cham', 'Cher', 'Chis', 'Chrs', 'Cirt', 'Copt', 'Cpmn', 'Cprt', 'Cyrl', 'Cyrs', 'Deva', 'Diak', 'Dogr', 'Dsrt', 'Dupl', 'Egyd', 'Egyh', 'Egyp', 'Elba', 'Elym', 'Ethi', 'Gara', 'Geok', 'Geor', 'Glag', 'Gong', 'Gonm', 'Goth', 'Gran', 'Grek', 'Gujr', 'Gukh', 'Guru', 'Hanb', 'Hang', 'Hani', 'Hano', 'Hans', 'Hant', 'Hatr', 'Hebr', 'Hira', 'Hluw', 'Hmng', 'Hmnp', 'Hrkt', 'Hung', 'Inds', 'Ital', 'Jamo', 'Java', 'Jpan', 'Jurc', 'Kali', 'Kana', 'Kawi', 'Khar', 'Khmr', 'Khoj', 'Kitl', 'Kits', 'Knda', 'Kore', 'Kpel', 'Krai', 'Kthi', 'Lana', 'Laoo', 'Latf', 'Latg', 'Latn', 'Leke', 'Lepc', 'Limb', 'Lina', 'Linb', 'Lisu', 'Loma', 'Lyci', 'Lydi', 'Mahj', 'Maka', 'Mand', 'Mani', 'Marc', 'Maya', 'Medf', 'Mend', 'Merc', 'Mero', 'Mlym', 'Modi', 'Mong', 'Moon', 'Mroo', 'Mtei', 'Mult', 'Mymr', 'Nagm', 'Nand', 'Narb', 'Nbat', 'Newa', 'Nkdb', 'Nkgb', 'Nkoo', 'Nshu', 'Ogam', 'Olck', 'Onao', 'Orkh', 'Orya', 'Osge', 'Osma', 'Ougr', 'Palm', 'Pauc', 'Pcun', 'Pelm', 'Perm', 'Phag', 'Phli', 'Phlp', 'Phlv', 'Phnx', 'Plrd', 'Piqd', 'Prti', 'Psin', 'Qaaa', 'Qaab', 'Qaac', 'Qaad', 'Qaae', 'Qaaf', 'Qaag', 'Qaah', 'Qaai', 'Qaaj', 'Qaak', 'Qaal', 'Qaam', 'Qaan', 'Qaao', 'Qaap', 'Qaaq', 'Qaar', 'Qaas', 'Qaat', 'Qaau', 'Qaav', 'Qaaw', 'Qaax', 'Qaay', 'Qaaz', 'Qaba', 'Qabb', 'Qabc', 'Qabd', 'Qabe', 'Qabf', 'Qabg', 'Qabh', 'Qabi', 'Qabj', 'Qabk', 'Qabl', 'Qabm', 'Qabn', 'Qabo', 'Qabp', 'Qabq', 'Qabr', 'Qabs', 'Qabt', 'Qabu', 'Qabv', 'Qabw', 'Qabx', 'Ranj', 'Rjng', 'Rohg', 'Roro', 'Runr', 'Samr', 'Sara', 'Sarb', 'Saur', 'Sgnw', 'Shaw', 'Shrd', 'Shui', 'Sidd', 'Sidt', 'Sind', 'Sinh', 'Sogd', 'Sogo', 'Sora', 'Soyo', 'Sund', 'Sunu', 'Sylo', 'Syrc', 'Syre', 'Syrj', 'Syrn', 'Tagb', 'Takr', 'Tale', 'Talu', 'Taml', 'Tang', 'Tavt', 'Tayo', 'Telu', 'Teng', 'Tfng', 'Tglg', 'Thaa', 'Thai', 'Tibt', 'Tirh', 'Tnsa', 'Todr', 'Tols', 'Toto', 'Tutg', 'Ugar', 'Vaii', 'Visp', 'Vith', 'Wara', 'Wcho', 'Wole', 'Xpeo', 'Xsux', 'Yezi', 'Yiii', 'Zanb', 'Zinh', 'Zmth', 'Zsye', 'Zsym', 'Zxxx', 'Zyyy', 'Zzzz']);
-function isISO15924(str) {
-  (0, _assertString.default)(str);
-  return validISO15924Codes.has(str);
-}
-var ScriptCodes = exports.ScriptCodes = validISO15924Codes;
 
 /***/ }),
 
@@ -14795,17 +15030,23 @@ var ScriptCodes = exports.ScriptCodes = validISO15924Codes;
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
-exports.CountryCodes = void 0;
 exports["default"] = isISO31661Alpha2;
+exports.CountryCodes = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // from https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
 var validISO31661Alpha2CountriesCodes = new Set(['AD', 'AE', 'AF', 'AG', 'AI', 'AL', 'AM', 'AO', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AW', 'AX', 'AZ', 'BA', 'BB', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BL', 'BM', 'BN', 'BO', 'BQ', 'BR', 'BS', 'BT', 'BV', 'BW', 'BY', 'BZ', 'CA', 'CC', 'CD', 'CF', 'CG', 'CH', 'CI', 'CK', 'CL', 'CM', 'CN', 'CO', 'CR', 'CU', 'CV', 'CW', 'CX', 'CY', 'CZ', 'DE', 'DJ', 'DK', 'DM', 'DO', 'DZ', 'EC', 'EE', 'EG', 'EH', 'ER', 'ES', 'ET', 'FI', 'FJ', 'FK', 'FM', 'FO', 'FR', 'GA', 'GB', 'GD', 'GE', 'GF', 'GG', 'GH', 'GI', 'GL', 'GM', 'GN', 'GP', 'GQ', 'GR', 'GS', 'GT', 'GU', 'GW', 'GY', 'HK', 'HM', 'HN', 'HR', 'HT', 'HU', 'ID', 'IE', 'IL', 'IM', 'IN', 'IO', 'IQ', 'IR', 'IS', 'IT', 'JE', 'JM', 'JO', 'JP', 'KE', 'KG', 'KH', 'KI', 'KM', 'KN', 'KP', 'KR', 'KW', 'KY', 'KZ', 'LA', 'LB', 'LC', 'LI', 'LK', 'LR', 'LS', 'LT', 'LU', 'LV', 'LY', 'MA', 'MC', 'MD', 'ME', 'MF', 'MG', 'MH', 'MK', 'ML', 'MM', 'MN', 'MO', 'MP', 'MQ', 'MR', 'MS', 'MT', 'MU', 'MV', 'MW', 'MX', 'MY', 'MZ', 'NA', 'NC', 'NE', 'NF', 'NG', 'NI', 'NL', 'NO', 'NP', 'NR', 'NU', 'NZ', 'OM', 'PA', 'PE', 'PF', 'PG', 'PH', 'PK', 'PL', 'PM', 'PN', 'PR', 'PS', 'PT', 'PW', 'PY', 'QA', 'RE', 'RO', 'RS', 'RU', 'RW', 'SA', 'SB', 'SC', 'SD', 'SE', 'SG', 'SH', 'SI', 'SJ', 'SK', 'SL', 'SM', 'SN', 'SO', 'SR', 'SS', 'ST', 'SV', 'SX', 'SY', 'SZ', 'TC', 'TD', 'TF', 'TG', 'TH', 'TJ', 'TK', 'TL', 'TM', 'TN', 'TO', 'TR', 'TT', 'TV', 'TW', 'TZ', 'UA', 'UG', 'UM', 'US', 'UY', 'UZ', 'VA', 'VC', 'VE', 'VG', 'VI', 'VN', 'VU', 'WF', 'WS', 'YE', 'YT', 'ZA', 'ZM', 'ZW']);
+
 function isISO31661Alpha2(str) {
   (0, _assertString.default)(str);
   return validISO31661Alpha2CountriesCodes.has(str.toUpperCase());
 }
-var CountryCodes = exports.CountryCodes = validISO31661Alpha2CountriesCodes;
+
+var CountryCodes = validISO31661Alpha2CountriesCodes;
+exports.CountryCodes = CountryCodes;
 
 /***/ }),
 
@@ -14822,40 +15063,19 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isISO31661Alpha3;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // from https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
 var validISO31661Alpha3CountriesCodes = new Set(['AFG', 'ALA', 'ALB', 'DZA', 'ASM', 'AND', 'AGO', 'AIA', 'ATA', 'ATG', 'ARG', 'ARM', 'ABW', 'AUS', 'AUT', 'AZE', 'BHS', 'BHR', 'BGD', 'BRB', 'BLR', 'BEL', 'BLZ', 'BEN', 'BMU', 'BTN', 'BOL', 'BES', 'BIH', 'BWA', 'BVT', 'BRA', 'IOT', 'BRN', 'BGR', 'BFA', 'BDI', 'KHM', 'CMR', 'CAN', 'CPV', 'CYM', 'CAF', 'TCD', 'CHL', 'CHN', 'CXR', 'CCK', 'COL', 'COM', 'COG', 'COD', 'COK', 'CRI', 'CIV', 'HRV', 'CUB', 'CUW', 'CYP', 'CZE', 'DNK', 'DJI', 'DMA', 'DOM', 'ECU', 'EGY', 'SLV', 'GNQ', 'ERI', 'EST', 'ETH', 'FLK', 'FRO', 'FJI', 'FIN', 'FRA', 'GUF', 'PYF', 'ATF', 'GAB', 'GMB', 'GEO', 'DEU', 'GHA', 'GIB', 'GRC', 'GRL', 'GRD', 'GLP', 'GUM', 'GTM', 'GGY', 'GIN', 'GNB', 'GUY', 'HTI', 'HMD', 'VAT', 'HND', 'HKG', 'HUN', 'ISL', 'IND', 'IDN', 'IRN', 'IRQ', 'IRL', 'IMN', 'ISR', 'ITA', 'JAM', 'JPN', 'JEY', 'JOR', 'KAZ', 'KEN', 'KIR', 'PRK', 'KOR', 'KWT', 'KGZ', 'LAO', 'LVA', 'LBN', 'LSO', 'LBR', 'LBY', 'LIE', 'LTU', 'LUX', 'MAC', 'MKD', 'MDG', 'MWI', 'MYS', 'MDV', 'MLI', 'MLT', 'MHL', 'MTQ', 'MRT', 'MUS', 'MYT', 'MEX', 'FSM', 'MDA', 'MCO', 'MNG', 'MNE', 'MSR', 'MAR', 'MOZ', 'MMR', 'NAM', 'NRU', 'NPL', 'NLD', 'NCL', 'NZL', 'NIC', 'NER', 'NGA', 'NIU', 'NFK', 'MNP', 'NOR', 'OMN', 'PAK', 'PLW', 'PSE', 'PAN', 'PNG', 'PRY', 'PER', 'PHL', 'PCN', 'POL', 'PRT', 'PRI', 'QAT', 'REU', 'ROU', 'RUS', 'RWA', 'BLM', 'SHN', 'KNA', 'LCA', 'MAF', 'SPM', 'VCT', 'WSM', 'SMR', 'STP', 'SAU', 'SEN', 'SRB', 'SYC', 'SLE', 'SGP', 'SXM', 'SVK', 'SVN', 'SLB', 'SOM', 'ZAF', 'SGS', 'SSD', 'ESP', 'LKA', 'SDN', 'SUR', 'SJM', 'SWZ', 'SWE', 'CHE', 'SYR', 'TWN', 'TJK', 'TZA', 'THA', 'TLS', 'TGO', 'TKL', 'TON', 'TTO', 'TUN', 'TUR', 'TKM', 'TCA', 'TUV', 'UGA', 'UKR', 'ARE', 'GBR', 'USA', 'UMI', 'URY', 'UZB', 'VUT', 'VEN', 'VNM', 'VGB', 'VIR', 'WLF', 'ESH', 'YEM', 'ZMB', 'ZWE']);
+
 function isISO31661Alpha3(str) {
   (0, _assertString.default)(str);
   return validISO31661Alpha3CountriesCodes.has(str.toUpperCase());
 }
-module.exports = exports.default;
-module.exports["default"] = exports.default;
 
-/***/ }),
-
-/***/ "./node_modules/validator/lib/isISO31661Numeric.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/validator/lib/isISO31661Numeric.js ***!
-  \*********************************************************/
-/***/ ((module, exports, __webpack_require__) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = isISO31661Numeric;
-var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-// from https://en.wikipedia.org/wiki/ISO_3166-1_numeric
-var validISO31661NumericCountriesCodes = new Set(['004', '008', '010', '012', '016', '020', '024', '028', '031', '032', '036', '040', '044', '048', '050', '051', '052', '056', '060', '064', '068', '070', '072', '074', '076', '084', '086', '090', '092', '096', '100', '104', '108', '112', '116', '120', '124', '132', '136', '140', '144', '148', '152', '156', '158', '162', '166', '170', '174', '175', '178', '180', '184', '188', '191', '192', '196', '203', '204', '208', '212', '214', '218', '222', '226', '231', '232', '233', '234', '238', '239', '242', '246', '248', '250', '254', '258', '260', '262', '266', '268', '270', '275', '276', '288', '292', '296', '300', '304', '308', '312', '316', '320', '324', '328', '332', '334', '336', '340', '344', '348', '352', '356', '360', '364', '368', '372', '376', '380', '384', '388', '392', '398', '400', '404', '408', '410', '414', '417', '418', '422', '426', '428', '430', '434', '438', '440', '442', '446', '450', '454', '458', '462', '466', '470', '474', '478', '480', '484', '492', '496', '498', '499', '500', '504', '508', '512', '516', '520', '524', '528', '531', '533', '534', '535', '540', '548', '554', '558', '562', '566', '570', '574', '578', '580', '581', '583', '584', '585', '586', '591', '598', '600', '604', '608', '612', '616', '620', '624', '626', '630', '634', '638', '642', '643', '646', '652', '654', '659', '660', '662', '663', '666', '670', '674', '678', '682', '686', '688', '690', '694', '702', '703', '704', '705', '706', '710', '716', '724', '728', '729', '732', '740', '744', '748', '752', '756', '760', '762', '764', '768', '772', '776', '780', '784', '788', '792', '795', '796', '798', '800', '804', '807', '818', '826', '831', '832', '833', '834', '840', '850', '854', '858', '860', '862', '876', '882', '887', '894']);
-function isISO31661Numeric(str) {
-  (0, _assertString.default)(str);
-  return validISO31661NumericCountriesCodes.has(str);
-}
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14873,62 +15093,23 @@ module.exports["default"] = exports.default;
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
-exports.CurrencyCodes = void 0;
 exports["default"] = isISO4217;
+exports.CurrencyCodes = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // from https://en.wikipedia.org/wiki/ISO_4217
-var validISO4217CurrencyCodes = new Set(['AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BOV', 'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHE', 'CHF', 'CHW', 'CLF', 'CLP', 'CNY', 'COP', 'COU', 'CRC', 'CUP', 'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'GBP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MXV', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLE', 'SLL', 'SOS', 'SRD', 'SSP', 'STN', 'SVC', 'SYP', 'SZL', 'THB', 'TJS', 'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'USN', 'UYI', 'UYU', 'UYW', 'UZS', 'VED', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XBA', 'XBB', 'XBC', 'XBD', 'XCD', 'XDR', 'XOF', 'XPD', 'XPF', 'XPT', 'XSU', 'XTS', 'XUA', 'XXX', 'YER', 'ZAR', 'ZMW', 'ZWL']);
+var validISO4217CurrencyCodes = new Set(['AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BOV', 'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHE', 'CHF', 'CHW', 'CLF', 'CLP', 'CNY', 'COP', 'COU', 'CRC', 'CUC', 'CUP', 'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'GBP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HRK', 'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MXV', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLL', 'SOS', 'SRD', 'SSP', 'STN', 'SVC', 'SYP', 'SZL', 'THB', 'TJS', 'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'USN', 'UYI', 'UYU', 'UYW', 'UZS', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XBA', 'XBB', 'XBC', 'XBD', 'XCD', 'XDR', 'XOF', 'XPD', 'XPF', 'XPT', 'XSU', 'XTS', 'XUA', 'XXX', 'YER', 'ZAR', 'ZMW', 'ZWL']);
+
 function isISO4217(str) {
   (0, _assertString.default)(str);
   return validISO4217CurrencyCodes.has(str.toUpperCase());
 }
-var CurrencyCodes = exports.CurrencyCodes = validISO4217CurrencyCodes;
 
-/***/ }),
-
-/***/ "./node_modules/validator/lib/isISO6346.js":
-/*!*************************************************!*\
-  !*** ./node_modules/validator/lib/isISO6346.js ***!
-  \*************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports.isFreightContainerID = void 0;
-exports.isISO6346 = isISO6346;
-var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-// https://en.wikipedia.org/wiki/ISO_6346
-// according to ISO6346 standard, checksum digit is mandatory for freight container but recommended
-// for other container types (J and Z)
-var isISO6346Str = /^[A-Z]{3}(U[0-9]{7})|([J,Z][0-9]{6,7})$/;
-var isDigit = /^[0-9]$/;
-function isISO6346(str) {
-  (0, _assertString.default)(str);
-  str = str.toUpperCase();
-  if (!isISO6346Str.test(str)) return false;
-  if (str.length === 11) {
-    var sum = 0;
-    for (var i = 0; i < str.length - 1; i++) {
-      if (!isDigit.test(str[i])) {
-        var convertedCode = void 0;
-        var letterCode = str.charCodeAt(i) - 55;
-        if (letterCode < 11) convertedCode = letterCode;else if (letterCode >= 11 && letterCode <= 20) convertedCode = 12 + letterCode % 11;else if (letterCode >= 21 && letterCode <= 30) convertedCode = 23 + letterCode % 21;else convertedCode = 34 + letterCode % 31;
-        sum += convertedCode * Math.pow(2, i);
-      } else sum += str[i] * Math.pow(2, i);
-    }
-    var checkSumDigit = sum % 11;
-    if (checkSumDigit === 10) checkSumDigit = 0;
-    return Number(str[str.length - 1]) === checkSumDigit;
-  }
-  return true;
-}
-var isFreightContainerID = exports.isFreightContainerID = isISO6346;
+var CurrencyCodes = validISO4217CurrencyCodes;
+exports.CurrencyCodes = CurrencyCodes;
 
 /***/ }),
 
@@ -14945,13 +15126,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isISO6391;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var isISO6391Set = new Set(['aa', 'ab', 'ae', 'af', 'ak', 'am', 'an', 'ar', 'as', 'av', 'ay', 'az', 'az', 'ba', 'be', 'bg', 'bh', 'bi', 'bm', 'bn', 'bo', 'br', 'bs', 'ca', 'ce', 'ch', 'co', 'cr', 'cs', 'cu', 'cv', 'cy', 'da', 'de', 'dv', 'dz', 'ee', 'el', 'en', 'eo', 'es', 'et', 'eu', 'fa', 'ff', 'fi', 'fj', 'fo', 'fr', 'fy', 'ga', 'gd', 'gl', 'gn', 'gu', 'gv', 'ha', 'he', 'hi', 'ho', 'hr', 'ht', 'hu', 'hy', 'hz', 'ia', 'id', 'ie', 'ig', 'ii', 'ik', 'io', 'is', 'it', 'iu', 'ja', 'jv', 'ka', 'kg', 'ki', 'kj', 'kk', 'kl', 'km', 'kn', 'ko', 'kr', 'ks', 'ku', 'kv', 'kw', 'ky', 'la', 'lb', 'lg', 'li', 'ln', 'lo', 'lt', 'lu', 'lv', 'mg', 'mh', 'mi', 'mk', 'ml', 'mn', 'mr', 'ms', 'mt', 'my', 'na', 'nb', 'nd', 'ne', 'ng', 'nl', 'nn', 'no', 'nr', 'nv', 'ny', 'oc', 'oj', 'om', 'or', 'os', 'pa', 'pi', 'pl', 'ps', 'pt', 'qu', 'rm', 'rn', 'ro', 'ru', 'rw', 'sa', 'sc', 'sd', 'se', 'sg', 'si', 'sk', 'sl', 'sm', 'sn', 'so', 'sq', 'sr', 'ss', 'st', 'su', 'sv', 'sw', 'ta', 'te', 'tg', 'th', 'ti', 'tk', 'tl', 'tn', 'to', 'tr', 'ts', 'tt', 'tw', 'ty', 'ug', 'uk', 'ur', 'uz', 've', 'vi', 'vo', 'wa', 'wo', 'xh', 'yi', 'yo', 'za', 'zh', 'zu']);
+
 function isISO6391(str) {
   (0, _assertString.default)(str);
   return isISO6391Set.has(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -14970,41 +15156,49 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isISO8601;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /* eslint-disable max-len */
 // from http://goo.gl/0ejHHW
-var iso8601 = /^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-3])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/;
-// same as above, except with a strict 'T' separator between date and time
+var iso8601 = /^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-3])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/; // same as above, except with a strict 'T' separator between date and time
+
 var iso8601StrictSeparator = /^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-3])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T]((([01]\d|2[0-3])((:?)[0-5]\d)?|24:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/;
 /* eslint-enable max-len */
+
 var isValidDate = function isValidDate(str) {
   // str must have passed the ISO8601 check
   // this check is meant to catch invalid dates
   // like 2009-02-31
   // first check for ordinal dates
   var ordinalMatch = str.match(/^(\d{4})-?(\d{3})([ T]{1}\.*|$)/);
+
   if (ordinalMatch) {
     var oYear = Number(ordinalMatch[1]);
-    var oDay = Number(ordinalMatch[2]);
-    // if is leap year
+    var oDay = Number(ordinalMatch[2]); // if is leap year
+
     if (oYear % 4 === 0 && oYear % 100 !== 0 || oYear % 400 === 0) return oDay <= 366;
     return oDay <= 365;
   }
+
   var match = str.match(/(\d{4})-?(\d{0,2})-?(\d*)/).map(Number);
   var year = match[1];
   var month = match[2];
   var day = match[3];
   var monthString = month ? "0".concat(month).slice(-2) : month;
-  var dayString = day ? "0".concat(day).slice(-2) : day;
+  var dayString = day ? "0".concat(day).slice(-2) : day; // create a date object and compare
 
-  // create a date object and compare
   var d = new Date("".concat(year, "-").concat(monthString || '01', "-").concat(dayString || '01'));
+
   if (month && day) {
     return d.getUTCFullYear() === year && d.getUTCMonth() + 1 === month && d.getUTCDate() === day;
   }
+
   return true;
 };
+
 function isISO8601(str) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   (0, _assertString.default)(str);
@@ -15012,6 +15206,7 @@ function isISO8601(str) {
   if (check && options.strict) return isValidDate(str);
   return check;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15030,14 +15225,19 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isISRC;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // see http://isrc.ifpi.org/en/isrc-standard/code-syntax
 var isrc = /^[A-Z]{2}[0-9A-Z]{3}\d{2}\d{5}$/;
+
 function isISRC(str) {
   (0, _assertString.default)(str);
   return isrc.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15056,26 +15256,35 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isISSN;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var issn = '^\\d{4}-?\\d{3}[\\dX]$';
+
 function isISSN(str) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   (0, _assertString.default)(str);
   var testIssn = issn;
   testIssn = options.require_hyphen ? testIssn.replace('?', '') : testIssn;
   testIssn = options.case_sensitive ? new RegExp(testIssn) : new RegExp(testIssn, 'i');
+
   if (!testIssn.test(str)) {
     return false;
   }
+
   var digits = str.replace('-', '').toUpperCase();
   var checksum = 0;
+
   for (var i = 0; i < digits.length; i++) {
     var digit = digits[i];
     checksum += (digit === 'X' ? 10 : +digit) * (8 - i);
   }
+
   return checksum % 11 === 0;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15094,10 +15303,13 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isIdentityCard;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-var _includesArray = _interopRequireDefault(__webpack_require__(/*! ./util/includesArray */ "./node_modules/validator/lib/util/includesArray.js"));
+
 var _isInt = _interopRequireDefault(__webpack_require__(/*! ./isInt */ "./node_modules/validator/lib/isInt.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var validators = {
   PL: function PL(str) {
     (0, _assertString.default)(str);
@@ -15114,6 +15326,7 @@ var validators = {
       10: 3,
       11: 0
     };
+
     if (str != null && str.length === 11 && (0, _isInt.default)(str, {
       allow_leading_zeroes: true
     })) {
@@ -15123,10 +15336,12 @@ var validators = {
       }, 0);
       var modulo = sum % 10;
       var lastDigit = Number(str.charAt(str.length - 1));
+
       if (modulo === 0 && lastDigit === 0 || lastDigit === 10 - modulo) {
         return true;
       }
     }
+
     return false;
   },
   ES: function ES(str) {
@@ -15137,17 +15352,15 @@ var validators = {
       Y: 1,
       Z: 2
     };
-    var controlDigits = ['T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D', 'X', 'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L', 'C', 'K', 'E'];
+    var controlDigits = ['T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D', 'X', 'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L', 'C', 'K', 'E']; // sanitize user input
 
-    // sanitize user input
-    var sanitized = str.trim().toUpperCase();
+    var sanitized = str.trim().toUpperCase(); // validate the data structure
 
-    // validate the data structure
     if (!DNI.test(sanitized)) {
       return false;
-    }
+    } // validate the control digit
 
-    // validate the control digit
+
     var number = sanitized.slice(0, -1).replace(/[X,Y,Z]/g, function (char) {
       return charsValue[char];
     });
@@ -15156,12 +15369,15 @@ var validators = {
   FI: function FI(str) {
     // https://dvv.fi/en/personal-identity-code#:~:text=control%20character%20for%20a-,personal,-identity%20code%20calculated
     (0, _assertString.default)(str);
+
     if (str.length !== 11) {
       return false;
     }
+
     if (!str.match(/^\d{6}[\-A\+]\d{3}[0-9ABCDEFHJKLMNPRSTUVWXY]{1}$/)) {
       return false;
     }
+
     var checkDigits = '0123456789ABCDEFHJKLMNPRSTUVWXY';
     var idAsNumber = parseInt(str.slice(0, 6), 10) * 1000 + parseInt(str.slice(7, 10), 10);
     var remainder = idAsNumber % 31;
@@ -15169,21 +15385,18 @@ var validators = {
     return checkDigit === str.slice(10, 11);
   },
   IN: function IN(str) {
-    var DNI = /^[1-9]\d{3}\s?\d{4}\s?\d{4}$/;
+    var DNI = /^[1-9]\d{3}\s?\d{4}\s?\d{4}$/; // multiplication table
 
-    // multiplication table
-    var d = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 0, 6, 7, 8, 9, 5], [2, 3, 4, 0, 1, 7, 8, 9, 5, 6], [3, 4, 0, 1, 2, 8, 9, 5, 6, 7], [4, 0, 1, 2, 3, 9, 5, 6, 7, 8], [5, 9, 8, 7, 6, 0, 4, 3, 2, 1], [6, 5, 9, 8, 7, 1, 0, 4, 3, 2], [7, 6, 5, 9, 8, 2, 1, 0, 4, 3], [8, 7, 6, 5, 9, 3, 2, 1, 0, 4], [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]];
+    var d = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 0, 6, 7, 8, 9, 5], [2, 3, 4, 0, 1, 7, 8, 9, 5, 6], [3, 4, 0, 1, 2, 8, 9, 5, 6, 7], [4, 0, 1, 2, 3, 9, 5, 6, 7, 8], [5, 9, 8, 7, 6, 0, 4, 3, 2, 1], [6, 5, 9, 8, 7, 1, 0, 4, 3, 2], [7, 6, 5, 9, 8, 2, 1, 0, 4, 3], [8, 7, 6, 5, 9, 3, 2, 1, 0, 4], [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]]; // permutation table
 
-    // permutation table
-    var p = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 5, 7, 6, 2, 8, 3, 0, 9, 4], [5, 8, 0, 3, 7, 9, 6, 1, 4, 2], [8, 9, 1, 6, 0, 4, 3, 5, 2, 7], [9, 4, 5, 3, 1, 2, 6, 8, 7, 0], [4, 2, 8, 6, 5, 7, 3, 9, 0, 1], [2, 7, 9, 3, 8, 0, 6, 4, 1, 5], [7, 0, 4, 6, 9, 1, 3, 2, 5, 8]];
+    var p = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 5, 7, 6, 2, 8, 3, 0, 9, 4], [5, 8, 0, 3, 7, 9, 6, 1, 4, 2], [8, 9, 1, 6, 0, 4, 3, 5, 2, 7], [9, 4, 5, 3, 1, 2, 6, 8, 7, 0], [4, 2, 8, 6, 5, 7, 3, 9, 0, 1], [2, 7, 9, 3, 8, 0, 6, 4, 1, 5], [7, 0, 4, 6, 9, 1, 3, 2, 5, 8]]; // sanitize user input
 
-    // sanitize user input
-    var sanitized = str.trim();
+    var sanitized = str.trim(); // validate the data structure
 
-    // validate the data structure
     if (!DNI.test(sanitized)) {
       return false;
     }
+
     var c = 0;
     var invertedArray = sanitized.replace(/\s/g, '').split('').map(Number).reverse();
     invertedArray.forEach(function (val, i) {
@@ -15197,24 +15410,26 @@ var validators = {
     if (parseInt(str.slice(3, 9), 10) === 0) return false;
     var lastNumber = parseInt(str.slice(9, 10), 10);
     var sum = 0;
+
     for (var i = 0; i < 9; i++) {
       sum += parseInt(str.slice(i, i + 1), 10) * (10 - i);
     }
+
     sum %= 11;
     return sum < 2 && lastNumber === sum || sum >= 2 && lastNumber === 11 - sum;
   },
   IT: function IT(str) {
     if (str.length !== 9) return false;
     if (str === 'CA00000AA') return false; // https://it.wikipedia.org/wiki/Carta_d%27identit%C3%A0_elettronica_italiana
-    return str.search(/C[A-Z]\d{5}[A-Z]{2}/i) > -1;
+
+    return str.search(/C[A-Z][0-9]{5}[A-Z]{2}/i) > -1;
   },
   NO: function NO(str) {
     var sanitized = str.trim();
     if (isNaN(Number(sanitized))) return false;
     if (sanitized.length !== 11) return false;
-    if (sanitized === '00000000000') return false;
+    if (sanitized === '00000000000') return false; // https://no.wikipedia.org/wiki/F%C3%B8dselsnummer
 
-    // https://no.wikipedia.org/wiki/F%C3%B8dselsnummer
     var f = sanitized.split('').map(Number);
     var k1 = (11 - (3 * f[0] + 7 * f[1] + 6 * f[2] + 1 * f[3] + 8 * f[4] + 9 * f[5] + 4 * f[6] + 5 * f[7] + 2 * f[8]) % 11) % 11;
     var k2 = (11 - (5 * f[0] + 4 * f[1] + 3 * f[2] + 2 * f[3] + 7 * f[4] + 6 * f[5] + 5 * f[6] + 4 * f[7] + 3 * f[8] + 2 * k1) % 11) % 11;
@@ -15222,13 +15437,14 @@ var validators = {
     return true;
   },
   TH: function TH(str) {
-    if (!str.match(/^[1-8]\d{12}$/)) return false;
+    if (!str.match(/^[1-8]\d{12}$/)) return false; // validate check digit
 
-    // validate check digit
     var sum = 0;
+
     for (var i = 0; i < 12; i++) {
       sum += parseInt(str[i], 10) * (13 - i);
     }
+
     return str[12] === ((11 - sum % 11) % 10).toString();
   },
   LK: function LK(str) {
@@ -15238,150 +15454,124 @@ var validators = {
     return false;
   },
   'he-IL': function heIL(str) {
-    var DNI = /^\d{9}$/;
+    var DNI = /^\d{9}$/; // sanitize user input
 
-    // sanitize user input
-    var sanitized = str.trim();
+    var sanitized = str.trim(); // validate the data structure
 
-    // validate the data structure
     if (!DNI.test(sanitized)) {
       return false;
     }
+
     var id = sanitized;
     var sum = 0,
-      incNum;
+        incNum;
+
     for (var i = 0; i < id.length; i++) {
       incNum = Number(id[i]) * (i % 2 + 1); // Multiply number by 1 or 2
+
       sum += incNum > 9 ? incNum - 9 : incNum; // Sum the digits up and add to total
     }
+
     return sum % 10 === 0;
   },
   'ar-LY': function arLY(str) {
     // Libya National Identity Number NIN is 12 digits, the first digit is either 1 or 2
-    var NIN = /^(1|2)\d{11}$/;
+    var NIN = /^(1|2)\d{11}$/; // sanitize user input
 
-    // sanitize user input
-    var sanitized = str.trim();
+    var sanitized = str.trim(); // validate the data structure
 
-    // validate the data structure
     if (!NIN.test(sanitized)) {
       return false;
     }
+
     return true;
   },
   'ar-TN': function arTN(str) {
-    var DNI = /^\d{8}$/;
+    var DNI = /^\d{8}$/; // sanitize user input
 
-    // sanitize user input
-    var sanitized = str.trim();
+    var sanitized = str.trim(); // validate the data structure
 
-    // validate the data structure
     if (!DNI.test(sanitized)) {
       return false;
     }
+
     return true;
   },
   'zh-CN': function zhCN(str) {
-    var provincesAndCities = ['11',
-    // 北京
-    '12',
-    // 天津
-    '13',
-    // 河北
-    '14',
-    // 山西
-    '15',
-    // 内蒙古
-    '21',
-    // 辽宁
-    '22',
-    // 吉林
-    '23',
-    // 黑龙江
-    '31',
-    // 上海
-    '32',
-    // 江苏
-    '33',
-    // 浙江
-    '34',
-    // 安徽
-    '35',
-    // 福建
-    '36',
-    // 江西
-    '37',
-    // 山东
-    '41',
-    // 河南
-    '42',
-    // 湖北
-    '43',
-    // 湖南
-    '44',
-    // 广东
-    '45',
-    // 广西
-    '46',
-    // 海南
-    '50',
-    // 重庆
-    '51',
-    // 四川
-    '52',
-    // 贵州
-    '53',
-    // 云南
-    '54',
-    // 西藏
-    '61',
-    // 陕西
-    '62',
-    // 甘肃
-    '63',
-    // 青海
-    '64',
-    // 宁夏
-    '65',
-    // 新疆
-    '71',
-    // 台湾
-    '81',
-    // 香港
-    '82',
-    // 澳门
+    var provincesAndCities = ['11', // 北京
+    '12', // 天津
+    '13', // 河北
+    '14', // 山西
+    '15', // 内蒙古
+    '21', // 辽宁
+    '22', // 吉林
+    '23', // 黑龙江
+    '31', // 上海
+    '32', // 江苏
+    '33', // 浙江
+    '34', // 安徽
+    '35', // 福建
+    '36', // 江西
+    '37', // 山东
+    '41', // 河南
+    '42', // 湖北
+    '43', // 湖南
+    '44', // 广东
+    '45', // 广西
+    '46', // 海南
+    '50', // 重庆
+    '51', // 四川
+    '52', // 贵州
+    '53', // 云南
+    '54', // 西藏
+    '61', // 陕西
+    '62', // 甘肃
+    '63', // 青海
+    '64', // 宁夏
+    '65', // 新疆
+    '71', // 台湾
+    '81', // 香港
+    '82', // 澳门
     '91' // 国外
     ];
     var powers = ['7', '9', '10', '5', '8', '4', '2', '1', '6', '3', '7', '9', '10', '5', '8', '4', '2'];
     var parityBit = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+
     var checkAddressCode = function checkAddressCode(addressCode) {
-      return (0, _includesArray.default)(provincesAndCities, addressCode);
+      return provincesAndCities.includes(addressCode);
     };
+
     var checkBirthDayCode = function checkBirthDayCode(birDayCode) {
       var yyyy = parseInt(birDayCode.substring(0, 4), 10);
       var mm = parseInt(birDayCode.substring(4, 6), 10);
       var dd = parseInt(birDayCode.substring(6), 10);
       var xdata = new Date(yyyy, mm - 1, dd);
+
       if (xdata > new Date()) {
-        return false;
-        // eslint-disable-next-line max-len
+        return false; // eslint-disable-next-line max-len
       } else if (xdata.getFullYear() === yyyy && xdata.getMonth() === mm - 1 && xdata.getDate() === dd) {
         return true;
       }
+
       return false;
     };
+
     var getParityBit = function getParityBit(idCardNo) {
       var id17 = idCardNo.substring(0, 17);
       var power = 0;
+
       for (var i = 0; i < 17; i++) {
         power += parseInt(id17.charAt(i), 10) * parseInt(powers[i], 10);
       }
+
       var mod = power % 11;
       return parityBit[mod];
     };
+
     var checkParityBit = function checkParityBit(idCardNo) {
       return getParityBit(idCardNo) === idCardNo.charAt(17).toUpperCase();
     };
+
     var check15IdCardNo = function check15IdCardNo(idCardNo) {
       var check = /^[1-9]\d{7}((0[1-9])|(1[0-2]))((0[1-9])|([1-2][0-9])|(3[0-1]))\d{3}$/.test(idCardNo);
       if (!check) return false;
@@ -15393,6 +15583,7 @@ var validators = {
       if (!check) return false;
       return true;
     };
+
     var check18IdCardNo = function check18IdCardNo(idCardNo) {
       var check = /^[1-9]\d{5}[1-9]\d{3}((0[1-9])|(1[0-2]))((0[1-9])|([1-2][0-9])|(3[0-1]))\d{3}(\d|x|X)$/.test(idCardNo);
       if (!check) return false;
@@ -15404,36 +15595,40 @@ var validators = {
       if (!check) return false;
       return checkParityBit(idCardNo);
     };
+
     var checkIdCardNo = function checkIdCardNo(idCardNo) {
       var check = /^\d{15}|(\d{17}(\d|x|X))$/.test(idCardNo);
       if (!check) return false;
+
       if (idCardNo.length === 15) {
         return check15IdCardNo(idCardNo);
       }
+
       return check18IdCardNo(idCardNo);
     };
+
     return checkIdCardNo(str);
   },
   'zh-HK': function zhHK(str) {
     // sanitize user input
-    str = str.trim();
-
-    // HKID number starts with 1 or 2 letters, followed by 6 digits,
+    str = str.trim(); // HKID number starts with 1 or 2 letters, followed by 6 digits,
     // then a checksum contained in square / round brackets or nothing
-    var regexHKID = /^[A-Z]{1,2}[0-9]{6}((\([0-9A]\))|(\[[0-9A]\])|([0-9A]))$/;
-    var regexIsDigit = /^[0-9]$/;
 
-    // convert the user input to all uppercase and apply regex
+    var regexHKID = /^[A-Z]{1,2}[0-9]{6}((\([0-9A]\))|(\[[0-9A]\])|([0-9A]))$/;
+    var regexIsDigit = /^[0-9]$/; // convert the user input to all uppercase and apply regex
+
     str = str.toUpperCase();
     if (!regexHKID.test(str)) return false;
     str = str.replace(/\[|\]|\(|\)/g, '');
     if (str.length === 8) str = "3".concat(str);
     var checkSumVal = 0;
+
     for (var i = 0; i <= 7; i++) {
       var convertedChar = void 0;
       if (!regexIsDigit.test(str[i])) convertedChar = (str[i].charCodeAt(0) - 55) % 11;else convertedChar = str[i];
       checkSumVal += convertedChar * (9 - i);
     }
+
     checkSumVal %= 11;
     var checkSumConverted;
     if (checkSumVal === 0) checkSumConverted = '0';else if (checkSumVal === 1) checkSumConverted = 'A';else checkSumConverted = String(11 - checkSumVal);
@@ -15476,25 +15671,19 @@ var validators = {
         var code = ALPHABET_CODES[number];
         return code % 10 * 9 + Math.floor(code / 10);
       }
+
       if (index === 9) {
         return (10 - sum % 10 - Number(number)) % 10 === 0;
       }
+
       return sum + Number(number) * (9 - index);
     }, 0);
-  },
-  PK: function PK(str) {
-    // Pakistani National Identity Number CNIC is 13 digits
-    var CNIC = /^[1-7][0-9]{4}-[0-9]{7}-[1-9]$/;
-
-    // sanitize user input
-    var sanitized = str.trim();
-
-    // validate the data structure
-    return CNIC.test(sanitized);
   }
 };
+
 function isIdentityCard(str, locale) {
   (0, _assertString.default)(str);
+
   if (locale in validators) {
     return validators[locale](str);
   } else if (locale === 'any') {
@@ -15503,15 +15692,19 @@ function isIdentityCard(str, locale) {
       // istanbul ignore else
       if (validators.hasOwnProperty(key)) {
         var validator = validators[key];
+
         if (validator(str)) {
           return true;
         }
       }
     }
+
     return false;
   }
+
   throw new Error("Invalid locale '".concat(locale, "'"));
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15530,15 +15723,22 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isIn;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _toString = _interopRequireDefault(__webpack_require__(/*! ./util/toString */ "./node_modules/validator/lib/util/toString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 function isIn(str, options) {
   (0, _assertString.default)(str);
   var i;
+
   if (Object.prototype.toString.call(options) === '[object Array]') {
     var array = [];
+
     for (i in options) {
       // https://github.com/gotwarlost/istanbul/blob/master/ignoring-code-for-coverage.md#ignoring-code-for-coverage-purposes
       // istanbul ignore else
@@ -15546,14 +15746,17 @@ function isIn(str, options) {
         array[i] = (0, _toString.default)(options[i]);
       }
     }
+
     return array.indexOf(str) >= 0;
   } else if (_typeof(options) === 'object') {
     return options.hasOwnProperty(str);
   } else if (options && typeof options.indexOf === 'function') {
     return options.indexOf(str) >= 0;
   }
+
   return false;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15572,26 +15775,28 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isInt;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-var _nullUndefinedCheck = _interopRequireDefault(__webpack_require__(/*! ./util/nullUndefinedCheck */ "./node_modules/validator/lib/util/nullUndefinedCheck.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var int = /^(?:[-+]?(?:0|[1-9][0-9]*))$/;
 var intLeadingZeroes = /^[-+]?[0-9]+$/;
+
 function isInt(str, options) {
   (0, _assertString.default)(str);
-  options = options || {};
-
-  // Get the regex to use for testing, based on whether
+  options = options || {}; // Get the regex to use for testing, based on whether
   // leading zeroes are allowed or not.
-  var regex = options.allow_leading_zeroes === false ? int : intLeadingZeroes;
 
-  // Check min/max/lt/gt
-  var minCheckPassed = !options.hasOwnProperty('min') || (0, _nullUndefinedCheck.default)(options.min) || str >= options.min;
-  var maxCheckPassed = !options.hasOwnProperty('max') || (0, _nullUndefinedCheck.default)(options.max) || str <= options.max;
-  var ltCheckPassed = !options.hasOwnProperty('lt') || (0, _nullUndefinedCheck.default)(options.lt) || str < options.lt;
-  var gtCheckPassed = !options.hasOwnProperty('gt') || (0, _nullUndefinedCheck.default)(options.gt) || str > options.gt;
+  var regex = options.hasOwnProperty('allow_leading_zeroes') && !options.allow_leading_zeroes ? int : intLeadingZeroes; // Check min/max/lt/gt
+
+  var minCheckPassed = !options.hasOwnProperty('min') || str >= options.min;
+  var maxCheckPassed = !options.hasOwnProperty('max') || str <= options.max;
+  var ltCheckPassed = !options.hasOwnProperty('lt') || str < options.lt;
+  var gtCheckPassed = !options.hasOwnProperty('gt') || str > options.gt;
   return regex.test(str) && minCheckPassed && maxCheckPassed && ltCheckPassed && gtCheckPassed;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15610,27 +15815,39 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isJSON;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-var _includesArray = _interopRequireDefault(__webpack_require__(/*! ./util/includesArray */ "./node_modules/validator/lib/util/includesArray.js"));
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 var default_json_options = {
   allow_primitives: false
 };
+
 function isJSON(str, options) {
   (0, _assertString.default)(str);
+
   try {
     options = (0, _merge.default)(options, default_json_options);
     var primitives = [];
+
     if (options.allow_primitives) {
       primitives = [null, false, true];
     }
+
     var obj = JSON.parse(str);
-    return (0, _includesArray.default)(primitives, obj) || !!obj && _typeof(obj) === 'object';
-  } catch (e) {/* ignore */}
+    return primitives.includes(obj) || !!obj && _typeof(obj) === 'object';
+  } catch (e) {
+    /* ignore */
+  }
+
   return false;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15649,22 +15866,29 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isJWT;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _isBase = _interopRequireDefault(__webpack_require__(/*! ./isBase64 */ "./node_modules/validator/lib/isBase64.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isJWT(str) {
   (0, _assertString.default)(str);
   var dotSplit = str.split('.');
   var len = dotSplit.length;
-  if (len !== 3) {
+
+  if (len > 3 || len < 2) {
     return false;
   }
+
   return dotSplit.reduce(function (acc, currElem) {
     return acc && (0, _isBase.default)(currElem, {
       urlSafe: true
     });
   }, true);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15683,10 +15907,13 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isLatLong;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-var _includesString = _interopRequireDefault(__webpack_require__(/*! ./util/includesString */ "./node_modules/validator/lib/util/includesString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var lat = /^\(?[+-]?(90(\.0+)?|[1-8]?\d(\.\d+)?)$/;
 var long = /^\s?[+-]?(180(\.0+)?|1[0-7]\d(\.\d+)?|\d{1,2}(\.\d+)?)\)?$/;
 var latDMS = /^(([1-8]?\d)\D+([1-5]?\d|60)\D+([1-5]?\d|60)(\.\d+)?|90\D+0\D+0)\D+[NSns]?$/i;
@@ -15694,17 +15921,21 @@ var longDMS = /^\s*([1-7]?\d{1,2}\D+([1-5]?\d|60)\D+([1-5]?\d|60)(\.\d+)?|180\D+
 var defaultLatLongOptions = {
   checkDMS: false
 };
+
 function isLatLong(str, options) {
   (0, _assertString.default)(str);
   options = (0, _merge.default)(options, defaultLatLongOptions);
-  if (!(0, _includesString.default)(str, ',')) return false;
+  if (!str.includes(',')) return false;
   var pair = str.split(',');
   if (pair[0].startsWith('(') && !pair[1].endsWith(')') || pair[1].endsWith(')') && !pair[0].startsWith('(')) return false;
+
   if (options.checkDMS) {
     return latDMS.test(pair[0]) && longDMS.test(pair[1]);
   }
+
   return lat.test(pair[0]) && long.test(pair[1]);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15723,14 +15954,19 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isLength;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 /* eslint-disable prefer-rest-params */
 function isLength(str, options) {
   (0, _assertString.default)(str);
   var min;
   var max;
+
   if (_typeof(options) === 'object') {
     min = options.min || 0;
     max = options.max;
@@ -15739,17 +15975,13 @@ function isLength(str, options) {
     min = arguments[1] || 0;
     max = arguments[2];
   }
-  var presentationSequences = str.match(/[^\uFE0F\uFE0E][\uFE0F\uFE0E]/g) || [];
+
+  var presentationSequences = str.match(/(\uFE0F|\uFE0E)/g) || [];
   var surrogatePairs = str.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g) || [];
   var len = str.length - presentationSequences.length - surrogatePairs.length;
-  var isInsideRange = len >= min && (typeof max === 'undefined' || len <= max);
-  if (isInsideRange && Array.isArray(options === null || options === void 0 ? void 0 : options.discreteLengths)) {
-    return options.discreteLengths.some(function (discreteLen) {
-      return discreteLen === len;
-    });
-  }
-  return isInsideRange;
+  return len >= min && (typeof max === 'undefined' || len <= max);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15768,8 +16000,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isLicensePlate;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var validators = {
   'cs-CZ': function csCZ(str) {
     return /^(([ABCDEFHIJKLMNPRSTUVXYZ]|[0-9])-?){5,8}$/.test(str);
@@ -15782,9 +16017,6 @@ var validators = {
   },
   'en-IN': function enIN(str) {
     return /^[A-Z]{2}[ -]?[0-9]{1,2}(?:[ -]?[A-Z])(?:[ -]?[A-Z]*)?[ -]?[0-9]{4}$/.test(str);
-  },
-  'en-SG': function enSG(str) {
-    return /^[A-Z]{3}[ -]?[\d]{4}[ -]?[A-Z]{1}$/.test(str);
   },
   'es-AR': function esAR(str) {
     return /^(([A-Z]{2} ?[0-9]{3} ?[A-Z]{2})|([A-Z]{3} ?[0-9]{3}))$/.test(str);
@@ -15799,34 +16031,37 @@ var validators = {
     return /^[A-Z]{3}[ -]?[0-9][A-Z][0-9]{2}|[A-Z]{3}[ -]?[0-9]{4}$/.test(str);
   },
   'pt-PT': function ptPT(str) {
-    return /^(([A-Z]{2}[ -·]?[0-9]{2}[ -·]?[0-9]{2})|([0-9]{2}[ -·]?[A-Z]{2}[ -·]?[0-9]{2})|([0-9]{2}[ -·]?[0-9]{2}[ -·]?[A-Z]{2})|([A-Z]{2}[ -·]?[0-9]{2}[ -·]?[A-Z]{2}))$/.test(str);
+    return /^([A-Z]{2}|[0-9]{2})[ -·]?([A-Z]{2}|[0-9]{2})[ -·]?([A-Z]{2}|[0-9]{2})$/.test(str);
   },
   'sq-AL': function sqAL(str) {
     return /^[A-Z]{2}[- ]?((\d{3}[- ]?(([A-Z]{2})|T))|(R[- ]?\d{3}))$/.test(str);
   },
   'sv-SE': function svSE(str) {
     return /^[A-HJ-PR-UW-Z]{3} ?[\d]{2}[A-HJ-PR-UW-Z1-9]$|(^[A-ZÅÄÖ ]{2,7}$)/.test(str.trim());
-  },
-  'en-PK': function enPK(str) {
-    return /(^[A-Z]{2}((\s|-){0,1})[0-9]{3,4}((\s|-)[0-9]{2}){0,1}$)|(^[A-Z]{3}((\s|-){0,1})[0-9]{3,4}((\s|-)[0-9]{2}){0,1}$)|(^[A-Z]{4}((\s|-){0,1})[0-9]{3,4}((\s|-)[0-9]{2}){0,1}$)|(^[A-Z]((\s|-){0,1})[0-9]{4}((\s|-)[0-9]{2}){0,1}$)/.test(str.trim());
   }
 };
+
 function isLicensePlate(str, locale) {
   (0, _assertString.default)(str);
+
   if (locale in validators) {
     return validators[locale](str);
   } else if (locale === 'any') {
     for (var key in validators) {
       /* eslint guard-for-in: 0 */
       var validator = validators[key];
+
       if (validator(str)) {
         return true;
       }
     }
+
     return false;
   }
+
   throw new Error("Invalid locale '".concat(locale, "'"));
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15845,113 +16080,23 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isLocale;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-/*
-  = 3ALPHA              ; selected ISO 639 codes
-    *2("-" 3ALPHA)      ; permanently reserved
- */
-var extlang = '([A-Za-z]{3}(-[A-Za-z]{3}){0,2})';
 
-/*
-  = 2*3ALPHA            ; shortest ISO 639 code
-    ["-" extlang]       ; sometimes followed by
-                        ; extended language subtags
-  / 4ALPHA              ; or reserved for future use
-  / 5*8ALPHA            ; or registered language subtag
- */
-var language = "(([a-zA-Z]{2,3}(-".concat(extlang, ")?)|([a-zA-Z]{5,8}))");
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/*
-  = 4ALPHA              ; ISO 15924 code
- */
-var script = '([A-Za-z]{4})';
+var localeReg = /^[A-Za-z]{2,4}([_-]([A-Za-z]{4}|[\d]{3}))?([_-]([A-Za-z]{2}|[\d]{3}))?$/;
 
-/*
-  = 2ALPHA              ; ISO 3166-1 code
-  / 3DIGIT              ; UN M.49 code
- */
-var region = '([A-Za-z]{2}|\\d{3})';
-
-/*
-  = 5*8alphanum         ; registered variants
-  / (DIGIT 3alphanum)
- */
-var variant = '([A-Za-z0-9]{5,8}|(\\d[A-Z-a-z0-9]{3}))';
-
-/*
-  = DIGIT               ; 0 - 9
-  / %x41-57             ; A - W
-  / %x59-5A             ; Y - Z
-  / %x61-77             ; a - w
-  / %x79-7A             ; y - z
- */
-var singleton = '(\\d|[A-W]|[Y-Z]|[a-w]|[y-z])';
-
-/*
-  = singleton 1*("-" (2*8alphanum))
-                        ; Single alphanumerics
-                        ; "x" reserved for private use
- */
-var extension = "(".concat(singleton, "(-[A-Za-z0-9]{2,8})+)");
-
-/*
-  = "x" 1*("-" (1*8alphanum))
- */
-var privateuse = '(x(-[A-Za-z0-9]{1,8})+)';
-
-// irregular tags do not match the 'langtag' production and would not
-// otherwise be considered 'well-formed'. These tags are all valid, but
-// most are deprecated in favor of more modern subtags or subtag combination
-
-var irregular = '((en-GB-oed)|(i-ami)|(i-bnn)|(i-default)|(i-enochian)|' + '(i-hak)|(i-klingon)|(i-lux)|(i-mingo)|(i-navajo)|(i-pwn)|(i-tao)|' + '(i-tay)|(i-tsu)|(sgn-BE-FR)|(sgn-BE-NL)|(sgn-CH-DE))';
-
-// regular tags match the 'langtag' production, but their subtags are not
-// extended language or variant subtags: their meaning is defined by
-// their registration and all of these are deprecated in favor of a more
-// modern subtag or sequence of subtags
-
-var regular = '((art-lojban)|(cel-gaulish)|(no-bok)|(no-nyn)|(zh-guoyu)|' + '(zh-hakka)|(zh-min)|(zh-min-nan)|(zh-xiang))';
-
-/*
-  = irregular           ; non-redundant tags registered
-  / regular             ; during the RFC 3066 era
-
- */
-var grandfathered = "(".concat(irregular, "|").concat(regular, ")");
-
-/*
-  RFC 5646 defines delimitation of subtags via a hyphen:
-
-      "Subtag" refers to a specific section of a tag, delimited by a
-      hyphen, such as the subtags 'zh', 'Hant', and 'CN' in the tag "zh-
-      Hant-CN".  Examples of subtags in this document are enclosed in
-      single quotes ('Hant')
-
-  However, we need to add "_" to maintain the existing behaviour.
- */
-var delimiter = '(-|_)';
-
-/*
-  = language
-    ["-" script]
-    ["-" region]
-    *("-" variant)
-    *("-" extension)
-    ["-" privateuse]
- */
-var langtag = "".concat(language, "(").concat(delimiter).concat(script, ")?(").concat(delimiter).concat(region, ")?(").concat(delimiter).concat(variant, ")*(").concat(delimiter).concat(extension, ")*(").concat(delimiter).concat(privateuse, ")?");
-
-/*
-  Regex implementation based on BCP RFC 5646
-  Tags for Identifying Languages
-  https://www.rfc-editor.org/rfc/rfc5646.html
- */
-var languageTagRegex = new RegExp("(^".concat(privateuse, "$)|(^").concat(grandfathered, "$)|(^").concat(langtag, "$)"));
 function isLocale(str) {
   (0, _assertString.default)(str);
-  return languageTagRegex.test(str);
+
+  if (str === 'en_US_POSIX' || str === 'ca_ES_VALENCIA') {
+    return true;
+  }
+
+  return localeReg.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15970,12 +16115,16 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isLowercase;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isLowercase(str) {
   (0, _assertString.default)(str);
   return str === str.toLowerCase();
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -15994,8 +16143,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isLuhnNumber;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isLuhnNumber(str) {
   (0, _assertString.default)(str);
   var sanitized = str.replace(/[- ]+/g, '');
@@ -16003,11 +16155,14 @@ function isLuhnNumber(str) {
   var digit;
   var tmpNum;
   var shouldDouble;
+
   for (var i = sanitized.length - 1; i >= 0; i--) {
     digit = sanitized.substring(i, i + 1);
     tmpNum = parseInt(digit, 10);
+
     if (shouldDouble) {
       tmpNum *= 2;
+
       if (tmpNum >= 10) {
         sum += tmpNum % 10 + 1;
       } else {
@@ -16016,10 +16171,13 @@ function isLuhnNumber(str) {
     } else {
       sum += tmpNum;
     }
+
     shouldDouble = !shouldDouble;
   }
+
   return !!(sum % 10 === 0 ? sanitized : false);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16038,43 +16196,56 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isMACAddress;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var macAddress48 = /^(?:[0-9a-fA-F]{2}([-:\s]))([0-9a-fA-F]{2}\1){4}([0-9a-fA-F]{2})$/;
 var macAddress48NoSeparators = /^([0-9a-fA-F]){12}$/;
 var macAddress48WithDots = /^([0-9a-fA-F]{4}\.){2}([0-9a-fA-F]{4})$/;
 var macAddress64 = /^(?:[0-9a-fA-F]{2}([-:\s]))([0-9a-fA-F]{2}\1){6}([0-9a-fA-F]{2})$/;
 var macAddress64NoSeparators = /^([0-9a-fA-F]){16}$/;
 var macAddress64WithDots = /^([0-9a-fA-F]{4}\.){3}([0-9a-fA-F]{4})$/;
+
 function isMACAddress(str, options) {
   (0, _assertString.default)(str);
+
   if (options !== null && options !== void 0 && options.eui) {
     options.eui = String(options.eui);
   }
   /**
    * @deprecated `no_colons` TODO: remove it in the next major
   */
+
+
   if (options !== null && options !== void 0 && options.no_colons || options !== null && options !== void 0 && options.no_separators) {
     if (options.eui === '48') {
       return macAddress48NoSeparators.test(str);
     }
+
     if (options.eui === '64') {
       return macAddress64NoSeparators.test(str);
     }
+
     return macAddress48NoSeparators.test(str) || macAddress64NoSeparators.test(str);
   }
+
   if ((options === null || options === void 0 ? void 0 : options.eui) === '48') {
     return macAddress48.test(str) || macAddress48WithDots.test(str);
   }
+
   if ((options === null || options === void 0 ? void 0 : options.eui) === '64') {
     return macAddress64.test(str) || macAddress64WithDots.test(str);
   }
+
   return isMACAddress(str, {
     eui: '48'
   }) || isMACAddress(str, {
     eui: '64'
   });
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16093,13 +16264,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isMD5;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var md5 = /^[a-f0-9]{32}$/;
+
 function isMD5(str) {
   (0, _assertString.default)(str);
   return md5.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16118,110 +16294,23 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isMagnetURI;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var magnetURIComponent = /(?:^magnet:\?|[^?&]&)xt(?:\.1)?=urn:(?:(?:aich|bitprint|btih|ed2k|ed2khash|kzhash|md5|sha1|tree:tiger):[a-z0-9]{32}(?:[a-z0-9]{8})?|btmh:1220[a-z0-9]{64})(?:$|&)/i;
+
 function isMagnetURI(url) {
   (0, _assertString.default)(url);
+
   if (url.indexOf('magnet:?') !== 0) {
     return false;
   }
+
   return magnetURIComponent.test(url);
 }
-module.exports = exports.default;
-module.exports["default"] = exports.default;
 
-/***/ }),
-
-/***/ "./node_modules/validator/lib/isMailtoURI.js":
-/*!***************************************************!*\
-  !*** ./node_modules/validator/lib/isMailtoURI.js ***!
-  \***************************************************/
-/***/ ((module, exports, __webpack_require__) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = isMailtoURI;
-var _trim = _interopRequireDefault(__webpack_require__(/*! ./trim */ "./node_modules/validator/lib/trim.js"));
-var _isEmail = _interopRequireDefault(__webpack_require__(/*! ./isEmail */ "./node_modules/validator/lib/isEmail.js"));
-var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function parseMailtoQueryString(queryString) {
-  var allowedParams = new Set(['subject', 'body', 'cc', 'bcc']),
-    query = {
-      cc: '',
-      bcc: ''
-    };
-  var isParseFailed = false;
-  var queryParams = queryString.split('&');
-  if (queryParams.length > 4) {
-    return false;
-  }
-  var _iterator = _createForOfIteratorHelper(queryParams),
-    _step;
-  try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var q = _step.value;
-      var _q$split = q.split('='),
-        _q$split2 = _slicedToArray(_q$split, 2),
-        key = _q$split2[0],
-        value = _q$split2[1];
-
-      // checked for invalid and duplicated query params
-      if (key && !allowedParams.has(key)) {
-        isParseFailed = true;
-        break;
-      }
-      if (value && (key === 'cc' || key === 'bcc')) {
-        query[key] = value;
-      }
-      if (key) {
-        allowedParams.delete(key);
-      }
-    }
-  } catch (err) {
-    _iterator.e(err);
-  } finally {
-    _iterator.f();
-  }
-  return isParseFailed ? false : query;
-}
-function isMailtoURI(url, options) {
-  (0, _assertString.default)(url);
-  if (url.indexOf('mailto:') !== 0) {
-    return false;
-  }
-  var _url$replace$split = url.replace('mailto:', '').split('?'),
-    _url$replace$split2 = _slicedToArray(_url$replace$split, 2),
-    to = _url$replace$split2[0],
-    _url$replace$split2$ = _url$replace$split2[1],
-    queryString = _url$replace$split2$ === void 0 ? '' : _url$replace$split2$;
-  if (!to && !queryString) {
-    return true;
-  }
-  var query = parseMailtoQueryString(queryString);
-  if (!query) {
-    return false;
-  }
-  return "".concat(to, ",").concat(query.cc, ",").concat(query.bcc).split(',').every(function (email) {
-    email = (0, _trim.default)(email, ' ');
-    if (email) {
-      return (0, _isEmail.default)(email, options);
-    }
-    return true;
-  });
-}
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16240,46 +16329,49 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isMimeType;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /*
   Checks if the provided string matches to a correct Media type format (MIME type)
 
   This function only checks is the string format follows the
-  established rules by the according RFC specifications.
+  etablished rules by the according RFC specifications.
   This function supports 'charset' in textual media types
   (https://tools.ietf.org/html/rfc6657).
 
   This function does not check against all the media types listed
   by the IANA (https://www.iana.org/assignments/media-types/media-types.xhtml)
   because of lightness purposes : it would require to include
-  all these MIME types in this library, which would weigh it
+  all these MIME types in this librairy, which would weigh it
   significantly. This kind of effort maybe is not worth for the use that
-  this function has in this entire library.
+  this function has in this entire librairy.
 
-  More information in the RFC specifications :
+  More informations in the RFC specifications :
   - https://tools.ietf.org/html/rfc2045
   - https://tools.ietf.org/html/rfc2046
   - https://tools.ietf.org/html/rfc7231#section-3.1.1.1
   - https://tools.ietf.org/html/rfc7231#section-3.1.1.5
 */
-
 // Match simple MIME types
 // NB :
 //   Subtype length must not exceed 100 characters.
 //   This rule does not comply to the RFC specs (what is the max length ?).
 var mimeTypeSimple = /^(application|audio|font|image|message|model|multipart|text|video)\/[a-zA-Z0-9\.\-\+_]{1,100}$/i; // eslint-disable-line max-len
-
 // Handle "charset" in "text/*"
-var mimeTypeText = /^text\/[a-zA-Z0-9\.\-\+]{1,100};\s?charset=("[a-zA-Z0-9\.\-\+\s]{0,70}"|[a-zA-Z0-9\.\-\+]{0,70})(\s?\([a-zA-Z0-9\.\-\+\s]{1,20}\))?$/i; // eslint-disable-line max-len
 
+var mimeTypeText = /^text\/[a-zA-Z0-9\.\-\+]{1,100};\s?charset=("[a-zA-Z0-9\.\-\+\s]{0,70}"|[a-zA-Z0-9\.\-\+]{0,70})(\s?\([a-zA-Z0-9\.\-\+\s]{1,20}\))?$/i; // eslint-disable-line max-len
 // Handle "boundary" in "multipart/*"
+
 var mimeTypeMultipart = /^multipart\/[a-zA-Z0-9\.\-\+]{1,100}(;\s?(boundary|charset)=("[a-zA-Z0-9\.\-\+\s]{0,70}"|[a-zA-Z0-9\.\-\+]{0,70})(\s?\([a-zA-Z0-9\.\-\+\s]{1,20}\))?){0,2}$/i; // eslint-disable-line max-len
 
 function isMimeType(str) {
   (0, _assertString.default)(str);
   return mimeTypeSimple.test(str) || mimeTypeText.test(str) || mimeTypeMultipart.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16299,11 +16391,14 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = isMobilePhone;
 exports.locales = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /* eslint-disable max-len */
 var phones = {
-  'am-AM': /^(\+?374|0)(33|4[134]|55|77|88|9[13-689])\d{6}$/,
+  'am-AM': /^(\+?374|0)((10|[9|7][0-9])\d{6}$|[2-4]\d{7}$)/,
   'ar-AE': /^((\+?971)|0)?5[024568]\d{7}$/,
   'ar-BH': /^(\+?973)?(3|6)\d{7}$/,
   'ar-DZ': /^(\+?213|0)(5|6|7)\d{8}$/,
@@ -16314,14 +16409,12 @@ var phones = {
   'ar-KW': /^(\+?965)([569]\d{7}|41\d{6})$/,
   'ar-LY': /^((\+?218)|0)?(9[1-6]\d{7}|[1-8]\d{7,9})$/,
   'ar-MA': /^(?:(?:\+|00)212|0)[5-7]\d{8}$/,
-  'ar-OM': /^((\+|00)968)?([79][1-9])\d{6}$/,
+  'ar-OM': /^((\+|00)968)?(9[1-9])\d{6}$/,
   'ar-PS': /^(\+?970|0)5[6|9](\d{7})$/,
   'ar-SA': /^(!?(\+?966)|0)?5\d{8}$/,
-  'ar-SD': /^((\+?249)|0)?(9[012369]|1[012])\d{7}$/,
   'ar-SY': /^(!?(\+?963)|0)?9\d{8}$/,
   'ar-TN': /^(\+?216)?[2459]\d{7}$/,
   'az-AZ': /^(\+994|0)(10|5[015]|7[07]|99)\d{7}$/,
-  'ar-QA': /^(\+?974|0)?([3567]\d{7})$/,
   'bs-BA': /^((((\+|00)3876)|06))((([0-3]|[5-6])\d{6})|(4\d{7}))$/,
   'be-BY': /^(\+?375)?(24|25|29|33|44)\d{7}$/,
   'bg-BG': /^(\+?359|0)?8[789]\d{7}$/,
@@ -16335,15 +16428,15 @@ var phones = {
   'de-LU': /^(\+352)?((6\d1)\d{6})$/,
   'dv-MV': /^(\+?960)?(7[2-9]|9[1-9])\d{5}$/,
   'el-GR': /^(\+?30|0)?6(8[5-9]|9(?![26])[0-9])\d{7}$/,
-  'el-CY': /^(\+?357?)?(9(9|7|6|5|4)\d{6})$/,
+  'el-CY': /^(\+?357?)?(9(9|6)\d{6})$/,
   'en-AI': /^(\+?1|0)264(?:2(35|92)|4(?:6[1-2]|76|97)|5(?:3[6-9]|8[1-4])|7(?:2(4|9)|72))\d{4}$/,
   'en-AU': /^(\+?61|0)4\d{8}$/,
   'en-AG': /^(?:\+1|1)268(?:464|7(?:1[3-9]|[28]\d|3[0246]|64|7[0-689]))\d{4}$/,
   'en-BM': /^(\+?1)?441(((3|7)\d{6}$)|(5[0-3][0-9]\d{4}$)|(59\d{5}$))/,
   'en-BS': /^(\+?1[-\s]?|0)?\(?242\)?[-\s]?\d{3}[-\s]?\d{4}$/,
-  'en-GB': /^(\+?44|0)7[1-9]\d{8}$/,
+  'en-GB': /^(\+?44|0)7\d{9}$/,
   'en-GG': /^(\+?44|0)1481\d{6}$/,
-  'en-GH': /^(\+233|0)(20|50|24|54|27|57|26|56|23|53|28|55|59)\d{7}$/,
+  'en-GH': /^(\+233|0)(20|50|24|54|27|57|26|56|23|28|55|59)\d{7}$/,
   'en-GY': /^(\+592|0)6\d{6}$/,
   'en-HK': /^(\+?852[-\s]?)?[456789]\d{3}[-\s]?\d{4}$/,
   'en-MO': /^(\+?853[-\s]?)?[6]\d{3}[-\s]?\d{4}$/,
@@ -16351,14 +16444,12 @@ var phones = {
   'en-IN': /^(\+?91|0)?[6789]\d{9}$/,
   'en-JM': /^(\+?876)?\d{7}$/,
   'en-KE': /^(\+?254|0)(7|1)\d{8}$/,
-  'fr-CF': /^(\+?236| ?)(70|75|77|72|21|22)\d{6}$/,
   'en-SS': /^(\+?211|0)(9[1257])\d{7}$/,
   'en-KI': /^((\+686|686)?)?( )?((6|7)(2|3|8)[0-9]{6})$/,
   'en-KN': /^(?:\+1|1)869(?:46\d|48[89]|55[6-8]|66\d|76[02-7])\d{4}$/,
   'en-LS': /^(\+?266)(22|28|57|58|59|27|52)\d{6}$/,
   'en-MT': /^(\+?356|0)?(99|79|77|21|27|22|25)[0-9]{6}$/,
   'en-MU': /^(\+?230|0)?\d{8}$/,
-  'en-MW': /^(\+?265|0)(((77|88|31|99|98|21)\d{7})|(((111)|1)\d{6})|(32000\d{4}))$/,
   'en-NA': /^(\+?264|0)(6|8)\d{7}$/,
   'en-NG': /^(\+?234|0)?[789]\d{9}$/,
   'en-NZ': /^(\+?64|0)[28]\d{7,9}$/,
@@ -16372,7 +16463,7 @@ var phones = {
   'en-UG': /^(\+?256|0)?[7]\d{8}$/,
   'en-US': /^((\+1|1)?( |-)?)?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})( |-)?([2-9][0-9]{2}( |-)?[0-9]{4})$/,
   'en-ZA': /^(\+?27|0)\d{9}$/,
-  'en-ZM': /^(\+?26)?0[79][567]\d{7}$/,
+  'en-ZM': /^(\+?26)?09[567]\d{7}$/,
   'en-ZW': /^(\+263)[0-9]{9}$/,
   'en-BW': /^(\+?267)?(7[1-8]{1})\d{6}$/,
   'es-AR': /^\+?549(11|[2368]\d)\d{8}$/,
@@ -16380,12 +16471,11 @@ var phones = {
   'es-CO': /^(\+?57)?3(0(0|1|2|4|5)|1\d|2[0-4]|5(0|1))\d{7}$/,
   'es-CL': /^(\+?56|0)[2-9]\d{1}\d{7}$/,
   'es-CR': /^(\+506)?[2-8]\d{7}$/,
-  'es-CU': /^(\+53|0053)?5\d{7}$/,
+  'es-CU': /^(\+53|0053)?5\d{7}/,
   'es-DO': /^(\+?1)?8[024]9\d{7}$/,
   'es-HN': /^(\+?504)?[9|8|3|2]\d{7}$/,
   'es-EC': /^(\+?593|0)([2-7]|9[2-9])\d{7}$/,
   'es-ES': /^(\+?34)?[6|7]\d{8}$/,
-  'es-GT': /^(\+?502)?[2|6|7]\d{7}$/,
   'es-PE': /^(\+?51)?9\d{8}$/,
   'es-MX': /^(\+?52)?(1|01)?\d{10,11}$/,
   'es-NI': /^(\+?505)\d{7,8}$/,
@@ -16409,7 +16499,6 @@ var phones = {
   'fr-MQ': /^(\+?596|0|00596)[67]\d{8}$/,
   'fr-PF': /^(\+?689)?8[789]\d{6}$/,
   'fr-RE': /^(\+?262|0|00262)[67]\d{8}$/,
-  'fr-WF': /^(\+681)?\d{6}$/,
   'he-IL': /^(\+972|0)([23489]|5[012345689]|77)[1-9]\d{6}$/,
   'hu-HU': /^(\+?36|06)(20|30|31|50|70)\d{7}$/,
   'id-ID': /^(\+?62|0)8(1[123456789]|2[1238]|3[1238]|5[12356789]|7[78]|9[56789]|8[123456789])([\s?|\d]{5,11})$/,
@@ -16421,7 +16510,7 @@ var phones = {
   'kk-KZ': /^(\+?7|8)?7\d{9}$/,
   'kl-GL': /^(\+?299)?\s?\d{2}\s?\d{2}\s?\d{2}$/,
   'ko-KR': /^((\+?82)[ \-]?)?0?1([0|1|6|7|8|9]{1})[ \-]?\d{3,4}[ \-]?\d{4}$/,
-  'ky-KG': /^(\+996\s?)?(22[0-9]|50[0-9]|55[0-9]|70[0-9]|75[0-9]|77[0-9]|880|990|995|996|997|998)\s?\d{3}\s?\d{3}$/,
+  'ky-KG': /^(\+?7\s?\+?7|0)\s?\d{2}\s?\d{3}\s?\d{4}$/,
   'lt-LT': /^(\+370|8)\d{8}$/,
   'lv-LV': /^(\+?371)2\d{7}$/,
   'mg-MG': /^((\+?261|0)(2|3)\d)?\d{7}$/,
@@ -16435,25 +16524,24 @@ var phones = {
   'nl-NL': /^(((\+|00)?31\(0\))|((\+|00)?31)|0)6{1}\d{8}$/,
   'nl-AW': /^(\+)?297(56|59|64|73|74|99)\d{5}$/,
   'nn-NO': /^(\+?47)?[49]\d{7}$/,
-  'pl-PL': /^(\+?48)? ?([5-8]\d|45) ?\d{3} ?\d{2} ?\d{2}$/,
+  'pl-PL': /^(\+?48)? ?[5-8]\d ?\d{3} ?\d{2} ?\d{2}$/,
   'pt-BR': /^((\+?55\ ?[1-9]{2}\ ?)|(\+?55\ ?\([1-9]{2}\)\ ?)|(0[1-9]{2}\ ?)|(\([1-9]{2}\)\ ?)|([1-9]{2}\ ?))((\d{4}\-?\d{4})|(9[1-9]{1}\d{3}\-?\d{4}))$/,
   'pt-PT': /^(\+?351)?9[1236]\d{7}$/,
-  'pt-AO': /^(\+?244)?9\d{8}$/,
+  'pt-AO': /^(\+244)\d{9}$/,
   'ro-MD': /^(\+?373|0)((6(0|1|2|6|7|8|9))|(7(6|7|8|9)))\d{6}$/,
   'ro-RO': /^(\+?40|0)\s?7\d{2}(\/|\s|\.|-)?\d{3}(\s|\.|-)?\d{3}$/,
   'ru-RU': /^(\+?7|8)?9\d{9}$/,
   'si-LK': /^(?:0|94|\+94)?(7(0|1|2|4|5|6|7|8)( |-)?)\d{7}$/,
   'sl-SI': /^(\+386\s?|0)(\d{1}\s?\d{3}\s?\d{2}\s?\d{2}|\d{2}\s?\d{3}\s?\d{3})$/,
   'sk-SK': /^(\+?421)? ?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$/,
-  'so-SO': /^(\+?252|0)((6[0-9])\d{7}|(7[1-9])\d{7})$/,
-  'sq-AL': /^(\+355|0)6[2-9]\d{7}$/,
+  'sq-AL': /^(\+355|0)6[789]\d{6}$/,
   'sr-RS': /^(\+3816|06)[- \d]{5,9}$/,
   'sv-SE': /^(\+?46|0)[\s\-]?7[\s\-]?[02369]([\s\-]?\d){7}$/,
   'tg-TJ': /^(\+?992)?[5][5]\d{7}$/,
   'th-TH': /^(\+66|66|0)\d{9}$/,
   'tr-TR': /^(\+?90|0)?5\d{9}$/,
   'tk-TM': /^(\+993|993|8)\d{8}$/,
-  'uk-UA': /^(\+?38)?0(50|6[36-8]|7[357]|9[1-9])\d{7}$/,
+  'uk-UA': /^(\+?38|8)?0\d{9}$/,
   'uz-UZ': /^(\+?998)?(6[125-79]|7[1-69]|88|9\d)\d{7}$/,
   'vi-VN': /^((\+?84)|0)((3([2-9]))|(5([25689]))|(7([0|6-9]))|(8([1-9]))|(9([0-9])))([0-9]{7})$/,
   'zh-CN': /^((\+|00)86)?(1[3-9]|9[28])\d{9}$/,
@@ -16461,12 +16549,11 @@ var phones = {
   'dz-BT': /^(\+?975|0)?(17|16|77|02)\d{6}$/,
   'ar-YE': /^(((\+|00)9677|0?7)[0137]\d{7}|((\+|00)967|0)[1-7]\d{6})$/,
   'ar-EH': /^(\+?212|0)[\s\-]?(5288|5289)[\s\-]?\d{5}$/,
-  'fa-AF': /^(\+93|0)?(2{1}[0-8]{1}|[3-5]{1}[0-4]{1})(\d{7})$/,
-  'mk-MK': /^(\+?389|0)?((?:2[2-9]\d{6}|(?:3[1-4]|4[2-8])\d{6}|500\d{5}|5[2-9]\d{6}|7[0-9][2-9]\d{5}|8[1-9]\d{6}|800\d{5}|8009\d{4}))$/
+  'fa-AF': /^(\+93|0)?(2{1}[0-8]{1}|[3-5]{1}[0-4]{1})(\d{7})$/
 };
 /* eslint-enable max-len */
-
 // aliases
+
 phones['en-CA'] = phones['en-US'];
 phones['fr-CA'] = phones['en-CA'];
 phones['fr-BE'] = phones['nl-BE'];
@@ -16475,41 +16562,50 @@ phones['zh-MO'] = phones['en-MO'];
 phones['ga-IE'] = phones['en-IE'];
 phones['fr-CH'] = phones['de-CH'];
 phones['it-CH'] = phones['fr-CH'];
+
 function isMobilePhone(str, locale, options) {
   (0, _assertString.default)(str);
+
   if (options && options.strictMode && !str.startsWith('+')) {
     return false;
   }
+
   if (Array.isArray(locale)) {
     return locale.some(function (key) {
       // https://github.com/gotwarlost/istanbul/blob/master/ignoring-code-for-coverage.md#ignoring-code-for-coverage-purposes
       // istanbul ignore else
       if (phones.hasOwnProperty(key)) {
         var phone = phones[key];
+
         if (phone.test(str)) {
           return true;
         }
       }
+
       return false;
     });
   } else if (locale in phones) {
-    return phones[locale].test(str);
-    // alias falsey locale as 'any'
+    return phones[locale].test(str); // alias falsey locale as 'any'
   } else if (!locale || locale === 'any') {
     for (var key in phones) {
       // istanbul ignore else
       if (phones.hasOwnProperty(key)) {
         var phone = phones[key];
+
         if (phone.test(str)) {
           return true;
         }
       }
     }
+
     return false;
   }
+
   throw new Error("Invalid locale '".concat(locale, "'"));
 }
-var locales = exports.locales = Object.keys(phones);
+
+var locales = Object.keys(phones);
+exports.locales = locales;
 
 /***/ }),
 
@@ -16526,13 +16622,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isMongoId;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _isHexadecimal = _interopRequireDefault(__webpack_require__(/*! ./isHexadecimal */ "./node_modules/validator/lib/isHexadecimal.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isMongoId(str) {
   (0, _assertString.default)(str);
   return (0, _isHexadecimal.default)(str) && str.length === 24;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16551,8 +16652,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isMultibyte;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /* eslint-disable no-control-regex */
 var multibyte = /[^\x00-\x7F]/;
 /* eslint-enable no-control-regex */
@@ -16561,6 +16665,7 @@ function isMultibyte(str) {
   (0, _assertString.default)(str);
   return multibyte.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16579,17 +16684,25 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isNumeric;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _alpha = __webpack_require__(/*! ./alpha */ "./node_modules/validator/lib/alpha.js");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var numericNoSymbols = /^[0-9]+$/;
+
 function isNumeric(str, options) {
   (0, _assertString.default)(str);
+
   if (options && options.no_symbols) {
     return numericNoSymbols.test(str);
   }
+
   return new RegExp("^[+-]?([0-9]*[".concat((options || {}).locale ? _alpha.decimal[options.locale] : '.', "])?[0-9]+$")).test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16608,13 +16721,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isOctal;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var octal = /^(0o)?[0-7]+$/i;
+
 function isOctal(str) {
   (0, _assertString.default)(str);
   return octal.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16624,7 +16742,7 @@ module.exports["default"] = exports.default;
 /*!********************************************************!*\
   !*** ./node_modules/validator/lib/isPassportNumber.js ***!
   \********************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((module, exports, __webpack_require__) => {
 
 "use strict";
 
@@ -16633,9 +16751,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isPassportNumber;
-exports.locales = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Reference:
  * https://en.wikipedia.org/ -- Wikipedia
@@ -16651,7 +16771,7 @@ var passportRegexByCountryCode = {
   // AUSTRIA
   AU: /^[A-Z]\d{7}$/,
   // AUSTRALIA
-  AZ: /^[A-Z]{1}\d{8}$/,
+  AZ: /^[A-Z]{2,3}\d{7,8}$/,
   // AZERBAIJAN
   BE: /^[A-Z]{2}\d{6}$/,
   // BELGIUM
@@ -16661,7 +16781,7 @@ var passportRegexByCountryCode = {
   // BRAZIL
   BY: /^[A-Z]{2}\d{7}$/,
   // BELARUS
-  CA: /^[A-Z]{2}\d{6}$|^[A-Z]\d{6}[A-Z]{2}$/,
+  CA: /^[A-Z]{2}\d{6}$/,
   // CANADA
   CH: /^[A-Z]\d{7}$/,
   // SWITZERLAND
@@ -16759,12 +16879,9 @@ var passportRegexByCountryCode = {
   // TURKEY
   UA: /^[A-Z]{2}\d{6}$/,
   // UKRAINE
-  US: /^\d{9}$|^[A-Z]\d{8}$/,
-  // UNITED STATES
-  ZA: /^[TAMD]\d{8}$/ // SOUTH AFRICA
-};
-var locales = exports.locales = Object.keys(passportRegexByCountryCode);
+  US: /^\d{9}$/ // UNITED STATES
 
+};
 /**
  * Check if str is a valid passport number
  * relative to provided ISO Country Code.
@@ -16773,12 +16890,17 @@ var locales = exports.locales = Object.keys(passportRegexByCountryCode);
  * @param {string} countryCode
  * @return {boolean}
  */
+
 function isPassportNumber(str, countryCode) {
   (0, _assertString.default)(str);
   /** Remove All Whitespaces, Convert to UPPERCASE */
+
   var normalizedStr = str.replace(/\s/g, '').toUpperCase();
   return countryCode.toUpperCase() in passportRegexByCountryCode && passportRegexByCountryCode[countryCode].test(normalizedStr);
 }
+
+module.exports = exports.default;
+module.exports["default"] = exports.default;
 
 /***/ }),
 
@@ -16795,15 +16917,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isPort;
+
 var _isInt = _interopRequireDefault(__webpack_require__(/*! ./isInt */ "./node_modules/validator/lib/isInt.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isPort(str) {
   return (0, _isInt.default)(str, {
-    allow_leading_zeroes: false,
     min: 0,
     max: 65535
   });
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16823,8 +16948,11 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = isPostalCode;
 exports.locales = void 0;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // common patterns
 var threeDigit = /^\d{3}$/;
 var fourDigit = /^\d{4}$/;
@@ -16836,15 +16964,13 @@ var patterns = {
   AU: fourDigit,
   AZ: /^AZ\d{4}$/,
   BA: /^([7-8]\d{4}$)/,
-  BD: /^([1-8][0-9]{3}|9[0-4][0-9]{2})$/,
   BE: fourDigit,
   BG: fourDigit,
-  BR: /^\d{5}-?\d{3}$/,
+  BR: /^\d{5}-\d{3}$/,
   BY: /^2[1-4]\d{4}$/,
   CA: /^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][\s\-]?\d[ABCEGHJ-NPRSTV-Z]\d$/i,
   CH: fourDigit,
   CN: /^(0[1-7]|1[012356]|2[0-7]|3[0-6]|4[0-7]|5[1-7]|6[1-7]|7[1-5]|8[1345]|9[09])\d{4}$/,
-  CO: /^(05|08|11|13|15|17|18|19|20|23|25|27|41|44|47|50|52|54|63|66|68|70|73|76|81|85|86|88|91|94|95|97|99)(\d{4})$/,
   CZ: /^\d{3}\s?\d{2}$/,
   DE: fiveDigit,
   DK: fourDigit,
@@ -16853,7 +16979,7 @@ var patterns = {
   EE: fiveDigit,
   ES: /^(5[0-2]{1}|[0-4]{1}\d{1})\d{3}$/,
   FI: fiveDigit,
-  FR: /^(?:(?:0[1-9]|[1-8]\d|9[0-5])\d{3}|97[1-46]\d{2})$/,
+  FR: /^\d{2}\s?\d{3}$/,
   GB: /^(gir\s?0aa|[a-z]{1,2}\d[\da-z]?\s?(\d[a-z]{2})?)$/i,
   GR: /^\d{3}\s?\d{2}$/,
   HR: /^([1-5]\d{4}$)/,
@@ -16878,12 +17004,10 @@ var patterns = {
   MX: fiveDigit,
   MT: /^[A-Za-z]{3}\s{0,1}\d{4}$/,
   MY: fiveDigit,
-  NL: /^[1-9]\d{3}\s?(?!sa|sd|ss)[a-z]{2}$/i,
+  NL: /^\d{4}\s?[a-z]{2}$/i,
   NO: fourDigit,
   NP: /^(10|21|22|32|33|34|44|45|56|57)\d{3}$|^(977)$/i,
   NZ: fourDigit,
-  // https://www.pakpost.gov.pk/postcodes.php
-  PK: fiveDigit,
   PL: /^\d{2}\-\d{3}$/,
   PR: /^00[679]\d{2}([ -]\d{4})?$/,
   PT: /^\d{4}\-\d{3}?$/,
@@ -16896,15 +17020,18 @@ var patterns = {
   SK: /^\d{3}\s?\d{2}$/,
   TH: fiveDigit,
   TN: fourDigit,
-  TW: /^\d{3}(\d{2,3})?$/,
+  TW: /^\d{3}(\d{2})?$/,
   UA: fiveDigit,
   US: /^\d{5}(-\d{4})?$/,
   ZA: fourDigit,
   ZM: fiveDigit
 };
-var locales = exports.locales = Object.keys(patterns);
+var locales = Object.keys(patterns);
+exports.locales = locales;
+
 function isPostalCode(str, locale) {
   (0, _assertString.default)(str);
+
   if (locale in patterns) {
     return patterns[locale].test(str);
   } else if (locale === 'any') {
@@ -16913,13 +17040,16 @@ function isPostalCode(str, locale) {
       // istanbul ignore else
       if (patterns.hasOwnProperty(key)) {
         var pattern = patterns[key];
+
         if (pattern.test(str)) {
           return true;
         }
       }
     }
+
     return false;
   }
+
   throw new Error("Invalid locale '".concat(locale, "'"));
 }
 
@@ -16938,10 +17068,12 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isRFC3339;
-var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-/* Based on https://tools.ietf.org/html/rfc3339#section-5.6 */
 
+var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/* Based on https://tools.ietf.org/html/rfc3339#section-5.6 */
 var dateFullYear = /[0-9]{4}/;
 var dateMonth = /(0[1-9]|1[0-2])/;
 var dateMDay = /([12]\d|0[1-9]|3[01])/;
@@ -16955,10 +17087,12 @@ var partialTime = new RegExp("".concat(timeHour.source, ":").concat(timeMinute.s
 var fullDate = new RegExp("".concat(dateFullYear.source, "-").concat(dateMonth.source, "-").concat(dateMDay.source));
 var fullTime = new RegExp("".concat(partialTime.source).concat(timeOffset.source));
 var rfc3339 = new RegExp("^".concat(fullDate.source, "[ tT]").concat(fullTime.source, "$"));
+
 function isRFC3339(str) {
   (0, _assertString.default)(str);
   return rfc3339.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -16977,40 +17111,27 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isRgbColor;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); } /* eslint-disable prefer-rest-params */
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var rgbColor = /^rgb\((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]),){2}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\)$/;
-var rgbaColor = /^rgba\((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]),){3}(0?\.\d\d?|1(\.0)?|0(\.0)?)\)$/;
+var rgbaColor = /^rgba\((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]),){3}(0?\.\d|1(\.0)?|0(\.0)?)\)$/;
 var rgbColorPercent = /^rgb\((([0-9]%|[1-9][0-9]%|100%),){2}([0-9]%|[1-9][0-9]%|100%)\)$/;
-var rgbaColorPercent = /^rgba\((([0-9]%|[1-9][0-9]%|100%),){3}(0?\.\d\d?|1(\.0)?|0(\.0)?)\)$/;
-var startsWithRgb = /^rgba?/;
-function isRgbColor(str, options) {
+var rgbaColorPercent = /^rgba\((([0-9]%|[1-9][0-9]%|100%),){3}(0?\.\d|1(\.0)?|0(\.0)?)\)$/;
+
+function isRgbColor(str) {
+  var includePercentValues = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
   (0, _assertString.default)(str);
-  // default options to true for percent and false for spaces
-  var allowSpaces = false;
-  var includePercentValues = true;
-  if (_typeof(options) !== 'object') {
-    if (arguments.length >= 2) {
-      includePercentValues = arguments[1];
-    }
-  } else {
-    allowSpaces = options.allowSpaces !== undefined ? options.allowSpaces : allowSpaces;
-    includePercentValues = options.includePercentValues !== undefined ? options.includePercentValues : includePercentValues;
-  }
-  if (allowSpaces) {
-    // make sure it starts with continous rgba? without spaces before stripping
-    if (!startsWithRgb.test(str)) {
-      return false;
-    }
-    // strip all whitespace
-    str = str.replace(/\s/g, '');
-  }
+
   if (!includePercentValues) {
     return rgbColor.test(str) || rgbaColor.test(str);
   }
+
   return rgbColor.test(str) || rgbaColor.test(str) || rgbColorPercent.test(str) || rgbaColorPercent.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -17029,9 +17150,13 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isSemVer;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _multilineRegex = _interopRequireDefault(__webpack_require__(/*! ./util/multilineRegex */ "./node_modules/validator/lib/util/multilineRegex.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Regular Expression to match
  * semantic versioning (SemVer)
@@ -17039,10 +17164,12 @@ function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e
  * Reference: https://semver.org/
  */
 var semanticVersioningRegex = (0, _multilineRegex.default)(['^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)', '(?:-((?:0|[1-9]\\d*|\\d*[a-z-][0-9a-z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-z-][0-9a-z-]*))*))', '?(?:\\+([0-9a-z-]+(?:\\.[0-9a-z-]+)*))?$'], 'i');
+
 function isSemVer(str) {
   (0, _assertString.default)(str);
   return semanticVersioningRegex.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -17061,13 +17188,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isSlug;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var charsetRegex = /^[^\s-_](?!.*?[-_]{2,})[a-z0-9-\\][^\s]*[^-_\s]$/;
+
 function isSlug(str) {
   (0, _assertString.default)(str);
   return charsetRegex.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -17086,13 +17218,17 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isStrongPassword;
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var upperCaseRegex = /^[A-Z]$/;
 var lowerCaseRegex = /^[a-z]$/;
 var numberRegex = /^[0-9]$/;
-var symbolRegex = /^[-#!$@£%^&*()_+|~=`{}\[\]:";'<>?,.\/\\ ]$/;
+var symbolRegex = /^[-#!$@£%^&*()_+|~=`{}\[\]:";'<>?,.\/ ]$/;
 var defaultOptions = {
   minLength: 8,
   minLowercase: 1,
@@ -17107,14 +17243,15 @@ var defaultOptions = {
   pointsForContainingNumber: 10,
   pointsForContainingSymbol: 10
 };
-
 /* Counts number of occurrences of each char in a string
  * could be moved to util/ ?
 */
+
 function countChars(str) {
   var result = {};
   Array.from(str).forEach(function (char) {
     var curVal = result[char];
+
     if (curVal) {
       result[char] += 1;
     } else {
@@ -17123,8 +17260,9 @@ function countChars(str) {
   });
   return result;
 }
-
 /* Return information about a password */
+
+
 function analyzePassword(password) {
   var charMap = countChars(password);
   var analysis = {
@@ -17149,34 +17287,44 @@ function analyzePassword(password) {
   });
   return analysis;
 }
+
 function scorePassword(analysis, scoringOptions) {
   var points = 0;
   points += analysis.uniqueChars * scoringOptions.pointsPerUnique;
   points += (analysis.length - analysis.uniqueChars) * scoringOptions.pointsPerRepeat;
+
   if (analysis.lowercaseCount > 0) {
     points += scoringOptions.pointsForContainingLower;
   }
+
   if (analysis.uppercaseCount > 0) {
     points += scoringOptions.pointsForContainingUpper;
   }
+
   if (analysis.numberCount > 0) {
     points += scoringOptions.pointsForContainingNumber;
   }
+
   if (analysis.symbolCount > 0) {
     points += scoringOptions.pointsForContainingSymbol;
   }
+
   return points;
 }
+
 function isStrongPassword(str) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
   (0, _assertString.default)(str);
   var analysis = analyzePassword(str);
   options = (0, _merge.default)(options || {}, defaultOptions);
+
   if (options.returnScore) {
     return scorePassword(analysis, options);
   }
+
   return analysis.length >= options.minLength && analysis.lowercaseCount >= options.minLowercase && analysis.uppercaseCount >= options.minUppercase && analysis.numberCount >= options.minNumbers && analysis.symbolCount >= options.minSymbols;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -17195,13 +17343,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isSurrogatePair;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var surrogatePair = /[\uD800-\uDBFF][\uDC00-\uDFFF]/;
+
 function isSurrogatePair(str) {
   (0, _assertString.default)(str);
   return surrogatePair.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -17216,22 +17369,37 @@ module.exports["default"] = exports.default;
 "use strict";
 
 
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isTaxID;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var algorithms = _interopRequireWildcard(__webpack_require__(/*! ./util/algorithms */ "./node_modules/validator/lib/util/algorithms.js"));
+
 var _isDate = _interopRequireDefault(__webpack_require__(/*! ./isDate */ "./node_modules/validator/lib/isDate.js"));
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 /**
  * TIN Validation
  * Validates Tax Identification Numbers (TINs) from the US, EU member states and the United Kingdom.
@@ -17252,7 +17420,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
  * See `http://www.irs.gov/Businesses/Small-Businesses-&-Self-Employed/How-EINs-are-Assigned-and-Valid-EIN-Prefixes`
  * for more information.
  */
-
 // Locale functions
 
 /*
@@ -17264,6 +17431,7 @@ function bgBgCheck(tin) {
   // Extract full year, normalize month and check birth date validity
   var century_year = tin.slice(0, 2);
   var month = parseInt(tin.slice(2, 4), 10);
+
   if (month > 40) {
     month -= 40;
     century_year = "20".concat(century_year);
@@ -17273,29 +17441,32 @@ function bgBgCheck(tin) {
   } else {
     century_year = "19".concat(century_year);
   }
+
   if (month < 10) {
     month = "0".concat(month);
   }
+
   var date = "".concat(century_year, "/").concat(month, "/").concat(tin.slice(4, 6));
+
   if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
     return false;
-  }
+  } // split digits into an array for further processing
 
-  // split digits into an array for further processing
+
   var digits = tin.split('').map(function (a) {
     return parseInt(a, 10);
-  });
+  }); // Calculate checksum by multiplying digits with fixed values
 
-  // Calculate checksum by multiplying digits with fixed values
   var multip_lookup = [2, 4, 8, 5, 10, 9, 7, 3, 6];
   var checksum = 0;
+
   for (var i = 0; i < multip_lookup.length; i++) {
     checksum += digits[i] * multip_lookup[i];
   }
+
   checksum = checksum % 11 === 10 ? 0 : checksum % 11;
   return checksum === digits[9];
 }
-
 /**
  * Check if an input is a valid Canadian SIN (Social Insurance Number)
  *
@@ -17309,6 +17480,8 @@ function bgBgCheck(tin) {
  * @param {string} input
  * @return {boolean}
  */
+
+
 function isCanadianSIN(input) {
   var digitsArray = input.split('');
   var even = digitsArray.filter(function (_, idx) {
@@ -17325,7 +17498,6 @@ function isCanadianSIN(input) {
   });
   return total % 10 === 0;
 }
-
 /*
  * cs-CZ validation function
  * (Rodné číslo (RČ), persons only)
@@ -17334,11 +17506,13 @@ function isCanadianSIN(input) {
  * -`https://lorenc.info/3MA381/overeni-spravnosti-rodneho-cisla.htm`
  * -`https://www.mvcr.cz/clanek/rady-a-sluzby-dokumenty-rodne-cislo.aspx`
  */
-function csCzCheck(tin) {
-  tin = tin.replace(/\W/, '');
 
-  // Extract full year from TIN length
+
+function csCzCheck(tin) {
+  tin = tin.replace(/\W/, ''); // Extract full year from TIN length
+
   var full_year = parseInt(tin.slice(0, 2), 10);
+
   if (tin.length === 10) {
     if (full_year < 54) {
       full_year = "20".concat(full_year);
@@ -17349,45 +17523,54 @@ function csCzCheck(tin) {
     if (tin.slice(6) === '000') {
       return false;
     } // Three-zero serial not assigned before 1954
+
+
     if (full_year < 54) {
       full_year = "19".concat(full_year);
     } else {
       return false; // No 18XX years seen in any of the resources
     }
-  }
-  // Add missing zero if needed
+  } // Add missing zero if needed
+
+
   if (full_year.length === 3) {
     full_year = [full_year.slice(0, 2), '0', full_year.slice(2)].join('');
-  }
+  } // Extract month from TIN and normalize
 
-  // Extract month from TIN and normalize
+
   var month = parseInt(tin.slice(2, 4), 10);
+
   if (month > 50) {
     month -= 50;
   }
+
   if (month > 20) {
     // Month-plus-twenty was only introduced in 2004
     if (parseInt(full_year, 10) < 2004) {
       return false;
     }
+
     month -= 20;
   }
+
   if (month < 10) {
     month = "0".concat(month);
-  }
+  } // Check date validity
 
-  // Check date validity
+
   var date = "".concat(full_year, "/").concat(month, "/").concat(tin.slice(4, 6));
+
   if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
     return false;
-  }
+  } // Verify divisibility by 11
 
-  // Verify divisibility by 11
+
   if (tin.length === 10) {
     if (parseInt(tin, 10) % 11 !== 0) {
       // Some numbers up to and including 1985 are still valid if
       // check (last) digit equals 0 and modulo of first 9 digits equals 10
       var checkdigit = parseInt(tin.slice(0, 9), 10) % 11;
+
       if (parseInt(full_year, 10) < 1986 && checkdigit === 10) {
         if (parseInt(tin.slice(9), 10) !== 0) {
           return false;
@@ -17397,79 +17580,88 @@ function csCzCheck(tin) {
       }
     }
   }
+
   return true;
 }
-
 /*
  * de-AT validation function
  * (Abgabenkontonummer, persons/entities)
  * Verify TIN validity by calling luhnCheck()
  */
+
+
 function deAtCheck(tin) {
   return algorithms.luhnCheck(tin);
 }
-
 /*
  * de-DE validation function
  * (Steueridentifikationsnummer (Steuer-IdNr.), persons only)
  * Tests for single duplicate/triplicate value, then calculates ISO 7064 check (last) digit
  * Partial implementation of spec (same result with both algorithms always)
  */
+
+
 function deDeCheck(tin) {
   // Split digits into an array for further processing
   var digits = tin.split('').map(function (a) {
     return parseInt(a, 10);
-  });
+  }); // Fill array with strings of number positions
 
-  // Fill array with strings of number positions
-  var occurrences = [];
+  var occurences = [];
+
   for (var i = 0; i < digits.length - 1; i++) {
-    occurrences.push('');
+    occurences.push('');
+
     for (var j = 0; j < digits.length - 1; j++) {
       if (digits[i] === digits[j]) {
-        occurrences[i] += j;
+        occurences[i] += j;
       }
     }
-  }
+  } // Remove digits with one occurence and test for only one duplicate/triplicate
 
-  // Remove digits with one occurrence and test for only one duplicate/triplicate
-  occurrences = occurrences.filter(function (a) {
+
+  occurences = occurences.filter(function (a) {
     return a.length > 1;
   });
-  if (occurrences.length !== 2 && occurrences.length !== 3) {
-    return false;
-  }
 
-  // In case of triplicate value only two digits are allowed next to each other
-  if (occurrences[0].length === 3) {
-    var trip_locations = occurrences[0].split('').map(function (a) {
+  if (occurences.length !== 2 && occurences.length !== 3) {
+    return false;
+  } // In case of triplicate value only two digits are allowed next to each other
+
+
+  if (occurences[0].length === 3) {
+    var trip_locations = occurences[0].split('').map(function (a) {
       return parseInt(a, 10);
     });
-    var recurrent = 0; // Amount of neighbor occurrences
+    var recurrent = 0; // Amount of neighbour occurences
+
     for (var _i = 0; _i < trip_locations.length - 1; _i++) {
       if (trip_locations[_i] + 1 === trip_locations[_i + 1]) {
         recurrent += 1;
       }
     }
+
     if (recurrent === 2) {
       return false;
     }
   }
+
   return algorithms.iso7064Check(tin);
 }
-
 /*
  * dk-DK validation function
  * (CPR-nummer (personnummer), persons only)
  * Checks if birth date (first six digits) is valid and assigned to century (seventh) digit,
  * and calculates check (last) digit
  */
-function dkDkCheck(tin) {
-  tin = tin.replace(/\W/, '');
 
-  // Extract year, check if valid for given century digit and add century
+
+function dkDkCheck(tin) {
+  tin = tin.replace(/\W/, ''); // Extract year, check if valid for given century digit and add century
+
   var year = parseInt(tin.slice(4, 6), 10);
   var century_digit = tin.slice(6, 7);
+
   switch (century_digit) {
     case '0':
     case '1':
@@ -17477,6 +17669,7 @@ function dkDkCheck(tin) {
     case '3':
       year = "19".concat(year);
       break;
+
     case '4':
     case '9':
       if (year < 37) {
@@ -17484,7 +17677,9 @@ function dkDkCheck(tin) {
       } else {
         year = "19".concat(year);
       }
+
       break;
+
     default:
       if (year < 37) {
         year = "20".concat(year);
@@ -17493,69 +17688,79 @@ function dkDkCheck(tin) {
       } else {
         return false;
       }
+
       break;
-  }
-  // Add missing zero if needed
+  } // Add missing zero if needed
+
+
   if (year.length === 3) {
     year = [year.slice(0, 2), '0', year.slice(2)].join('');
-  }
-  // Check date validity
+  } // Check date validity
+
+
   var date = "".concat(year, "/").concat(tin.slice(2, 4), "/").concat(tin.slice(0, 2));
+
   if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
     return false;
-  }
+  } // Split digits into an array for further processing
 
-  // Split digits into an array for further processing
+
   var digits = tin.split('').map(function (a) {
     return parseInt(a, 10);
   });
   var checksum = 0;
-  var weight = 4;
-  // Multiply by weight and add to checksum
+  var weight = 4; // Multiply by weight and add to checksum
+
   for (var i = 0; i < 9; i++) {
     checksum += digits[i] * weight;
     weight -= 1;
+
     if (weight === 1) {
       weight = 7;
     }
   }
+
   checksum %= 11;
+
   if (checksum === 1) {
     return false;
   }
+
   return checksum === 0 ? digits[9] === 0 : digits[9] === 11 - checksum;
 }
-
 /*
  * el-CY validation function
  * (Arithmos Forologikou Mitroou (AFM/ΑΦΜ), persons only)
  * Verify TIN validity by calculating ASCII value of check (last) character
  */
+
+
 function elCyCheck(tin) {
   // split digits into an array for further processing
   var digits = tin.slice(0, 8).split('').map(function (a) {
     return parseInt(a, 10);
   });
-  var checksum = 0;
-  // add digits in even places
+  var checksum = 0; // add digits in even places
+
   for (var i = 1; i < digits.length; i += 2) {
     checksum += digits[i];
-  }
+  } // add digits in odd places
 
-  // add digits in odd places
+
   for (var _i2 = 0; _i2 < digits.length; _i2 += 2) {
     if (digits[_i2] < 2) {
       checksum += 1 - digits[_i2];
     } else {
       checksum += 2 * (digits[_i2] - 2) + 5;
+
       if (digits[_i2] > 4) {
         checksum += 2;
       }
     }
   }
+
   return String.fromCharCode(checksum % 26 + 65) === tin.charAt(8);
 }
-
 /*
  * el-GR validation function
  * (Arithmos Forologikou Mitroou (AFM/ΑΦΜ), persons/entities)
@@ -17563,18 +17768,21 @@ function elCyCheck(tin) {
  * Algorithm not in DG TAXUD document- sourced from:
  * - `http://epixeirisi.gr/%CE%9A%CE%A1%CE%99%CE%A3%CE%99%CE%9C%CE%91-%CE%98%CE%95%CE%9C%CE%91%CE%A4%CE%91-%CE%A6%CE%9F%CE%A1%CE%9F%CE%9B%CE%9F%CE%93%CE%99%CE%91%CE%A3-%CE%9A%CE%91%CE%99-%CE%9B%CE%9F%CE%93%CE%99%CE%A3%CE%A4%CE%99%CE%9A%CE%97%CE%A3/23791/%CE%91%CF%81%CE%B9%CE%B8%CE%BC%CF%8C%CF%82-%CE%A6%CE%BF%CF%81%CE%BF%CE%BB%CE%BF%CE%B3%CE%B9%CE%BA%CE%BF%CF%8D-%CE%9C%CE%B7%CF%84%CF%81%CF%8E%CE%BF%CF%85`
  */
+
+
 function elGrCheck(tin) {
   // split digits into an array for further processing
   var digits = tin.split('').map(function (a) {
     return parseInt(a, 10);
   });
   var checksum = 0;
+
   for (var i = 0; i < 8; i++) {
     checksum += digits[i] * Math.pow(2, 8 - i);
   }
+
   return checksum % 11 % 10 === digits[8];
 }
-
 /*
  * en-GB validation function (should go here if needed)
  * (National Insurance Number (NINO) or Unique Taxpayer Reference (UTR),
@@ -17586,21 +17794,27 @@ function elGrCheck(tin) {
  * (Personal Public Service Number (PPS No), persons only)
  * Verify TIN validity by calculating check (second to last) character
  */
+
+
 function enIeCheck(tin) {
   var checksum = algorithms.reverseMultiplyAndSum(tin.split('').slice(0, 7).map(function (a) {
     return parseInt(a, 10);
   }), 8);
+
   if (tin.length === 9 && tin[8] !== 'W') {
     checksum += (tin[8].charCodeAt(0) - 64) * 9;
   }
+
   checksum %= 23;
+
   if (checksum === 0) {
     return tin[7].toUpperCase() === 'W';
   }
-  return tin[7].toUpperCase() === String.fromCharCode(64 + checksum);
-}
 
-// Valid US IRS campus prefixes
+  return tin[7].toUpperCase() === String.fromCharCode(64 + checksum);
+} // Valid US IRS campus prefixes
+
+
 var enUsCampusPrefix = {
   andover: ['10', '12'],
   atlanta: ['60', '67'],
@@ -17614,11 +17828,11 @@ var enUsCampusPrefix = {
   ogden: ['80', '90'],
   philadelphia: ['33', '39', '41', '42', '43', '46', '48', '62', '63', '64', '66', '68', '71', '72', '73', '74', '75', '76', '77', '81', '82', '83', '84', '85', '86', '87', '88', '91', '92', '93', '98', '99'],
   sba: ['31']
-};
+}; // Return an array of all US IRS campus prefixes
 
-// Return an array of all US IRS campus prefixes
 function enUsGetPrefixes() {
   var prefixes = [];
+
   for (var location in enUsCampusPrefix) {
     // https://github.com/gotwarlost/istanbul/blob/master/ignoring-code-for-coverage.md#ignoring-code-for-coverage-purposes
     // istanbul ignore else
@@ -17626,78 +17840,58 @@ function enUsGetPrefixes() {
       prefixes.push.apply(prefixes, _toConsumableArray(enUsCampusPrefix[location]));
     }
   }
+
   return prefixes;
 }
-
 /*
  * en-US validation function
  * Verify that the TIN starts with a valid IRS campus prefix
  */
+
+
 function enUsCheck(tin) {
   return enUsGetPrefixes().indexOf(tin.slice(0, 2)) !== -1;
 }
-
-/*
- * es-AR validation function
- * Clave Única de Identificación Tributaria (CUIT/CUIL)
- * Sourced from:
- * - https://servicioscf.afip.gob.ar/publico/abc/ABCpaso2.aspx?id_nivel1=3036&id_nivel2=3040&p=Conceptos%20b%C3%A1sicos
- * - https://es.wikipedia.org/wiki/Clave_%C3%9Anica_de_Identificaci%C3%B3n_Tributaria
- */
-
-function esArCheck(tin) {
-  var accum = 0;
-  var digits = tin.split('');
-  var digit = parseInt(digits.pop(), 10);
-  for (var i = 0; i < digits.length; i++) {
-    accum += digits[9 - i] * (2 + i % 6);
-  }
-  var verif = 11 - accum % 11;
-  if (verif === 11) {
-    verif = 0;
-  } else if (verif === 10) {
-    verif = 9;
-  }
-  return digit === verif;
-}
-
 /*
  * es-ES validation function
  * (Documento Nacional de Identidad (DNI)
  * or Número de Identificación de Extranjero (NIE), persons only)
  * Verify TIN validity by calculating check (last) character
  */
+
+
 function esEsCheck(tin) {
   // Split characters into an array for further processing
-  var chars = tin.toUpperCase().split('');
+  var chars = tin.toUpperCase().split(''); // Replace initial letter if needed
 
-  // Replace initial letter if needed
   if (isNaN(parseInt(chars[0], 10)) && chars.length > 1) {
     var lead_replace = 0;
+
     switch (chars[0]) {
       case 'Y':
         lead_replace = 1;
         break;
+
       case 'Z':
         lead_replace = 2;
         break;
+
       default:
     }
-    chars.splice(0, 1, lead_replace);
-    // Fill with zeros if smaller than proper
+
+    chars.splice(0, 1, lead_replace); // Fill with zeros if smaller than proper
   } else {
     while (chars.length < 9) {
       chars.unshift(0);
     }
-  }
+  } // Calculate checksum and check according to lookup
 
-  // Calculate checksum and check according to lookup
+
   var lookup = ['T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D', 'X', 'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L', 'C', 'K', 'E'];
   chars = chars.join('');
   var checksum = parseInt(chars.slice(0, 8), 10) % 23;
   return chars[8] === lookup[checksum];
 }
-
 /*
  * et-EE validation function
  * (Isikukood (IK), persons only)
@@ -17705,181 +17899,215 @@ function esEsCheck(tin) {
  * Material not in DG TAXUD document sourced from:
  * - `https://www.oecd.org/tax/automatic-exchange/crs-implementation-and-assistance/tax-identification-numbers/Estonia-TIN.pdf`
  */
+
+
 function etEeCheck(tin) {
   // Extract year and add century
   var full_year = tin.slice(1, 3);
   var century_digit = tin.slice(0, 1);
+
   switch (century_digit) {
     case '1':
     case '2':
       full_year = "18".concat(full_year);
       break;
+
     case '3':
     case '4':
       full_year = "19".concat(full_year);
       break;
+
     default:
       full_year = "20".concat(full_year);
       break;
-  }
-  // Check date validity
+  } // Check date validity
+
+
   var date = "".concat(full_year, "/").concat(tin.slice(3, 5), "/").concat(tin.slice(5, 7));
+
   if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
     return false;
-  }
+  } // Split digits into an array for further processing
 
-  // Split digits into an array for further processing
+
   var digits = tin.split('').map(function (a) {
     return parseInt(a, 10);
   });
   var checksum = 0;
-  var weight = 1;
-  // Multiply by weight and add to checksum
+  var weight = 1; // Multiply by weight and add to checksum
+
   for (var i = 0; i < 10; i++) {
     checksum += digits[i] * weight;
     weight += 1;
+
     if (weight === 10) {
       weight = 1;
     }
-  }
-  // Do again if modulo 11 of checksum is 10
+  } // Do again if modulo 11 of checksum is 10
+
+
   if (checksum % 11 === 10) {
     checksum = 0;
     weight = 3;
+
     for (var _i3 = 0; _i3 < 10; _i3++) {
       checksum += digits[_i3] * weight;
       weight += 1;
+
       if (weight === 10) {
         weight = 1;
       }
     }
+
     if (checksum % 11 === 10) {
       return digits[10] === 0;
     }
   }
+
   return checksum % 11 === digits[10];
 }
-
 /*
  * fi-FI validation function
  * (Henkilötunnus (HETU), persons only)
  * Checks if birth date (first six digits plus century symbol) is valid
  * and calculates check (last) digit
  */
+
+
 function fiFiCheck(tin) {
   // Extract year and add century
   var full_year = tin.slice(4, 6);
   var century_symbol = tin.slice(6, 7);
+
   switch (century_symbol) {
     case '+':
       full_year = "18".concat(full_year);
       break;
+
     case '-':
       full_year = "19".concat(full_year);
       break;
+
     default:
       full_year = "20".concat(full_year);
       break;
-  }
-  // Check date validity
+  } // Check date validity
+
+
   var date = "".concat(full_year, "/").concat(tin.slice(2, 4), "/").concat(tin.slice(0, 2));
+
   if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
     return false;
-  }
+  } // Calculate check character
 
-  // Calculate check character
+
   var checksum = parseInt(tin.slice(0, 6) + tin.slice(7, 10), 10) % 31;
+
   if (checksum < 10) {
     return checksum === parseInt(tin.slice(10), 10);
   }
+
   checksum -= 10;
   var letters_lookup = ['A', 'B', 'C', 'D', 'E', 'F', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y'];
   return letters_lookup[checksum] === tin.slice(10);
 }
-
 /*
  * fr/nl-BE validation function
  * (Numéro national (N.N.), persons only)
  * Checks if birth date (first six digits) is valid and calculates check (last two) digits
  */
+
+
 function frBeCheck(tin) {
   // Zero month/day value is acceptable
   if (tin.slice(2, 4) !== '00' || tin.slice(4, 6) !== '00') {
     // Extract date from first six digits of TIN
     var date = "".concat(tin.slice(0, 2), "/").concat(tin.slice(2, 4), "/").concat(tin.slice(4, 6));
+
     if (!(0, _isDate.default)(date, 'YY/MM/DD')) {
       return false;
     }
   }
+
   var checksum = 97 - parseInt(tin.slice(0, 9), 10) % 97;
   var checkdigits = parseInt(tin.slice(9, 11), 10);
+
   if (checksum !== checkdigits) {
     checksum = 97 - parseInt("2".concat(tin.slice(0, 9)), 10) % 97;
+
     if (checksum !== checkdigits) {
       return false;
     }
   }
+
   return true;
 }
-
 /*
  * fr-FR validation function
  * (Numéro fiscal de référence (numéro SPI), persons only)
  * Verify TIN validity by calculating check (last three) digits
  */
+
+
 function frFrCheck(tin) {
   tin = tin.replace(/\s/g, '');
   var checksum = parseInt(tin.slice(0, 10), 10) % 511;
   var checkdigits = parseInt(tin.slice(10, 13), 10);
   return checksum === checkdigits;
 }
-
 /*
  * fr/lb-LU validation function
  * (numéro d’identification personnelle, persons only)
  * Verify birth date validity and run Luhn and Verhoeff checks
  */
+
+
 function frLuCheck(tin) {
   // Extract date and check validity
   var date = "".concat(tin.slice(0, 4), "/").concat(tin.slice(4, 6), "/").concat(tin.slice(6, 8));
+
   if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
     return false;
-  }
+  } // Run Luhn check
 
-  // Run Luhn check
+
   if (!algorithms.luhnCheck(tin.slice(0, 12))) {
     return false;
-  }
-  // Remove Luhn check digit and run Verhoeff check
+  } // Remove Luhn check digit and run Verhoeff check
+
+
   return algorithms.verhoeffCheck("".concat(tin.slice(0, 11)).concat(tin[12]));
 }
-
 /*
  * hr-HR validation function
  * (Osobni identifikacijski broj (OIB), persons/entities)
  * Verify TIN validity by calling iso7064Check(digits)
  */
+
+
 function hrHrCheck(tin) {
   return algorithms.iso7064Check(tin);
 }
-
 /*
  * hu-HU validation function
  * (Adóazonosító jel, persons only)
  * Verify TIN validity by calculating check (last) digit
  */
+
+
 function huHuCheck(tin) {
   // split digits into an array for further processing
   var digits = tin.split('').map(function (a) {
     return parseInt(a, 10);
   });
   var checksum = 8;
+
   for (var i = 1; i < 9; i++) {
     checksum += digits[i] * (i + 1);
   }
+
   return checksum % 11 === digits[9];
 }
-
 /*
  * lt-LT validation function (should go here if needed)
  * (Asmens kodas, persons/entities respectively)
@@ -17895,13 +18123,15 @@ function huHuCheck(tin) {
  * Vowels may only be followed by other vowels or an X character
  * and X characters after vowels may only be followed by other X characters.
  */
-function itItNameCheck(name) {
-  // true at the first occurrence of a vowel
-  var vowelflag = false;
 
-  // true at the first occurrence of an X AFTER vowel
+
+function itItNameCheck(name) {
+  // true at the first occurence of a vowel
+  var vowelflag = false; // true at the first occurence of an X AFTER vowel
   // (to properly handle last names with X as consonant)
+
   var xflag = false;
+
   for (var i = 0; i < 3; i++) {
     if (!vowelflag && /[AEIOU]/.test(name[i])) {
       vowelflag = true;
@@ -17913,6 +18143,7 @@ function itItNameCheck(name) {
           return false;
         }
       }
+
       if (xflag) {
         if (!/X/.test(name[i])) {
           return false;
@@ -17920,9 +18151,9 @@ function itItNameCheck(name) {
       }
     }
   }
+
   return true;
 }
-
 /*
  * it-IT validation function
  * (Codice fiscale (TIN-IT), persons only)
@@ -17931,19 +18162,21 @@ function itItNameCheck(name) {
  * Material not in DG-TAXUD document sourced from:
  * `https://en.wikipedia.org/wiki/Italian_fiscal_code`
  */
+
+
 function itItCheck(tin) {
   // Capitalize and split characters into an array for further processing
-  var chars = tin.toUpperCase().split('');
+  var chars = tin.toUpperCase().split(''); // Check first and last name validity calling itItNameCheck()
 
-  // Check first and last name validity calling itItNameCheck()
   if (!itItNameCheck(chars.slice(0, 3))) {
     return false;
   }
+
   if (!itItNameCheck(chars.slice(3, 6))) {
     return false;
-  }
+  } // Convert letters in number spaces back to numbers if any
 
-  // Convert letters in number spaces back to numbers if any
+
   var number_locations = [6, 7, 9, 10, 12, 13, 14];
   var number_replace = {
     L: '0',
@@ -17957,14 +18190,16 @@ function itItCheck(tin) {
     U: '8',
     V: '9'
   };
+
   for (var _i4 = 0, _number_locations = number_locations; _i4 < _number_locations.length; _i4++) {
     var i = _number_locations[_i4];
+
     if (chars[i] in number_replace) {
       chars.splice(i, 1, number_replace[chars[i]]);
     }
-  }
+  } // Extract month and day, and check date validity
 
-  // Extract month and day, and check date validity
+
   var month_replace = {
     A: '01',
     B: '02',
@@ -17981,26 +18216,34 @@ function itItCheck(tin) {
   };
   var month = month_replace[chars[8]];
   var day = parseInt(chars[9] + chars[10], 10);
+
   if (day > 40) {
     day -= 40;
   }
+
   if (day < 10) {
     day = "0".concat(day);
   }
+
   var date = "".concat(chars[6]).concat(chars[7], "/").concat(month, "/").concat(day);
+
   if (!(0, _isDate.default)(date, 'YY/MM/DD')) {
     return false;
-  }
+  } // Calculate check character by adding up even and odd characters as numbers
 
-  // Calculate check character by adding up even and odd characters as numbers
+
   var checksum = 0;
+
   for (var _i5 = 1; _i5 < chars.length - 1; _i5 += 2) {
     var char_to_int = parseInt(chars[_i5], 10);
+
     if (isNaN(char_to_int)) {
       char_to_int = chars[_i5].charCodeAt(0) - 65;
     }
+
     checksum += char_to_int;
   }
+
   var odd_convert = {
     // Maps of characters at odd places
     A: 1,
@@ -18032,25 +18275,30 @@ function itItCheck(tin) {
     0: 1,
     1: 0
   };
+
   for (var _i6 = 0; _i6 < chars.length - 1; _i6 += 2) {
     var _char_to_int = 0;
+
     if (chars[_i6] in odd_convert) {
       _char_to_int = odd_convert[chars[_i6]];
     } else {
       var multiplier = parseInt(chars[_i6], 10);
       _char_to_int = 2 * multiplier + 1;
+
       if (multiplier > 4) {
         _char_to_int += 2;
       }
     }
+
     checksum += _char_to_int;
   }
+
   if (String.fromCharCode(65 + checksum % 26) !== chars[15]) {
     return false;
   }
+
   return true;
 }
-
 /*
  * lv-LV validation function
  * (Personas kods (PK), persons only)
@@ -18059,120 +18307,147 @@ function itItCheck(tin) {
  * Material not in DG TAXUD document sourced from:
  * `https://boot.ritakafija.lv/forums/index.php?/topic/88314-personas-koda-algoritms-%C4%8Deksumma/`
  */
+
+
 function lvLvCheck(tin) {
-  tin = tin.replace(/\W/, '');
-  // Extract date from TIN
+  tin = tin.replace(/\W/, ''); // Extract date from TIN
+
   var day = tin.slice(0, 2);
+
   if (day !== '32') {
     // No date/checksum check if new format
     var month = tin.slice(2, 4);
+
     if (month !== '00') {
       // No date check if unknown month
       var full_year = tin.slice(4, 6);
+
       switch (tin[6]) {
         case '0':
           full_year = "18".concat(full_year);
           break;
+
         case '1':
           full_year = "19".concat(full_year);
           break;
+
         default:
           full_year = "20".concat(full_year);
           break;
-      }
-      // Check date validity
+      } // Check date validity
+
+
       var date = "".concat(full_year, "/").concat(tin.slice(2, 4), "/").concat(day);
+
       if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
         return false;
       }
-    }
+    } // Calculate check digit
 
-    // Calculate check digit
+
     var checksum = 1101;
     var multip_lookup = [1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+
     for (var i = 0; i < tin.length - 1; i++) {
       checksum -= parseInt(tin[i], 10) * multip_lookup[i];
     }
+
     return parseInt(tin[10], 10) === checksum % 11;
   }
+
   return true;
 }
-
 /*
  * mt-MT validation function
  * (Identity Card Number or Unique Taxpayer Reference, persons/entities)
  * Verify Identity Card Number structure (no other tests found)
  */
+
+
 function mtMtCheck(tin) {
   if (tin.length !== 9) {
     // No tests for UTR
-    var chars = tin.toUpperCase().split('');
-    // Fill with zeros if smaller than proper
+    var chars = tin.toUpperCase().split(''); // Fill with zeros if smaller than proper
+
     while (chars.length < 8) {
       chars.unshift(0);
-    }
-    // Validate format according to last character
+    } // Validate format according to last character
+
+
     switch (tin[7]) {
       case 'A':
       case 'P':
         if (parseInt(chars[6], 10) === 0) {
           return false;
         }
+
         break;
+
       default:
         {
           var first_part = parseInt(chars.join('').slice(0, 5), 10);
+
           if (first_part > 32000) {
             return false;
           }
+
           var second_part = parseInt(chars.join('').slice(5, 7), 10);
+
           if (first_part === second_part) {
             return false;
           }
         }
     }
   }
+
   return true;
 }
-
 /*
  * nl-NL validation function
  * (Burgerservicenummer (BSN) or Rechtspersonen Samenwerkingsverbanden Informatie Nummer (RSIN),
  * persons/entities respectively)
  * Verify TIN validity by calculating check (last) digit (variant of MOD 11)
  */
+
+
 function nlNlCheck(tin) {
   return algorithms.reverseMultiplyAndSum(tin.split('').slice(0, 8).map(function (a) {
     return parseInt(a, 10);
   }), 9) % 11 === parseInt(tin[8], 10);
 }
-
 /*
  * pl-PL validation function
  * (Powszechny Elektroniczny System Ewidencji Ludności (PESEL)
  * or Numer identyfikacji podatkowej (NIP), persons/entities)
  * Verify TIN validity by validating birth date (PESEL) and calculating check (last) digit
  */
+
+
 function plPlCheck(tin) {
   // NIP
   if (tin.length === 10) {
     // Calculate last digit by multiplying with lookup
     var lookup = [6, 5, 7, 2, 3, 4, 5, 6, 7];
     var _checksum = 0;
+
     for (var i = 0; i < lookup.length; i++) {
       _checksum += parseInt(tin[i], 10) * lookup[i];
     }
+
     _checksum %= 11;
+
     if (_checksum === 10) {
       return false;
     }
-    return _checksum === parseInt(tin[9], 10);
-  }
 
-  // PESEL
+    return _checksum === parseInt(tin[9], 10);
+  } // PESEL
   // Extract full year using month
+
+
   var full_year = tin.slice(0, 2);
   var month = parseInt(tin.slice(2, 4), 10);
+
   if (month > 80) {
     full_year = "18".concat(full_year);
     month -= 80;
@@ -18187,33 +18462,38 @@ function plPlCheck(tin) {
     month -= 20;
   } else {
     full_year = "19".concat(full_year);
-  }
-  // Add leading zero to month if needed
+  } // Add leading zero to month if needed
+
+
   if (month < 10) {
     month = "0".concat(month);
-  }
-  // Check date validity
+  } // Check date validity
+
+
   var date = "".concat(full_year, "/").concat(month, "/").concat(tin.slice(4, 6));
+
   if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
     return false;
-  }
+  } // Calculate last digit by mulitplying with odd one-digit numbers except 5
 
-  // Calculate last digit by multiplying with odd one-digit numbers except 5
+
   var checksum = 0;
   var multiplier = 1;
+
   for (var _i7 = 0; _i7 < tin.length - 1; _i7++) {
     checksum += parseInt(tin[_i7], 10) * multiplier % 10;
     multiplier += 2;
+
     if (multiplier > 10) {
       multiplier = 1;
     } else if (multiplier === 5) {
       multiplier += 2;
     }
   }
+
   checksum = 10 - checksum % 10;
   return checksum === parseInt(tin[10], 10);
 }
-
 /*
 * pt-BR validation function
 * (Cadastro de Pessoas Físicas (CPF, persons)
@@ -18221,79 +18501,101 @@ function plPlCheck(tin) {
 * Both inputs will be validated
 */
 
+
 function ptBrCheck(tin) {
   if (tin.length === 11) {
     var _sum;
+
     var remainder;
     _sum = 0;
-    if (
-    // Reject known invalid CPFs
+    if ( // Reject known invalid CPFs
     tin === '11111111111' || tin === '22222222222' || tin === '33333333333' || tin === '44444444444' || tin === '55555555555' || tin === '66666666666' || tin === '77777777777' || tin === '88888888888' || tin === '99999999999' || tin === '00000000000') return false;
-    for (var i = 1; i <= 9; i++) _sum += parseInt(tin.substring(i - 1, i), 10) * (11 - i);
+
+    for (var i = 1; i <= 9; i++) {
+      _sum += parseInt(tin.substring(i - 1, i), 10) * (11 - i);
+    }
+
     remainder = _sum * 10 % 11;
     if (remainder === 10) remainder = 0;
     if (remainder !== parseInt(tin.substring(9, 10), 10)) return false;
     _sum = 0;
-    for (var _i8 = 1; _i8 <= 10; _i8++) _sum += parseInt(tin.substring(_i8 - 1, _i8), 10) * (12 - _i8);
+
+    for (var _i8 = 1; _i8 <= 10; _i8++) {
+      _sum += parseInt(tin.substring(_i8 - 1, _i8), 10) * (12 - _i8);
+    }
+
     remainder = _sum * 10 % 11;
     if (remainder === 10) remainder = 0;
     if (remainder !== parseInt(tin.substring(10, 11), 10)) return false;
     return true;
   }
-  if (
-  // Reject know invalid CNPJs
+
+  if ( // Reject know invalid CNPJs
   tin === '00000000000000' || tin === '11111111111111' || tin === '22222222222222' || tin === '33333333333333' || tin === '44444444444444' || tin === '55555555555555' || tin === '66666666666666' || tin === '77777777777777' || tin === '88888888888888' || tin === '99999999999999') {
     return false;
   }
+
   var length = tin.length - 2;
   var identifiers = tin.substring(0, length);
   var verificators = tin.substring(length);
   var sum = 0;
   var pos = length - 7;
+
   for (var _i9 = length; _i9 >= 1; _i9--) {
     sum += identifiers.charAt(length - _i9) * pos;
     pos -= 1;
+
     if (pos < 2) {
       pos = 9;
     }
   }
+
   var result = sum % 11 < 2 ? 0 : 11 - sum % 11;
+
   if (result !== parseInt(verificators.charAt(0), 10)) {
     return false;
   }
+
   length += 1;
   identifiers = tin.substring(0, length);
   sum = 0;
   pos = length - 7;
-  for (var _i0 = length; _i0 >= 1; _i0--) {
-    sum += identifiers.charAt(length - _i0) * pos;
+
+  for (var _i10 = length; _i10 >= 1; _i10--) {
+    sum += identifiers.charAt(length - _i10) * pos;
     pos -= 1;
+
     if (pos < 2) {
       pos = 9;
     }
   }
+
   result = sum % 11 < 2 ? 0 : 11 - sum % 11;
+
   if (result !== parseInt(verificators.charAt(1), 10)) {
     return false;
   }
+
   return true;
 }
-
 /*
  * pt-PT validation function
  * (Número de identificação fiscal (NIF), persons/entities)
  * Verify TIN validity by calculating check (last) digit (variant of MOD 11)
  */
+
+
 function ptPtCheck(tin) {
   var checksum = 11 - algorithms.reverseMultiplyAndSum(tin.split('').slice(0, 8).map(function (a) {
     return parseInt(a, 10);
   }), 9) % 11;
+
   if (checksum > 9) {
     return parseInt(tin[8], 10) === 0;
   }
+
   return checksum === parseInt(tin[8], 10);
 }
-
 /*
  * ro-RO validation function
  * (Cod Numeric Personal (CNP) or Cod de înregistrare fiscală (CIF),
@@ -18302,54 +18604,64 @@ function ptPtCheck(tin) {
  * Material not in DG TAXUD document sourced from:
  * `https://en.wikipedia.org/wiki/National_identification_number#Romania`
  */
+
+
 function roRoCheck(tin) {
   if (tin.slice(0, 4) !== '9000') {
     // No test found for this format
     // Extract full year using century digit if possible
     var full_year = tin.slice(1, 3);
+
     switch (tin[0]) {
       case '1':
       case '2':
         full_year = "19".concat(full_year);
         break;
+
       case '3':
       case '4':
         full_year = "18".concat(full_year);
         break;
+
       case '5':
       case '6':
         full_year = "20".concat(full_year);
         break;
-      default:
-    }
 
-    // Check date validity
+      default:
+    } // Check date validity
+
+
     var date = "".concat(full_year, "/").concat(tin.slice(3, 5), "/").concat(tin.slice(5, 7));
+
     if (date.length === 8) {
       if (!(0, _isDate.default)(date, 'YY/MM/DD')) {
         return false;
       }
     } else if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
       return false;
-    }
+    } // Calculate check digit
 
-    // Calculate check digit
+
     var digits = tin.split('').map(function (a) {
       return parseInt(a, 10);
     });
     var multipliers = [2, 7, 9, 1, 4, 6, 3, 5, 8, 2, 7, 9];
     var checksum = 0;
+
     for (var i = 0; i < multipliers.length; i++) {
       checksum += digits[i] * multipliers[i];
     }
+
     if (checksum % 11 === 10) {
       return digits[12] === 1;
     }
+
     return digits[12] === checksum % 11;
   }
+
   return true;
 }
-
 /*
  * sk-SK validation function
  * (Rodné číslo (RČ) or bezvýznamové identifikačné číslo (BIČ), persons only)
@@ -18357,83 +18669,101 @@ function roRoCheck(tin) {
  * Due to the introduction of the pseudo-random BIČ it is not possible to test
  * post-1954 birth numbers without knowing whether they are BIČ or RČ beforehand
  */
+
+
 function skSkCheck(tin) {
   if (tin.length === 9) {
     tin = tin.replace(/\W/, '');
+
     if (tin.slice(6) === '000') {
       return false;
     } // Three-zero serial not assigned before 1954
-
     // Extract full year from TIN length
+
+
     var full_year = parseInt(tin.slice(0, 2), 10);
+
     if (full_year > 53) {
       return false;
     }
+
     if (full_year < 10) {
       full_year = "190".concat(full_year);
     } else {
       full_year = "19".concat(full_year);
-    }
+    } // Extract month from TIN and normalize
 
-    // Extract month from TIN and normalize
+
     var month = parseInt(tin.slice(2, 4), 10);
+
     if (month > 50) {
       month -= 50;
     }
+
     if (month < 10) {
       month = "0".concat(month);
-    }
+    } // Check date validity
 
-    // Check date validity
+
     var date = "".concat(full_year, "/").concat(month, "/").concat(tin.slice(4, 6));
+
     if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
       return false;
     }
   }
+
   return true;
 }
-
 /*
  * sl-SI validation function
  * (Davčna številka, persons/entities)
  * Verify TIN validity by calculating check (last) digit (variant of MOD 11)
  */
+
+
 function slSiCheck(tin) {
   var checksum = 11 - algorithms.reverseMultiplyAndSum(tin.split('').slice(0, 7).map(function (a) {
     return parseInt(a, 10);
   }), 8) % 11;
+
   if (checksum === 10) {
     return parseInt(tin[7], 10) === 0;
   }
+
   return checksum === parseInt(tin[7], 10);
 }
-
 /*
  * sv-SE validation function
  * (Personnummer or samordningsnummer, persons only)
  * Checks validity of birth date and calls luhnCheck() to validate check (last) digit
  */
+
+
 function svSeCheck(tin) {
   // Make copy of TIN and normalize to two-digit year form
   var tin_copy = tin.slice(0);
+
   if (tin.length > 11) {
     tin_copy = tin_copy.slice(2);
-  }
+  } // Extract date of birth
 
-  // Extract date of birth
+
   var full_year = '';
   var month = tin_copy.slice(2, 4);
   var day = parseInt(tin_copy.slice(4, 6), 10);
+
   if (tin.length > 11) {
     full_year = tin.slice(0, 4);
   } else {
     full_year = tin.slice(0, 2);
+
     if (tin.length === 11 && day < 60) {
       // Extract full year from centenarian symbol
       // Should work just fine until year 10000 or so
       var current_year = new Date().getFullYear().toString();
       var current_century = parseInt(current_year.slice(0, 2), 10);
       current_year = parseInt(current_year, 10);
+
       if (tin[6] === '-') {
         if (parseInt("".concat(current_century).concat(full_year), 10) > current_year) {
           full_year = "".concat(current_century - 1).concat(full_year);
@@ -18442,21 +18772,25 @@ function svSeCheck(tin) {
         }
       } else {
         full_year = "".concat(current_century - 1).concat(full_year);
+
         if (current_year - parseInt(full_year, 10) < 100) {
           return false;
         }
       }
     }
-  }
+  } // Normalize day and check date validity
 
-  // Normalize day and check date validity
+
   if (day > 60) {
     day -= 60;
   }
+
   if (day < 10) {
     day = "0".concat(day);
   }
+
   var date = "".concat(full_year, "/").concat(month, "/").concat(day);
+
   if (date.length === 8) {
     if (!(0, _isDate.default)(date, 'YY/MM/DD')) {
       return false;
@@ -18464,27 +18798,9 @@ function svSeCheck(tin) {
   } else if (!(0, _isDate.default)(date, 'YYYY/MM/DD')) {
     return false;
   }
+
   return algorithms.luhnCheck(tin.replace(/\W/, ''));
-}
-
-/**
- * uk-UA validation function
- * Verify TIN validity by calculating check (last) digit (variant of MOD 11)
- */
-function ukUaCheck(tin) {
-  // Calculate check digit
-  var digits = tin.split('').map(function (a) {
-    return parseInt(a, 10);
-  });
-  var multipliers = [-1, 5, 7, 9, 4, 6, 10, 5, 7];
-  var checksum = 0;
-  for (var i = 0; i < multipliers.length; i++) {
-    checksum += digits[i] * multipliers[i];
-  }
-  return checksum % 11 === 10 ? digits[9] === 0 : digits[9] === checksum % 11;
-}
-
-// Locale lookup objects
+} // Locale lookup objects
 
 /*
  * Tax id regex formats for various locales
@@ -18492,6 +18808,8 @@ function ukUaCheck(tin) {
  * Where not explicitly specified in DG-TAXUD document both
  * uppercase and lowercase letters are acceptable.
  */
+
+
 var taxIdFormat = {
   'bg-BG': /^\d{10}$/,
   'cs-CZ': /^\d{6}\/{0,1}\d{3,4}$/,
@@ -18504,7 +18822,6 @@ var taxIdFormat = {
   'en-GB': /^\d{10}$|^(?!GB|NK|TN|ZZ)(?![DFIQUV])[A-Z](?![DFIQUVO])[A-Z]\d{6}[ABCD ]$/i,
   'en-IE': /^\d{7}[A-W][A-IW]{0,1}$/i,
   'en-US': /^\d{2}[- ]{0,1}\d{7}$/,
-  'es-AR': /(20|23|24|27|30|33|34)[0-9]{8}[0-9]/,
   'es-ES': /^(\d{0,8}|[XYZKLM]\d{7})[A-HJ-NP-TV-Z]$/i,
   'et-EE': /^[1-6]\d{6}(00[1-9]|0[1-9][0-9]|[1-6][0-9]{2}|70[0-9]|710)\d$/,
   'fi-FI': /^\d{6}[-+A]\d{3}[0-9A-FHJ-NPR-Y]$/i,
@@ -18525,16 +18842,14 @@ var taxIdFormat = {
   'ro-RO': /^\d{13}$/,
   'sk-SK': /^\d{6}\/{0,1}\d{3,4}$/,
   'sl-SI': /^[1-9]\d{7}$/,
-  'sv-SE': /^(\d{6}[-+]{0,1}\d{4}|(18|19|20)\d{6}[-+]{0,1}\d{4})$/,
-  'uk-UA': /^\d{10}$/
-};
-// taxIdFormat locale aliases
+  'sv-SE': /^(\d{6}[-+]{0,1}\d{4}|(18|19|20)\d{6}[-+]{0,1}\d{4})$/
+}; // taxIdFormat locale aliases
+
 taxIdFormat['lb-LU'] = taxIdFormat['fr-LU'];
 taxIdFormat['lt-LT'] = taxIdFormat['et-EE'];
 taxIdFormat['nl-BE'] = taxIdFormat['fr-BE'];
-taxIdFormat['fr-CA'] = taxIdFormat['en-CA'];
+taxIdFormat['fr-CA'] = taxIdFormat['en-CA']; // Algorithmic tax id check functions for various locales
 
-// Algorithmic tax id check functions for various locales
 var taxIdCheck = {
   'bg-BG': bgBgCheck,
   'cs-CZ': csCzCheck,
@@ -18546,7 +18861,6 @@ var taxIdCheck = {
   'en-CA': isCanadianSIN,
   'en-IE': enIeCheck,
   'en-US': enUsCheck,
-  'es-AR': esArCheck,
   'es-ES': esEsCheck,
   'et-EE': etEeCheck,
   'fi-FI': fiFiCheck,
@@ -18565,51 +18879,55 @@ var taxIdCheck = {
   'ro-RO': roRoCheck,
   'sk-SK': skSkCheck,
   'sl-SI': slSiCheck,
-  'sv-SE': svSeCheck,
-  'uk-UA': ukUaCheck
-};
-// taxIdCheck locale aliases
+  'sv-SE': svSeCheck
+}; // taxIdCheck locale aliases
+
 taxIdCheck['lb-LU'] = taxIdCheck['fr-LU'];
 taxIdCheck['lt-LT'] = taxIdCheck['et-EE'];
 taxIdCheck['nl-BE'] = taxIdCheck['fr-BE'];
-taxIdCheck['fr-CA'] = taxIdCheck['en-CA'];
+taxIdCheck['fr-CA'] = taxIdCheck['en-CA']; // Regexes for locales where characters should be omitted before checking format
 
-// Regexes for locales where characters should be omitted before checking format
 var allsymbols = /[-\\\/!@#$%\^&\*\(\)\+\=\[\]]+/g;
 var sanitizeRegexes = {
   'de-AT': allsymbols,
   'de-DE': /[\/\\]/g,
   'fr-BE': allsymbols
-};
-// sanitizeRegexes locale aliases
-sanitizeRegexes['nl-BE'] = sanitizeRegexes['fr-BE'];
+}; // sanitizeRegexes locale aliases
 
+sanitizeRegexes['nl-BE'] = sanitizeRegexes['fr-BE'];
 /*
  * Validator function
  * Return true if the passed string is a valid tax identification number
  * for the specified locale.
  * Throw an error exception if the locale is not supported.
  */
+
 function isTaxID(str) {
   var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'en-US';
-  (0, _assertString.default)(str);
-  // Copy TIN to avoid replacement if sanitized
+  (0, _assertString.default)(str); // Copy TIN to avoid replacement if sanitized
+
   var strcopy = str.slice(0);
+
   if (locale in taxIdFormat) {
     if (locale in sanitizeRegexes) {
       strcopy = strcopy.replace(sanitizeRegexes[locale], '');
     }
+
     if (!taxIdFormat[locale].test(strcopy)) {
       return false;
     }
+
     if (locale in taxIdCheck) {
       return taxIdCheck[locale](strcopy);
-    }
-    // Fallthrough; not all locales have algorithmic checks
+    } // Fallthrough; not all locales have algorithmic checks
+
+
     return true;
   }
+
   throw new Error("Invalid locale '".concat(locale, "'"));
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -18628,8 +18946,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isTime;
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var default_time_options = {
   hourFormat: 'hour24',
   mode: 'default'
@@ -18637,44 +18958,20 @@ var default_time_options = {
 var formats = {
   hour24: {
     default: /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/,
-    withSeconds: /^([01]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/,
-    withOptionalSeconds: /^([01]?[0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9]))?$/
+    withSeconds: /^([01]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/
   },
   hour12: {
     default: /^(0?[1-9]|1[0-2]):([0-5][0-9]) (A|P)M$/,
-    withSeconds: /^(0?[1-9]|1[0-2]):([0-5][0-9]):([0-5][0-9]) (A|P)M$/,
-    withOptionalSeconds: /^(0?[1-9]|1[0-2]):([0-5][0-9])(?::([0-5][0-9]))? (A|P)M$/
+    withSeconds: /^(0?[1-9]|1[0-2]):([0-5][0-9]):([0-5][0-9]) (A|P)M$/
   }
 };
+
 function isTime(input, options) {
   options = (0, _merge.default)(options, default_time_options);
   if (typeof input !== 'string') return false;
   return formats[options.hourFormat][options.mode].test(input);
 }
-module.exports = exports.default;
-module.exports["default"] = exports.default;
 
-/***/ }),
-
-/***/ "./node_modules/validator/lib/isULID.js":
-/*!**********************************************!*\
-  !*** ./node_modules/validator/lib/isULID.js ***!
-  \**********************************************/
-/***/ ((module, exports, __webpack_require__) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = isULID;
-var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function isULID(str) {
-  (0, _assertString.default)(str);
-  return /^[0-7][0-9A-HJKMNP-TV-Z]{25}$/i.test(str);
-}
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -18693,47 +18990,41 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isURL;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-var _checkHost = _interopRequireDefault(__webpack_require__(/*! ./util/checkHost */ "./node_modules/validator/lib/util/checkHost.js"));
-var _includesString = _interopRequireDefault(__webpack_require__(/*! ./util/includesString */ "./node_modules/validator/lib/util/includesString.js"));
+
 var _isFQDN = _interopRequireDefault(__webpack_require__(/*! ./isFQDN */ "./node_modules/validator/lib/isFQDN.js"));
+
 var _isIP = _interopRequireDefault(__webpack_require__(/*! ./isIP */ "./node_modules/validator/lib/isIP.js"));
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 /*
 options for isURL method
 
-protocols - valid protocols can be modified with this option.
-require_tld - If set to false isURL will not check if the URL's host includes a top-level domain.
-require_protocol - if set to true isURL will return false if protocol is not present in the URL.
-require_host - if set to false isURL will not check if host is present in the URL.
-require_port - if set to true isURL will check if port is present in the URL.
-require_valid_protocol - isURL will check if the URL's protocol is present in the protocols option.
-allow_underscores - if set to true, the validator will allow underscores in the URL.
-host_whitelist - if set to an array of strings or regexp, and the domain matches none of the strings
-                 defined in it, the validation fails.
-host_blacklist - if set to an array of strings or regexp, and the domain matches any of the strings
-                 defined in it, the validation fails.
-allow_trailing_dot - if set to true, the validator will allow the domain to end with
-                     a `.` character.
-allow_protocol_relative_urls - if set to true protocol relative URLs will be allowed.
-allow_fragments - if set to false isURL will return false if fragments are present.
-allow_query_components - if set to false isURL will return false if query components are present.
-disallow_auth - if set to true, the validator will fail if the URL contains an authentication
-                component, e.g. `http://username:password@example.com`
-validate_length - if set to false isURL will skip string length validation. `max_allowed_length`
-                  will be ignored if this is set as `false`.
-max_allowed_length - if set, isURL will not allow URLs longer than the specified value (default is
-                     2084 that IE maximum URL length).
+require_protocol - if set as true isURL will return false if protocol is not present in the URL
+require_valid_protocol - isURL will check if the URL's protocol is present in the protocols option
+protocols - valid protocols can be modified with this option
+require_host - if set as false isURL will not check if host is present in the URL
+require_port - if set as true isURL will check if port is present in the URL
+allow_protocol_relative_urls - if set as true protocol relative URLs will be allowed
+validate_length - if set as false isURL will skip string length validation (IE maximum is 2083)
 
 */
-
 var default_url_options = {
   protocols: ['http', 'https', 'ftp'],
   require_tld: true,
@@ -18746,154 +19037,119 @@ var default_url_options = {
   allow_protocol_relative_urls: false,
   allow_fragments: true,
   allow_query_components: true,
-  validate_length: true,
-  max_allowed_length: 2084
+  validate_length: true
 };
 var wrapped_ipv6 = /^\[([^\]]+)\](?::([0-9]+))?$/;
+
+function isRegExp(obj) {
+  return Object.prototype.toString.call(obj) === '[object RegExp]';
+}
+
+function checkHost(host, matches) {
+  for (var i = 0; i < matches.length; i++) {
+    var match = matches[i];
+
+    if (host === match || isRegExp(match) && match.test(host)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function isURL(url, options) {
   (0, _assertString.default)(url);
+
   if (!url || /[\s<>]/.test(url)) {
     return false;
   }
+
   if (url.indexOf('mailto:') === 0) {
     return false;
   }
+
   options = (0, _merge.default)(options, default_url_options);
-  if (options.validate_length && url.length > options.max_allowed_length) {
+
+  if (options.validate_length && url.length >= 2083) {
     return false;
   }
-  if (!options.allow_fragments && (0, _includesString.default)(url, '#')) {
+
+  if (!options.allow_fragments && url.includes('#')) {
     return false;
   }
-  if (!options.allow_query_components && ((0, _includesString.default)(url, '?') || (0, _includesString.default)(url, '&'))) {
+
+  if (!options.allow_query_components && (url.includes('?') || url.includes('&'))) {
     return false;
   }
+
   var protocol, auth, host, hostname, port, port_str, split, ipv6;
   split = url.split('#');
   url = split.shift();
   split = url.split('?');
   url = split.shift();
+  split = url.split('://');
 
-  // Replaced the 'split("://")' logic with a regex to match the protocol.
-  // This correctly identifies schemes like `javascript:` which don't use `//`.
-  // However, we need to be careful not to confuse authentication credentials (user:password@host)
-  // with protocols. A colon before an @ symbol might be part of auth, not a protocol separator.
-  var protocol_match = url.match(/^([a-z][a-z0-9+\-.]*):/i);
-  var had_explicit_protocol = false;
-  var cleanUpProtocol = function cleanUpProtocol(potential_protocol) {
-    had_explicit_protocol = true;
-    protocol = potential_protocol.toLowerCase();
+  if (split.length > 1) {
+    protocol = split.shift().toLowerCase();
+
     if (options.require_valid_protocol && options.protocols.indexOf(protocol) === -1) {
-      // The identified protocol is not in the allowed list.
       return false;
-    }
-
-    // Remove the protocol from the URL string.
-    return url.substring(protocol_match[0].length);
-  };
-  if (protocol_match) {
-    var potential_protocol = protocol_match[1];
-    var after_colon = url.substring(protocol_match[0].length);
-
-    // Check if what follows looks like authentication credentials (user:password@host)
-    // rather than a protocol. This happens when:
-    // 1. There's no `//` after the colon (protocols like `http://` have this)
-    // 2. There's an `@` symbol before any `/`
-    // 3. The part before `@` contains only valid auth characters (alphanumeric, -, _, ., %, :)
-    var starts_with_slashes = after_colon.slice(0, 2) === '//';
-    if (!starts_with_slashes) {
-      var first_slash_position = after_colon.indexOf('/');
-      var before_slash = first_slash_position === -1 ? after_colon : after_colon.substring(0, first_slash_position);
-      var at_position = before_slash.indexOf('@');
-      if (at_position !== -1) {
-        var before_at = before_slash.substring(0, at_position);
-        var valid_auth_regex = /^[a-zA-Z0-9\-_.%:]*$/;
-        var is_valid_auth = valid_auth_regex.test(before_at);
-        if (is_valid_auth) {
-          // This looks like authentication (e.g., user:password@host), not a protocol
-          if (options.require_protocol) {
-            return false;
-          }
-
-          // Don't consume the colon; let the auth parsing handle it later
-        } else {
-          // This looks like a malicious protocol (e.g., javascript:alert();@host)
-          url = cleanUpProtocol(potential_protocol);
-          if (url === false) {
-            return false;
-          }
-        }
-      } else {
-        // No @ symbol found. Check if this could be a port number instead of a protocol.
-        // If what's after the colon is numeric (or starts with a digit and contains only
-        // valid port characters until a path separator), it's likely hostname:port, not a protocol.
-        var looks_like_port = /^[0-9]/.test(after_colon);
-        if (looks_like_port) {
-          // This looks like hostname:port, not a protocol
-          if (options.require_protocol) {
-            return false;
-          }
-          // Don't consume anything; let it be parsed as hostname:port
-        } else {
-          // This is definitely a protocol
-          url = cleanUpProtocol(potential_protocol);
-          if (url === false) {
-            return false;
-          }
-        }
-      }
-    } else {
-      // Starts with '//', this is definitely a protocol like http://
-      url = cleanUpProtocol(potential_protocol);
-      if (url === false) {
-        return false;
-      }
     }
   } else if (options.require_protocol) {
     return false;
-  }
-
-  // Handle leading '//' only as protocol-relative when there was NO explicit protocol.
-  // If there was an explicit protocol, '//' is the normal separator
-  // and should be stripped unconditionally.
-  if (url.slice(0, 2) === '//') {
-    if (!had_explicit_protocol && !options.allow_protocol_relative_urls) {
+  } else if (url.slice(0, 2) === '//') {
+    if (!options.allow_protocol_relative_urls) {
       return false;
     }
-    url = url.slice(2);
+
+    split[0] = url.slice(2);
   }
+
+  url = split.join('://');
+
   if (url === '') {
     return false;
   }
+
   split = url.split('/');
   url = split.shift();
+
   if (url === '' && !options.require_host) {
     return true;
   }
+
   split = url.split('@');
+
   if (split.length > 1) {
     if (options.disallow_auth) {
       return false;
     }
+
     if (split[0] === '') {
       return false;
     }
+
     auth = split.shift();
+
     if (auth.indexOf(':') >= 0 && auth.split(':').length > 2) {
       return false;
     }
+
     var _auth$split = auth.split(':'),
-      _auth$split2 = _slicedToArray(_auth$split, 2),
-      user = _auth$split2[0],
-      password = _auth$split2[1];
+        _auth$split2 = _slicedToArray(_auth$split, 2),
+        user = _auth$split2[0],
+        password = _auth$split2[1];
+
     if (user === '' && password === '') {
       return false;
     }
   }
+
   hostname = split.join('@');
   port_str = null;
   ipv6 = null;
   var ipv6_match = hostname.match(wrapped_ipv6);
+
   if (ipv6_match) {
     host = '';
     ipv6 = ipv6_match[1];
@@ -18901,33 +19157,43 @@ function isURL(url, options) {
   } else {
     split = hostname.split(':');
     host = split.shift();
+
     if (split.length) {
       port_str = split.join(':');
     }
   }
+
   if (port_str !== null && port_str.length > 0) {
     port = parseInt(port_str, 10);
+
     if (!/^[0-9]+$/.test(port_str) || port <= 0 || port > 65535) {
       return false;
     }
   } else if (options.require_port) {
     return false;
   }
+
   if (options.host_whitelist) {
-    return (0, _checkHost.default)(host, options.host_whitelist);
+    return checkHost(host, options.host_whitelist);
   }
+
   if (host === '' && !options.require_host) {
     return true;
   }
+
   if (!(0, _isIP.default)(host) && !(0, _isFQDN.default)(host, options) && (!ipv6 || !(0, _isIP.default)(ipv6, 6))) {
     return false;
   }
+
   host = host || ipv6;
-  if (options.host_blacklist && (0, _checkHost.default)(host, options.host_blacklist)) {
+
+  if (options.host_blacklist && checkHost(host, options.host_blacklist)) {
     return false;
   }
+
   return true;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -18946,30 +19212,26 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isUUID;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var uuid = {
-  1: /^[0-9A-F]{8}-[0-9A-F]{4}-1[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
-  2: /^[0-9A-F]{8}-[0-9A-F]{4}-2[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
-  3: /^[0-9A-F]{8}-[0-9A-F]{4}-3[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
+  1: /^[0-9A-F]{8}-[0-9A-F]{4}-1[0-9A-F]{3}-[0-9A-F]{4}-[0-9A-F]{12}$/i,
+  2: /^[0-9A-F]{8}-[0-9A-F]{4}-2[0-9A-F]{3}-[0-9A-F]{4}-[0-9A-F]{12}$/i,
+  3: /^[0-9A-F]{8}-[0-9A-F]{4}-3[0-9A-F]{3}-[0-9A-F]{4}-[0-9A-F]{12}$/i,
   4: /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
   5: /^[0-9A-F]{8}-[0-9A-F]{4}-5[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
-  6: /^[0-9A-F]{8}-[0-9A-F]{4}-6[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
-  7: /^[0-9A-F]{8}-[0-9A-F]{4}-7[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
-  8: /^[0-9A-F]{8}-[0-9A-F]{4}-8[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
-  nil: /^00000000-0000-0000-0000-000000000000$/i,
-  max: /^ffffffff-ffff-ffff-ffff-ffffffffffff$/i,
-  loose: /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i,
-  // From https://github.com/uuidjs/uuid/blob/main/src/regex.js
-  all: /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/i
+  all: /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i
 };
+
 function isUUID(str, version) {
   (0, _assertString.default)(str);
-  if (version === undefined || version === null) {
-    version = 'all';
-  }
-  return version in uuid ? uuid[version].test(str) : false;
+  var pattern = uuid[![undefined, null].includes(version) ? version : 'all'];
+  return !!pattern && pattern.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -18988,12 +19250,16 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isUppercase;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isUppercase(str) {
   (0, _assertString.default)(str);
   return str === str.toUpperCase();
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19008,62 +19274,44 @@ module.exports["default"] = exports.default;
 "use strict";
 
 
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isVAT;
 exports.vatMatchers = void 0;
-var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-var algorithms = _interopRequireWildcard(__webpack_require__(/*! ./util/algorithms */ "./node_modules/validator/lib/util/algorithms.js"));
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-var AU = function AU(str) {
-  var match = str.match(/^(AU)?(\d{11})$/);
-  if (!match) {
-    return false;
-  }
-  // @see {@link https://abr.business.gov.au/Help/AbnFormat}
-  var weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
-  str = str.replace(/^AU/, '');
-  var ABN = (parseInt(str.slice(0, 1), 10) - 1).toString() + str.slice(1);
-  var total = 0;
-  for (var i = 0; i < 11; i++) {
-    total += weights[i] * ABN.charAt(i);
-  }
-  return total !== 0 && total % 89 === 0;
-};
-var CH = function CH(str) {
-  // @see {@link https://www.ech.ch/de/ech/ech-0097/5.2.0}
-  var hasValidCheckNumber = function hasValidCheckNumber(digits) {
-    var lastDigit = digits.pop(); // used as check number
-    var weights = [5, 4, 3, 2, 7, 6, 5, 4];
-    var calculatedCheckNumber = (11 - digits.reduce(function (acc, el, idx) {
-      return acc + el * weights[idx];
-    }, 0) % 11) % 11;
-    return lastDigit === calculatedCheckNumber;
-  };
 
-  // @see {@link https://www.estv.admin.ch/estv/de/home/mehrwertsteuer/uid/mwst-uid-nummer.html}
-  return /^(CHE[- ]?)?(\d{9}|(\d{3}\.\d{3}\.\d{3})|(\d{3} \d{3} \d{3})) ?(TVA|MWST|IVA)?$/.test(str) && hasValidCheckNumber(str.match(/\d/g).map(function (el) {
-    return +el;
-  }));
-};
+var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
+var algorithms = _interopRequireWildcard(__webpack_require__(/*! ./util/algorithms */ "./node_modules/validator/lib/util/algorithms.js"));
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var PT = function PT(str) {
   var match = str.match(/^(PT)?(\d{9})$/);
+
   if (!match) {
     return false;
   }
+
   var tin = match[2];
   var checksum = 11 - algorithms.reverseMultiplyAndSum(tin.split('').slice(0, 8).map(function (a) {
     return parseInt(a, 10);
   }), 9) % 11;
+
   if (checksum > 9) {
     return parseInt(tin[8], 10) === 0;
   }
+
   return checksum === parseInt(tin[8], 10);
 };
-var vatMatchers = exports.vatMatchers = {
+
+var vatMatchers = {
   /**
    * European Union VAT identification numbers
    */
@@ -19095,7 +19343,7 @@ var vatMatchers = exports.vatMatchers = {
     return /^(FI)?\d{8}$/.test(str);
   },
   FR: function FR(str) {
-    return /^(FR)([A-Z0-9]{2}\d{9})$/.test(str);
+    return /^(FR)?\w{2}\d{9}$/.test(str);
   },
   DE: function DE(str) {
     return /^(DE)?\d{9}$/.test(str);
@@ -19146,6 +19394,7 @@ var vatMatchers = exports.vatMatchers = {
   SE: function SE(str) {
     return /^(SE)?\d{12}$/.test(str);
   },
+
   /**
    * VAT numbers of non-EU countries
    */
@@ -19155,7 +19404,9 @@ var vatMatchers = exports.vatMatchers = {
   MK: function MK(str) {
     return /^(MK)?\d{13}$/.test(str);
   },
-  AU: AU,
+  AU: function AU(str) {
+    return /^(AU)?\d{11}$/.test(str);
+  },
   BY: function BY(str) {
     return /^(УНП )?\d{9}$/.test(str);
   },
@@ -19175,7 +19426,7 @@ var vatMatchers = exports.vatMatchers = {
     return /^(IL)?\d{9}$/.test(str);
   },
   KZ: function KZ(str) {
-    return /^(KZ)?\d{12}$/.test(str);
+    return /^(KZ)?\d{9}$/.test(str);
   },
   NZ: function NZ(str) {
     return /^(NZ)?\d{9}$/.test(str);
@@ -19201,7 +19452,9 @@ var vatMatchers = exports.vatMatchers = {
   RS: function RS(str) {
     return /^(RS)?\d{9}$/.test(str);
   },
-  CH: CH,
+  CH: function CH(str) {
+    return /^(CH)?(\d{6}|\d{9}|(\d{3}.\d{3})|(\d{3}.\d{3}.\d{3}))(TVA|MWST|IVA)$/.test(str);
+  },
   TR: function TR(str) {
     return /^(TR)?\d{10}$/.test(str);
   },
@@ -19214,6 +19467,7 @@ var vatMatchers = exports.vatMatchers = {
   UZ: function UZ(str) {
     return /^(UZ)?\d{9}$/.test(str);
   },
+
   /**
    * VAT numbers of Latin American countries
    */
@@ -19272,12 +19526,16 @@ var vatMatchers = exports.vatMatchers = {
     return /^(VE)?[J,G,V,E]{1}-(\d{9}|(\d{8}-\d{1}))$/.test(str);
   }
 };
+exports.vatMatchers = vatMatchers;
+
 function isVAT(str, countryCode) {
   (0, _assertString.default)(str);
   (0, _assertString.default)(countryCode);
+
   if (countryCode in vatMatchers) {
     return vatMatchers[countryCode](str);
   }
+
   throw new Error("Invalid country code: '".concat(countryCode, "'"));
 }
 
@@ -19296,14 +19554,20 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isVariableWidth;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _isFullWidth = __webpack_require__(/*! ./isFullWidth */ "./node_modules/validator/lib/isFullWidth.js");
+
 var _isHalfWidth = __webpack_require__(/*! ./isHalfWidth */ "./node_modules/validator/lib/isHalfWidth.js");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isVariableWidth(str) {
   (0, _assertString.default)(str);
   return _isFullWidth.fullWidth.test(str) && _isHalfWidth.halfWidth.test(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19322,17 +19586,23 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = isWhitelisted;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function isWhitelisted(str, chars) {
   (0, _assertString.default)(str);
+
   for (var i = str.length - 1; i >= 0; i--) {
     if (chars.indexOf(str[i]) === -1) {
       return false;
     }
   }
+
   return true;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19351,14 +19621,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = ltrim;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function ltrim(str, chars) {
-  (0, _assertString.default)(str);
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
+  (0, _assertString.default)(str); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
+
   var pattern = chars ? new RegExp("^[".concat(chars.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "]+"), 'g') : /^\s+/g;
   return str.replace(pattern, '');
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19377,15 +19651,21 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = matches;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function matches(str, pattern, modifiers) {
   (0, _assertString.default)(str);
+
   if (Object.prototype.toString.call(pattern) !== '[object RegExp]') {
     pattern = new RegExp(pattern, modifiers);
   }
+
   return !!str.match(pattern);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19404,8 +19684,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = normalizeEmail;
+
 var _merge = _interopRequireDefault(__webpack_require__(/*! ./util/merge */ "./node_modules/validator/lib/util/merge.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 var default_normalize_email_options = {
   // The following options apply to all email addresses
   // Lowercases the local part of the email address.
@@ -19434,71 +19717,72 @@ var default_normalize_email_options = {
   // The following conversions are specific to Yandex
   // Lowercases the local part of the Yandex address (known to be case-insensitive)
   yandex_lowercase: true,
-  // all yandex domains are equal, this explicitly sets the domain to 'yandex.ru'
-  yandex_convert_yandexru: true,
   // The following conversions are specific to iCloud
   // Lowercases the local part of the iCloud address (known to be case-insensitive)
   icloud_lowercase: true,
   // Removes the subaddress (e.g. "+foo") from the email address
   icloud_remove_subaddress: true
-};
+}; // List of domains used by iCloud
 
-// List of domains used by iCloud
-var icloud_domains = ['icloud.com', 'me.com'];
-
-// List of domains used by Outlook.com and its predecessors
+var icloud_domains = ['icloud.com', 'me.com']; // List of domains used by Outlook.com and its predecessors
 // This list is likely incomplete.
 // Partial reference:
 // https://blogs.office.com/2013/04/17/outlook-com-gets-two-step-verification-sign-in-by-alias-and-new-international-domains/
-var outlookdotcom_domains = ['hotmail.at', 'hotmail.be', 'hotmail.ca', 'hotmail.cl', 'hotmail.co.il', 'hotmail.co.nz', 'hotmail.co.th', 'hotmail.co.uk', 'hotmail.com', 'hotmail.com.ar', 'hotmail.com.au', 'hotmail.com.br', 'hotmail.com.gr', 'hotmail.com.mx', 'hotmail.com.pe', 'hotmail.com.tr', 'hotmail.com.vn', 'hotmail.cz', 'hotmail.de', 'hotmail.dk', 'hotmail.es', 'hotmail.fr', 'hotmail.hu', 'hotmail.id', 'hotmail.ie', 'hotmail.in', 'hotmail.it', 'hotmail.jp', 'hotmail.kr', 'hotmail.lv', 'hotmail.my', 'hotmail.ph', 'hotmail.pt', 'hotmail.sa', 'hotmail.sg', 'hotmail.sk', 'live.be', 'live.co.uk', 'live.com', 'live.com.ar', 'live.com.mx', 'live.de', 'live.es', 'live.eu', 'live.fr', 'live.it', 'live.nl', 'msn.com', 'outlook.at', 'outlook.be', 'outlook.cl', 'outlook.co.il', 'outlook.co.nz', 'outlook.co.th', 'outlook.com', 'outlook.com.ar', 'outlook.com.au', 'outlook.com.br', 'outlook.com.gr', 'outlook.com.pe', 'outlook.com.tr', 'outlook.com.vn', 'outlook.cz', 'outlook.de', 'outlook.dk', 'outlook.es', 'outlook.fr', 'outlook.hu', 'outlook.id', 'outlook.ie', 'outlook.in', 'outlook.it', 'outlook.jp', 'outlook.kr', 'outlook.lv', 'outlook.my', 'outlook.ph', 'outlook.pt', 'outlook.sa', 'outlook.sg', 'outlook.sk', 'passport.com'];
 
-// List of domains used by Yahoo Mail
+var outlookdotcom_domains = ['hotmail.at', 'hotmail.be', 'hotmail.ca', 'hotmail.cl', 'hotmail.co.il', 'hotmail.co.nz', 'hotmail.co.th', 'hotmail.co.uk', 'hotmail.com', 'hotmail.com.ar', 'hotmail.com.au', 'hotmail.com.br', 'hotmail.com.gr', 'hotmail.com.mx', 'hotmail.com.pe', 'hotmail.com.tr', 'hotmail.com.vn', 'hotmail.cz', 'hotmail.de', 'hotmail.dk', 'hotmail.es', 'hotmail.fr', 'hotmail.hu', 'hotmail.id', 'hotmail.ie', 'hotmail.in', 'hotmail.it', 'hotmail.jp', 'hotmail.kr', 'hotmail.lv', 'hotmail.my', 'hotmail.ph', 'hotmail.pt', 'hotmail.sa', 'hotmail.sg', 'hotmail.sk', 'live.be', 'live.co.uk', 'live.com', 'live.com.ar', 'live.com.mx', 'live.de', 'live.es', 'live.eu', 'live.fr', 'live.it', 'live.nl', 'msn.com', 'outlook.at', 'outlook.be', 'outlook.cl', 'outlook.co.il', 'outlook.co.nz', 'outlook.co.th', 'outlook.com', 'outlook.com.ar', 'outlook.com.au', 'outlook.com.br', 'outlook.com.gr', 'outlook.com.pe', 'outlook.com.tr', 'outlook.com.vn', 'outlook.cz', 'outlook.de', 'outlook.dk', 'outlook.es', 'outlook.fr', 'outlook.hu', 'outlook.id', 'outlook.ie', 'outlook.in', 'outlook.it', 'outlook.jp', 'outlook.kr', 'outlook.lv', 'outlook.my', 'outlook.ph', 'outlook.pt', 'outlook.sa', 'outlook.sg', 'outlook.sk', 'passport.com']; // List of domains used by Yahoo Mail
 // This list is likely incomplete
-var yahoo_domains = ['rocketmail.com', 'yahoo.ca', 'yahoo.co.uk', 'yahoo.com', 'yahoo.de', 'yahoo.fr', 'yahoo.in', 'yahoo.it', 'ymail.com'];
 
-// List of domains used by yandex.ru
-var yandex_domains = ['yandex.ru', 'yandex.ua', 'yandex.kz', 'yandex.com', 'yandex.by', 'ya.ru'];
+var yahoo_domains = ['rocketmail.com', 'yahoo.ca', 'yahoo.co.uk', 'yahoo.com', 'yahoo.de', 'yahoo.fr', 'yahoo.in', 'yahoo.it', 'ymail.com']; // List of domains used by yandex.ru
 
-// replace single dots, but not multiple consecutive dots
+var yandex_domains = ['yandex.ru', 'yandex.ua', 'yandex.kz', 'yandex.com', 'yandex.by', 'ya.ru']; // replace single dots, but not multiple consecutive dots
+
 function dotsReplacer(match) {
   if (match.length > 1) {
     return match;
   }
+
   return '';
 }
+
 function normalizeEmail(email, options) {
   options = (0, _merge.default)(options, default_normalize_email_options);
   var raw_parts = email.split('@');
   var domain = raw_parts.pop();
   var user = raw_parts.join('@');
-  var parts = [user, domain];
+  var parts = [user, domain]; // The domain is always lowercased, as it's case-insensitive per RFC 1035
 
-  // The domain is always lowercased, as it's case-insensitive per RFC 1035
   parts[1] = parts[1].toLowerCase();
+
   if (parts[1] === 'gmail.com' || parts[1] === 'googlemail.com') {
     // Address is GMail
     if (options.gmail_remove_subaddress) {
       parts[0] = parts[0].split('+')[0];
     }
+
     if (options.gmail_remove_dots) {
       // this does not replace consecutive dots like example..email@gmail.com
       parts[0] = parts[0].replace(/\.+/g, dotsReplacer);
     }
+
     if (!parts[0].length) {
       return false;
     }
+
     if (options.all_lowercase || options.gmail_lowercase) {
       parts[0] = parts[0].toLowerCase();
     }
+
     parts[1] = options.gmail_convert_googlemaildotcom ? 'gmail.com' : parts[1];
   } else if (icloud_domains.indexOf(parts[1]) >= 0) {
     // Address is iCloud
     if (options.icloud_remove_subaddress) {
       parts[0] = parts[0].split('+')[0];
     }
+
     if (!parts[0].length) {
       return false;
     }
+
     if (options.all_lowercase || options.icloud_lowercase) {
       parts[0] = parts[0].toLowerCase();
     }
@@ -19507,9 +19791,11 @@ function normalizeEmail(email, options) {
     if (options.outlookdotcom_remove_subaddress) {
       parts[0] = parts[0].split('+')[0];
     }
+
     if (!parts[0].length) {
       return false;
     }
+
     if (options.all_lowercase || options.outlookdotcom_lowercase) {
       parts[0] = parts[0].toLowerCase();
     }
@@ -19519,9 +19805,11 @@ function normalizeEmail(email, options) {
       var components = parts[0].split('-');
       parts[0] = components.length > 1 ? components.slice(0, -1).join('-') : components[0];
     }
+
     if (!parts[0].length) {
       return false;
     }
+
     if (options.all_lowercase || options.yahoo_lowercase) {
       parts[0] = parts[0].toLowerCase();
     }
@@ -19529,13 +19817,16 @@ function normalizeEmail(email, options) {
     if (options.all_lowercase || options.yandex_lowercase) {
       parts[0] = parts[0].toLowerCase();
     }
-    parts[1] = options.yandex_convert_yandexru ? 'yandex.ru' : parts[1];
+
+    parts[1] = 'yandex.ru'; // all yandex domains are equal, 1st preferred
   } else if (options.all_lowercase) {
     // Any other address
     parts[0] = parts[0].toLowerCase();
   }
+
   return parts.join('@');
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19554,22 +19845,30 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = rtrim;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function rtrim(str, chars) {
   (0, _assertString.default)(str);
+
   if (chars) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
     var pattern = new RegExp("[".concat(chars.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "]+$"), 'g');
     return str.replace(pattern, '');
-  }
-  // Use a faster and more safe than regex trim method https://blog.stevenlevithan.com/archives/faster-trim-javascript
+  } // Use a faster and more safe than regex trim method https://blog.stevenlevithan.com/archives/faster-trim-javascript
+
+
   var strIndex = str.length - 1;
+
   while (/\s/.test(str.charAt(strIndex))) {
     strIndex -= 1;
   }
+
   return str.slice(0, strIndex + 1);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19588,14 +19887,19 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = stripLow;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
+
 var _blacklist = _interopRequireDefault(__webpack_require__(/*! ./blacklist */ "./node_modules/validator/lib/blacklist.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function stripLow(str, keep_new_lines) {
   (0, _assertString.default)(str);
   var chars = keep_new_lines ? '\\x00-\\x09\\x0B\\x0C\\x0E-\\x1F\\x7F' : '\\x00-\\x1F\\x7F';
   return (0, _blacklist.default)(str, chars);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19614,15 +19918,21 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = toBoolean;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function toBoolean(str, strict) {
   (0, _assertString.default)(str);
+
   if (strict) {
     return str === '1' || /^true$/i.test(str);
   }
+
   return str !== '0' && !/^false$/i.test(str) && str !== '';
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19641,13 +19951,17 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = toDate;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function toDate(date) {
   (0, _assertString.default)(date);
   date = Date.parse(date);
   return !isNaN(date) ? new Date(date) : null;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19666,12 +19980,16 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = toFloat;
+
 var _isFloat = _interopRequireDefault(__webpack_require__(/*! ./isFloat */ "./node_modules/validator/lib/isFloat.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function toFloat(str) {
   if (!(0, _isFloat.default)(str)) return NaN;
   return parseFloat(str);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19690,12 +20008,16 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = toInt;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function toInt(str, radix) {
   (0, _assertString.default)(str);
   return parseInt(str, radix || 10);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19714,12 +20036,17 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = trim;
+
 var _rtrim = _interopRequireDefault(__webpack_require__(/*! ./rtrim */ "./node_modules/validator/lib/rtrim.js"));
+
 var _ltrim = _interopRequireDefault(__webpack_require__(/*! ./ltrim */ "./node_modules/validator/lib/ltrim.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function trim(str, chars) {
   return (0, _rtrim.default)((0, _ltrim.default)(str, chars), chars);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19738,15 +20065,18 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = unescape;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function unescape(str) {
   (0, _assertString.default)(str);
-  return str.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#x2F;/g, '/').replace(/&#x5C;/g, '\\').replace(/&#96;/g, '`').replace(/&amp;/g, '&');
-  // &amp; replacement has to be the last one to prevent
+  return str.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#x2F;/g, '/').replace(/&#x5C;/g, '\\').replace(/&#96;/g, '`').replace(/&amp;/g, '&'); // &amp; replacement has to be the last one to prevent
   // bugs with intermediate strings containing escape sequences
   // See: https://github.com/validatorjs/validator.js/issues/1827
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19768,6 +20098,7 @@ exports.iso7064Check = iso7064Check;
 exports.luhnCheck = luhnCheck;
 exports.reverseMultiplyAndSum = reverseMultiplyAndSum;
 exports.verhoeffCheck = verhoeffCheck;
+
 /**
  * Algorithmic validation functions
  * May be used as is or implemented in the workflow of other validators.
@@ -19780,24 +20111,29 @@ exports.verhoeffCheck = verhoeffCheck;
  */
 function iso7064Check(str) {
   var checkvalue = 10;
+
   for (var i = 0; i < str.length - 1; i++) {
     checkvalue = (parseInt(str[i], 10) + checkvalue) % 10 === 0 ? 10 * 2 % 11 : (parseInt(str[i], 10) + checkvalue) % 10 * 2 % 11;
   }
+
   checkvalue = checkvalue === 1 ? 0 : 11 - checkvalue;
   return checkvalue === parseInt(str[10], 10);
 }
-
 /*
  * Luhn (mod 10) validation function
  * Called with a string of numbers (incl. check digit)
  * to validate according to the Luhn algorithm.
  */
+
+
 function luhnCheck(str) {
   var checksum = 0;
   var second = false;
+
   for (var i = str.length - 1; i >= 0; i--) {
     if (second) {
       var product = parseInt(str[i], 10) * 2;
+
       if (product > 9) {
         // sum digits of product and add to checksum
         checksum += product.toString().split('').map(function (a) {
@@ -19811,40 +20147,47 @@ function luhnCheck(str) {
     } else {
       checksum += parseInt(str[i], 10);
     }
+
     second = !second;
   }
+
   return checksum % 10 === 0;
 }
-
 /*
  * Reverse TIN multiplication and summation helper function
  * Called with an array of single-digit integers and a base multiplier
  * to calculate the sum of the digits multiplied in reverse.
  * Normally used in variations of MOD 11 algorithmic checks.
  */
+
+
 function reverseMultiplyAndSum(digits, base) {
   var total = 0;
+
   for (var i = 0; i < digits.length; i++) {
     total += digits[i] * (base - i);
   }
+
   return total;
 }
-
 /*
  * Verhoeff validation helper function
  * Called with a string of numbers
  * to validate according to the Verhoeff algorithm.
  */
+
+
 function verhoeffCheck(str) {
   var d_table = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 0, 6, 7, 8, 9, 5], [2, 3, 4, 0, 1, 7, 8, 9, 5, 6], [3, 4, 0, 1, 2, 8, 9, 5, 6, 7], [4, 0, 1, 2, 3, 9, 5, 6, 7, 8], [5, 9, 8, 7, 6, 0, 4, 3, 2, 1], [6, 5, 9, 8, 7, 1, 0, 4, 3, 2], [7, 6, 5, 9, 8, 2, 1, 0, 4, 3], [8, 7, 6, 5, 9, 3, 2, 1, 0, 4], [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]];
-  var p_table = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 5, 7, 6, 2, 8, 3, 0, 9, 4], [5, 8, 0, 3, 7, 9, 6, 1, 4, 2], [8, 9, 1, 6, 0, 4, 3, 5, 2, 7], [9, 4, 5, 3, 1, 2, 6, 8, 7, 0], [4, 2, 8, 6, 5, 7, 3, 9, 0, 1], [2, 7, 9, 3, 8, 0, 6, 4, 1, 5], [7, 0, 4, 6, 9, 1, 3, 2, 5, 8]];
+  var p_table = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 5, 7, 6, 2, 8, 3, 0, 9, 4], [5, 8, 0, 3, 7, 9, 6, 1, 4, 2], [8, 9, 1, 6, 0, 4, 3, 5, 2, 7], [9, 4, 5, 3, 1, 2, 6, 8, 7, 0], [4, 2, 8, 6, 5, 7, 3, 9, 0, 1], [2, 7, 9, 3, 8, 0, 6, 4, 1, 5], [7, 0, 4, 6, 9, 1, 3, 2, 5, 8]]; // Copy (to prevent replacement) and reverse
 
-  // Copy (to prevent replacement) and reverse
   var str_copy = str.split('').reverse().join('');
   var checksum = 0;
+
   for (var i = 0; i < str_copy.length; i++) {
     checksum = d_table[checksum][p_table[i % 8][parseInt(str_copy[i], 10)]];
   }
+
   return checksum === 0;
 }
 
@@ -19863,49 +20206,29 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = assertString;
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 function assertString(input) {
-  if (input === undefined || input === null) throw new TypeError("Expected a string but received a ".concat(input));
-  if (input.constructor.name !== 'String') throw new TypeError("Expected a string but received a ".concat(input.constructor.name));
-}
-module.exports = exports.default;
-module.exports["default"] = exports.default;
+  var isString = typeof input === 'string' || input instanceof String;
 
-/***/ }),
+  if (!isString) {
+    var invalidType = _typeof(input);
 
-/***/ "./node_modules/validator/lib/util/checkHost.js":
-/*!******************************************************!*\
-  !*** ./node_modules/validator/lib/util/checkHost.js ***!
-  \******************************************************/
-/***/ ((module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = checkHost;
-function isRegExp(obj) {
-  return Object.prototype.toString.call(obj) === '[object RegExp]';
-}
-function checkHost(host, matches) {
-  for (var i = 0; i < matches.length; i++) {
-    var match = matches[i];
-    if (host === match || isRegExp(match) && match.test(host)) {
-      return true;
-    }
+    if (input === null) invalidType = 'null';else if (invalidType === 'object') invalidType = input.constructor.name;
+    throw new TypeError("Expected a string but received a ".concat(invalidType));
   }
-  return false;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
 /***/ }),
 
-/***/ "./node_modules/validator/lib/util/includesArray.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/validator/lib/util/includesArray.js ***!
-  \**********************************************************/
+/***/ "./node_modules/validator/lib/util/includes.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/validator/lib/util/includes.js ***!
+  \*****************************************************/
 /***/ ((module, exports) => {
 
 "use strict";
@@ -19915,34 +20238,15 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
+
 var includes = function includes(arr, val) {
   return arr.some(function (arrVal) {
     return val === arrVal;
   });
 };
-var _default = exports["default"] = includes;
-module.exports = exports.default;
-module.exports["default"] = exports.default;
 
-/***/ }),
-
-/***/ "./node_modules/validator/lib/util/includesString.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/validator/lib/util/includesString.js ***!
-  \***********************************************************/
-/***/ ((module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = void 0;
-var includes = function includes(str, val) {
-  return str.indexOf(val) !== -1;
-};
-var _default = exports["default"] = includes;
+var _default = includes;
+exports["default"] = _default;
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19961,16 +20265,20 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = merge;
+
 function merge() {
   var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var defaults = arguments.length > 1 ? arguments[1] : undefined;
+
   for (var key in defaults) {
     if (typeof obj[key] === 'undefined') {
       obj[key] = defaults[key];
     }
   }
+
   return obj;
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -19989,6 +20297,7 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = multilineRegexp;
+
 /**
  * Build RegExp object from an array
  * of multiple/multi-line regexp parts
@@ -20001,27 +20310,7 @@ function multilineRegexp(parts, flags) {
   var regexpAsStringLiteral = parts.join('');
   return new RegExp(regexpAsStringLiteral, flags);
 }
-module.exports = exports.default;
-module.exports["default"] = exports.default;
 
-/***/ }),
-
-/***/ "./node_modules/validator/lib/util/nullUndefinedCheck.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/validator/lib/util/nullUndefinedCheck.js ***!
-  \***************************************************************/
-/***/ ((module, exports) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({
-  value: true
-}));
-exports["default"] = isNullOrUndefined;
-function isNullOrUndefined(value) {
-  return value === null || value === undefined;
-}
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -20040,7 +20329,9 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = toString;
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 function toString(input) {
   if (_typeof(input) === 'object' && input !== null) {
     if (typeof input.toString === 'function') {
@@ -20051,8 +20342,10 @@ function toString(input) {
   } else if (input === null || typeof input === 'undefined' || isNaN(input) && !input.length) {
     input = '';
   }
+
   return String(input);
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -20071,12 +20364,16 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = whitelist;
+
 var _assertString = _interopRequireDefault(__webpack_require__(/*! ./util/assertString */ "./node_modules/validator/lib/util/assertString.js"));
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function whitelist(str, chars) {
   (0, _assertString.default)(str);
   return str.replace(new RegExp("[^".concat(chars, "]+"), 'g'), '');
 }
+
 module.exports = exports.default;
 module.exports["default"] = exports.default;
 
@@ -27076,7 +27373,6 @@ try {
       SAFE_CLOSING = true;
     }
   };
-  // eslint-disable-next-line unicorn/no-immediate-mutation -- ES3 syntax limitation
   iteratorWithReturn[ITERATOR] = function () {
     return this;
   };
@@ -27091,7 +27387,6 @@ module.exports = function (exec, SKIP_CLOSING) {
   var ITERATION_SUPPORT = false;
   try {
     var object = {};
-    // eslint-disable-next-line unicorn/no-immediate-mutation -- ES3 syntax limitation
     object[ITERATOR] = function () {
       return {
         next: function () {
@@ -28040,6 +28335,47 @@ module.exports = function (argument, usingIterator) {
 
 /***/ }),
 
+/***/ "./node_modules/core-js-pure/internals/get-json-replacer-function.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/core-js-pure/internals/get-json-replacer-function.js ***!
+  \***************************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+var uncurryThis = __webpack_require__(/*! ../internals/function-uncurry-this */ "./node_modules/core-js-pure/internals/function-uncurry-this.js");
+var isArray = __webpack_require__(/*! ../internals/is-array */ "./node_modules/core-js-pure/internals/is-array.js");
+var isCallable = __webpack_require__(/*! ../internals/is-callable */ "./node_modules/core-js-pure/internals/is-callable.js");
+var classof = __webpack_require__(/*! ../internals/classof-raw */ "./node_modules/core-js-pure/internals/classof-raw.js");
+var toString = __webpack_require__(/*! ../internals/to-string */ "./node_modules/core-js-pure/internals/to-string.js");
+
+var push = uncurryThis([].push);
+
+module.exports = function (replacer) {
+  if (isCallable(replacer)) return replacer;
+  if (!isArray(replacer)) return;
+  var rawLength = replacer.length;
+  var keys = [];
+  for (var i = 0; i < rawLength; i++) {
+    var element = replacer[i];
+    if (typeof element == 'string') push(keys, element);
+    else if (typeof element == 'number' || classof(element) === 'Number' || classof(element) === 'String') push(keys, toString(element));
+  }
+  var keysLength = keys.length;
+  var root = true;
+  return function (key, value) {
+    if (root) {
+      root = false;
+      return value;
+    }
+    if (isArray(this)) return value;
+    for (var j = 0; j < keysLength; j++) if (keys[j] === key) return value;
+  };
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/core-js-pure/internals/get-method.js":
 /*!***********************************************************!*\
   !*** ./node_modules/core-js-pure/internals/get-method.js ***!
@@ -28523,26 +28859,6 @@ module.exports = true;
 
 /***/ }),
 
-/***/ "./node_modules/core-js-pure/internals/is-raw-json.js":
-/*!************************************************************!*\
-  !*** ./node_modules/core-js-pure/internals/is-raw-json.js ***!
-  \************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-
-var isObject = __webpack_require__(/*! ../internals/is-object */ "./node_modules/core-js-pure/internals/is-object.js");
-var getInternalState = (__webpack_require__(/*! ../internals/internal-state */ "./node_modules/core-js-pure/internals/internal-state.js").get);
-
-module.exports = function isRawJSON(O) {
-  if (!isObject(O)) return false;
-  var state = getInternalState(O);
-  return !!state && state.type === 'RawJSON';
-};
-
-
-/***/ }),
-
 /***/ "./node_modules/core-js-pure/internals/is-symbol.js":
 /*!**********************************************************!*\
   !*** ./node_modules/core-js-pure/internals/is-symbol.js ***!
@@ -28853,28 +29169,6 @@ module.exports = Math.trunc || function trunc(x) {
   var n = +x;
   return (n > 0 ? floor : ceil)(n);
 };
-
-
-/***/ }),
-
-/***/ "./node_modules/core-js-pure/internals/native-raw-json.js":
-/*!****************************************************************!*\
-  !*** ./node_modules/core-js-pure/internals/native-raw-json.js ***!
-  \****************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-
-/* eslint-disable es/no-json -- safe */
-var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js-pure/internals/fails.js");
-
-module.exports = !fails(function () {
-  var unsafeInt = '9007199254740993';
-  // eslint-disable-next-line es/no-nonstandard-json-properties -- feature detection
-  var raw = JSON.rawJSON(unsafeInt);
-  // eslint-disable-next-line es/no-nonstandard-json-properties -- feature detection
-  return !JSON.isRawJSON(raw) || JSON.stringify(raw) !== unsafeInt;
-});
 
 
 /***/ }),
@@ -29415,73 +29709,6 @@ module.exports = function (input, pref) {
 
 /***/ }),
 
-/***/ "./node_modules/core-js-pure/internals/parse-json-string.js":
-/*!******************************************************************!*\
-  !*** ./node_modules/core-js-pure/internals/parse-json-string.js ***!
-  \******************************************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-
-var uncurryThis = __webpack_require__(/*! ../internals/function-uncurry-this */ "./node_modules/core-js-pure/internals/function-uncurry-this.js");
-var hasOwn = __webpack_require__(/*! ../internals/has-own-property */ "./node_modules/core-js-pure/internals/has-own-property.js");
-
-var $SyntaxError = SyntaxError;
-var $parseInt = parseInt;
-var fromCharCode = String.fromCharCode;
-var at = uncurryThis(''.charAt);
-var slice = uncurryThis(''.slice);
-var exec = uncurryThis(/./.exec);
-
-var codePoints = {
-  '\\"': '"',
-  '\\\\': '\\',
-  '\\/': '/',
-  '\\b': '\b',
-  '\\f': '\f',
-  '\\n': '\n',
-  '\\r': '\r',
-  '\\t': '\t'
-};
-
-var IS_4_HEX_DIGITS = /^[\da-f]{4}$/i;
-// eslint-disable-next-line regexp/no-control-character -- safe
-var IS_C0_CONTROL_CODE = /^[\u0000-\u001F]$/;
-
-module.exports = function (source, i) {
-  var unterminated = true;
-  var value = '';
-  while (i < source.length) {
-    var chr = at(source, i);
-    if (chr === '\\') {
-      var twoChars = slice(source, i, i + 2);
-      if (hasOwn(codePoints, twoChars)) {
-        value += codePoints[twoChars];
-        i += 2;
-      } else if (twoChars === '\\u') {
-        i += 2;
-        var fourHexDigits = slice(source, i, i + 4);
-        if (!exec(IS_4_HEX_DIGITS, fourHexDigits)) throw new $SyntaxError('Bad Unicode escape at: ' + i);
-        value += fromCharCode($parseInt(fourHexDigits, 16));
-        i += 4;
-      } else throw new $SyntaxError('Unknown escape sequence: "' + twoChars + '"');
-    } else if (chr === '"') {
-      unterminated = false;
-      i++;
-      break;
-    } else {
-      if (exec(IS_C0_CONTROL_CODE, chr)) throw new $SyntaxError('Bad control character in string literal at: ' + i);
-      value += chr;
-      i++;
-    }
-  }
-  if (unterminated) throw new $SyntaxError('Unterminated string at: ' + i);
-  return { value: value, end: i };
-};
-
-
-/***/ }),
-
 /***/ "./node_modules/core-js-pure/internals/path.js":
 /*!*****************************************************!*\
   !*** ./node_modules/core-js-pure/internals/path.js ***!
@@ -29699,10 +29926,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.47.0',
+  version: '3.46.0',
   mode: IS_PURE ? 'pure' : 'global',
   copyright: '© 2014-2025 Denis Pushkarev (zloirock.ru), 2025 CoreJS Company (core-js.io)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.47.0/LICENSE',
+  license: 'https://github.com/zloirock/core-js/blob/v3.46.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -30145,7 +30372,7 @@ var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ 
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
 var test = {};
-// eslint-disable-next-line unicorn/no-immediate-mutation -- ES3 syntax limitation
+
 test[TO_STRING_TAG] = 'z';
 
 module.exports = String(test) === '[object z]';
@@ -30902,17 +31129,11 @@ var apply = __webpack_require__(/*! ../internals/function-apply */ "./node_modul
 var call = __webpack_require__(/*! ../internals/function-call */ "./node_modules/core-js-pure/internals/function-call.js");
 var uncurryThis = __webpack_require__(/*! ../internals/function-uncurry-this */ "./node_modules/core-js-pure/internals/function-uncurry-this.js");
 var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js-pure/internals/fails.js");
-var isArray = __webpack_require__(/*! ../internals/is-array */ "./node_modules/core-js-pure/internals/is-array.js");
 var isCallable = __webpack_require__(/*! ../internals/is-callable */ "./node_modules/core-js-pure/internals/is-callable.js");
-var isRawJSON = __webpack_require__(/*! ../internals/is-raw-json */ "./node_modules/core-js-pure/internals/is-raw-json.js");
 var isSymbol = __webpack_require__(/*! ../internals/is-symbol */ "./node_modules/core-js-pure/internals/is-symbol.js");
-var classof = __webpack_require__(/*! ../internals/classof-raw */ "./node_modules/core-js-pure/internals/classof-raw.js");
-var toString = __webpack_require__(/*! ../internals/to-string */ "./node_modules/core-js-pure/internals/to-string.js");
 var arraySlice = __webpack_require__(/*! ../internals/array-slice */ "./node_modules/core-js-pure/internals/array-slice.js");
-var parseJSONString = __webpack_require__(/*! ../internals/parse-json-string */ "./node_modules/core-js-pure/internals/parse-json-string.js");
-var uid = __webpack_require__(/*! ../internals/uid */ "./node_modules/core-js-pure/internals/uid.js");
+var getReplacerFunction = __webpack_require__(/*! ../internals/get-json-replacer-function */ "./node_modules/core-js-pure/internals/get-json-replacer-function.js");
 var NATIVE_SYMBOL = __webpack_require__(/*! ../internals/symbol-constructor-detection */ "./node_modules/core-js-pure/internals/symbol-constructor-detection.js");
-var NATIVE_RAW_JSON = __webpack_require__(/*! ../internals/native-raw-json */ "./node_modules/core-js-pure/internals/native-raw-json.js");
 
 var $String = String;
 var $stringify = getBuiltIn('JSON', 'stringify');
@@ -30920,16 +31141,11 @@ var exec = uncurryThis(/./.exec);
 var charAt = uncurryThis(''.charAt);
 var charCodeAt = uncurryThis(''.charCodeAt);
 var replace = uncurryThis(''.replace);
-var slice = uncurryThis(''.slice);
-var push = uncurryThis([].push);
 var numberToString = uncurryThis(1.1.toString);
 
-var surrogates = /[\uD800-\uDFFF]/g;
-var lowSurrogates = /^[\uD800-\uDBFF]$/;
-var hiSurrogates = /^[\uDC00-\uDFFF]$/;
-
-var MARK = uid();
-var MARK_LENGTH = MARK.length;
+var tester = /[\uD800-\uDFFF]/g;
+var low = /^[\uD800-\uDBFF]$/;
+var hi = /^[\uDC00-\uDFFF]$/;
 
 var WRONG_SYMBOLS_CONVERSION = !NATIVE_SYMBOL || fails(function () {
   var symbol = getBuiltIn('Symbol')('stringify detection');
@@ -30947,7 +31163,7 @@ var ILL_FORMED_UNICODE = fails(function () {
     || $stringify('\uDEAD') !== '"\\udead"';
 });
 
-var stringifyWithProperSymbolsConversion = WRONG_SYMBOLS_CONVERSION ? function (it, replacer) {
+var stringifyWithSymbolsFix = function (it, replacer) {
   var args = arraySlice(arguments);
   var $replacer = getReplacerFunction(replacer);
   if (!isCallable($replacer) && (it === undefined || isSymbol(it))) return; // IE8 returns string on undefined
@@ -30957,76 +31173,28 @@ var stringifyWithProperSymbolsConversion = WRONG_SYMBOLS_CONVERSION ? function (
     if (!isSymbol(value)) return value;
   };
   return apply($stringify, null, args);
-} : $stringify;
+};
 
-var fixIllFormedJSON = function (match, offset, string) {
+var fixIllFormed = function (match, offset, string) {
   var prev = charAt(string, offset - 1);
   var next = charAt(string, offset + 1);
-  if ((exec(lowSurrogates, match) && !exec(hiSurrogates, next)) || (exec(hiSurrogates, match) && !exec(lowSurrogates, prev))) {
+  if ((exec(low, match) && !exec(hi, next)) || (exec(hi, match) && !exec(low, prev))) {
     return '\\u' + numberToString(charCodeAt(match, 0), 16);
   } return match;
 };
 
-var getReplacerFunction = function (replacer) {
-  if (isCallable(replacer)) return replacer;
-  if (!isArray(replacer)) return;
-  var rawLength = replacer.length;
-  var keys = [];
-  for (var i = 0; i < rawLength; i++) {
-    var element = replacer[i];
-    if (typeof element == 'string') push(keys, element);
-    else if (typeof element == 'number' || classof(element) === 'Number' || classof(element) === 'String') push(keys, toString(element));
-  }
-  var keysLength = keys.length;
-  var root = true;
-  return function (key, value) {
-    if (root) {
-      root = false;
-      return value;
+if ($stringify) {
+  // `JSON.stringify` method
+  // https://tc39.es/ecma262/#sec-json.stringify
+  $({ target: 'JSON', stat: true, arity: 3, forced: WRONG_SYMBOLS_CONVERSION || ILL_FORMED_UNICODE }, {
+    // eslint-disable-next-line no-unused-vars -- required for `.length`
+    stringify: function stringify(it, replacer, space) {
+      var args = arraySlice(arguments);
+      var result = apply(WRONG_SYMBOLS_CONVERSION ? stringifyWithSymbolsFix : $stringify, null, args);
+      return ILL_FORMED_UNICODE && typeof result == 'string' ? replace(result, tester, fixIllFormed) : result;
     }
-    if (isArray(this)) return value;
-    for (var j = 0; j < keysLength; j++) if (keys[j] === key) return value;
-  };
-};
-
-// `JSON.stringify` method
-// https://tc39.es/ecma262/#sec-json.stringify
-// https://github.com/tc39/proposal-json-parse-with-source
-if ($stringify) $({ target: 'JSON', stat: true, arity: 3, forced: WRONG_SYMBOLS_CONVERSION || ILL_FORMED_UNICODE || !NATIVE_RAW_JSON }, {
-  stringify: function stringify(text, replacer, space) {
-    var replacerFunction = getReplacerFunction(replacer);
-    var rawStrings = [];
-
-    var json = stringifyWithProperSymbolsConversion(text, function (key, value) {
-      // some old implementations (like WebKit) could pass numbers as keys
-      var v = isCallable(replacerFunction) ? call(replacerFunction, this, $String(key), value) : value;
-      return !NATIVE_RAW_JSON && isRawJSON(v) ? MARK + (push(rawStrings, v.rawJSON) - 1) : v;
-    }, space);
-
-    if (typeof json != 'string') return json;
-
-    if (ILL_FORMED_UNICODE) json = replace(json, surrogates, fixIllFormedJSON);
-
-    if (NATIVE_RAW_JSON) return json;
-
-    var result = '';
-    var length = json.length;
-
-    for (var i = 0; i < length; i++) {
-      var chr = charAt(json, i);
-      if (chr === '"') {
-        var end = parseJSONString(json, ++i).end - 1;
-        var string = slice(json, i, end);
-        result += slice(string, 0, MARK_LENGTH) === MARK
-          ? rawStrings[slice(string, MARK_LENGTH)]
-          : '"' + string + '"';
-        i = end;
-      } else result += chr;
-    }
-
-    return result;
-  }
-});
+  });
+}
 
 
 /***/ }),
@@ -32888,7 +33056,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getFixedT: () => (/* binding */ getFixedT),
 /* harmony export */   hasLoadedNamespace: () => (/* binding */ hasLoadedNamespace),
 /* harmony export */   init: () => (/* binding */ init),
-/* harmony export */   keyFromSelector: () => (/* binding */ keysFromSelector),
 /* harmony export */   loadLanguages: () => (/* binding */ loadLanguages),
 /* harmony export */   loadNamespaces: () => (/* binding */ loadNamespaces),
 /* harmony export */   loadResources: () => (/* binding */ loadResources),
@@ -32897,7 +33064,123 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   t: () => (/* binding */ t),
 /* harmony export */   use: () => (/* binding */ use)
 /* harmony export */ });
-const isString = obj => typeof obj === 'string';
+const consoleLogger = {
+  type: 'logger',
+  log(args) {
+    this.output('log', args);
+  },
+  warn(args) {
+    this.output('warn', args);
+  },
+  error(args) {
+    this.output('error', args);
+  },
+  output(type, args) {
+    if (console && console[type]) console[type].apply(console, args);
+  }
+};
+class Logger {
+  constructor(concreteLogger) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    this.init(concreteLogger, options);
+  }
+  init(concreteLogger) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    this.prefix = options.prefix || 'i18next:';
+    this.logger = concreteLogger || consoleLogger;
+    this.options = options;
+    this.debug = options.debug;
+  }
+  log() {
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    return this.forward(args, 'log', '', true);
+  }
+  warn() {
+    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+    return this.forward(args, 'warn', '', true);
+  }
+  error() {
+    for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      args[_key3] = arguments[_key3];
+    }
+    return this.forward(args, 'error', '');
+  }
+  deprecate() {
+    for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      args[_key4] = arguments[_key4];
+    }
+    return this.forward(args, 'warn', 'WARNING DEPRECATED: ', true);
+  }
+  forward(args, lvl, prefix, debugOnly) {
+    if (debugOnly && !this.debug) return null;
+    if (typeof args[0] === 'string') args[0] = `${prefix}${this.prefix} ${args[0]}`;
+    return this.logger[lvl](args);
+  }
+  create(moduleName) {
+    return new Logger(this.logger, {
+      ...{
+        prefix: `${this.prefix}:${moduleName}:`
+      },
+      ...this.options
+    });
+  }
+  clone(options) {
+    options = options || this.options;
+    options.prefix = options.prefix || this.prefix;
+    return new Logger(this.logger, options);
+  }
+}
+var baseLogger = new Logger();
+
+class EventEmitter {
+  constructor() {
+    this.observers = {};
+  }
+  on(events, listener) {
+    events.split(' ').forEach(event => {
+      if (!this.observers[event]) this.observers[event] = new Map();
+      const numListeners = this.observers[event].get(listener) || 0;
+      this.observers[event].set(listener, numListeners + 1);
+    });
+    return this;
+  }
+  off(event, listener) {
+    if (!this.observers[event]) return;
+    if (!listener) {
+      delete this.observers[event];
+      return;
+    }
+    this.observers[event].delete(listener);
+  }
+  emit(event) {
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+    if (this.observers[event]) {
+      const cloned = Array.from(this.observers[event].entries());
+      cloned.forEach(_ref => {
+        let [observer, numTimesAdded] = _ref;
+        for (let i = 0; i < numTimesAdded; i++) {
+          observer(...args);
+        }
+      });
+    }
+    if (this.observers['*']) {
+      const cloned = Array.from(this.observers['*'].entries());
+      cloned.forEach(_ref2 => {
+        let [observer, numTimesAdded] = _ref2;
+        for (let i = 0; i < numTimesAdded; i++) {
+          observer.apply(observer, [event, ...args]);
+        }
+      });
+    }
+  }
+}
+
 const defer = () => {
   let res;
   let rej;
@@ -32920,9 +33203,9 @@ const copy = (a, s, t) => {
 };
 const lastOfPathSeparatorRegExp = /###/g;
 const cleanKey = key => key && key.indexOf('###') > -1 ? key.replace(lastOfPathSeparatorRegExp, '.') : key;
-const canNotTraverseDeeper = object => !object || isString(object);
+const canNotTraverseDeeper = object => !object || typeof object === 'string';
 const getLastOfPath = (object, path, Empty) => {
-  const stack = !isString(path) ? path : path.split('.');
+  const stack = typeof path !== 'string' ? path : path.split('.');
   let stackIndex = 0;
   while (stackIndex < stack.length - 1) {
     if (canNotTraverseDeeper(object)) return {};
@@ -32957,7 +33240,7 @@ const setPath = (object, path, newValue) => {
     e = `${p[p.length - 1]}.${e}`;
     p = p.slice(0, p.length - 1);
     last = getLastOfPath(object, p, Object);
-    if (last?.obj && typeof last.obj[`${last.k}.${e}`] !== 'undefined') {
+    if (last && last.obj && typeof last.obj[`${last.k}.${e}`] !== 'undefined') {
       last.obj = undefined;
     }
   }
@@ -32977,7 +33260,6 @@ const getPath = (object, path) => {
     k
   } = getLastOfPath(object, path);
   if (!obj) return undefined;
-  if (!Object.prototype.hasOwnProperty.call(obj, k)) return undefined;
   return obj[k];
 };
 const getPathWithDefaults = (data, defaultData, key) => {
@@ -32991,7 +33273,7 @@ const deepExtend = (target, source, overwrite) => {
   for (const prop in source) {
     if (prop !== '__proto__' && prop !== 'constructor') {
       if (prop in target) {
-        if (isString(target[prop]) || target[prop] instanceof String || isString(source[prop]) || source[prop] instanceof String) {
+        if (typeof target[prop] === 'string' || target[prop] instanceof String || typeof source[prop] === 'string' || source[prop] instanceof String) {
           if (overwrite) target[prop] = source[prop];
         } else {
           deepExtend(target[prop], source[prop], overwrite);
@@ -33013,7 +33295,7 @@ var _entityMap = {
   '/': '&#x2F;'
 };
 const escape = data => {
-  if (isString(data)) {
+  if (typeof data === 'string') {
     return data.replace(/[&<>"'\/]/g, s => _entityMap[s]);
   }
   return data;
@@ -33055,12 +33337,10 @@ const looksLikeObjectPath = (key, nsSeparator, keySeparator) => {
   }
   return matched;
 };
-const deepFind = (obj, path, keySeparator = '.') => {
+const deepFind = function (obj, path) {
+  let keySeparator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '.';
   if (!obj) return undefined;
-  if (obj[path]) {
-    if (!Object.prototype.hasOwnProperty.call(obj, path)) return undefined;
-    return obj[path];
-  }
+  if (obj[path]) return obj[path];
   const tokens = path.split(keySeparator);
   let current = obj;
   for (let i = 0; i < tokens.length;) {
@@ -33087,111 +33367,17 @@ const deepFind = (obj, path, keySeparator = '.') => {
   }
   return current;
 };
-const getCleanedCode = code => code?.replace('_', '-');
-
-const consoleLogger = {
-  type: 'logger',
-  log(args) {
-    this.output('log', args);
-  },
-  warn(args) {
-    this.output('warn', args);
-  },
-  error(args) {
-    this.output('error', args);
-  },
-  output(type, args) {
-    console?.[type]?.apply?.(console, args);
-  }
+const getCleanedCode = code => {
+  if (code && code.indexOf('_') > 0) return code.replace('_', '-');
+  return code;
 };
-class Logger {
-  constructor(concreteLogger, options = {}) {
-    this.init(concreteLogger, options);
-  }
-  init(concreteLogger, options = {}) {
-    this.prefix = options.prefix || 'i18next:';
-    this.logger = concreteLogger || consoleLogger;
-    this.options = options;
-    this.debug = options.debug;
-  }
-  log(...args) {
-    return this.forward(args, 'log', '', true);
-  }
-  warn(...args) {
-    return this.forward(args, 'warn', '', true);
-  }
-  error(...args) {
-    return this.forward(args, 'error', '');
-  }
-  deprecate(...args) {
-    return this.forward(args, 'warn', 'WARNING DEPRECATED: ', true);
-  }
-  forward(args, lvl, prefix, debugOnly) {
-    if (debugOnly && !this.debug) return null;
-    if (isString(args[0])) args[0] = `${prefix}${this.prefix} ${args[0]}`;
-    return this.logger[lvl](args);
-  }
-  create(moduleName) {
-    return new Logger(this.logger, {
-      ...{
-        prefix: `${this.prefix}:${moduleName}:`
-      },
-      ...this.options
-    });
-  }
-  clone(options) {
-    options = options || this.options;
-    options.prefix = options.prefix || this.prefix;
-    return new Logger(this.logger, options);
-  }
-}
-var baseLogger = new Logger();
-
-class EventEmitter {
-  constructor() {
-    this.observers = {};
-  }
-  on(events, listener) {
-    events.split(' ').forEach(event => {
-      if (!this.observers[event]) this.observers[event] = new Map();
-      const numListeners = this.observers[event].get(listener) || 0;
-      this.observers[event].set(listener, numListeners + 1);
-    });
-    return this;
-  }
-  off(event, listener) {
-    if (!this.observers[event]) return;
-    if (!listener) {
-      delete this.observers[event];
-      return;
-    }
-    this.observers[event].delete(listener);
-  }
-  emit(event, ...args) {
-    if (this.observers[event]) {
-      const cloned = Array.from(this.observers[event].entries());
-      cloned.forEach(([observer, numTimesAdded]) => {
-        for (let i = 0; i < numTimesAdded; i++) {
-          observer(...args);
-        }
-      });
-    }
-    if (this.observers['*']) {
-      const cloned = Array.from(this.observers['*'].entries());
-      cloned.forEach(([observer, numTimesAdded]) => {
-        for (let i = 0; i < numTimesAdded; i++) {
-          observer.apply(observer, [event, ...args]);
-        }
-      });
-    }
-  }
-}
 
 class ResourceStore extends EventEmitter {
-  constructor(data, options = {
-    ns: ['translation'],
-    defaultNS: 'translation'
-  }) {
+  constructor(data) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
+      ns: ['translation'],
+      defaultNS: 'translation'
+    };
     super();
     this.data = data || {};
     this.options = options;
@@ -33213,7 +33399,8 @@ class ResourceStore extends EventEmitter {
       this.options.ns.splice(index, 1);
     }
   }
-  getResource(lng, ns, key, options = {}) {
+  getResource(lng, ns, key) {
+    let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
     const keySeparator = options.keySeparator !== undefined ? options.keySeparator : this.options.keySeparator;
     const ignoreJSONStructure = options.ignoreJSONStructure !== undefined ? options.ignoreJSONStructure : this.options.ignoreJSONStructure;
     let path;
@@ -33224,7 +33411,7 @@ class ResourceStore extends EventEmitter {
       if (key) {
         if (Array.isArray(key)) {
           path.push(...key);
-        } else if (isString(key) && keySeparator) {
+        } else if (typeof key === 'string' && keySeparator) {
           path.push(...key.split(keySeparator));
         } else {
           path.push(key);
@@ -33237,12 +33424,13 @@ class ResourceStore extends EventEmitter {
       ns = path[1];
       key = path.slice(2).join('.');
     }
-    if (result || !ignoreJSONStructure || !isString(key)) return result;
-    return deepFind(this.data?.[lng]?.[ns], key, keySeparator);
+    if (result || !ignoreJSONStructure || typeof key !== 'string') return result;
+    return deepFind(this.data && this.data[lng] && this.data[lng][ns], key, keySeparator);
   }
-  addResource(lng, ns, key, value, options = {
-    silent: false
-  }) {
+  addResource(lng, ns, key, value) {
+    let options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
+      silent: false
+    };
     const keySeparator = options.keySeparator !== undefined ? options.keySeparator : this.options.keySeparator;
     let path = [lng, ns];
     if (key) path = path.concat(keySeparator ? key.split(keySeparator) : key);
@@ -33255,20 +33443,22 @@ class ResourceStore extends EventEmitter {
     setPath(this.data, path, value);
     if (!options.silent) this.emit('added', lng, ns, key, value);
   }
-  addResources(lng, ns, resources, options = {
-    silent: false
-  }) {
+  addResources(lng, ns, resources) {
+    let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {
+      silent: false
+    };
     for (const m in resources) {
-      if (isString(resources[m]) || Array.isArray(resources[m])) this.addResource(lng, ns, m, resources[m], {
+      if (typeof resources[m] === 'string' || Array.isArray(resources[m])) this.addResource(lng, ns, m, resources[m], {
         silent: true
       });
     }
     if (!options.silent) this.emit('added', lng, ns, resources);
   }
-  addResourceBundle(lng, ns, resources, deep, overwrite, options = {
-    silent: false,
-    skipCopy: false
-  }) {
+  addResourceBundle(lng, ns, resources, deep, overwrite) {
+    let options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {
+      silent: false,
+      skipCopy: false
+    };
     let path = [lng, ns];
     if (lng.indexOf('.') > -1) {
       path = lng.split('.');
@@ -33302,6 +33492,10 @@ class ResourceStore extends EventEmitter {
   }
   getResourceBundle(lng, ns) {
     if (!ns) ns = this.options.defaultNS;
+    if (this.options.compatibilityAPI === 'v1') return {
+      ...{},
+      ...this.getResource(lng, ns)
+    };
     return this.getResource(lng, ns);
   }
   getDataByLanguage(lng) {
@@ -33324,37 +33518,16 @@ var postProcessor = {
   },
   handle(processors, value, key, options, translator) {
     processors.forEach(processor => {
-      value = this.processors[processor]?.process(value, key, options, translator) ?? value;
+      if (this.processors[processor]) value = this.processors[processor].process(value, key, options, translator);
     });
     return value;
   }
 };
 
-const PATH_KEY = Symbol('i18next/PATH_KEY');
-function createProxy() {
-  const state = [];
-  const handler = Object.create(null);
-  let proxy;
-  handler.get = (target, key) => {
-    proxy?.revoke?.();
-    if (key === PATH_KEY) return state;
-    state.push(key);
-    proxy = Proxy.revocable(target, handler);
-    return proxy.proxy;
-  };
-  return Proxy.revocable(Object.create(null), handler).proxy;
-}
-function keysFromSelector(selector, opts) {
-  const {
-    [PATH_KEY]: path
-  } = selector(createProxy());
-  return path.join(opts?.keySeparator ?? '.');
-}
-
 const checkedLoadedFor = {};
-const shouldHandleAsObject = res => !isString(res) && typeof res !== 'boolean' && typeof res !== 'number';
 class Translator extends EventEmitter {
-  constructor(services, options = {}) {
+  constructor(services) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     super();
     copy(['resourceStore', 'languageUtils', 'pluralResolver', 'interpolator', 'backendConnector', 'i18nFormat', 'utils'], services, this);
     this.options = options;
@@ -33366,75 +33539,63 @@ class Translator extends EventEmitter {
   changeLanguage(lng) {
     if (lng) this.language = lng;
   }
-  exists(key, o = {
-    interpolation: {}
-  }) {
-    const opt = {
-      ...o
+  exists(key) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
+      interpolation: {}
     };
-    if (key == null) return false;
-    const resolved = this.resolve(key, opt);
-    if (resolved?.res === undefined) return false;
-    const isObject = shouldHandleAsObject(resolved.res);
-    if (opt.returnObjects === false && isObject) {
+    if (key === undefined || key === null) {
       return false;
     }
-    return true;
+    const resolved = this.resolve(key, options);
+    return resolved && resolved.res !== undefined;
   }
-  extractFromKey(key, opt) {
-    let nsSeparator = opt.nsSeparator !== undefined ? opt.nsSeparator : this.options.nsSeparator;
+  extractFromKey(key, options) {
+    let nsSeparator = options.nsSeparator !== undefined ? options.nsSeparator : this.options.nsSeparator;
     if (nsSeparator === undefined) nsSeparator = ':';
-    const keySeparator = opt.keySeparator !== undefined ? opt.keySeparator : this.options.keySeparator;
-    let namespaces = opt.ns || this.options.defaultNS || [];
+    const keySeparator = options.keySeparator !== undefined ? options.keySeparator : this.options.keySeparator;
+    let namespaces = options.ns || this.options.defaultNS || [];
     const wouldCheckForNsInKey = nsSeparator && key.indexOf(nsSeparator) > -1;
-    const seemsNaturalLanguage = !this.options.userDefinedKeySeparator && !opt.keySeparator && !this.options.userDefinedNsSeparator && !opt.nsSeparator && !looksLikeObjectPath(key, nsSeparator, keySeparator);
+    const seemsNaturalLanguage = !this.options.userDefinedKeySeparator && !options.keySeparator && !this.options.userDefinedNsSeparator && !options.nsSeparator && !looksLikeObjectPath(key, nsSeparator, keySeparator);
     if (wouldCheckForNsInKey && !seemsNaturalLanguage) {
       const m = key.match(this.interpolator.nestingRegexp);
       if (m && m.length > 0) {
         return {
           key,
-          namespaces: isString(namespaces) ? [namespaces] : namespaces
+          namespaces
         };
       }
       const parts = key.split(nsSeparator);
       if (nsSeparator !== keySeparator || nsSeparator === keySeparator && this.options.ns.indexOf(parts[0]) > -1) namespaces = parts.shift();
       key = parts.join(keySeparator);
     }
+    if (typeof namespaces === 'string') namespaces = [namespaces];
     return {
       key,
-      namespaces: isString(namespaces) ? [namespaces] : namespaces
+      namespaces
     };
   }
-  translate(keys, o, lastKey) {
-    let opt = typeof o === 'object' ? {
-      ...o
-    } : o;
-    if (typeof opt !== 'object' && this.options.overloadTranslationOptionHandler) {
-      opt = this.options.overloadTranslationOptionHandler(arguments);
+  translate(keys, options, lastKey) {
+    if (typeof options !== 'object' && this.options.overloadTranslationOptionHandler) {
+      options = this.options.overloadTranslationOptionHandler(arguments);
     }
-    if (typeof opt === 'object') opt = {
-      ...opt
+    if (typeof options === 'object') options = {
+      ...options
     };
-    if (!opt) opt = {};
-    if (keys == null) return '';
-    if (typeof keys === 'function') keys = keysFromSelector(keys, {
-      ...this.options,
-      ...opt
-    });
+    if (!options) options = {};
+    if (keys === undefined || keys === null) return '';
     if (!Array.isArray(keys)) keys = [String(keys)];
-    const returnDetails = opt.returnDetails !== undefined ? opt.returnDetails : this.options.returnDetails;
-    const keySeparator = opt.keySeparator !== undefined ? opt.keySeparator : this.options.keySeparator;
+    const returnDetails = options.returnDetails !== undefined ? options.returnDetails : this.options.returnDetails;
+    const keySeparator = options.keySeparator !== undefined ? options.keySeparator : this.options.keySeparator;
     const {
       key,
       namespaces
-    } = this.extractFromKey(keys[keys.length - 1], opt);
+    } = this.extractFromKey(keys[keys.length - 1], options);
     const namespace = namespaces[namespaces.length - 1];
-    let nsSeparator = opt.nsSeparator !== undefined ? opt.nsSeparator : this.options.nsSeparator;
-    if (nsSeparator === undefined) nsSeparator = ':';
-    const lng = opt.lng || this.language;
-    const appendNamespaceToCIMode = opt.appendNamespaceToCIMode || this.options.appendNamespaceToCIMode;
-    if (lng?.toLowerCase() === 'cimode') {
+    const lng = options.lng || this.language;
+    const appendNamespaceToCIMode = options.appendNamespaceToCIMode || this.options.appendNamespaceToCIMode;
+    if (lng && lng.toLowerCase() === 'cimode') {
       if (appendNamespaceToCIMode) {
+        const nsSeparator = options.nsSeparator || this.options.nsSeparator;
         if (returnDetails) {
           return {
             res: `${namespace}${nsSeparator}${key}`,
@@ -33442,7 +33603,7 @@ class Translator extends EventEmitter {
             exactUsedKey: key,
             usedLng: lng,
             usedNS: namespace,
-            usedParams: this.getUsedParamsDetails(opt)
+            usedParams: this.getUsedParamsDetails(options)
           };
         }
         return `${namespace}${nsSeparator}${key}`;
@@ -33454,84 +33615,69 @@ class Translator extends EventEmitter {
           exactUsedKey: key,
           usedLng: lng,
           usedNS: namespace,
-          usedParams: this.getUsedParamsDetails(opt)
+          usedParams: this.getUsedParamsDetails(options)
         };
       }
       return key;
     }
-    const resolved = this.resolve(keys, opt);
-    let res = resolved?.res;
-    const resUsedKey = resolved?.usedKey || key;
-    const resExactUsedKey = resolved?.exactUsedKey || key;
+    const resolved = this.resolve(keys, options);
+    let res = resolved && resolved.res;
+    const resUsedKey = resolved && resolved.usedKey || key;
+    const resExactUsedKey = resolved && resolved.exactUsedKey || key;
+    const resType = Object.prototype.toString.apply(res);
     const noObject = ['[object Number]', '[object Function]', '[object RegExp]'];
-    const joinArrays = opt.joinArrays !== undefined ? opt.joinArrays : this.options.joinArrays;
+    const joinArrays = options.joinArrays !== undefined ? options.joinArrays : this.options.joinArrays;
     const handleAsObjectInI18nFormat = !this.i18nFormat || this.i18nFormat.handleAsObject;
-    const needsPluralHandling = opt.count !== undefined && !isString(opt.count);
-    const hasDefaultValue = Translator.hasDefaultValue(opt);
-    const defaultValueSuffix = needsPluralHandling ? this.pluralResolver.getSuffix(lng, opt.count, opt) : '';
-    const defaultValueSuffixOrdinalFallback = opt.ordinal && needsPluralHandling ? this.pluralResolver.getSuffix(lng, opt.count, {
-      ordinal: false
-    }) : '';
-    const needsZeroSuffixLookup = needsPluralHandling && !opt.ordinal && opt.count === 0;
-    const defaultValue = needsZeroSuffixLookup && opt[`defaultValue${this.options.pluralSeparator}zero`] || opt[`defaultValue${defaultValueSuffix}`] || opt[`defaultValue${defaultValueSuffixOrdinalFallback}`] || opt.defaultValue;
-    let resForObjHndl = res;
-    if (handleAsObjectInI18nFormat && !res && hasDefaultValue) {
-      resForObjHndl = defaultValue;
-    }
-    const handleAsObject = shouldHandleAsObject(resForObjHndl);
-    const resType = Object.prototype.toString.apply(resForObjHndl);
-    if (handleAsObjectInI18nFormat && resForObjHndl && handleAsObject && noObject.indexOf(resType) < 0 && !(isString(joinArrays) && Array.isArray(resForObjHndl))) {
-      if (!opt.returnObjects && !this.options.returnObjects) {
+    const handleAsObject = typeof res !== 'string' && typeof res !== 'boolean' && typeof res !== 'number';
+    if (handleAsObjectInI18nFormat && res && handleAsObject && noObject.indexOf(resType) < 0 && !(typeof joinArrays === 'string' && Array.isArray(res))) {
+      if (!options.returnObjects && !this.options.returnObjects) {
         if (!this.options.returnedObjectHandler) {
           this.logger.warn('accessing an object - but returnObjects options is not enabled!');
         }
-        const r = this.options.returnedObjectHandler ? this.options.returnedObjectHandler(resUsedKey, resForObjHndl, {
-          ...opt,
+        const r = this.options.returnedObjectHandler ? this.options.returnedObjectHandler(resUsedKey, res, {
+          ...options,
           ns: namespaces
         }) : `key '${key} (${this.language})' returned an object instead of string.`;
         if (returnDetails) {
           resolved.res = r;
-          resolved.usedParams = this.getUsedParamsDetails(opt);
+          resolved.usedParams = this.getUsedParamsDetails(options);
           return resolved;
         }
         return r;
       }
       if (keySeparator) {
-        const resTypeIsArray = Array.isArray(resForObjHndl);
+        const resTypeIsArray = Array.isArray(res);
         const copy = resTypeIsArray ? [] : {};
         const newKeyToUse = resTypeIsArray ? resExactUsedKey : resUsedKey;
-        for (const m in resForObjHndl) {
-          if (Object.prototype.hasOwnProperty.call(resForObjHndl, m)) {
+        for (const m in res) {
+          if (Object.prototype.hasOwnProperty.call(res, m)) {
             const deepKey = `${newKeyToUse}${keySeparator}${m}`;
-            if (hasDefaultValue && !res) {
-              copy[m] = this.translate(deepKey, {
-                ...opt,
-                defaultValue: shouldHandleAsObject(defaultValue) ? defaultValue[m] : undefined,
-                ...{
-                  joinArrays: false,
-                  ns: namespaces
-                }
-              });
-            } else {
-              copy[m] = this.translate(deepKey, {
-                ...opt,
-                ...{
-                  joinArrays: false,
-                  ns: namespaces
-                }
-              });
-            }
-            if (copy[m] === deepKey) copy[m] = resForObjHndl[m];
+            copy[m] = this.translate(deepKey, {
+              ...options,
+              ...{
+                joinArrays: false,
+                ns: namespaces
+              }
+            });
+            if (copy[m] === deepKey) copy[m] = res[m];
           }
         }
         res = copy;
       }
-    } else if (handleAsObjectInI18nFormat && isString(joinArrays) && Array.isArray(res)) {
+    } else if (handleAsObjectInI18nFormat && typeof joinArrays === 'string' && Array.isArray(res)) {
       res = res.join(joinArrays);
-      if (res) res = this.extendTranslation(res, keys, opt, lastKey);
+      if (res) res = this.extendTranslation(res, keys, options, lastKey);
     } else {
       let usedDefault = false;
       let usedKey = false;
+      const needsPluralHandling = options.count !== undefined && typeof options.count !== 'string';
+      const hasDefaultValue = Translator.hasDefaultValue(options);
+      const defaultValueSuffix = needsPluralHandling ? this.pluralResolver.getSuffix(lng, options.count, options) : '';
+      const defaultValueSuffixOrdinalFallback = options.ordinal && needsPluralHandling ? this.pluralResolver.getSuffix(lng, options.count, {
+        ordinal: false
+      }) : '';
+      const needsZeroSuffixLookup = needsPluralHandling && !options.ordinal && options.count === 0 && this.pluralResolver.shouldUseIntlApi();
+      const defaultValue = needsZeroSuffixLookup && options[`defaultValue${this.options.pluralSeparator}zero`] || options[`defaultValue${defaultValueSuffix}`] || options[`defaultValue${defaultValueSuffixOrdinalFallback}`] || options.defaultValue;
       if (!this.isValidLookup(res) && hasDefaultValue) {
         usedDefault = true;
         res = defaultValue;
@@ -33540,47 +33686,47 @@ class Translator extends EventEmitter {
         usedKey = true;
         res = key;
       }
-      const missingKeyNoValueFallbackToKey = opt.missingKeyNoValueFallbackToKey || this.options.missingKeyNoValueFallbackToKey;
+      const missingKeyNoValueFallbackToKey = options.missingKeyNoValueFallbackToKey || this.options.missingKeyNoValueFallbackToKey;
       const resForMissing = missingKeyNoValueFallbackToKey && usedKey ? undefined : res;
       const updateMissing = hasDefaultValue && defaultValue !== res && this.options.updateMissing;
       if (usedKey || usedDefault || updateMissing) {
         this.logger.log(updateMissing ? 'updateKey' : 'missingKey', lng, namespace, key, updateMissing ? defaultValue : res);
         if (keySeparator) {
           const fk = this.resolve(key, {
-            ...opt,
+            ...options,
             keySeparator: false
           });
           if (fk && fk.res) this.logger.warn('Seems the loaded translations were in flat JSON format instead of nested. Either set keySeparator: false on init or make sure your translations are published in nested format.');
         }
         let lngs = [];
-        const fallbackLngs = this.languageUtils.getFallbackCodes(this.options.fallbackLng, opt.lng || this.language);
+        const fallbackLngs = this.languageUtils.getFallbackCodes(this.options.fallbackLng, options.lng || this.language);
         if (this.options.saveMissingTo === 'fallback' && fallbackLngs && fallbackLngs[0]) {
           for (let i = 0; i < fallbackLngs.length; i++) {
             lngs.push(fallbackLngs[i]);
           }
         } else if (this.options.saveMissingTo === 'all') {
-          lngs = this.languageUtils.toResolveHierarchy(opt.lng || this.language);
+          lngs = this.languageUtils.toResolveHierarchy(options.lng || this.language);
         } else {
-          lngs.push(opt.lng || this.language);
+          lngs.push(options.lng || this.language);
         }
         const send = (l, k, specificDefaultValue) => {
           const defaultForMissing = hasDefaultValue && specificDefaultValue !== res ? specificDefaultValue : resForMissing;
           if (this.options.missingKeyHandler) {
-            this.options.missingKeyHandler(l, namespace, k, defaultForMissing, updateMissing, opt);
-          } else if (this.backendConnector?.saveMissing) {
-            this.backendConnector.saveMissing(l, namespace, k, defaultForMissing, updateMissing, opt);
+            this.options.missingKeyHandler(l, namespace, k, defaultForMissing, updateMissing, options);
+          } else if (this.backendConnector && this.backendConnector.saveMissing) {
+            this.backendConnector.saveMissing(l, namespace, k, defaultForMissing, updateMissing, options);
           }
           this.emit('missingKey', l, namespace, k, res);
         };
         if (this.options.saveMissing) {
           if (this.options.saveMissingPlurals && needsPluralHandling) {
             lngs.forEach(language => {
-              const suffixes = this.pluralResolver.getSuffixes(language, opt);
-              if (needsZeroSuffixLookup && opt[`defaultValue${this.options.pluralSeparator}zero`] && suffixes.indexOf(`${this.options.pluralSeparator}zero`) < 0) {
+              const suffixes = this.pluralResolver.getSuffixes(language, options);
+              if (needsZeroSuffixLookup && options[`defaultValue${this.options.pluralSeparator}zero`] && suffixes.indexOf(`${this.options.pluralSeparator}zero`) < 0) {
                 suffixes.push(`${this.options.pluralSeparator}zero`);
               }
               suffixes.forEach(suffix => {
-                send([language], key + suffix, opt[`defaultValue${suffix}`] || defaultValue);
+                send([language], key + suffix, options[`defaultValue${suffix}`] || defaultValue);
               });
             });
           } else {
@@ -33588,101 +33734,108 @@ class Translator extends EventEmitter {
           }
         }
       }
-      res = this.extendTranslation(res, keys, opt, resolved, lastKey);
-      if (usedKey && res === key && this.options.appendNamespaceToMissingKey) {
-        res = `${namespace}${nsSeparator}${key}`;
-      }
+      res = this.extendTranslation(res, keys, options, resolved, lastKey);
+      if (usedKey && res === key && this.options.appendNamespaceToMissingKey) res = `${namespace}:${key}`;
       if ((usedKey || usedDefault) && this.options.parseMissingKeyHandler) {
-        res = this.options.parseMissingKeyHandler(this.options.appendNamespaceToMissingKey ? `${namespace}${nsSeparator}${key}` : key, usedDefault ? res : undefined, opt);
+        if (this.options.compatibilityAPI !== 'v1') {
+          res = this.options.parseMissingKeyHandler(this.options.appendNamespaceToMissingKey ? `${namespace}:${key}` : key, usedDefault ? res : undefined);
+        } else {
+          res = this.options.parseMissingKeyHandler(res);
+        }
       }
     }
     if (returnDetails) {
       resolved.res = res;
-      resolved.usedParams = this.getUsedParamsDetails(opt);
+      resolved.usedParams = this.getUsedParamsDetails(options);
       return resolved;
     }
     return res;
   }
-  extendTranslation(res, key, opt, resolved, lastKey) {
-    if (this.i18nFormat?.parse) {
+  extendTranslation(res, key, options, resolved, lastKey) {
+    var _this = this;
+    if (this.i18nFormat && this.i18nFormat.parse) {
       res = this.i18nFormat.parse(res, {
         ...this.options.interpolation.defaultVariables,
-        ...opt
-      }, opt.lng || this.language || resolved.usedLng, resolved.usedNS, resolved.usedKey, {
+        ...options
+      }, options.lng || this.language || resolved.usedLng, resolved.usedNS, resolved.usedKey, {
         resolved
       });
-    } else if (!opt.skipInterpolation) {
-      if (opt.interpolation) this.interpolator.init({
-        ...opt,
+    } else if (!options.skipInterpolation) {
+      if (options.interpolation) this.interpolator.init({
+        ...options,
         ...{
           interpolation: {
             ...this.options.interpolation,
-            ...opt.interpolation
+            ...options.interpolation
           }
         }
       });
-      const skipOnVariables = isString(res) && (opt?.interpolation?.skipOnVariables !== undefined ? opt.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables);
+      const skipOnVariables = typeof res === 'string' && (options && options.interpolation && options.interpolation.skipOnVariables !== undefined ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables);
       let nestBef;
       if (skipOnVariables) {
         const nb = res.match(this.interpolator.nestingRegexp);
         nestBef = nb && nb.length;
       }
-      let data = opt.replace && !isString(opt.replace) ? opt.replace : opt;
+      let data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
       if (this.options.interpolation.defaultVariables) data = {
         ...this.options.interpolation.defaultVariables,
         ...data
       };
-      res = this.interpolator.interpolate(res, data, opt.lng || this.language || resolved.usedLng, opt);
+      res = this.interpolator.interpolate(res, data, options.lng || this.language || resolved.usedLng, options);
       if (skipOnVariables) {
         const na = res.match(this.interpolator.nestingRegexp);
         const nestAft = na && na.length;
-        if (nestBef < nestAft) opt.nest = false;
+        if (nestBef < nestAft) options.nest = false;
       }
-      if (!opt.lng && resolved && resolved.res) opt.lng = this.language || resolved.usedLng;
-      if (opt.nest !== false) res = this.interpolator.nest(res, (...args) => {
-        if (lastKey?.[0] === args[0] && !opt.context) {
-          this.logger.warn(`It seems you are nesting recursively key: ${args[0]} in key: ${key[0]}`);
+      if (!options.lng && this.options.compatibilityAPI !== 'v1' && resolved && resolved.res) options.lng = this.language || resolved.usedLng;
+      if (options.nest !== false) res = this.interpolator.nest(res, function () {
+        for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+          args[_key] = arguments[_key];
+        }
+        if (lastKey && lastKey[0] === args[0] && !options.context) {
+          _this.logger.warn(`It seems you are nesting recursively key: ${args[0]} in key: ${key[0]}`);
           return null;
         }
-        return this.translate(...args, key);
-      }, opt);
-      if (opt.interpolation) this.interpolator.reset();
+        return _this.translate(...args, key);
+      }, options);
+      if (options.interpolation) this.interpolator.reset();
     }
-    const postProcess = opt.postProcess || this.options.postProcess;
-    const postProcessorNames = isString(postProcess) ? [postProcess] : postProcess;
-    if (res != null && postProcessorNames?.length && opt.applyPostProcessor !== false) {
+    const postProcess = options.postProcess || this.options.postProcess;
+    const postProcessorNames = typeof postProcess === 'string' ? [postProcess] : postProcess;
+    if (res !== undefined && res !== null && postProcessorNames && postProcessorNames.length && options.applyPostProcessor !== false) {
       res = postProcessor.handle(postProcessorNames, res, key, this.options && this.options.postProcessPassResolved ? {
         i18nResolved: {
           ...resolved,
-          usedParams: this.getUsedParamsDetails(opt)
+          usedParams: this.getUsedParamsDetails(options)
         },
-        ...opt
-      } : opt, this);
+        ...options
+      } : options, this);
     }
     return res;
   }
-  resolve(keys, opt = {}) {
+  resolve(keys) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     let found;
     let usedKey;
     let exactUsedKey;
     let usedLng;
     let usedNS;
-    if (isString(keys)) keys = [keys];
+    if (typeof keys === 'string') keys = [keys];
     keys.forEach(k => {
       if (this.isValidLookup(found)) return;
-      const extracted = this.extractFromKey(k, opt);
+      const extracted = this.extractFromKey(k, options);
       const key = extracted.key;
       usedKey = key;
       let namespaces = extracted.namespaces;
       if (this.options.fallbackNS) namespaces = namespaces.concat(this.options.fallbackNS);
-      const needsPluralHandling = opt.count !== undefined && !isString(opt.count);
-      const needsZeroSuffixLookup = needsPluralHandling && !opt.ordinal && opt.count === 0;
-      const needsContextHandling = opt.context !== undefined && (isString(opt.context) || typeof opt.context === 'number') && opt.context !== '';
-      const codes = opt.lngs ? opt.lngs : this.languageUtils.toResolveHierarchy(opt.lng || this.language, opt.fallbackLng);
+      const needsPluralHandling = options.count !== undefined && typeof options.count !== 'string';
+      const needsZeroSuffixLookup = needsPluralHandling && !options.ordinal && options.count === 0 && this.pluralResolver.shouldUseIntlApi();
+      const needsContextHandling = options.context !== undefined && (typeof options.context === 'string' || typeof options.context === 'number') && options.context !== '';
+      const codes = options.lngs ? options.lngs : this.languageUtils.toResolveHierarchy(options.lng || this.language, options.fallbackLng);
       namespaces.forEach(ns => {
         if (this.isValidLookup(found)) return;
         usedNS = ns;
-        if (!checkedLoadedFor[`${codes[0]}-${ns}`] && this.utils?.hasLoadedNamespace && !this.utils?.hasLoadedNamespace(usedNS)) {
+        if (!checkedLoadedFor[`${codes[0]}-${ns}`] && this.utils && this.utils.hasLoadedNamespace && !this.utils.hasLoadedNamespace(usedNS)) {
           checkedLoadedFor[`${codes[0]}-${ns}`] = true;
           this.logger.warn(`key "${usedKey}" for languages "${codes.join(', ')}" won't get resolved as namespace "${usedNS}" was not yet loaded`, 'This means something IS WRONG in your setup. You access the t function before i18next.init / i18next.loadNamespace / i18next.changeLanguage was done. Wait for the callback or Promise to resolve before accessing it!!!');
         }
@@ -33690,30 +33843,30 @@ class Translator extends EventEmitter {
           if (this.isValidLookup(found)) return;
           usedLng = code;
           const finalKeys = [key];
-          if (this.i18nFormat?.addLookupKeys) {
-            this.i18nFormat.addLookupKeys(finalKeys, key, code, ns, opt);
+          if (this.i18nFormat && this.i18nFormat.addLookupKeys) {
+            this.i18nFormat.addLookupKeys(finalKeys, key, code, ns, options);
           } else {
             let pluralSuffix;
-            if (needsPluralHandling) pluralSuffix = this.pluralResolver.getSuffix(code, opt.count, opt);
+            if (needsPluralHandling) pluralSuffix = this.pluralResolver.getSuffix(code, options.count, options);
             const zeroSuffix = `${this.options.pluralSeparator}zero`;
             const ordinalPrefix = `${this.options.pluralSeparator}ordinal${this.options.pluralSeparator}`;
             if (needsPluralHandling) {
-              if (opt.ordinal && pluralSuffix.indexOf(ordinalPrefix) === 0) {
+              finalKeys.push(key + pluralSuffix);
+              if (options.ordinal && pluralSuffix.indexOf(ordinalPrefix) === 0) {
                 finalKeys.push(key + pluralSuffix.replace(ordinalPrefix, this.options.pluralSeparator));
               }
-              finalKeys.push(key + pluralSuffix);
               if (needsZeroSuffixLookup) {
                 finalKeys.push(key + zeroSuffix);
               }
             }
             if (needsContextHandling) {
-              const contextKey = `${key}${this.options.contextSeparator || '_'}${opt.context}`;
+              const contextKey = `${key}${this.options.contextSeparator}${options.context}`;
               finalKeys.push(contextKey);
               if (needsPluralHandling) {
-                if (opt.ordinal && pluralSuffix.indexOf(ordinalPrefix) === 0) {
+                finalKeys.push(contextKey + pluralSuffix);
+                if (options.ordinal && pluralSuffix.indexOf(ordinalPrefix) === 0) {
                   finalKeys.push(contextKey + pluralSuffix.replace(ordinalPrefix, this.options.pluralSeparator));
                 }
-                finalKeys.push(contextKey + pluralSuffix);
                 if (needsZeroSuffixLookup) {
                   finalKeys.push(contextKey + zeroSuffix);
                 }
@@ -33724,7 +33877,7 @@ class Translator extends EventEmitter {
           while (possibleKey = finalKeys.pop()) {
             if (!this.isValidLookup(found)) {
               exactUsedKey = possibleKey;
-              found = this.getResource(code, ns, possibleKey, opt);
+              found = this.getResource(code, ns, possibleKey, options);
             }
           }
         });
@@ -33741,13 +33894,15 @@ class Translator extends EventEmitter {
   isValidLookup(res) {
     return res !== undefined && !(!this.options.returnNull && res === null) && !(!this.options.returnEmptyString && res === '');
   }
-  getResource(code, ns, key, options = {}) {
-    if (this.i18nFormat?.getResource) return this.i18nFormat.getResource(code, ns, key, options);
+  getResource(code, ns, key) {
+    let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    if (this.i18nFormat && this.i18nFormat.getResource) return this.i18nFormat.getResource(code, ns, key, options);
     return this.resourceStore.getResource(code, ns, key, options);
   }
-  getUsedParamsDetails(options = {}) {
+  getUsedParamsDetails() {
+    let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     const optionsKeys = ['defaultValue', 'ordinal', 'context', 'replace', 'lng', 'lngs', 'fallbackLng', 'ns', 'keySeparator', 'nsSeparator', 'returnObjects', 'returnDetails', 'joinArrays', 'postProcess', 'interpolation'];
-    const useOptionsReplaceForData = options.replace && !isString(options.replace);
+    const useOptionsReplaceForData = options.replace && typeof options.replace !== 'string';
     let data = useOptionsReplaceForData ? options.replace : options;
     if (useOptionsReplaceForData && typeof options.count !== 'undefined') {
       data.count = options.count;
@@ -33779,6 +33934,7 @@ class Translator extends EventEmitter {
   }
 }
 
+const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1);
 class LanguageUtil {
   constructor(options) {
     this.options = options;
@@ -33801,19 +33957,23 @@ class LanguageUtil {
     return this.formatLanguageCode(p[0]);
   }
   formatLanguageCode(code) {
-    if (isString(code) && code.indexOf('-') > -1) {
-      let formattedCode;
-      try {
-        formattedCode = Intl.getCanonicalLocales(code)[0];
-      } catch (e) {}
-      if (formattedCode && this.options.lowerCaseLng) {
-        formattedCode = formattedCode.toLowerCase();
-      }
-      if (formattedCode) return formattedCode;
+    if (typeof code === 'string' && code.indexOf('-') > -1) {
+      const specialCases = ['hans', 'hant', 'latn', 'cyrl', 'cans', 'mong', 'arab'];
+      let p = code.split('-');
       if (this.options.lowerCaseLng) {
-        return code.toLowerCase();
+        p = p.map(part => part.toLowerCase());
+      } else if (p.length === 2) {
+        p[0] = p[0].toLowerCase();
+        p[1] = p[1].toUpperCase();
+        if (specialCases.indexOf(p[1].toLowerCase()) > -1) p[1] = capitalize(p[1].toLowerCase());
+      } else if (p.length === 3) {
+        p[0] = p[0].toLowerCase();
+        if (p[1].length === 2) p[1] = p[1].toUpperCase();
+        if (p[0] !== 'sgn' && p[2].length === 2) p[2] = p[2].toUpperCase();
+        if (specialCases.indexOf(p[1].toLowerCase()) > -1) p[1] = capitalize(p[1].toLowerCase());
+        if (specialCases.indexOf(p[2].toLowerCase()) > -1) p[2] = capitalize(p[2].toLowerCase());
       }
-      return code;
+      return p.join('-');
     }
     return this.options.cleanCode || this.options.lowerCaseLng ? code.toLowerCase() : code;
   }
@@ -33834,8 +33994,6 @@ class LanguageUtil {
     if (!found && this.options.supportedLngs) {
       codes.forEach(code => {
         if (found) return;
-        const lngScOnly = this.getScriptPartFromCode(code);
-        if (this.isSupportedCode(lngScOnly)) return found = lngScOnly;
         const lngOnly = this.getLanguagePartFromCode(code);
         if (this.isSupportedCode(lngOnly)) return found = lngOnly;
         found = this.options.supportedLngs.find(supportedLng => {
@@ -33852,7 +34010,7 @@ class LanguageUtil {
   getFallbackCodes(fallbacks, code) {
     if (!fallbacks) return [];
     if (typeof fallbacks === 'function') fallbacks = fallbacks(code);
-    if (isString(fallbacks)) fallbacks = [fallbacks];
+    if (typeof fallbacks === 'string') fallbacks = [fallbacks];
     if (Array.isArray(fallbacks)) return fallbacks;
     if (!code) return fallbacks.default || [];
     let found = fallbacks[code];
@@ -33863,7 +34021,7 @@ class LanguageUtil {
     return found || [];
   }
   toResolveHierarchy(code, fallbackCode) {
-    const fallbackCodes = this.getFallbackCodes((fallbackCode === false ? [] : fallbackCode) || this.options.fallbackLng || [], code);
+    const fallbackCodes = this.getFallbackCodes(fallbackCode || this.options.fallbackLng || [], code);
     const codes = [];
     const addCode = c => {
       if (!c) return;
@@ -33873,11 +34031,11 @@ class LanguageUtil {
         this.logger.warn(`rejecting language code not found in supportedLngs: ${c}`);
       }
     };
-    if (isString(code) && (code.indexOf('-') > -1 || code.indexOf('_') > -1)) {
+    if (typeof code === 'string' && (code.indexOf('-') > -1 || code.indexOf('_') > -1)) {
       if (this.options.load !== 'languageOnly') addCode(this.formatLanguageCode(code));
       if (this.options.load !== 'languageOnly' && this.options.load !== 'currentOnly') addCode(this.getScriptPartFromCode(code));
       if (this.options.load !== 'currentOnly') addCode(this.getLanguagePartFromCode(code));
-    } else if (isString(code)) {
+    } else if (typeof code === 'string') {
       addCode(this.formatLanguageCode(code));
     }
     fallbackCodes.forEach(fc => {
@@ -33887,6 +34045,125 @@ class LanguageUtil {
   }
 }
 
+let sets = [{
+  lngs: ['ach', 'ak', 'am', 'arn', 'br', 'fil', 'gun', 'ln', 'mfe', 'mg', 'mi', 'oc', 'pt', 'pt-BR', 'tg', 'tl', 'ti', 'tr', 'uz', 'wa'],
+  nr: [1, 2],
+  fc: 1
+}, {
+  lngs: ['af', 'an', 'ast', 'az', 'bg', 'bn', 'ca', 'da', 'de', 'dev', 'el', 'en', 'eo', 'es', 'et', 'eu', 'fi', 'fo', 'fur', 'fy', 'gl', 'gu', 'ha', 'hi', 'hu', 'hy', 'ia', 'it', 'kk', 'kn', 'ku', 'lb', 'mai', 'ml', 'mn', 'mr', 'nah', 'nap', 'nb', 'ne', 'nl', 'nn', 'no', 'nso', 'pa', 'pap', 'pms', 'ps', 'pt-PT', 'rm', 'sco', 'se', 'si', 'so', 'son', 'sq', 'sv', 'sw', 'ta', 'te', 'tk', 'ur', 'yo'],
+  nr: [1, 2],
+  fc: 2
+}, {
+  lngs: ['ay', 'bo', 'cgg', 'fa', 'ht', 'id', 'ja', 'jbo', 'ka', 'km', 'ko', 'ky', 'lo', 'ms', 'sah', 'su', 'th', 'tt', 'ug', 'vi', 'wo', 'zh'],
+  nr: [1],
+  fc: 3
+}, {
+  lngs: ['be', 'bs', 'cnr', 'dz', 'hr', 'ru', 'sr', 'uk'],
+  nr: [1, 2, 5],
+  fc: 4
+}, {
+  lngs: ['ar'],
+  nr: [0, 1, 2, 3, 11, 100],
+  fc: 5
+}, {
+  lngs: ['cs', 'sk'],
+  nr: [1, 2, 5],
+  fc: 6
+}, {
+  lngs: ['csb', 'pl'],
+  nr: [1, 2, 5],
+  fc: 7
+}, {
+  lngs: ['cy'],
+  nr: [1, 2, 3, 8],
+  fc: 8
+}, {
+  lngs: ['fr'],
+  nr: [1, 2],
+  fc: 9
+}, {
+  lngs: ['ga'],
+  nr: [1, 2, 3, 7, 11],
+  fc: 10
+}, {
+  lngs: ['gd'],
+  nr: [1, 2, 3, 20],
+  fc: 11
+}, {
+  lngs: ['is'],
+  nr: [1, 2],
+  fc: 12
+}, {
+  lngs: ['jv'],
+  nr: [0, 1],
+  fc: 13
+}, {
+  lngs: ['kw'],
+  nr: [1, 2, 3, 4],
+  fc: 14
+}, {
+  lngs: ['lt'],
+  nr: [1, 2, 10],
+  fc: 15
+}, {
+  lngs: ['lv'],
+  nr: [1, 2, 0],
+  fc: 16
+}, {
+  lngs: ['mk'],
+  nr: [1, 2],
+  fc: 17
+}, {
+  lngs: ['mnk'],
+  nr: [0, 1, 2],
+  fc: 18
+}, {
+  lngs: ['mt'],
+  nr: [1, 2, 11, 20],
+  fc: 19
+}, {
+  lngs: ['or'],
+  nr: [2, 1],
+  fc: 2
+}, {
+  lngs: ['ro'],
+  nr: [1, 2, 20],
+  fc: 20
+}, {
+  lngs: ['sl'],
+  nr: [5, 1, 2, 3],
+  fc: 21
+}, {
+  lngs: ['he', 'iw'],
+  nr: [1, 2, 20, 21],
+  fc: 22
+}];
+let _rulesPluralsTypes = {
+  1: n => Number(n > 1),
+  2: n => Number(n != 1),
+  3: n => 0,
+  4: n => Number(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2),
+  5: n => Number(n == 0 ? 0 : n == 1 ? 1 : n == 2 ? 2 : n % 100 >= 3 && n % 100 <= 10 ? 3 : n % 100 >= 11 ? 4 : 5),
+  6: n => Number(n == 1 ? 0 : n >= 2 && n <= 4 ? 1 : 2),
+  7: n => Number(n == 1 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2),
+  8: n => Number(n == 1 ? 0 : n == 2 ? 1 : n != 8 && n != 11 ? 2 : 3),
+  9: n => Number(n >= 2),
+  10: n => Number(n == 1 ? 0 : n == 2 ? 1 : n < 7 ? 2 : n < 11 ? 3 : 4),
+  11: n => Number(n == 1 || n == 11 ? 0 : n == 2 || n == 12 ? 1 : n > 2 && n < 20 ? 2 : 3),
+  12: n => Number(n % 10 != 1 || n % 100 == 11),
+  13: n => Number(n !== 0),
+  14: n => Number(n == 1 ? 0 : n == 2 ? 1 : n == 3 ? 2 : 3),
+  15: n => Number(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2),
+  16: n => Number(n % 10 == 1 && n % 100 != 11 ? 0 : n !== 0 ? 1 : 2),
+  17: n => Number(n == 1 || n % 10 == 1 && n % 100 != 11 ? 0 : 1),
+  18: n => Number(n == 0 ? 0 : n == 1 ? 1 : 2),
+  19: n => Number(n == 1 ? 0 : n == 0 || n % 100 > 1 && n % 100 < 11 ? 1 : n % 100 > 10 && n % 100 < 20 ? 2 : 3),
+  20: n => Number(n == 1 ? 0 : n == 0 || n % 100 > 0 && n % 100 < 20 ? 1 : 2),
+  21: n => Number(n % 100 == 1 ? 1 : n % 100 == 2 ? 2 : n % 100 == 3 || n % 100 == 4 ? 3 : 0),
+  22: n => Number(n == 1 ? 0 : n == 2 ? 1 : (n < 0 || n > 10) && n % 10 == 0 ? 2 : 3)
+};
+const nonIntlVersions = ['v1', 'v2', 'v3'];
+const intlVersions = ['v4'];
 const suffixesOrder = {
   zero: 0,
   one: 1,
@@ -33895,17 +34172,29 @@ const suffixesOrder = {
   many: 4,
   other: 5
 };
-const dummyRule = {
-  select: count => count === 1 ? 'one' : 'other',
-  resolvedOptions: () => ({
-    pluralCategories: ['one', 'other']
-  })
+const createRules = () => {
+  const rules = {};
+  sets.forEach(set => {
+    set.lngs.forEach(l => {
+      rules[l] = {
+        numbers: set.nr,
+        plurals: _rulesPluralsTypes[set.fc]
+      };
+    });
+  });
+  return rules;
 };
 class PluralResolver {
-  constructor(languageUtils, options = {}) {
+  constructor(languageUtils) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     this.languageUtils = languageUtils;
     this.options = options;
     this.logger = baseLogger.create('pluralResolver');
+    if ((!this.options.compatibilityJSON || intlVersions.includes(this.options.compatibilityJSON)) && (typeof Intl === 'undefined' || !Intl.PluralRules)) {
+      this.options.compatibilityJSON = 'v3';
+      this.logger.error('Your environment seems not to be Intl API compatible, use an Intl.PluralRules polyfill. Will fallback to the compatibilityJSON v3 format handling.');
+    }
+    this.rules = createRules();
     this.pluralRulesCache = {};
   }
   addRule(lng, obj) {
@@ -33914,60 +34203,97 @@ class PluralResolver {
   clearCache() {
     this.pluralRulesCache = {};
   }
-  getRule(code, options = {}) {
-    const cleanedCode = getCleanedCode(code === 'dev' ? 'en' : code);
-    const type = options.ordinal ? 'ordinal' : 'cardinal';
-    const cacheKey = JSON.stringify({
-      cleanedCode,
-      type
-    });
-    if (cacheKey in this.pluralRulesCache) {
-      return this.pluralRulesCache[cacheKey];
-    }
-    let rule;
-    try {
-      rule = new Intl.PluralRules(cleanedCode, {
-        type
-      });
-    } catch (err) {
-      if (!Intl) {
-        this.logger.error('No Intl support, please use an Intl polyfill!');
-        return dummyRule;
+  getRule(code) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    if (this.shouldUseIntlApi()) {
+      try {
+        const cleanedCode = getCleanedCode(code === 'dev' ? 'en' : code);
+        const type = options.ordinal ? 'ordinal' : 'cardinal';
+        const cacheKey = JSON.stringify({
+          cleanedCode,
+          type
+        });
+        if (cacheKey in this.pluralRulesCache) {
+          return this.pluralRulesCache[cacheKey];
+        }
+        const rule = new Intl.PluralRules(cleanedCode, {
+          type
+        });
+        this.pluralRulesCache[cacheKey] = rule;
+        return rule;
+      } catch (err) {
+        return;
       }
-      if (!code.match(/-|_/)) return dummyRule;
-      const lngPart = this.languageUtils.getLanguagePartFromCode(code);
-      rule = this.getRule(lngPart, options);
     }
-    this.pluralRulesCache[cacheKey] = rule;
-    return rule;
+    return this.rules[code] || this.rules[this.languageUtils.getLanguagePartFromCode(code)];
   }
-  needsPlural(code, options = {}) {
-    let rule = this.getRule(code, options);
-    if (!rule) rule = this.getRule('dev', options);
-    return rule?.resolvedOptions().pluralCategories.length > 1;
+  needsPlural(code) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    const rule = this.getRule(code, options);
+    if (this.shouldUseIntlApi()) {
+      return rule && rule.resolvedOptions().pluralCategories.length > 1;
+    }
+    return rule && rule.numbers.length > 1;
   }
-  getPluralFormsOfKey(code, key, options = {}) {
+  getPluralFormsOfKey(code, key) {
+    let options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     return this.getSuffixes(code, options).map(suffix => `${key}${suffix}`);
   }
-  getSuffixes(code, options = {}) {
-    let rule = this.getRule(code, options);
-    if (!rule) rule = this.getRule('dev', options);
-    if (!rule) return [];
-    return rule.resolvedOptions().pluralCategories.sort((pluralCategory1, pluralCategory2) => suffixesOrder[pluralCategory1] - suffixesOrder[pluralCategory2]).map(pluralCategory => `${this.options.prepend}${options.ordinal ? `ordinal${this.options.prepend}` : ''}${pluralCategory}`);
+  getSuffixes(code) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    const rule = this.getRule(code, options);
+    if (!rule) {
+      return [];
+    }
+    if (this.shouldUseIntlApi()) {
+      return rule.resolvedOptions().pluralCategories.sort((pluralCategory1, pluralCategory2) => suffixesOrder[pluralCategory1] - suffixesOrder[pluralCategory2]).map(pluralCategory => `${this.options.prepend}${options.ordinal ? `ordinal${this.options.prepend}` : ''}${pluralCategory}`);
+    }
+    return rule.numbers.map(number => this.getSuffix(code, number, options));
   }
-  getSuffix(code, count, options = {}) {
+  getSuffix(code, count) {
+    let options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     const rule = this.getRule(code, options);
     if (rule) {
-      return `${this.options.prepend}${options.ordinal ? `ordinal${this.options.prepend}` : ''}${rule.select(count)}`;
+      if (this.shouldUseIntlApi()) {
+        return `${this.options.prepend}${options.ordinal ? `ordinal${this.options.prepend}` : ''}${rule.select(count)}`;
+      }
+      return this.getSuffixRetroCompatible(rule, count);
     }
     this.logger.warn(`no plural rule found for: ${code}`);
-    return this.getSuffix('dev', count, options);
+    return '';
+  }
+  getSuffixRetroCompatible(rule, count) {
+    const idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
+    let suffix = rule.numbers[idx];
+    if (this.options.simplifyPluralSuffix && rule.numbers.length === 2 && rule.numbers[0] === 1) {
+      if (suffix === 2) {
+        suffix = 'plural';
+      } else if (suffix === 1) {
+        suffix = '';
+      }
+    }
+    const returnSuffix = () => this.options.prepend && suffix.toString() ? this.options.prepend + suffix.toString() : suffix.toString();
+    if (this.options.compatibilityJSON === 'v1') {
+      if (suffix === 1) return '';
+      if (typeof suffix === 'number') return `_plural_${suffix.toString()}`;
+      return returnSuffix();
+    } else if (this.options.compatibilityJSON === 'v2') {
+      return returnSuffix();
+    } else if (this.options.simplifyPluralSuffix && rule.numbers.length === 2 && rule.numbers[0] === 1) {
+      return returnSuffix();
+    }
+    return this.options.prepend && idx.toString() ? this.options.prepend + idx.toString() : idx.toString();
+  }
+  shouldUseIntlApi() {
+    return !nonIntlVersions.includes(this.options.compatibilityJSON);
   }
 }
 
-const deepFindWithDefaults = (data, defaultData, key, keySeparator = '.', ignoreJSONStructure = true) => {
+const deepFindWithDefaults = function (data, defaultData, key) {
+  let keySeparator = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '.';
+  let ignoreJSONStructure = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
   let path = getPathWithDefaults(data, defaultData, key);
-  if (!path && ignoreJSONStructure && isString(key)) {
+  if (!path && ignoreJSONStructure && typeof key === 'string') {
     path = deepFind(data, key, keySeparator);
     if (path === undefined) path = deepFind(defaultData, key, keySeparator);
   }
@@ -33975,13 +34301,15 @@ const deepFindWithDefaults = (data, defaultData, key, keySeparator = '.', ignore
 };
 const regexSafe = val => val.replace(/\$/g, '$$$$');
 class Interpolator {
-  constructor(options = {}) {
+  constructor() {
+    let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     this.logger = baseLogger.create('interpolator');
     this.options = options;
-    this.format = options?.interpolation?.format || (value => value);
+    this.format = options.interpolation && options.interpolation.format || (value => value);
     this.init(options);
   }
-  init(options = {}) {
+  init() {
+    let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     if (!options.interpolation) options.interpolation = {
       escapeValue: true
     };
@@ -34024,7 +34352,7 @@ class Interpolator {
   }
   resetRegExp() {
     const getOrResetRegExp = (existingRegExp, pattern) => {
-      if (existingRegExp?.source === pattern) {
+      if (existingRegExp && existingRegExp.source === pattern) {
         existingRegExp.lastIndex = 0;
         return existingRegExp;
       }
@@ -34032,7 +34360,7 @@ class Interpolator {
     };
     this.regexp = getOrResetRegExp(this.regexp, `${this.prefix}(.+?)${this.suffix}`);
     this.regexpUnescape = getOrResetRegExp(this.regexpUnescape, `${this.prefix}${this.unescapePrefix}(.+?)${this.unescapeSuffix}${this.suffix}`);
-    this.nestingRegexp = getOrResetRegExp(this.nestingRegexp, `${this.nestingPrefix}((?:[^()"']+|"[^"]*"|'[^']*'|\\((?:[^()]|"[^"]*"|'[^']*')*\\))*?)${this.nestingSuffix}`);
+    this.nestingRegexp = getOrResetRegExp(this.nestingRegexp, `${this.nestingPrefix}(.+?)${this.nestingSuffix}`);
   }
   interpolate(str, data, lng, options) {
     let match;
@@ -34058,8 +34386,8 @@ class Interpolator {
       });
     };
     this.resetRegExp();
-    const missingInterpolationHandler = options?.missingInterpolationHandler || this.options.missingInterpolationHandler;
-    const skipOnVariables = options?.interpolation?.skipOnVariables !== undefined ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables;
+    const missingInterpolationHandler = options && options.missingInterpolationHandler || this.options.missingInterpolationHandler;
+    const skipOnVariables = options && options.interpolation && options.interpolation.skipOnVariables !== undefined ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables;
     const todos = [{
       regex: this.regexpUnescape,
       safeValue: val => regexSafe(val)
@@ -34075,7 +34403,7 @@ class Interpolator {
         if (value === undefined) {
           if (typeof missingInterpolationHandler === 'function') {
             const temp = missingInterpolationHandler(str, match, options);
-            value = isString(temp) ? temp : '';
+            value = typeof temp === 'string' ? temp : '';
           } else if (options && Object.prototype.hasOwnProperty.call(options, matchedVar)) {
             value = '';
           } else if (skipOnVariables) {
@@ -34085,7 +34413,7 @@ class Interpolator {
             this.logger.warn(`missed to pass in variable ${matchedVar} for interpolating ${str}`);
             value = '';
           }
-        } else if (!isString(value) && !this.useRawValueToEscape) {
+        } else if (typeof value !== 'string' && !this.useRawValueToEscape) {
           value = makeString(value);
         }
         const safeValue = todo.safeValue(value);
@@ -34104,7 +34432,8 @@ class Interpolator {
     });
     return str;
   }
-  nest(str, fc, options = {}) {
+  nest(str, fc) {
+    let options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     let match;
     let value;
     let clonedOptions;
@@ -34117,7 +34446,7 @@ class Interpolator {
       optionsString = this.interpolate(optionsString, clonedOptions);
       const matchedSingleQuotes = optionsString.match(/'/g);
       const matchedDoubleQuotes = optionsString.match(/"/g);
-      if ((matchedSingleQuotes?.length ?? 0) % 2 === 0 && !matchedDoubleQuotes || matchedDoubleQuotes.length % 2 !== 0) {
+      if (matchedSingleQuotes && matchedSingleQuotes.length % 2 === 0 && !matchedDoubleQuotes || matchedDoubleQuotes.length % 2 !== 0) {
         optionsString = optionsString.replace(/'/g, '"');
       }
       try {
@@ -34138,22 +34467,24 @@ class Interpolator {
       clonedOptions = {
         ...options
       };
-      clonedOptions = clonedOptions.replace && !isString(clonedOptions.replace) ? clonedOptions.replace : clonedOptions;
+      clonedOptions = clonedOptions.replace && typeof clonedOptions.replace !== 'string' ? clonedOptions.replace : clonedOptions;
       clonedOptions.applyPostProcessor = false;
       delete clonedOptions.defaultValue;
-      const keyEndIndex = /{.*}/.test(match[1]) ? match[1].lastIndexOf('}') + 1 : match[1].indexOf(this.formatSeparator);
-      if (keyEndIndex !== -1) {
-        formatters = match[1].slice(keyEndIndex).split(this.formatSeparator).map(elem => elem.trim()).filter(Boolean);
-        match[1] = match[1].slice(0, keyEndIndex);
+      let doReduce = false;
+      if (match[0].indexOf(this.formatSeparator) !== -1 && !/{.*}/.test(match[1])) {
+        const r = match[1].split(this.formatSeparator).map(elem => elem.trim());
+        match[1] = r.shift();
+        formatters = r;
+        doReduce = true;
       }
       value = fc(handleHasOptions.call(this, match[1].trim(), clonedOptions), clonedOptions);
-      if (value && match[0] === str && !isString(value)) return value;
-      if (!isString(value)) value = makeString(value);
+      if (value && match[0] === str && typeof value !== 'string') return value;
+      if (typeof value !== 'string') value = makeString(value);
       if (!value) {
         this.logger.warn(`missed to resolve ${match[1]} for nesting ${str}`);
         value = '';
       }
-      if (formatters.length) {
+      if (doReduce) {
         value = formatters.reduce((v, f) => this.format(v, f, options.lng, {
           ...options,
           interpolationkey: match[1].trim()
@@ -34199,68 +34530,69 @@ const parseFormatStr = formatStr => {
 };
 const createCachedFormatter = fn => {
   const cache = {};
-  return (v, l, o) => {
-    let optForCache = o;
-    if (o && o.interpolationkey && o.formatParams && o.formatParams[o.interpolationkey] && o[o.interpolationkey]) {
+  return (val, lng, options) => {
+    let optForCache = options;
+    if (options && options.interpolationkey && options.formatParams && options.formatParams[options.interpolationkey] && options[options.interpolationkey]) {
       optForCache = {
         ...optForCache,
-        [o.interpolationkey]: undefined
+        [options.interpolationkey]: undefined
       };
     }
-    const key = l + JSON.stringify(optForCache);
-    let frm = cache[key];
-    if (!frm) {
-      frm = fn(getCleanedCode(l), o);
-      cache[key] = frm;
+    const key = lng + JSON.stringify(optForCache);
+    let formatter = cache[key];
+    if (!formatter) {
+      formatter = fn(getCleanedCode(lng), options);
+      cache[key] = formatter;
     }
-    return frm(v);
+    return formatter(val);
   };
 };
-const createNonCachedFormatter = fn => (v, l, o) => fn(getCleanedCode(l), o)(v);
 class Formatter {
-  constructor(options = {}) {
+  constructor() {
+    let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     this.logger = baseLogger.create('formatter');
     this.options = options;
-    this.init(options);
-  }
-  init(services, options = {
-    interpolation: {}
-  }) {
-    this.formatSeparator = options.interpolation.formatSeparator || ',';
-    const cf = options.cacheInBuiltFormats ? createCachedFormatter : createNonCachedFormatter;
     this.formats = {
-      number: cf((lng, opt) => {
+      number: createCachedFormatter((lng, opt) => {
         const formatter = new Intl.NumberFormat(lng, {
           ...opt
         });
         return val => formatter.format(val);
       }),
-      currency: cf((lng, opt) => {
+      currency: createCachedFormatter((lng, opt) => {
         const formatter = new Intl.NumberFormat(lng, {
           ...opt,
           style: 'currency'
         });
         return val => formatter.format(val);
       }),
-      datetime: cf((lng, opt) => {
+      datetime: createCachedFormatter((lng, opt) => {
         const formatter = new Intl.DateTimeFormat(lng, {
           ...opt
         });
         return val => formatter.format(val);
       }),
-      relativetime: cf((lng, opt) => {
+      relativetime: createCachedFormatter((lng, opt) => {
         const formatter = new Intl.RelativeTimeFormat(lng, {
           ...opt
         });
         return val => formatter.format(val, opt.range || 'day');
       }),
-      list: cf((lng, opt) => {
+      list: createCachedFormatter((lng, opt) => {
         const formatter = new Intl.ListFormat(lng, {
           ...opt
         });
         return val => formatter.format(val);
       })
     };
+    this.init(options);
+  }
+  init(services) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
+      interpolation: {}
+    };
+    const iOpts = options.interpolation;
+    this.formatSeparator = iOpts.formatSeparator ? iOpts.formatSeparator : iOpts.formatSeparator || ',';
   }
   add(name, fc) {
     this.formats[name.toLowerCase().trim()] = fc;
@@ -34268,7 +34600,8 @@ class Formatter {
   addCached(name, fc) {
     this.formats[name.toLowerCase().trim()] = createCachedFormatter(fc);
   }
-  format(value, format, lng, options = {}) {
+  format(value, format, lng) {
+    let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
     const formats = format.split(this.formatSeparator);
     if (formats.length > 1 && formats[0].indexOf('(') > 1 && formats[0].indexOf(')') < 0 && formats.find(f => f.indexOf(')') > -1)) {
       const lastIndex = formats.findIndex(f => f.indexOf(')') > -1);
@@ -34282,7 +34615,7 @@ class Formatter {
       if (this.formats[formatName]) {
         let formatted = mem;
         try {
-          const valOptions = options?.formatParams?.[options.interpolationkey] || {};
+          const valOptions = options && options.formatParams && options.formatParams[options.interpolationkey] || {};
           const l = valOptions.locale || valOptions.lng || options.locale || options.lng || lng;
           formatted = this.formats[formatName](mem, l, {
             ...formatOptions,
@@ -34309,7 +34642,8 @@ const removePending = (q, name) => {
   }
 };
 class Connector extends EventEmitter {
-  constructor(backend, store, services, options = {}) {
+  constructor(backend, store, services) {
+    let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
     super();
     this.backend = backend;
     this.store = store;
@@ -34324,7 +34658,9 @@ class Connector extends EventEmitter {
     this.retryTimeout = options.retryTimeout >= 1 ? options.retryTimeout : 350;
     this.state = {};
     this.queue = [];
-    this.backend?.init?.(services, options.backend, options);
+    if (this.backend && this.backend.init) {
+      this.backend.init(services, options.backend, options);
+    }
   }
   queueLoad(languages, namespaces, options, callback) {
     const toLoad = {};
@@ -34403,7 +34739,10 @@ class Connector extends EventEmitter {
     this.emit('loaded', loaded);
     this.queue = this.queue.filter(q => !q.done);
   }
-  read(lng, ns, fcName, tried = 0, wait = this.retryTimeout, callback) {
+  read(lng, ns, fcName) {
+    let tried = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+    let wait = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : this.retryTimeout;
+    let callback = arguments.length > 5 ? arguments[5] : undefined;
     if (!lng.length) return callback(null, {});
     if (this.readingCalls >= this.maxParallelReads) {
       this.waitingReads.push({
@@ -34447,13 +34786,15 @@ class Connector extends EventEmitter {
     }
     return fc(lng, ns, resolver);
   }
-  prepareLoading(languages, namespaces, options = {}, callback) {
+  prepareLoading(languages, namespaces) {
+    let options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    let callback = arguments.length > 3 ? arguments[3] : undefined;
     if (!this.backend) {
       this.logger.warn('No backend was added via i18next.use. Will not load resources.');
       return callback && callback();
     }
-    if (isString(languages)) languages = this.languageUtils.toResolveHierarchy(languages);
-    if (isString(namespaces)) namespaces = [namespaces];
+    if (typeof languages === 'string') languages = this.languageUtils.toResolveHierarchy(languages);
+    if (typeof namespaces === 'string') namespaces = [namespaces];
     const toLoad = this.queueLoad(languages, namespaces, options, callback);
     if (!toLoad.toLoad.length) {
       if (!toLoad.pending.length) callback();
@@ -34471,7 +34812,8 @@ class Connector extends EventEmitter {
       reload: true
     }, callback);
   }
-  loadOne(name, prefix = '') {
+  loadOne(name) {
+    let prefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
     const s = name.split('|');
     const lng = s[0];
     const ns = s[1];
@@ -34481,13 +34823,15 @@ class Connector extends EventEmitter {
       this.loaded(name, err, data);
     });
   }
-  saveMissing(languages, namespace, key, fallbackValue, isUpdate, options = {}, clb = () => {}) {
-    if (this.services?.utils?.hasLoadedNamespace && !this.services?.utils?.hasLoadedNamespace(namespace)) {
+  saveMissing(languages, namespace, key, fallbackValue, isUpdate) {
+    let options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
+    let clb = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : () => {};
+    if (this.services.utils && this.services.utils.hasLoadedNamespace && !this.services.utils.hasLoadedNamespace(namespace)) {
       this.logger.warn(`did not save key "${key}" as the namespace "${namespace}" was not yet loaded`, 'This means something IS WRONG in your setup. You access the t function before i18next.init / i18next.loadNamespace / i18next.changeLanguage was done. Wait for the callback or Promise to resolve before accessing it!!!');
       return;
     }
     if (key === undefined || key === null || key === '') return;
-    if (this.backend?.create) {
+    if (this.backend && this.backend.create) {
       const opts = {
         ...options,
         isUpdate
@@ -34520,7 +34864,7 @@ class Connector extends EventEmitter {
 
 const get = () => ({
   debug: false,
-  initAsync: true,
+  initImmediate: true,
   ns: ['translation'],
   defaultNS: ['translation'],
   fallbackLng: ['dev'],
@@ -34554,8 +34898,8 @@ const get = () => ({
   overloadTranslationOptionHandler: args => {
     let ret = {};
     if (typeof args[1] === 'object') ret = args[1];
-    if (isString(args[1])) ret.defaultValue = args[1];
-    if (isString(args[2])) ret.tDescription = args[2];
+    if (typeof args[1] === 'string') ret.defaultValue = args[1];
+    if (typeof args[2] === 'string') ret.tDescription = args[2];
     if (typeof args[2] === 'object' || typeof args[3] === 'object') {
       const options = args[3] || args[2];
       Object.keys(options).forEach(key => {
@@ -34576,17 +34920,15 @@ const get = () => ({
     nestingOptionsSeparator: ',',
     maxReplaces: 1000,
     skipOnVariables: true
-  },
-  cacheInBuiltFormats: true
+  }
 });
 const transformOptions = options => {
-  if (isString(options.ns)) options.ns = [options.ns];
-  if (isString(options.fallbackLng)) options.fallbackLng = [options.fallbackLng];
-  if (isString(options.fallbackNS)) options.fallbackNS = [options.fallbackNS];
-  if (options.supportedLngs?.indexOf?.('cimode') < 0) {
+  if (typeof options.ns === 'string') options.ns = [options.ns];
+  if (typeof options.fallbackLng === 'string') options.fallbackLng = [options.fallbackLng];
+  if (typeof options.fallbackNS === 'string') options.fallbackNS = [options.fallbackNS];
+  if (options.supportedLngs && options.supportedLngs.indexOf('cimode') < 0) {
     options.supportedLngs = options.supportedLngs.concat(['cimode']);
   }
-  if (typeof options.initImmediate === 'boolean') options.initAsync = options.initImmediate;
   return options;
 };
 
@@ -34600,7 +34942,9 @@ const bindMemberFunctions = inst => {
   });
 };
 class I18n extends EventEmitter {
-  constructor(options = {}, callback) {
+  constructor() {
+    let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    let callback = arguments.length > 1 ? arguments[1] : undefined;
     super();
     this.options = transformOptions(options);
     this.services = {};
@@ -34610,7 +34954,7 @@ class I18n extends EventEmitter {
     };
     bindMemberFunctions(this);
     if (callback && !this.isInitialized && !options.isClone) {
-      if (!this.options.initAsync) {
+      if (!this.options.initImmediate) {
         this.init(options, callback);
         return this;
       }
@@ -34619,14 +34963,17 @@ class I18n extends EventEmitter {
       }, 0);
     }
   }
-  init(options = {}, callback) {
+  init() {
+    var _this = this;
+    let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    let callback = arguments.length > 1 ? arguments[1] : undefined;
     this.isInitializing = true;
     if (typeof options === 'function') {
       callback = options;
       options = {};
     }
-    if (options.defaultNS == null && options.ns) {
-      if (isString(options.ns)) {
+    if (!options.defaultNS && options.defaultNS !== false && options.ns) {
+      if (typeof options.ns === 'string') {
         options.defaultNS = options.ns;
       } else if (options.ns.indexOf('translation') < 0) {
         options.defaultNS = options.ns[0];
@@ -34638,10 +34985,12 @@ class I18n extends EventEmitter {
       ...this.options,
       ...transformOptions(options)
     };
-    this.options.interpolation = {
-      ...defOpts.interpolation,
-      ...this.options.interpolation
-    };
+    if (this.options.compatibilityAPI !== 'v1') {
+      this.options.interpolation = {
+        ...defOpts.interpolation,
+        ...this.options.interpolation
+      };
+    }
     if (options.keySeparator !== undefined) {
       this.options.userDefinedKeySeparator = options.keySeparator;
     }
@@ -34662,7 +35011,7 @@ class I18n extends EventEmitter {
       let formatter;
       if (this.modules.formatter) {
         formatter = this.modules.formatter;
-      } else {
+      } else if (typeof Intl !== 'undefined') {
         formatter = Formatter;
       }
       const lu = new LanguageUtil(this.options);
@@ -34673,15 +35022,12 @@ class I18n extends EventEmitter {
       s.languageUtils = lu;
       s.pluralResolver = new PluralResolver(lu, {
         prepend: this.options.pluralSeparator,
+        compatibilityJSON: this.options.compatibilityJSON,
         simplifyPluralSuffix: this.options.simplifyPluralSuffix
       });
-      const usingLegacyFormatFunction = this.options.interpolation.format && this.options.interpolation.format !== defOpts.interpolation.format;
-      if (usingLegacyFormatFunction) {
-        this.logger.deprecate(`init: you are still using the legacy format function, please use the new approach: https://www.i18next.com/translation-function/formatting`);
-      }
       if (formatter && (!this.options.interpolation.format || this.options.interpolation.format === defOpts.interpolation.format)) {
         s.formatter = createClassOnDemand(formatter);
-        if (s.formatter.init) s.formatter.init(s, this.options);
+        s.formatter.init(s, this.options);
         this.options.interpolation.format = s.formatter.format.bind(s.formatter);
       }
       s.interpolator = new Interpolator(this.options);
@@ -34689,8 +35035,11 @@ class I18n extends EventEmitter {
         hasLoadedNamespace: this.hasLoadedNamespace.bind(this)
       };
       s.backendConnector = new Connector(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
-      s.backendConnector.on('*', (event, ...args) => {
-        this.emit(event, ...args);
+      s.backendConnector.on('*', function (event) {
+        for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+          args[_key - 1] = arguments[_key];
+        }
+        _this.emit(event, ...args);
       });
       if (this.modules.languageDetector) {
         s.languageDetector = createClassOnDemand(this.modules.languageDetector);
@@ -34701,8 +35050,11 @@ class I18n extends EventEmitter {
         if (s.i18nFormat.init) s.i18nFormat.init(this);
       }
       this.translator = new Translator(this.services, this.options);
-      this.translator.on('*', (event, ...args) => {
-        this.emit(event, ...args);
+      this.translator.on('*', function (event) {
+        for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+          args[_key2 - 1] = arguments[_key2];
+        }
+        _this.emit(event, ...args);
       });
       this.modules.external.forEach(m => {
         if (m.init) m.init(this);
@@ -34719,13 +35071,15 @@ class I18n extends EventEmitter {
     }
     const storeApi = ['getResource', 'hasResourceBundle', 'getResourceBundle', 'getDataByLanguage'];
     storeApi.forEach(fcName => {
-      this[fcName] = (...args) => this.store[fcName](...args);
+      this[fcName] = function () {
+        return _this.store[fcName](...arguments);
+      };
     });
     const storeApiChained = ['addResource', 'addResources', 'addResourceBundle', 'removeResourceBundle'];
     storeApiChained.forEach(fcName => {
-      this[fcName] = (...args) => {
-        this.store[fcName](...args);
-        return this;
+      this[fcName] = function () {
+        _this.store[fcName](...arguments);
+        return _this;
       };
     });
     const deferred = defer();
@@ -34739,22 +35093,23 @@ class I18n extends EventEmitter {
         deferred.resolve(t);
         callback(err, t);
       };
-      if (this.languages && !this.isInitialized) return finish(null, this.t.bind(this));
+      if (this.languages && this.options.compatibilityAPI !== 'v1' && !this.isInitialized) return finish(null, this.t.bind(this));
       this.changeLanguage(this.options.lng, finish);
     };
-    if (this.options.resources || !this.options.initAsync) {
+    if (this.options.resources || !this.options.initImmediate) {
       load();
     } else {
       setTimeout(load, 0);
     }
     return deferred;
   }
-  loadResources(language, callback = noop) {
+  loadResources(language) {
+    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop;
     let usedCallback = callback;
-    const usedLng = isString(language) ? language : this.language;
+    const usedLng = typeof language === 'string' ? language : this.language;
     if (typeof language === 'function') usedCallback = language;
     if (!this.options.resources || this.options.partialBundledLanguages) {
-      if (usedLng?.toLowerCase() === 'cimode' && (!this.options.preload || this.options.preload.length === 0)) return usedCallback();
+      if (usedLng && usedLng.toLowerCase() === 'cimode' && (!this.options.preload || this.options.preload.length === 0)) return usedCallback();
       const toLoad = [];
       const append = lng => {
         if (!lng) return;
@@ -34771,7 +35126,9 @@ class I18n extends EventEmitter {
       } else {
         append(usedLng);
       }
-      this.options.preload?.forEach?.(l => append(l));
+      if (this.options.preload) {
+        this.options.preload.forEach(l => append(l));
+      }
       this.services.backendConnector.load(toLoad, this.options.ns, e => {
         if (!e && !this.resolvedLanguage && this.language) this.setResolvedLanguage(this.language);
         usedCallback(e);
@@ -34836,12 +35193,9 @@ class I18n extends EventEmitter {
         break;
       }
     }
-    if (!this.resolvedLanguage && this.languages.indexOf(l) < 0 && this.store.hasLanguageSomeTranslations(l)) {
-      this.resolvedLanguage = l;
-      this.languages.unshift(l);
-    }
   }
   changeLanguage(lng, callback) {
+    var _this2 = this;
     this.isLanguageChangingTo = lng;
     const deferred = defer();
     this.emit('languageChanging', lng);
@@ -34853,29 +35207,30 @@ class I18n extends EventEmitter {
     };
     const done = (err, l) => {
       if (l) {
-        if (this.isLanguageChangingTo === lng) {
-          setLngProps(l);
-          this.translator.changeLanguage(l);
-          this.isLanguageChangingTo = undefined;
-          this.emit('languageChanged', l);
-          this.logger.log('languageChanged', l);
-        }
+        setLngProps(l);
+        this.translator.changeLanguage(l);
+        this.isLanguageChangingTo = undefined;
+        this.emit('languageChanged', l);
+        this.logger.log('languageChanged', l);
       } else {
         this.isLanguageChangingTo = undefined;
       }
-      deferred.resolve((...args) => this.t(...args));
-      if (callback) callback(err, (...args) => this.t(...args));
+      deferred.resolve(function () {
+        return _this2.t(...arguments);
+      });
+      if (callback) callback(err, function () {
+        return _this2.t(...arguments);
+      });
     };
     const setLng = lngs => {
       if (!lng && !lngs && this.services.languageDetector) lngs = [];
-      const fl = isString(lngs) ? lngs : lngs && lngs[0];
-      const l = this.store.hasLanguageSomeTranslations(fl) ? fl : this.services.languageUtils.getBestMatchFromCodes(isString(lngs) ? [lngs] : lngs);
+      const l = typeof lngs === 'string' ? lngs : this.services.languageUtils.getBestMatchFromCodes(lngs);
       if (l) {
         if (!this.language) {
           setLngProps(l);
         }
         if (!this.translator.language) this.translator.changeLanguage(l);
-        this.services.languageDetector?.cacheUserLanguage?.(l);
+        if (this.services.languageDetector && this.services.languageDetector.cacheUserLanguage) this.services.languageDetector.cacheUserLanguage(l);
       }
       this.loadResources(l, err => {
         done(err, l);
@@ -34895,39 +35250,33 @@ class I18n extends EventEmitter {
     return deferred;
   }
   getFixedT(lng, ns, keyPrefix) {
-    const fixedT = (key, opts, ...rest) => {
-      let o;
+    var _this3 = this;
+    const fixedT = function (key, opts) {
+      let options;
       if (typeof opts !== 'object') {
-        o = this.options.overloadTranslationOptionHandler([key, opts].concat(rest));
+        for (var _len3 = arguments.length, rest = new Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
+          rest[_key3 - 2] = arguments[_key3];
+        }
+        options = _this3.options.overloadTranslationOptionHandler([key, opts].concat(rest));
       } else {
-        o = {
+        options = {
           ...opts
         };
       }
-      o.lng = o.lng || fixedT.lng;
-      o.lngs = o.lngs || fixedT.lngs;
-      o.ns = o.ns || fixedT.ns;
-      if (o.keyPrefix !== '') o.keyPrefix = o.keyPrefix || keyPrefix || fixedT.keyPrefix;
-      const keySeparator = this.options.keySeparator || '.';
+      options.lng = options.lng || fixedT.lng;
+      options.lngs = options.lngs || fixedT.lngs;
+      options.ns = options.ns || fixedT.ns;
+      if (options.keyPrefix !== '') options.keyPrefix = options.keyPrefix || keyPrefix || fixedT.keyPrefix;
+      const keySeparator = _this3.options.keySeparator || '.';
       let resultKey;
-      if (o.keyPrefix && Array.isArray(key)) {
-        resultKey = key.map(k => {
-          if (typeof k === 'function') k = keysFromSelector(k, {
-            ...this.options,
-            ...opts
-          });
-          return `${o.keyPrefix}${keySeparator}${k}`;
-        });
+      if (options.keyPrefix && Array.isArray(key)) {
+        resultKey = key.map(k => `${options.keyPrefix}${keySeparator}${k}`);
       } else {
-        if (typeof key === 'function') key = keysFromSelector(key, {
-          ...this.options,
-          ...opts
-        });
-        resultKey = o.keyPrefix ? `${o.keyPrefix}${keySeparator}${key}` : key;
+        resultKey = options.keyPrefix ? `${options.keyPrefix}${keySeparator}${key}` : key;
       }
-      return this.t(resultKey, o);
+      return _this3.t(resultKey, options);
     };
-    if (isString(lng)) {
+    if (typeof lng === 'string') {
       fixedT.lng = lng;
     } else {
       fixedT.lngs = lng;
@@ -34936,16 +35285,17 @@ class I18n extends EventEmitter {
     fixedT.keyPrefix = keyPrefix;
     return fixedT;
   }
-  t(...args) {
-    return this.translator?.translate(...args);
+  t() {
+    return this.translator && this.translator.translate(...arguments);
   }
-  exists(...args) {
-    return this.translator?.exists(...args);
+  exists() {
+    return this.translator && this.translator.exists(...arguments);
   }
   setDefaultNamespace(ns) {
     this.options.defaultNS = ns;
   }
-  hasLoadedNamespace(ns, options = {}) {
+  hasLoadedNamespace(ns) {
+    let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     if (!this.isInitialized) {
       this.logger.warn('hasLoadedNamespace: i18next was not initialized', this.languages);
       return false;
@@ -34977,7 +35327,7 @@ class I18n extends EventEmitter {
       if (callback) callback();
       return Promise.resolve();
     }
-    if (isString(ns)) ns = [ns];
+    if (typeof ns === 'string') ns = [ns];
     ns.forEach(n => {
       if (this.options.ns.indexOf(n) < 0) this.options.ns.push(n);
     });
@@ -34989,7 +35339,7 @@ class I18n extends EventEmitter {
   }
   loadLanguages(lngs, callback) {
     const deferred = defer();
-    if (isString(lngs)) lngs = [lngs];
+    if (typeof lngs === 'string') lngs = [lngs];
     const preloaded = this.options.preload || [];
     const newLngs = lngs.filter(lng => preloaded.indexOf(lng) < 0 && this.services.languageUtils.isSupportedCode(lng));
     if (!newLngs.length) {
@@ -35004,26 +35354,20 @@ class I18n extends EventEmitter {
     return deferred;
   }
   dir(lng) {
-    if (!lng) lng = this.resolvedLanguage || (this.languages?.length > 0 ? this.languages[0] : this.language);
+    if (!lng) lng = this.resolvedLanguage || (this.languages && this.languages.length > 0 ? this.languages[0] : this.language);
     if (!lng) return 'rtl';
-    try {
-      const l = new Intl.Locale(lng);
-      if (l && l.getTextInfo) {
-        const ti = l.getTextInfo();
-        if (ti && ti.direction) return ti.direction;
-      }
-    } catch (e) {}
     const rtlLngs = ['ar', 'shu', 'sqr', 'ssh', 'xaa', 'yhd', 'yud', 'aao', 'abh', 'abv', 'acm', 'acq', 'acw', 'acx', 'acy', 'adf', 'ads', 'aeb', 'aec', 'afb', 'ajp', 'apc', 'apd', 'arb', 'arq', 'ars', 'ary', 'arz', 'auz', 'avl', 'ayh', 'ayl', 'ayn', 'ayp', 'bbz', 'pga', 'he', 'iw', 'ps', 'pbt', 'pbu', 'pst', 'prp', 'prd', 'ug', 'ur', 'ydd', 'yds', 'yih', 'ji', 'yi', 'hbo', 'men', 'xmn', 'fa', 'jpr', 'peo', 'pes', 'prs', 'dv', 'sam', 'ckb'];
-    const languageUtils = this.services?.languageUtils || new LanguageUtil(get());
-    if (lng.toLowerCase().indexOf('-latn') > 1) return 'ltr';
+    const languageUtils = this.services && this.services.languageUtils || new LanguageUtil(get());
     return rtlLngs.indexOf(languageUtils.getLanguagePartFromCode(lng)) > -1 || lng.toLowerCase().indexOf('-arab') > 1 ? 'rtl' : 'ltr';
   }
-  static createInstance(options = {}, callback) {
-    const instance = new I18n(options, callback);
-    instance.createInstance = I18n.createInstance;
-    return instance;
+  static createInstance() {
+    let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    let callback = arguments.length > 1 ? arguments[1] : undefined;
+    return new I18n(options, callback);
   }
-  cloneInstance(options = {}, callback = noop) {
+  cloneInstance() {
+    let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop;
     const forkResourceStore = options.forkResourceStore;
     if (forkResourceStore) delete options.forkResourceStore;
     const mergedOptions = {
@@ -35048,23 +35392,14 @@ class I18n extends EventEmitter {
       hasLoadedNamespace: clone.hasLoadedNamespace.bind(clone)
     };
     if (forkResourceStore) {
-      const clonedData = Object.keys(this.store.data).reduce((prev, l) => {
-        prev[l] = {
-          ...this.store.data[l]
-        };
-        prev[l] = Object.keys(prev[l]).reduce((acc, n) => {
-          acc[n] = {
-            ...prev[l][n]
-          };
-          return acc;
-        }, prev[l]);
-        return prev;
-      }, {});
-      clone.store = new ResourceStore(clonedData, mergedOptions);
+      clone.store = new ResourceStore(this.store.data, mergedOptions);
       clone.services.resourceStore = clone.store;
     }
     clone.translator = new Translator(clone.services, mergedOptions);
-    clone.translator.on('*', (event, ...args) => {
+    clone.translator.on('*', function (event) {
+      for (var _len4 = arguments.length, args = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+        args[_key4 - 1] = arguments[_key4];
+      }
       clone.emit(event, ...args);
     });
     clone.init(mergedOptions, callback);
@@ -35085,6 +35420,7 @@ class I18n extends EventEmitter {
   }
 }
 const instance = I18n.createInstance();
+instance.createInstance = I18n.createInstance;
 
 const createInstance = instance.createInstance;
 const dir = instance.dir;
@@ -35219,7 +35555,7 @@ const dl=BigInt("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffff
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"background-webview","version":"2.6.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.26.10","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^30.2.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-localstorage-mock":"^2.4.26","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.14.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.94.0","webpack-cli":"^5.1.4"},"overrides":{"brace-expansion":"^1.1.12","js-yaml":"^4.1.1"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","formdata-node":"^6.0.3","js-yaml":"^4.1.1","openpgp":"^6.1.1","passbolt-browser-extension":"5.7.0","passbolt-styleguide":"^5.7.1","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.15.20"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"background-webview","version":"2.5.0","description":"Background webview2 for passbolt dekstop windows","license":"AGPL-3.0","copyright":"Copyright 2022 Passbolt SA","homepage":"https://www.passbolt.com","repository":"https://github.com/passbolt/passbolt_windows","main":"index.js","scripts":{"build":"webpack","build-watch":"webpack --watch","lint":"npm run lint:lockfile && npm run lint:eslint","lint:lockfile":"lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \\"https:\\" \\"git+ssh:\\" --empty-hostname false --allowed-urls \\"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\\"","lint:eslint":"eslint -c .eslintrc.json --ext js src","lint:eslint-fix":"eslint -c .eslintrc.json --ext js --fix src","test":"jest","test:unit":"jest --no-cache ./src/","test:coverage":"jest --no-cache ./src/ --coverage"},"devDependencies":{"@babel/eslint-parser":"^7.22.15","@babel/plugin-transform-runtime":"^7.26.10","@babel/preset-env":"^7.21.5","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","eslint":"^8.50.0","eslint-plugin-import":"^2.28.1","eslint-plugin-jest":"^27.4.0","eslint-plugin-no-unsanitized":"^4.0.2","eslint-plugin-react":"^7.33.2","jest":"^29.5.0","jest-environment-jsdom":"^29.5.0","jest-fetch-mock":"^3.0.3","jest-junit":"^15.0.0","jest-localstorage-mock":"^2.4.26","jest-webextension-mock":"^3.8.9","lockfile-lint":"^4.14.1","replace-in-file-webpack-plugin":"^1.0.6","text-encoding-utf-8":"^1.0.2","webpack":"^5.94.0","webpack-cli":"^5.1.4"},"overrides":{"brace-expansion":"^1.1.12"},"dependencies":{"@babel/core":"^7.23.3","@babel/preset-react":"^7.22.15","buffer":"^6.0.3","formdata-node":"^6.0.3","openpgp":"^6.1.1","passbolt-browser-extension":"5.6.0","passbolt-styleguide":"^5.6.2","setimmediate":"^1.0.5","stream-browserify":"^3.0.0","validator":"^13.7.0"}}');
 
 /***/ })
 

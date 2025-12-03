@@ -1,0 +1,6 @@
+.vs/ 
+passbolt/.vs/ 
+passbolt/bin/ 
+passbolt/obj/ 
+passbolt/Webviews/Background/node_modules/ 
+passbolt/Webviews/Rendered/node_modules/
