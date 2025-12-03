@@ -148,7 +148,7 @@ describe("Main workspace class", () => {
     expect(TagEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(ThemeEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(UserPassphrasePolicies.listen).toHaveBeenCalledWith(main.worker);
-    expect(UserEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
+    expect(UserEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
   });
 
   it('should not initialize the local storage if user exist and post a message', async() => {
