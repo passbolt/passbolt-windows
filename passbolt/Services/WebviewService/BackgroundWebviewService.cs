@@ -1,4 +1,4 @@
-/**
+﻿/**
 * Passbolt ~ Open source password manager for teams
 * Copyright (c) 2023 Passbolt SA (https://www.passbolt.com)
 *
@@ -19,11 +19,11 @@ using Windows.Storage;
 
 namespace passbolt.Services.WebviewService
 {
-    public class BackgroundWebviewService : WebviewService
+    public class BackgroundWebviewService: WebviewService
     {
         private BackgroundNavigationService backgroundNavigationService;
 
-        public BackgroundWebviewService(CoreWebView2 background) : base(background)
+        public BackgroundWebviewService(CoreWebView2 background): base(background)
         {
             this.backgroundNavigationService = BackgroundNavigationService.Instance;
         }
