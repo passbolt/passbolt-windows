@@ -124,7 +124,7 @@ export default class MainWorkspace {
     MultiFactorAuthenticationEvents.listen(this.worker, apiClientOptions);
     OrganizationSettingsEvents.listen(this.worker);
     PownedPasswordEvents.listen(this.worker);
-    UserEvents.listen(this.worker, null, account);
+    UserEvents.listen(this.worker, apiClientOptions, account);
     RbacEvents.listen(this.worker, account);
     ResourceEvents.listen(this.worker, apiClientOptions, account);
     ResourceTypeEvents.listen(this.worker, apiClientOptions);

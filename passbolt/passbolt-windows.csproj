@@ -177,6 +177,7 @@
     <Compile Include="Models\Messaging\Topics\ResourceTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ResourceTypeTopics.cs" />
     <Compile Include="Models\Messaging\Topics\RoleTopics.cs" />
+    <Compile Include="Models\Messaging\Topics\SecretHistoryTopics.cs" />
     <Compile Include="Models\Messaging\Topics\SecretTopics.cs" />
     <Compile Include="Models\Messaging\Topics\SettingTopics.cs" />
     <Compile Include="Models\Messaging\Topics\ShareTopics.cs" />
