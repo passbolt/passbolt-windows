@@ -27,7 +27,6 @@ import {ActionLogEvents} from "passbolt-browser-extension/src/all/background_pag
 import {accountDto} from "./data/mockStorage";
 import {BACKGROUND_READY, LOCALSTORAGE_CLEAR, LOCALSTORAGE_DELETE, LOCALSTORAGE_UPDATE} from "./enumerations/appEventEnumeration";
 import {ShareEvents} from "passbolt-browser-extension/src/all/background_page/event/shareEvents";
-import {FavoriteEvents} from "passbolt-browser-extension/src/all/background_page/event/favoriteEvents";
 import {TagEvents} from "passbolt-browser-extension/src/all/background_page/event/tagEvents";
 import {ImportResourcesEvents} from "passbolt-browser-extension/src/all/background_page/event/importResourcesEvents";
 import {PownedPasswordEvents} from "passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents";
@@ -53,6 +52,8 @@ import {MultiFactorAuthenticationEvents} from "passbolt-browser-extension/src/al
 import GlobalAlarmService from "./services/alarm/globalAlarmService";
 import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
 import KeepSessionAliveService from "passbolt-browser-extension/src/all/background_page/service/session_storage/keepSessionAliveService";
+import {FavoriteEvents} from './events/favoriteEvents';
+import {SecretHistoryEvents} from './events/secretHistoryEvents';
 
 describe("Main workspace class", () => {
   const ipcDataMock = {
@@ -83,7 +84,7 @@ describe("Main workspace class", () => {
   });
 
   it('should listen to the browser extension events', async() => {
-    expect.assertions(29);
+    expect.assertions(30);
 
     jest.spyOn(AccountRecoveryEvents, "listen");
     jest.spyOn(ActionLogEvents, "listen");
@@ -108,6 +109,7 @@ describe("Main workspace class", () => {
     jest.spyOn(ResourceEvents, "listen");
     jest.spyOn(ResourceTypeEvents, "listen");
     jest.spyOn(RoleEvents, "listen");
+    jest.spyOn(SecretHistoryEvents, "listen");
     jest.spyOn(SecretEvents, "listen");
     jest.spyOn(ShareEvents, "listen");
     jest.spyOn(TagEvents, "listen");
@@ -140,12 +142,13 @@ describe("Main workspace class", () => {
     expect(ResourceEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(ResourceTypeEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
+    expect(SecretHistoryEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(TagEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(ThemeEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(UserPassphrasePolicies.listen).toHaveBeenCalledWith(main.worker);
-    expect(UserEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
+    expect(UserEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
   });
 
   it('should not initialize the local storage if user exist and post a message', async() => {
