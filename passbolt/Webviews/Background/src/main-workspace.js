@@ -25,7 +25,6 @@ import {ShareEvents} from 'passbolt-browser-extension/src/all/background_page/ev
 import {CommentEvents} from 'passbolt-browser-extension/src/all/background_page/event/commentEvents';
 import {ActionLogEvents} from 'passbolt-browser-extension/src/all/background_page/event/actionLogEvents';
 import {TagEvents} from 'passbolt-browser-extension/src/all/background_page/event/tagEvents';
-import {FavoriteEvents} from 'passbolt-browser-extension/src/all/background_page/event/favoriteEvents';
 import {PasswordPoliciesEvents} from 'passbolt-browser-extension/src/all/background_page/event/passwordPoliciesEvents';
 import {PownedPasswordEvents} from 'passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents';
 import {ImportResourcesEvents} from 'passbolt-browser-extension/src/all/background_page/event/importResourcesEvents';
@@ -54,6 +53,8 @@ import KeepSessionAliveService from 'passbolt-browser-extension/src/all/backgrou
 import {AccountEvents} from 'passbolt-browser-extension/src/all/background_page/event/accountEvents';
 import {PermissionEvents} from 'passbolt-browser-extension/src/all/background_page/event/permissionEvents';
 import {MetadataEvents} from './events/metadataEvents';
+import {FavoriteEvents} from './events/favoriteEvents';
+import {SecretHistoryEvents} from './events/secretHistoryEvents';
 
 /**
  * Represents the main workspace class that sets up an event listener for the `message` event.
@@ -123,12 +124,13 @@ export default class MainWorkspace {
     MultiFactorAuthenticationEvents.listen(this.worker, apiClientOptions);
     OrganizationSettingsEvents.listen(this.worker);
     PownedPasswordEvents.listen(this.worker);
-    UserEvents.listen(this.worker, null, account);
+    UserEvents.listen(this.worker, apiClientOptions, account);
     RbacEvents.listen(this.worker, account);
     ResourceEvents.listen(this.worker, apiClientOptions, account);
     ResourceTypeEvents.listen(this.worker, apiClientOptions);
     RoleEvents.listen(this.worker, apiClientOptions);
     SecretEvents.listen(this.worker, apiClientOptions, account);
+    SecretHistoryEvents.listen(this.worker, apiClientOptions, account);
     ShareEvents.listen(this.worker, apiClientOptions, account);
     TagEvents.listen(this.worker, apiClientOptions, account);
     ThemeEvents.listen(this.worker);
