@@ -7,6 +7,10 @@
   "homepage": "https://www.passbolt.com",
   "repository": "https://github.com/passbolt/passbolt_windows",
   "main": "index.js",
+  "engines": {
+    "node": ">=22.14.0",
+    "npm": ">=10.9.2"
+  },
   "scripts": {
     "build": "webpack",
     "build-watch": "webpack --watch",
@@ -56,6 +60,6 @@
     "passbolt-styleguide": "^5.7.1",
     "setimmediate": "^1.0.5",
     "stream-browserify": "^3.0.0",
-    "validator": "^13.15.20"
+    "validator": "^13.15.26"
   }
 }
