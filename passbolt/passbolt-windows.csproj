@@ -22,7 +22,7 @@
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
     <AppInstallerUri>C:/Program Files/Passbolt</AppInstallerUri>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <EnableDotNetNativeCompatibleProfile>false</EnableDotNetNativeCompatibleProfile>
@@ -287,6 +287,7 @@
     <PRIResource Include="Strings\ko-KR\Resources.resw" />
     <PRIResource Include="Strings\lt-LT\Resources.resw" />
     <PRIResource Include="Strings\pl-PL\Resources.resw" />
+    <None Include="packages.lock.json" />
     <None Include="Webviews\Background\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -417,10 +418,13 @@
       <Version>3.8.3</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.3</Version>
+      <Version>13.0.4</Version>
     </PackageReference>
     <PackageReference Include="System.Net.Http">
       <Version>4.3.4</Version>
+    </PackageReference>
+    <PackageReference Include="System.Private.Uri">
+      <Version>4.3.2</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
