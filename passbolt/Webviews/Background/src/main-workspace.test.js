@@ -141,7 +141,7 @@ describe("Main workspace class", () => {
     expect(RbacEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
     expect(ResourceEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(ResourceTypeEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
-    expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
+    expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(SecretHistoryEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());

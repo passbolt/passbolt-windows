@@ -16,8 +16,6 @@ using passbolt.Models.Rbac;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Xml.Linq;
 
 namespace passbolt.Services.RbacService
 {
@@ -29,7 +27,7 @@ namespace passbolt.Services.RbacService
         /// </summary>
         /// <param name="controls"></param>
         /// <returns></returns>
-        public void AddDesktopRbac(List<ControlFunction> controls)
+        public void AddDesktopRbac(List<RbacEntity> controls)
         {
             this.AddOrUpdateDesktopRbac(controls, "Administration.viewWorkspace", "Deny");
             this.AddOrUpdateDesktopRbac(controls, "Duo.configuration", "Deny");
@@ -46,24 +44,35 @@ namespace passbolt.Services.RbacService
         /// <param name="controls"></param>
         /// <param name="uiActionName"></param>
         /// <param name="control"></param>
-        public void AddOrUpdateDesktopRbac(List<ControlFunction> controls, string uiActionName, string control)
+        public void AddOrUpdateDesktopRbac(List<RbacEntity> rbacs, string uiActionName, string controlFunction)
         {
-            // First, try to find an existing ControlFunction with the specified UiAction name.
-            var existingControl = controls.FirstOrDefault(cf => cf.UiAction != null && cf.UiAction.Name == uiActionName);
+            // First, try to find an existing Rbac with the specified UiAction name.
+            var existingRbac = rbacs.FirstOrDefault(rbac => rbac.UiAction != null && rbac.UiAction.Name == uiActionName);
 
-            // If it exists, update the 'Control' property.
-            if (existingControl != null)
+            // If it exists, update the 'ControlFunction' property.
+            if (existingRbac != null)
             {
-                existingControl.Control = control;
+                existingRbac.ControlFunction = controlFunction;
             }
             else
             {
-                // If it does not exist, add a new ControlFunction object to the list.
-                controls.Add(new ControlFunction
+                rbacs.Add(new RbacEntity
                 {
-                    Control = control,
+                    Id = Guid.NewGuid(),
+                    ForeignId = Guid.NewGuid(),
+                    RoleId = Guid.NewGuid(),
+                    ControlFunction = controlFunction,
                     ForeignModel = "UiAction",
-                    UiAction = new UiAction { Name = uiActionName }
+                    Action = new RbacAction
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = uiActionName
+                    },
+                    UiAction = new RbacAction
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = uiActionName
+                    }
                 });
             }
         }

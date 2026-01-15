@@ -17,5 +17,6 @@ namespace passbolt.Models.Messaging.Topics
     public class RoleTopics
     {
         public const string GET_ALL = "passbolt.role.get-all";
+        public const string UPDATE_LOCAL_STORAGE = "passbolt.role.update-local-storage";
     }
 }

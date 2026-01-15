@@ -17,12 +17,12 @@ using System;
 
 namespace passbolt.Models.Rbac
 {
-    public class UiAction
+    public class RbacAction
     {
         [JsonProperty("id")]
         public Guid Id { get; set; }
+
         [JsonProperty("name")]
         public string Name { get; set; }
-
     }
 }

@@ -15,7 +15,6 @@
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using passbolt.Exceptions;
 using passbolt.Models.Authentication;
 using passbolt.Models.Cookies;
 using passbolt.Models.CredentialLocker;
@@ -272,7 +271,7 @@ namespace passbolt.Models.Messaging
         {
             if (topic == RbacTopics.FIND_ME)
             {
-                var controls = SerializationHelper.DeserializeFromJson<List<ControlFunction>>(((JArray)ipc.message).ToString());
+                var controls = SerializationHelper.DeserializeFromJson<List<RbacEntity>>(((JArray)ipc.message).ToString());
                 this.rbacService.AddDesktopRbac(controls);
                 ipc.message = controls;
             }
