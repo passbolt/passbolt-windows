@@ -12,13 +12,13 @@
  * @since         0.3.0
  */
 
-import FindMeController from "passbolt-browser-extension/src/all/background_page/controller/rbac/findMeController";
+import FindRbacMeController from "passbolt-browser-extension/src/all/background_page/controller/rbac/findRbacMeController";
 import User from "passbolt-browser-extension/src/all/background_page/model/user";
 
 const listen = function(worker, account) {
   worker.port.on('passbolt.rbacs.find-me', async(requestId, name) => {
     const apiClientOptions = await User.getInstance().getApiClientOptions();
-    const controller = new FindMeController(worker, requestId, apiClientOptions, account);
+    const controller = new FindRbacMeController(worker, requestId, apiClientOptions, account);
     await controller._exec(name);
   });
 };
