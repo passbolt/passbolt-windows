@@ -48,7 +48,8 @@
   "overrides": {
     "brace-expansion": "^1.1.12",
     "js-yaml": "^4.1.1",
-    "lodash": ">=4.17.23"
+    "lodash": ">=4.17.23",
+    "lodash-es": ">=4.17.23"
   },
   "dependencies": {
     "@babel/core": "^7.23.3",
