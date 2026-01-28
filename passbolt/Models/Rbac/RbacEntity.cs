@@ -17,20 +17,27 @@ using System;
 
 namespace passbolt.Models.Rbac
 {
-    public class ControlFunction
+    public class RbacEntity
     {
-        [JsonProperty("control_function")]
-        public string Control { get; set; }
-        [JsonProperty("foreign_id")]
-        public Guid ForeignId { get; set; }
-        [JsonProperty("foreign_model")]
-        public string ForeignModel { get; set; }
         [JsonProperty("id")]
         public Guid Id { get; set; }
+
         [JsonProperty("role_id")]
         public Guid RoleId { get; set; }
-        [JsonProperty("ui_action")]
-        public UiAction UiAction { get; set; }
 
+        [JsonProperty("foreign_model")]
+        public string ForeignModel { get; set; }
+
+        [JsonProperty("foreign_id")]
+        public Guid ForeignId { get; set; }
+
+        [JsonProperty("control_function")]
+        public string ControlFunction { get; set; }
+
+        [JsonProperty("action")]
+        public RbacAction Action { get; set; }
+
+        [JsonProperty("ui_action")]
+        public RbacAction UiAction { get; set; }
     }
 }

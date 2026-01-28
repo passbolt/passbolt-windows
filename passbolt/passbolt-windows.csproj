@@ -188,8 +188,8 @@
     <Compile Include="Models\Messaging\IPC.cs" />
     <Compile Include="Models\Messaging\Webviews\RenderedTopic.cs" />
     <Compile Include="Models\Messaging\Webviews\WebviewTopic.cs" />
-    <Compile Include="Models\Rbac\ControlFunction.cs" />
-    <Compile Include="Models\Rbac\UiAction.cs" />
+    <Compile Include="Models\Rbac\RbacEntity.cs" />
+    <Compile Include="Models\Rbac\RbacAction.cs" />
     <Compile Include="Models\User\UserOs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\CredentialLockerService\CredentialLockerService.cs" />
