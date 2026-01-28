@@ -1,6 +1,6 @@
 Passbolt Windows Application 2.7.0 introduces full compatibility with dynamic role management, allowing the Windows application to support additional roles that better align with internal policies and compliance requirements. This release also adds drag & drop user assignment to groups and implements stronger protection against clickjacking and deceptive overlays. 
 
-##  Dynamic Role Management Compatibility
+## Dynamic Role Management Compatibility
 
 The Windows application is now fully compatible with the Dynamic Role Management system introduced in version 5.8. While the creation and definition of roles remain exclusive to the browser extension, this application strictly enforces the associated scopes and constraints.
 
