@@ -1,25 +1,25 @@
-Passbolt Windows Application 2.6.0 introduces secret history, a highly demanded feature that gives users visibility and control over previous versions of their secrets. This release also includes several usability improvements requested and bug fixes reported by the community.
+Passbolt Windows Application 2.7.0 introduces full compatibility with dynamic role management, allowing the Windows application to support additional roles that better align with internal policies and compliance requirements. This release also adds drag & drop user assignment to groups and implements stronger protection against clickjacking and deceptive overlays. 
 
-## Secret history
+##  Dynamic Role Management Compatibility
 
-It is now possible to access previous revisions of a secret directly from Passbolt. 
+The Windows application is now fully compatible with the Dynamic Role Management system introduced in version 5.8. While the creation and definition of roles remain exclusive to the browser extension, this application strictly enforces the associated scopes and constraints.
 
-Secret history helps reduce the impact of human error and offers a safer way to manage evolving secrets. For instance, this enables users to undo an accidental update on the spot. Note that the feature is disabled by default and requires an administrator to enable it from the administration workspace.
+The default Admin and User roles remain fixed. The Admin role retains access to all capabilities and cannot be restricted, while the User role respects any defined restrictions but cannot perform delegated administrative tasks.
+Users assigned to custom roles are also fully supported. The application recognizes the specific capabilities granted to these new roles, currently limited to two per instance. As the scope of dynamic roles expands in the future, the Windows application will adapt to support additional use cases.
 
-## User and group workspace improvements
+As the scope of dynamic roles expands in future updates based on community feedback, the Windows application will continue to evolve to support these new use cases.
 
-A new “Remove from group” action has been added to the user and group workspace. This addition eliminates the confusion between permanently deleting a user and simply removing them from a specific group. 
+## Drag & drop users to groups
 
-Moreover, administrators can now instantly filter users that require attention via the “Attention Required” filter in the workspace. For instance: identifying users with a pending account recovery request to review, or missing metadata keys.
+Managing group membership often requires repetitive actions when working with large teams or frequently changing group structures. Administrators can now add users to a group by dragging them directly onto it from the Users & Groups workspace. This removes the need to open and edit each group individually, making day-to-day group management faster and more fluid.
 
-Fig. Action recovery request filter in the User & Groups workspace.
+## Stronger protection against clickjacking and deceptive overlays
 
-## Import report 
+Clickjacking and overlay techniques aim to trick users into clicking something different from what they believe they are interacting with. This release reinforces defenses against these UI-level attacks in edge-case conditions, including scenarios where a compromised context tries to influence user interactions.
 
-The application now displays a summary dialog after an import, offering accurate and actionable information. The report precisely categorises alerts into successes, warnings and errors, providing end users with additional logs.
+In practice, this extra layer of strengthening helps ensure users cannot be guided into interacting with sensitive Passbolt components when those components are not fully visible and clearly presented to them.
 
-## Miscellaneous Improvements
+## Miscellaneous improvements
 
-As usual this release is packed with improvements and bug fixes reported by the community. Notably, the reliability of autofill has been improved across a wider range of websites. If you find that autofill does not work on a particular website, feel free to open a bug report with the website details so we can investigate the issue. For more, check out the changelog below.
-
-Many thanks to everyone who provided feedback, reported issues, and helped refine these new features.
+As usual, this release includes fixes and smaller improvements intended to improve the overall experience. For the full list of changes, please refer to the changelog.
+Many thanks to everyone who provided feedback and helped refine these features. 
