@@ -31,7 +31,7 @@ import {ImportResourcesEvents} from 'passbolt-browser-extension/src/all/backgrou
 import {AccountRecoveryEvents} from './events/accountRecoveryEvents';
 import {ExportResourcesEvents} from './events/exportResourcesEvents';
 import {RbacEvents} from './events/rbacEvents';
-import {BACKGROUND_READY,CLIPBOARD_SET_TEXT} from './enumerations/appEventEnumeration';
+import {BACKGROUND_READY, CLIPBOARD_SET_TEXT} from './enumerations/appEventEnumeration';
 import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
 import {Config} from "passbolt-browser-extension/src/all/background_page/model/config";
 import {DesktopEvents} from './events/desktopEvents';
@@ -87,7 +87,7 @@ export default class MainWorkspace {
      * Applying the clipboard polyfill requires the communication port to request the native application, so it is applied here.
      * todo move the polyfill definition with others to remain consistant.
      */
-    navigator.clipboard.writeText = async(data) => await this.worker.port.emit(CLIPBOARD_SET_TEXT, data);
+    navigator.clipboard.writeText = async data => await this.worker.port.emit(CLIPBOARD_SET_TEXT, data);
   }
 
   /**

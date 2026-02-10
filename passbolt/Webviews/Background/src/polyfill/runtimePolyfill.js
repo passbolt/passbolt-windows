@@ -25,5 +25,5 @@ window.chrome.runtime = {
   id: {},
   lastError: null,
   getManifest: () => ({version}),
-  getURL:() => ""
+  getURL: () => ""
 };
