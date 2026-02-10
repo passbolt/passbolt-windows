@@ -18,7 +18,6 @@ import DeleteSecretRevisionsSettingsController from "passbolt-browser-extension/
 import SaveSecretRevisionsSettingsController from "passbolt-browser-extension/src/all/background_page/controller/secretRevision/saveSecretRevisionsSettingsController";
 
 const listen = function(worker, apiClientOptions, account) {
-
   /**
    * Finds the secret revisions settings from the API
    *

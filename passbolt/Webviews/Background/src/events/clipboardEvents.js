@@ -38,7 +38,7 @@ const listen = function(worker) {
     // We cannot use copy temporarily because the alarm is causing the application to crash. See PB-45142.
     const clipboardController = new CopyToClipboardController(worker, requestId);
     await clipboardController._exec(text);
-  }); 
-}
+  });
+};
 
 export const ClipboardEvents = {listen};

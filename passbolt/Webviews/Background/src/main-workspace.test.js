@@ -74,8 +74,8 @@ describe("Main workspace class", () => {
     jest.spyOn(GetLegacyAccountService, "get").mockImplementation(() => new AccountEntity(accountDto).toDto());
     jest.spyOn(User, "getInstance").mockImplementation(() => ({getApiClientOptions: () => defaultApiClientOptions()}));
     main = new Main(window.chrome.webview);
-    jest.spyOn(StartLoopAuthSessionCheckService, "exec").mockImplementation(() => jest.fn())
-    jest.spyOn(KeepSessionAliveService, "start").mockImplementation(() => jest.fn())
+    jest.spyOn(StartLoopAuthSessionCheckService, "exec").mockImplementation(() => jest.fn());
+    jest.spyOn(KeepSessionAliveService, "start").mockImplementation(() => jest.fn());
   });
 
   afterEach(() => {

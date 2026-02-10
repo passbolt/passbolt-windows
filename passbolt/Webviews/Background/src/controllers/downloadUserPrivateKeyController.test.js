@@ -13,7 +13,6 @@
  */
 
 import DownloadUserPrivateKeyController from "./downloadUserPrivateKeyController";
-import GpgKeyError from "passbolt-browser-extension/src/all/background_page/error/GpgKeyError";
 import MockExtension from "passbolt-browser-extension/test/mocks/mockExtension";
 import FileService from "passbolt-browser-extension/src/all/background_page/service/file/fileService";
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
@@ -57,13 +56,16 @@ describe("DownloadUserPrivateKeyController", () => {
   });
 
   it(`Should throw an exception if the user's private key can't be find`, async() => {
-    expect.assertions(3);
+    expect.assertions(5);
     MockExtension.withMissingPrivateKeyAccount();
     controller.getPassphraseService.requestPassphrase.mockResolvedValue("");
     jest.spyOn(worker.port, "emit").mockImplementation(() => jest.fn());
 
-    await expect(controller.exec()).rejects.toThrowError(new GpgKeyError("Private key not found."));
+    await expect(controller.exec()).rejects.toThrow("Private key not found.");
+    const promise = controller.exec();
+    await expect(promise).rejects.toHaveProperty('cause');
+    await expect(promise).rejects.toHaveProperty('cause.message', "Cannot read properties of undefined (reading 'armoredKey')");
     expect(worker.port.emit).not.toHaveBeenCalled();
-    expect(controller.getPassphraseService.requestPassphrase).toHaveBeenCalledTimes(1);
+    expect(controller.getPassphraseService.requestPassphrase).toHaveBeenCalledTimes(2);
   });
 });

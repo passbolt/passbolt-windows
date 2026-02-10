@@ -25,7 +25,7 @@ describe("Alarm Polyfill class", () => {
     alarms.onAlarm.addListener(callback);
   });
 
-  afterEach(async () => {
+  afterEach(async() => {
     alarms.onAlarm.removeListener(callback);
     await alarms.clearAll();
   });

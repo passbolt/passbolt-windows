@@ -62,7 +62,9 @@ class DownloadUserPrivateKeyController {
     try {
       privateKey = this.keyring.findPrivate().armoredKey;
     } catch (e) {
-      throw new GpgKeyError(i18n.t("Private key not found."));
+      const error =  new GpgKeyError(i18n.t("Private key not found."));
+      error.cause = e;
+      throw error;
     }
 
     const blobFile = new Blob([privateKey], {type: MIME_TYPE_TEXT_PLAIN});
