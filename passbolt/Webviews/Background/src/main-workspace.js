@@ -128,7 +128,7 @@ export default class MainWorkspace {
     RbacEvents.listen(this.worker, account);
     ResourceEvents.listen(this.worker, apiClientOptions, account);
     ResourceTypeEvents.listen(this.worker, apiClientOptions);
-    RoleEvents.listen(this.worker, apiClientOptions);
+    RoleEvents.listen(this.worker, apiClientOptions, account);
     SecretEvents.listen(this.worker, apiClientOptions, account);
     SecretHistoryEvents.listen(this.worker, apiClientOptions, account);
     ShareEvents.listen(this.worker, apiClientOptions, account);
