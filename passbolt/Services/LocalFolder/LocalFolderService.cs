@@ -26,7 +26,7 @@ namespace passbolt.Services.LocalFolder
         private StorageFolder webviewsFolder;
         private StorageFolder webviewsFolderInstallation;
         private string webviewsFolderName = "Webviews";
-        private string commonCSP = "default-src 'none'; form-action 'none';";
+        private string commonCSP = "default-src 'none'; form-action 'none'; base-uri 'none'; frame-src 'none'; worker-src 'none';";
 
         private LocalFolderService() { }
 
@@ -120,7 +120,7 @@ namespace passbolt.Services.LocalFolder
             else if (script == "rendered-workspace")
             {
                 //Data: used for the totp scan image
-                //Blob: used for the import OTP image (resources) 
+                //Blob: used for the import OTP image (resources)
                 csp = $"{imgSrc} {cspAllowedUrlOnTrustedDomain} data: blob: ; connect-src https://rendered.dist/Rendered/dist/locales/;";
             }
             else
@@ -130,9 +130,9 @@ namespace passbolt.Services.LocalFolder
             }
 
             // return the common csp with specific by apps
-            return $@"<meta http-equiv=""Content-Security-Policy"" content=""{this.commonCSP} script-src https://rendered.dist/Rendered/; style-src 'self' https://rendered.dist/Rendered/dist/themes/; font-src https://rendered.dist/Rendered/fonts/; {csp}"" />";
+            return $@"<meta http-equiv=""Content-Security-Policy"" content=""{this.commonCSP} script-src https://rendered.dist/Rendered/; style-src https://rendered.dist/Rendered/dist/themes/; style-src-attr 'unsafe-inline'; font-src https://rendered.dist/Rendered/fonts/; {csp}"" />";
         }
-         
+
 
         /// <summary>
         /// Get the background csp content
@@ -154,7 +154,7 @@ namespace passbolt.Services.LocalFolder
             }
             else if (script == "background-workspace")
             {
-                csp = $"{connectSrc} {cspAllowedUrlOnTrustedDomain}  https://api.pwnedpasswords.com;";
+                csp = $"{connectSrc} {cspAllowedUrlOnTrustedDomain} https://api.pwnedpasswords.com;";
             }
             else if (script == "background-import")
             {
