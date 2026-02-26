@@ -26,7 +26,7 @@ namespace passbolt.Services.LocalFolder
         private StorageFolder webviewsFolder;
         private StorageFolder webviewsFolderInstallation;
         private string webviewsFolderName = "Webviews";
-        private string commonCSP = "default-src 'none'; form-action 'none'; base-uri 'none'; frame-src 'none'; worker-src 'none';";
+        private string commonCSP = "default-src 'none'; form-action 'none'; base-uri 'none';";
 
         private LocalFolderService() { }
 
