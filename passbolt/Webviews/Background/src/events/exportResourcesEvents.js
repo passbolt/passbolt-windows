@@ -13,9 +13,9 @@
  */
 
 import ExportResourcesFileController from "../controllers/exportResourcesFilesController";
-import User from "passbolt-browser-extension/src/all/background_page/model/user";
+import FindExportPoliciesSettingsController from "passbolt-browser-extension/src/all/background_page/controller/exportPolicies/findExportPoliciesSettingsController";
 
-const listen = function(worker, account) {
+const listen = function(worker, apiClientOptions, account) {
   /*
    * Export resources to file
    *
@@ -25,9 +25,24 @@ const listen = function(worker, account) {
    * @param exportResourcesFileDto {object} The export resources file DTO
    */
   worker.port.on('passbolt.export-resources.export-to-file', async(requestId, exportResourcesFileDto) => {
-    const apiClientOptions = await User.getInstance().getApiClientOptions();
     const exportController = new ExportResourcesFileController(worker, apiClientOptions, requestId, account);
     await exportController.exec(exportResourcesFileDto);
+  });
+
+  /*
+   * ==================================================================================
+   *  Export Policies Settings events
+   * ==================================================================================
+   */
+  /**
+   * Find export policies settings
+   *
+   * @listens passbolt.export-policies.get
+   * @param requestId {uuid} The request identifier
+   */
+  worker.port.on("passbolt.export-policies.get", async requestId => {
+    const controller = new FindExportPoliciesSettingsController(worker, requestId, apiClientOptions);
+    await controller._exec();
   });
 };
 
