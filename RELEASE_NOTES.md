@@ -1,25 +1,29 @@
-Passbolt Windows Application 2.7.0 introduces full compatibility with dynamic role management, allowing the Windows application to support additional roles that better align with internal policies and compliance requirements. This release also adds drag & drop user assignment to groups and implements stronger protection against clickjacking and deceptive overlays. 
+Passbolt windows application 2.8 brings new productivity feature tags visible in the grid, along with security hardening and performance improvements.
 
-## Dynamic Role Management Compatibility
+## Tags visible in the grid (Passbolt Pro)
 
-The Windows application is now fully compatible with the Dynamic Role Management system introduced in version 5.8. While the creation and definition of roles remain exclusive to the browser extension, this application strictly enforces the associated scopes and constraints.
+Tags are now displayed directly in the resources grid, making it easier to identify and filter resources without opening the resource details view.
+A new tags column shows the tags associated with each resource. Tags are displayed in alphabetical order and remain clickable, allowing users to filter the workspace by selecting a tag directly from the grid.
+When multiple tags exist, the grid displays as many as possible within the column width and indicates additional tags using a counter with a tooltip showing the remaining tags.
+This update also modernises the tag codebase and lays the groundwork for further improvements to tagging capabilities.
 
-The default Admin and User roles remain fixed. The Admin role retains access to all capabilities and cannot be restricted, while the User role respects any defined restrictions but cannot perform delegated administrative tasks.
-Users assigned to custom roles are also fully supported. The application recognizes the specific capabilities granted to these new roles, currently limited to two per instance. As the scope of dynamic roles expands in the future, the Windows application will adapt to support additional use cases.
+## Security improvements
 
-As the scope of dynamic roles expands in future updates based on community feedback, the Windows application will continue to evolve to support these new use cases.
+The Passbolt team is currently preparing its First Level Security Certification (CSPN) with the French National Cybersecurity Agency (ANSSI). This release includes some fixes following the CSPN pre-audit evaluation done in partnership with Quarkslab and an external audit of SCIM provisioning by Cure53. This release addresses the findings identified during both audits.
 
-## Drag & drop users to groups
+One notable issue is around CSV injection, e.g. when CSV exports could be susceptible to formula injection when opened in spreadsheet software. This issue was known and classified as out of scope, as exported CSV files are not intended to be opened in spreadsheets but with the password manager they were generated for. However we revisited this decision and settled for a security-by-default approach: CSV export is now disabled by default, fixing the bigger problem of credentials being potentially exported in plaintext. Organisations that still rely on it can re-enable the feature through configuration. Encrypted KDBX export remains available and is the recommended format for credential portability. Looking ahead, we plan to support the FIDO CFX format in a future release to further standardise credential import and export across tools.
 
-Managing group membership often requires repetitive actions when working with large teams or frequently changing group structures. Administrators can now add users to a group by dragging them directly onto it from the Users & Groups workspace. This removes the need to open and edit each group individually, making day-to-day group management faster and more fluid.
+Content Security Policy enforcement has been extended to close remaining gaps, further reducing the attack surface in case of a breach. Because the browser extension serves its own code locally rather than relying on the API, sensitive operations were already well protected by design against server-side injection.
 
-## Stronger protection against clickjacking and deceptive overlays
+Additionally an external security audit of SCIM provisioning has been completed, and this release includes fixes for a number of the findings. We are actively working through the remaining issues and will publish the full audit results once that work is done. SCIM will exit beta and ship on Passbolt Cloud as soon as all findings are resolved. 
+Maintenance & performance
+This release brings a major upgrade to React 18, resulting in up to 20% faster rendering and the elimination of rare visual glitches that could cause flashes during navigation.
 
-Clickjacking and overlay techniques aim to trick users into clicking something different from what they believe they are interacting with. This release reinforces defenses against these UI-level attacks in edge-case conditions, including scenarios where a compromised context tries to influence user interactions.
+First load times have also improved substantially. Large organisations with thousands of resources will notice the biggest difference, with initial data processing now up to 20% faster.
 
-In practice, this extra layer of strengthening helps ensure users cannot be guided into interacting with sensitive Passbolt components when those components are not fully visible and clearly presented to them.
+Bear with us, more optimisations are already in the pipeline for future releases.
 
-## Miscellaneous improvements
+## Conclusion
 
-As usual, this release includes fixes and smaller improvements intended to improve the overall experience. For the full list of changes, please refer to the changelog.
-Many thanks to everyone who provided feedback and helped refine these features. 
+As usual, the release is also packed with additional improvements and fixes. Check out the changelog to learn more.
+Many thanks to everyone who provided feedback, reported bugs, and contributed to making passbolt better!
