@@ -24,7 +24,7 @@ import {SecretEvents} from 'passbolt-browser-extension/src/all/background_page/e
 import {ShareEvents} from 'passbolt-browser-extension/src/all/background_page/event/shareEvents';
 import {CommentEvents} from 'passbolt-browser-extension/src/all/background_page/event/commentEvents';
 import {ActionLogEvents} from 'passbolt-browser-extension/src/all/background_page/event/actionLogEvents';
-import {TagEvents} from 'passbolt-browser-extension/src/all/background_page/event/tagEvents';
+import {TagEvents} from './events/tagEvents';
 import {PasswordPoliciesEvents} from 'passbolt-browser-extension/src/all/background_page/event/passwordPoliciesEvents';
 import {PownedPasswordEvents} from 'passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents';
 import {ImportResourcesEvents} from 'passbolt-browser-extension/src/all/background_page/event/importResourcesEvents';
@@ -112,7 +112,7 @@ export default class MainWorkspace {
     CommentEvents.listen(this.worker, apiClientOptions);
     ConfigEvents.listen(this.worker);
     DesktopEvents.listen(this.worker, apiClientOptions, account);
-    ExportResourcesEvents.listen(this.worker, account);
+    ExportResourcesEvents.listen(this.worker, apiClientOptions, account);
     FavoriteEvents.listen(this.worker, apiClientOptions, account);
     FolderEvents.listen(this.worker, apiClientOptions, account);
     GroupEvents.listen(this.worker, apiClientOptions, account);
@@ -132,7 +132,7 @@ export default class MainWorkspace {
     SecretEvents.listen(this.worker, apiClientOptions, account);
     SecretHistoryEvents.listen(this.worker, apiClientOptions, account);
     ShareEvents.listen(this.worker, apiClientOptions, account);
-    TagEvents.listen(this.worker, apiClientOptions, account);
+    TagEvents.listen(this.worker, apiClientOptions);
     ThemeEvents.listen(this.worker);
     PasswordExpiryEvents.listen(this.worker, apiClientOptions, account);
     PasswordPoliciesEvents.listen(this.worker, apiClientOptions, account);

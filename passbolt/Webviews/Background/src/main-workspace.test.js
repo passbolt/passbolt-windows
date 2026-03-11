@@ -27,7 +27,7 @@ import {ActionLogEvents} from "passbolt-browser-extension/src/all/background_pag
 import {accountDto} from "./data/mockStorage";
 import {BACKGROUND_READY, LOCALSTORAGE_CLEAR, LOCALSTORAGE_DELETE, LOCALSTORAGE_UPDATE} from "./enumerations/appEventEnumeration";
 import {ShareEvents} from "passbolt-browser-extension/src/all/background_page/event/shareEvents";
-import {TagEvents} from "passbolt-browser-extension/src/all/background_page/event/tagEvents";
+import {TagEvents} from "./events/tagEvents";
 import {ImportResourcesEvents} from "passbolt-browser-extension/src/all/background_page/event/importResourcesEvents";
 import {PownedPasswordEvents} from "passbolt-browser-extension/src/all/background_page/event/pownedPasswordEvents";
 import {RbacEvents} from "./events/rbacEvents";
@@ -125,7 +125,7 @@ describe("Main workspace class", () => {
     expect(CommentEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(DesktopEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
-    expect(ExportResourcesEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
+    expect(ExportResourcesEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(FavoriteEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(FolderEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(GroupEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
@@ -145,7 +145,7 @@ describe("Main workspace class", () => {
     expect(SecretHistoryEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
-    expect(TagEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
+    expect(TagEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(ThemeEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(UserPassphrasePolicies.listen).toHaveBeenCalledWith(main.worker);
     expect(UserEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
