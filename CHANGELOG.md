@@ -10,7 +10,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - PB-29292 SAF - WP2.11 Fix quickaccess opening on Safari
 - PB-29605 SAF - WP2.7 Fix detached quickaccess not being closed after "use on this page" click
 - PB-36503 Browser extension causes performance degradation on some websites
-- PB-36503 Browser extension causes performance degradation on some websites
 - PB-43353 SAF - WP2.8 Fix file download on Safari
 - PB-43355 SAF - WP2.9 Fix quickaccess animations
 - PB-43997 SAF - WP1 Update the Safari browser extension build
