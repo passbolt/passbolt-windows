@@ -60,6 +60,7 @@ import {ResizableSidebarContextProvider} from "passbolt-styleguide/src/react-ext
 import SecretRevisionsSettingsContextProvider from "passbolt-styleguide/src/shared/context/SecretRevisionSettingsContext/SecretRevisionsSettingsContext";
 import RoleContextProvider from "passbolt-styleguide/src/react-extension/contexts/RoleContext";
 import ExportPoliciesSettingsContextProvider from "passbolt-styleguide/src/react-extension/contexts/ExportPoliciesSettingsContext";
+import HandleStatusCheck from "passbolt-styleguide/src/react-extension//components/HandleStatusCheck/HandleStatusCheck";
 
 /**
  * The passbolt application served by the desktop.
@@ -84,7 +85,7 @@ class AppWorkspace extends Component {
       <RenderedWebview port={this.props.port}>
         {this.isReady() && <ExtAppContextProvider port={this.props.port} storage={this.props.storage}>
           <AppContext.Consumer>
-            {() =>
+            {appContext =>
               <TranslationProvider loadingPath="https://rendered.dist/Rendered/dist/locales/{{lng}}/{{ns}}.json">
                 <RbacContextProvider>
                   <AccountRecoveryUserContextProvider accountRecoveryUserService={accountRecoveryUserService}>
@@ -110,6 +111,11 @@ class AppWorkspace extends Component {
 
                                           <Router>
                                             <NavigationContextProvider>
+                                              {appContext.loggedInUser &&
+                                              (appContext.siteSettings.canIUse("accountRecovery") ||
+                                                appContext.siteSettings.canIUse("mfaPolicies")) && (
+                                                <HandleStatusCheck />
+                                              )}
                                               <Switch>
                                                 {/* Passwords workspace */}
                                                 <Route path={[
