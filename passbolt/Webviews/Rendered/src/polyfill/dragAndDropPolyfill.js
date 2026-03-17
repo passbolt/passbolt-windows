@@ -44,7 +44,7 @@ class DragAndDropPolyfill {
   startPosition = {x: 0, y: 0};
   currentOverElement = null;
   ghostElement = null;
-  dragstart = null;
+  mockDataTransfer = null;
 
   constructor() {
     document.addEventListener('mousedown', event => this.handleMouseDown(event));
@@ -63,9 +63,11 @@ class DragAndDropPolyfill {
     const draggableElement = this.findDraggableAncestor(event.target);
 
     /*
-     * Override the existing functionality and update state for dragging
-     * draggableElement.setAttribute('draggable', 'false');
+     * Prevent native drag from starting - critical for WebView2
+     * Without this, the browser consumes mousemove/mouseup events for its broken native drag
      */
+    event.preventDefault();
+
     this.isDragging = true;
     this.draggedElement = draggableElement;
     this.startPosition = {x: event.clientX, y: event.clientY};
@@ -80,10 +82,19 @@ class DragAndDropPolyfill {
       return;
     }
     if (!this.hasMoved) {
+      // Dead zone: require minimum 5px movement to avoid false drag on simple clicks
+      const dx = event.clientX - this.startPosition.x;
+      const dy = event.clientY - this.startPosition.y;
+      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) { return; }
       this.hasMoved = true;
+      // Create a shared MockDataTransfer for the entire drag operation
+      this.mockDataTransfer = new MockDataTransfer(event);
       // Fire dragstart event
-      this.dragstart = this.createMockDragEvent('dragstart', this.getDragMoveEvent(event));
-      this.draggedElement.dispatchEvent(this.createMockDragEvent('dragstart', this.getDragMoveEvent(event)));
+      try {
+        this.draggedElement.dispatchEvent(this.createMockDragEvent('dragstart', this.getDragMoveEvent(event)));
+      } catch (error) {
+        console.error('DragAndDropPolyfill: dragstart dispatch failed', error);
+      }
     }
     // Retrieve image set during the setImage event from the styleguide
     const dragImage = document.getElementById('drag-image');
@@ -111,10 +122,13 @@ class DragAndDropPolyfill {
         //this.currentOverElement = null;
       }
 
-      if (elementBelow && elementBelow !== this.currentOverElement) {
-        if (this.currentOverElement) { this.currentOverElement.dispatchEvent(this.createMockDragEvent('dragleave', this.getDragMoveEvent(event))); }
-        elementBelow.dispatchEvent(this.createMockDragEvent('dragover', this.getDragMoveEvent(event)));
-        this.currentOverElement = elementBelow;
+      if (elementBelow) {
+        if (elementBelow !== this.currentOverElement) {
+          if (this.currentOverElement) { this.currentOverElement.dispatchEvent(this.createMockDragEvent('dragleave', this.getDragMoveEvent(event))); }
+          this.currentOverElement = elementBelow;
+        }
+        // Always dispatch dragover on current element (needed for openOnLongDragOver)
+        this.currentOverElement.dispatchEvent(this.createMockDragEvent('dragover', this.getDragMoveEvent(event)));
       }
     }
   }
@@ -128,7 +142,11 @@ class DragAndDropPolyfill {
 
     // Fire drop event if we have a target
     if (this.currentOverElement) {
-      this.currentOverElement.dispatchEvent(this.createMockDragEvent('drop', this.getDragUpEvent()));
+      try {
+        this.currentOverElement.dispatchEvent(this.createMockDragEvent('drop', this.getDragUpEvent()));
+      } catch (error) {
+        console.error('DragAndDropPolyfill: drop dispatch failed', error);
+      }
     }
 
     const dragImage = document.getElementById('drag-image');
@@ -143,7 +161,7 @@ class DragAndDropPolyfill {
     // Cleanup
     this.isDragging = false;
     this.hasMoved = false;
-    this.dragstart = null;
+    this.mockDataTransfer = null;
     this.ghostElement = null;
     this.draggedElement = null;
     this.currentOverElement = null;
@@ -171,8 +189,8 @@ class DragAndDropPolyfill {
    * @returns {Event} - The created mock drag event
    */
   createMockDragEvent(type, options) {
-    const event = new Event(type, options);
-    event.dataTransfer = new MockDataTransfer();
+    const event = new window.MouseEvent(type, options);
+    event.dataTransfer = this.mockDataTransfer;
     return event;
   }
 
@@ -226,7 +244,8 @@ class DragAndDropPolyfill {
  * This class mocks the DataTransfer interface, which provides a way to retrieve the data being dragged and the possible actions that can be taken.
  */
 class MockDataTransfer {
-  constructor() {
+  constructor(mouseEvent) {
+    this.mouseEvent = mouseEvent;
     this.dropEffect = 'move';
     this.effectAllowed = 'all';
     this.files = [];
@@ -272,16 +291,21 @@ class MockDataTransfer {
    * @param {number} clientY
    */
   setDragImage(element, clientX, clientY) {
-    // Create a copy from the styleguide div
-    const dragImage = element.cloneNode(true);
-    // This id is important to retrieve it from move event
-    dragImage.id = 'drag-image';
-    // Set initial positions
-    dragImage.style.left = `${event.clientX - clientX}px`;
-    dragImage.style.top = `${event.clientY - clientY}px`;
-
-    // Insert div to dom
-    document.body.appendChild(dragImage);
+    const mouseX = this.mouseEvent.clientX;
+    const mouseY = this.mouseEvent.clientY;
+    // Defer cloning to allow React to render the drag component into the wrapper
+    window.requestAnimationFrame(() => {
+      const dragImage = element.cloneNode(true);
+      // This id is important to retrieve it from move event
+      dragImage.id = 'drag-image';
+      // Ensure visibility with explicit inline styles (override CSS class top:-1000px)
+      dragImage.style.position = 'absolute';
+      dragImage.style.left = `${mouseX - clientX}px`;
+      dragImage.style.top = `${mouseY - clientY}px`;
+      dragImage.style.zIndex = '9999';
+      dragImage.style.pointerEvents = 'none';
+      document.body.appendChild(dragImage);
+    });
   }
 }
 

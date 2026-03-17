@@ -147,7 +147,7 @@ class AppAuthentication extends Component {
    * Check if all states are initialised before continuing
    */
   get isReady() {
-    return this.state.locale && this.state.extensionVersion && this.state.siteSettings && this.state.userSettings
+    return this.state.locale && this.state.extensionVersion && this.state.siteSettings && this.state.userSettings;
   }
 
   /**

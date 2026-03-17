@@ -1,7 +1,7 @@
 rendered-tests:
   extends: .rules
   stage: test
-  image: node:16
+  image: node:22
   coverage: /Lines\s* [:] ([\d\.]+)%/
   script:
     - cd passbolt/Webviews/Rendered
@@ -17,7 +17,7 @@ rendered-tests:
 
 rendered-linter:
   stage: test
-  image: node:16
+  image: node:22
   extends: .rules
   script:
     - cd passbolt/Webviews/Rendered

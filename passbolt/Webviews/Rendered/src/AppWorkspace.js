@@ -20,7 +20,6 @@ import ManageDialogs from "passbolt-styleguide/src/react-extension/components/Co
 import ResourceWorkspaceContextProvider from "passbolt-styleguide/src/react-extension/contexts/ResourceWorkspaceContext";
 import ResourcePasswordGeneratorContextProvider from "passbolt-styleguide/src/react-extension/contexts/ResourcePasswordGeneratorContext";
 import ManageContextualMenu from "passbolt-styleguide/src/react-extension/components/Common/ContextualMenu/ManageContextualMenu";
-import ManageAnnouncements from "passbolt-styleguide/src/react-extension/components/Announcement/ManageAnnouncements/ManageAnnouncements";
 import DisplayResourcesWorkspace from "passbolt-styleguide/src/react-extension/components/Resource/DisplayResourcesWorkspace/DisplayResourcesWorkspace";
 import DragContextProvider from "passbolt-styleguide/src/react-extension/contexts/DragContext";
 import NavigationContextProvider from "passbolt-styleguide/src/react-extension/contexts/NavigationContext";
@@ -60,6 +59,7 @@ import DisplayUserSettingsWorkspace from "passbolt-styleguide/src/react-extensio
 import {ResizableSidebarContextProvider} from "passbolt-styleguide/src/react-extension/contexts/ResizeSidebar/ResizeSidebarContext";
 import SecretRevisionsSettingsContextProvider from "passbolt-styleguide/src/shared/context/SecretRevisionSettingsContext/SecretRevisionsSettingsContext";
 import RoleContextProvider from "passbolt-styleguide/src/react-extension/contexts/RoleContext";
+import ExportPoliciesSettingsContextProvider from "passbolt-styleguide/src/react-extension/contexts/ExportPoliciesSettingsContext";
 
 /**
  * The passbolt application served by the desktop.
@@ -118,30 +118,31 @@ class AppWorkspace extends Component {
                                                   "/app/passwords",
                                                 ]}>
                                                   <PasswordExpirySettingsContextProvider>
-                                                    <ResourceWorkspaceContextProvider>
-                                                      <MetadataTypesSettingsLocalStorageContextProvider>
-                                                        <ResourceTypesLocalStorageContextProvider>
-                                                          <SecretRevisionsSettingsContextProvider>
-                                                            <ResourcePasswordGeneratorContextProvider>
-                                                              <ManageDialogs />
-                                                              <ManageWorkflows />
-                                                              <ManageContextualMenu />
-                                                              <ManageAnnouncements />
-                                                              <DragContextProvider>
-                                                                <ResizableSidebarContextProvider>
-                                                                  <div id="container" className="page password">
-                                                                    <div id="app" className="app ready" tabIndex="1000">
-                                                                      <ResourcesWebviewContext />
-                                                                      <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
+                                                    <ExportPoliciesSettingsContextProvider>
+                                                      <ResourceWorkspaceContextProvider>
+                                                        <MetadataTypesSettingsLocalStorageContextProvider>
+                                                          <ResourceTypesLocalStorageContextProvider>
+                                                            <SecretRevisionsSettingsContextProvider>
+                                                              <ResourcePasswordGeneratorContextProvider>
+                                                                <ManageDialogs />
+                                                                <ManageWorkflows />
+                                                                <ManageContextualMenu />
+                                                                <DragContextProvider>
+                                                                  <ResizableSidebarContextProvider>
+                                                                    <div id="container" className="page password">
+                                                                      <div id="app" className="app ready" tabIndex="1000">
+                                                                        <ResourcesWebviewContext />
+                                                                        <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
+                                                                      </div>
                                                                     </div>
-                                                                  </div>
-                                                                </ResizableSidebarContextProvider>
-                                                              </DragContextProvider>
-                                                            </ResourcePasswordGeneratorContextProvider>
-                                                          </SecretRevisionsSettingsContextProvider>
-                                                        </ResourceTypesLocalStorageContextProvider>
-                                                      </MetadataTypesSettingsLocalStorageContextProvider>
-                                                    </ResourceWorkspaceContextProvider>
+                                                                  </ResizableSidebarContextProvider>
+                                                                </DragContextProvider>
+                                                              </ResourcePasswordGeneratorContextProvider>
+                                                            </SecretRevisionsSettingsContextProvider>
+                                                          </ResourceTypesLocalStorageContextProvider>
+                                                        </MetadataTypesSettingsLocalStorageContextProvider>
+                                                      </ResourceWorkspaceContextProvider>
+                                                    </ExportPoliciesSettingsContextProvider>
                                                   </PasswordExpirySettingsContextProvider>
                                                 </Route>
                                                 {/* Users workspace */}
@@ -155,7 +156,6 @@ class AppWorkspace extends Component {
                                                     <ManageDialogs />
                                                     <ManageWorkflows />
                                                     <ManageContextualMenu />
-                                                    <ManageAnnouncements />
                                                     <DragContextProvider>
                                                       <ResizableSidebarContextProvider>
                                                         <div id="container" className="page user">
@@ -172,7 +172,6 @@ class AppWorkspace extends Component {
                                                   <UserSettingsContextProvider>
                                                     <UserPassphrasePoliciesContextProvider>
                                                       <ManageDialogs />
-                                                      <ManageAnnouncements />
                                                       <div id="container" className="page settings">
                                                         <div id="app" className="app ready" tabIndex="1000">
                                                           <DisplayUserSettingsWorkspace />

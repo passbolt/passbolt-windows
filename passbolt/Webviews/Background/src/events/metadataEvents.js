@@ -50,7 +50,6 @@ const listen = function(worker, apiClientOptions, account) {
     const controller = new GetOrFindMetadataKeysSettingsController(worker, requestId, apiClientOptions, account);
     await controller._exec();
   });
-
 };
 
 export const MetadataEvents = {listen};

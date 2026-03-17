@@ -53,9 +53,9 @@ export default class MainAuth {
           entriesToKeep[key] = localStorage.getItem(key);
         }
       }
-      
+
       localStorage.clear();
-      
+
       for (const [key, value] of Object.entries(entriesToKeep)) {
         localStorage.setItem(key, value);
       }
