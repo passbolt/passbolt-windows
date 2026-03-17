@@ -21,5 +21,6 @@ namespace passbolt.Models.Messaging.Topics
         public const string REVIEW_REQUEST = "passbolt.account-recovery.review-request";
         public const string GET_REQUEST = "passbolt.account-recovery.get-request";
         public const string VALIDATE_ORGANIZATION_PRIVATE_KEY = "passbolt.account-recovery.validate-organization-private-key";
+        public const string HAS_POSTPONED_USER_SETTING_INVITATION = "passbolt.account-recovery.has-user-postponed-user-setting-invitation";
     }
 }
