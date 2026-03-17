@@ -1,6 +1,6 @@
 {
   "name": "background-webview",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "Background webview2 for passbolt dekstop windows",
   "license": "AGPL-3.0",
   "copyright": "Copyright 2022 Passbolt SA",
@@ -53,8 +53,8 @@
     "formdata-node": "^6.0.3",
     "js-yaml": "^4.1.1",
     "openpgp": "^6.1.1",
-    "passbolt-browser-extension": "^5.10.3",
-    "passbolt-styleguide": "^5.10.5",
+    "passbolt-browser-extension": "^5.10.4",
+    "passbolt-styleguide": "^5.10.7",
     "setimmediate": "^1.0.5",
     "stream-browserify": "^3.0.0",
     "uuid": "^13.0.0",

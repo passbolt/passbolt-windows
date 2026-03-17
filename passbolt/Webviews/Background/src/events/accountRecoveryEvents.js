@@ -17,6 +17,7 @@ import AccountRecoveryGetUserRequestsController from "passbolt-browser-extension
 import AccountRecoveryGetRequestController from "passbolt-browser-extension/src/all/background_page/controller/accountRecovery/accountRecoveryGetRequestController";
 import ReviewRequestController from "passbolt-browser-extension/src/all/background_page/controller/accountRecovery/reviewRequestController";
 import AccountRecoveryValidateOrganizationPrivateKeyController from "passbolt-browser-extension/src/all/background_page/controller/accountRecovery/accountRecoveryValidateOrganizationPrivateKeyController";
+import HasUserPostponedUserSettingInvitationController from "passbolt-browser-extension/src/all/background_page/controller/accountRecovery/hasUserPostponedUserSettingInvitationController";
 
 // Account recovery has been build to avoid to load AppEvents and load events that we do not need into the desktop app
 const listen = function(worker, account) {
@@ -48,6 +49,11 @@ const listen = function(worker, account) {
     const apiClientOptions = await User.getInstance().getApiClientOptions();
     const controller = new AccountRecoveryValidateOrganizationPrivateKeyController(worker, requestId, apiClientOptions);
     return await controller._exec(accountRecoveryOrganizationPrivateKeyDto);
+  });
+
+  worker.port.on('passbolt.account-recovery.has-user-postponed-user-setting-invitation', async requestId => {
+    const controller = new HasUserPostponedUserSettingInvitationController(worker, requestId);
+    await controller._exec();
   });
 };
 export const AccountRecoveryEvents = {listen};
