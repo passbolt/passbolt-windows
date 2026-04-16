@@ -18,5 +18,6 @@ namespace passbolt.Models.Messaging.Topics
     {
         public const string EXPORT = "passbolt.export-resources.export-to-file";
         public const string IMPORT = "passbolt.import-resources.import-file";
+        public const string EXPORT_POLICIES_GET = "passbolt.export-policies.get";
     }
 }
