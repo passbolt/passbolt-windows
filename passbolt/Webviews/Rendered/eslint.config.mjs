@@ -277,6 +277,9 @@ export default [
           peerDependencies: true,
         },
       ],
+      // uuid v14 declares its entrypoint via the package.json `exports` field,
+      // which the default eslint-plugin-import resolver does not understand.
+      "import/no-unresolved": ["error", {ignore: ["^uuid$"]}],
       // Muted during migration
       "import/no-named-as-default-member": "off",
       "import/no-duplicates": "off",
