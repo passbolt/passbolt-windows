@@ -296,9 +296,11 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         {
             bool import = AllowedTopics.IsTopicNameAllowed(ImportExportTopics.IMPORT);
             bool export = AllowedTopics.IsTopicNameAllowed(ImportExportTopics.EXPORT);
+            bool exportPoliciesGet = AllowedTopics.IsTopicNameAllowed(ImportExportTopics.EXPORT_POLICIES_GET);
 
             Assert.IsTrue(import);
             Assert.IsTrue(export);
+            Assert.IsTrue(exportPoliciesGet);
         }
 
         [TestMethod]
