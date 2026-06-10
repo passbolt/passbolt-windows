@@ -20,7 +20,7 @@ import ManageDialogs from "passbolt-styleguide/src/react-extension/components/Co
 import ResourceWorkspaceContextProvider from "passbolt-styleguide/src/react-extension/contexts/ResourceWorkspaceContext";
 import ResourcePasswordGeneratorContextProvider from "passbolt-styleguide/src/react-extension/contexts/ResourcePasswordGeneratorContext";
 import ManageContextualMenu from "passbolt-styleguide/src/react-extension/components/Common/ContextualMenu/ManageContextualMenu";
-import DisplayResourcesWorkspace from "passbolt-styleguide/src/react-extension/components/Resource/DisplayResourcesWorkspace/DisplayResourcesWorkspace";
+import WorkspaceGate from "./components/WorkspaceGate";
 import DragContextProvider from "passbolt-styleguide/src/react-extension/contexts/DragContext";
 import NavigationContextProvider from "passbolt-styleguide/src/react-extension/contexts/NavigationContext";
 import ExtAppContextProvider from "passbolt-styleguide/src/react-extension/contexts/ExtAppContext";
@@ -132,7 +132,7 @@ class AppWorkspace extends Component {
                                                                     <div id="container" className="page password">
                                                                       <div id="app" className="app ready" tabIndex="1000">
                                                                         <ResourcesWebviewContext />
-                                                                        <DisplayResourcesWorkspace onMenuItemClick={this.handleWorkspaceSelect} />
+                                                                        <WorkspaceGate onMenuItemClick={this.handleWorkspaceSelect} />
                                                                       </div>
                                                                     </div>
                                                                   </ResizableSidebarContextProvider>
