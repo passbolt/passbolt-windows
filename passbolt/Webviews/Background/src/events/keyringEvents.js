@@ -19,6 +19,7 @@ import GetUserKeyInfoController from "passbolt-browser-extension/src/all/backgro
 import GetKeyInfoController from "passbolt-browser-extension/src/all/background_page/controller/crypto/getKeyInfoController";
 import DownloadUserPrivateKeyController from "../controllers/downloadUserPrivateKeyController";
 import DownloadUserPublicKeyController from "../controllers/downloadUserPublicKeyController";
+import SynchroniseKeyringController from "passbolt-browser-extension/src/all/background_page/controller/keyring/synchroniseKeyringController";
 
 const listen = function(worker, _, account) {
   /*
@@ -116,6 +117,17 @@ const listen = function(worker, _, account) {
     } catch (error) {
       worker.port.emit(requestId, 'ERROR', error);
     }
+  });
+
+  /*
+   * Synchronise the keyring with the API.
+   *
+   * @listens passbolt.keyring.sync
+   * @param requestId {uuid} The request identifier
+   */
+  worker.port.on("passbolt.keyring.sync", async requestId => {
+    const controller = new SynchroniseKeyringController(worker, requestId);
+    await controller._exec();
   });
 };
 export const KeyringEvents = {listen};
