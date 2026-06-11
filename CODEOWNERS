@@ -1,0 +1,6 @@
+[Windows]
+* @passbolt/groups/front-end-group
+
+[SRE]
+.gitlab-ci/ @passbolt/groups/sre-group
+.gitlab-ci.yaml @passbolt/groups/sre-group
