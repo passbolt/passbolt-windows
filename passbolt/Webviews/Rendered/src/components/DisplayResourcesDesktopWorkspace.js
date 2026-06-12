@@ -26,7 +26,7 @@ import DisplayResourcesWorkspace
  * Pin code column is never appended — toggling its visibility from the columns
  * dropdown then has no effect on the grid until the user navigates away/back.
  */
-const WorkspaceGate = props => (
+const DisplayResourcesDesktopWorkspace = props => (
   <ResourceTypesLocalStorageContext.Consumer>
     {({resourceTypes}) => (
       <DisplayResourcesWorkspace
@@ -37,8 +37,8 @@ const WorkspaceGate = props => (
   </ResourceTypesLocalStorageContext.Consumer>
 );
 
-WorkspaceGate.propTypes = {
+DisplayResourcesDesktopWorkspace.propTypes = {
   onMenuItemClick: PropTypes.func,
 };
 
-export default WorkspaceGate;
+export default DisplayResourcesDesktopWorkspace;
