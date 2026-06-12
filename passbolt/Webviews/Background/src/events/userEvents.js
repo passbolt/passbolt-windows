@@ -25,6 +25,8 @@ import UpdatePrivateKeyController from "../controllers/updatePrivateKeyControlle
 import UpdateUserController from "passbolt-browser-extension/src/all/background_page/controller/user/updateUserController";
 import DeleteDryRunUserController from "passbolt-browser-extension/src/all/background_page/controller/user/deleteDryRunUserController";
 import DeleteUserController from "passbolt-browser-extension/src/all/background_page/controller/user/deleteUserController";
+import GetOrFindUsersController from "passbolt-browser-extension/src/all/background_page/controller/user/getOrFindUsersController";
+
 
 const listen = function(worker, apiClientOptions, account) {
   /*
@@ -210,6 +212,19 @@ const listen = function(worker, apiClientOptions, account) {
       console.error(error);
       worker.port.emit(requestId, 'ERROR', error);
     }
+  });
+
+
+  /*
+   * Find users by their ids.
+   *
+   * @listens passbolt.users.get-by-ids
+   * @param {uuid} requestId The request identifier
+   * @param {Array<uuid>} userIds The ids of the users to retrieve
+   */
+  worker.port.on("passbolt.users.get-by-ids", async (requestId, userIds) => {
+    const controller = new GetOrFindUsersController(worker, requestId, apiClientOptions, account);
+    controller._exec(userIds);
   });
 };
 
