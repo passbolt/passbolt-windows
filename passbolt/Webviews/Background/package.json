@@ -47,7 +47,7 @@
     "webpack-cli": "^7.0.2"
   },
   "dependencies": {
-    "@babel/core": "^7.23.3",
+    "@babel/core": "^7.29.7",
     "@babel/preset-react": "^7.22.15",
     "buffer": "^6.0.3",
     "formdata-node": "^6.0.3",
