@@ -12,6 +12,7 @@
  * @since         0.0.1
  */
 
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -32,6 +33,23 @@ namespace passbolt.Services.NavigationService
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Check if the given url is hosted on the webview virtual host.
+        /// Used by the navigation guard to know when a webview is leaving or
+        /// coming back to its virtual host (eg. during an external MFA flow).
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns>bool</returns>
+        public bool IsVirtualHost(string url)
+        {
+            if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(this.trustedUrl))
+            {
+                return false;
+            }
+
+            return Uri.TryCreate(url, UriKind.Absolute, out Uri uri) && uri.Host == this.trustedUrl;
         }
     }
 }
