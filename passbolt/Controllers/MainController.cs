@@ -309,6 +309,15 @@ namespace passbolt.Controllers
             CoreWebView2 webviewSender = this.GetCoreWebView2Sender(sender);
 
             if (webviewSender == null || message == null) return;
+
+            //Only allow IPC from a webview loaded on its attached virtual host.
+            //This blocks any host that is not the expected virtual host (eg. an external MFA provider) from using the IPC channel.
+            if (!backgroundNavigationService.IsVirtualHost(webviewSender.Source)
+                && !renderedNavigationService.IsVirtualHost(webviewSender.Source))
+            {
+                return;
+            }
+
             IPC ipc = SerializationHelper.DeserializeFromJson<IPC>(message);
 
             //Validate requestId to be an uuid
