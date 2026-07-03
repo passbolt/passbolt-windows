@@ -232,7 +232,12 @@ namespace passbolt.Controllers
         /// <returns></returns>
         public virtual void AllowNavigation(WebView2 sender, CoreWebView2NavigationStartingEventArgs args, AbstractNavigationService navigationService)
         {
-            if (navigationService != null && !navigationService.canNavigate(args.Uri))
+            if (navigationService == null)
+            {
+                return;
+            }
+
+            if (!navigationService.canNavigate(args.Uri))
             {
                 //When session is expired we are redirected to the API
                 //To avoid this we catch the navigation and replicate the behaviour done during logout
@@ -241,7 +246,12 @@ namespace passbolt.Controllers
                     backgroundTopic.ProceedMessage(new IPC(AuthenticationTopics.LOG_OUT));
                 }
                 args.Cancel = true;
+                return;
             }
+
+            //Disable the webview IPC (web message) when it navigates away from its virtual host (eg. an external MFA provider)
+            //and re-enable it when it navigates back to the virtual host.
+            sender.CoreWebView2.Settings.IsWebMessageEnabled = navigationService.IsVirtualHost(args.Uri);
         }
 
         /// <summary>

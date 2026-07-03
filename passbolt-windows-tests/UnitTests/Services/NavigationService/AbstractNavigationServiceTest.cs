@@ -46,6 +46,30 @@ namespace passbolt_windows_tests.UnitTests.Services
             bool result = _navigationService.canNavigate(url);
             Assert.IsFalse(result);
         }
+
+        [TestMethod]
+        public void IsVirtualHost_UrlOnVirtualHost_ReturnsTrue()
+        {
+            _navigationService.trustedUrl = "abc123.passbolt.local";
+            bool result = _navigationService.IsVirtualHost("https://abc123.passbolt.local/Rendered/index-auth.html");
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public void IsVirtualHost_ExternalUrl_ReturnsFalse()
+        {
+            _navigationService.trustedUrl = "abc123.passbolt.local";
+            bool result = _navigationService.IsVirtualHost("https://cloud.passbolt.com/mfa/verify/duo");
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void IsVirtualHost_NonAbsoluteOrEmptyUrl_ReturnsFalse()
+        {
+            _navigationService.trustedUrl = "abc123.passbolt.local";
+            Assert.IsFalse(_navigationService.IsVirtualHost("about:blank"));
+            Assert.IsFalse(_navigationService.IsVirtualHost(null));
+        }
     }
 
     internal class MockNavigationService : AbstractNavigationService
