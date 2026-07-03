@@ -263,6 +263,40 @@ namespace passbolt.Controllers
         }
 
         /// <summary>
+        /// FrameNavigationStarting event handler for the rendered webview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void RenderedFrameNavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
+        {
+            this.AllowFrameNavigation(args, this.renderedNavigationService);
+        }
+
+        /// <summary>
+        /// FrameNavigationStarting event handler for the background webview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void BackgroundFrameNavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
+        {
+            this.AllowFrameNavigation(args, this.backgroundNavigationService);
+        }
+
+        /// <summary>
+        /// Frame navigation guard: a frame (iframe) may only navigate to an url allowed by the webview navigation
+        /// service. Any other frame navigation is cancelled so arbitrary frames cannot be opened on the webviews.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="navigationService"></param>
+        public virtual void AllowFrameNavigation(CoreWebView2NavigationStartingEventArgs args, AbstractNavigationService navigationService)
+        {
+            if (navigationService == null || !navigationService.canNavigate(args.Uri))
+            {
+                args.Cancel = true;
+            }
+        }
+
+        /// <summary>
         /// WebMessageReceived event handler for the background
         /// </summary>
         /// <param name="sender"></param>
