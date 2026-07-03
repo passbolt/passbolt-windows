@@ -48,7 +48,7 @@ namespace passbolt.Services.Mfa
                 //Allow the Duo MFA provider verify endpoints (prompt/callback) for the API check
                 new Regex($"^{trustedDomain}/mfa/verify/duo(/(prompt|callback))?(\\?.*)?$"),
                 //Allow navigation to the external Duo MFA provider (pattern aligned with the styleguide)
-                new Regex($"https://api-[a-fA-F0-9]{{8,16}}\\.duosecurity\\.com(/.*)"),
+                new Regex($"^https://api-[a-fA-F0-9]{{8,16}}\\.duosecurity\\.com(/.*)?$"),
                 //The complete step
                 new Regex($"^{trustedDomain}/$"),
             };
