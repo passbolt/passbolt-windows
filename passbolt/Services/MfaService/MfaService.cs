@@ -14,6 +14,7 @@
 
 using Microsoft.Web.WebView2.Core;
 using passbolt.Models.CredentialLocker;
+using passbolt.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,14 @@ namespace passbolt.Services.Mfa
         private List<Regex> mfaUrls;
         public string[] providers { private get;  set; }
 
+        // Matches the external Duo MFA provider url (dynamic host, pattern aligned with the styleguide).
+        // Shared by the navigation allow list (InitMfaUrls) and the IsDuoUrl check.
+        private readonly Regex duoUrlRegex = new Regex("^https://api-[a-fA-F0-9]{8,16}\\.duosecurity\\.com(/.*)?$");
+
+        // The Duo provider origin captured by the navigation during a Duo MFA process.
+        // Reset on every InitMfaUrls (a new MFA process re-scopes it).
+        private string duoUrl;
+
 
         /// <summary>
         /// Allow navigation to the API 
@@ -41,14 +50,16 @@ namespace passbolt.Services.Mfa
         /// <param name="url"></param>
         public List<Regex> InitMfaUrls(string trustedDomain)
         {
+            //A new MFA process starts with no captured Duo domain
+            this.duoUrl = null;
             this.mfaUrls = new List<Regex>
             {
                 //Order is important
                 new Regex($"^{trustedDomain}/mfa/verify/(duo|totp|yubikey)\\?redirect=/$"),
                 //Allow the Duo MFA provider verify endpoints (prompt/callback) for the API check
                 new Regex($"^{trustedDomain}/mfa/verify/duo(/(prompt|callback))?(\\?.*)?$"),
-                //Allow navigation to the external Duo MFA provider (pattern aligned with the styleguide)
-                new Regex($"^https://api-[a-fA-F0-9]{{8,16}}\\.duosecurity\\.com(/.*)?$"),
+                //Allow navigation to the external Duo MFA provider (single source shared with IsDuoUrl)
+                this.duoUrlRegex,
                 //The complete step
                 new Regex($"^{trustedDomain}/$"),
             };
@@ -68,10 +79,40 @@ namespace passbolt.Services.Mfa
 
 
         /// <summary>
+        /// Check if the given url is the external Duo MFA provider
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns>bool</returns>
+        public bool IsDuoUrl(string url)
+        {
+            return this.duoUrlRegex.IsMatch(url);
+        }
+
+        /// <summary>
+        /// Store the Duo provider origin captured by the navigation during a Duo MFA process.
+        /// The domain is dynamic (api-XXXX.duosecurity.com) so it can only be known at navigation time.
+        /// </summary>
+        /// <param name="url"></param>
+        public void SetDuoUrl(string url)
+        {
+            this.duoUrl = UriBuilderHelper.GetHostAndShemeForUri(url);
+        }
+
+        /// <summary>
+        /// The Duo provider origin captured during the ongoing Duo MFA process, null when none is ongoing
+        /// </summary>
+        /// <returns>string</returns>
+        public string GetDuoUrl()
+        {
+            return this.duoUrl;
+        }
+
+
+        /// <summary>
         /// Check if rendered webview is running on the API MFA urls
         /// </summary>
         /// <param name="url"></param>
-        /// <returns>bool</returns>        
+        /// <returns>bool</returns>
         public bool IsMfaUrls(string url)
         {
             if (this.mfaUrls != null)

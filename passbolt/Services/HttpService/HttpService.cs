@@ -24,6 +24,8 @@ using passbolt.Exceptions;
 using passbolt.Utils;
 using Windows.Storage.Streams;
 using passbolt.Services.CredentialLocker;
+using passbolt.Services.NavigationService;
+using passbolt.Services.Mfa;
 using passbolt.Models.Cookies;
 using System;
 using System.Text;
@@ -36,6 +38,11 @@ namespace passbolt.Services.HttpService
         private HttpClient httpClient;
         private string trustedDomain = null;
         public string pownedUrl = "https://api.pwnedpasswords.com";
+        // Duo loads its analytics from amplitude, allowed only for the rendered webview during a Duo MFA process
+        public string amplitudeUrl = "https://api2.amplitude.com/2/httpapi";
+        // The webviews load their own assets (scripts, styles, fonts, images, locales) from these installed dist hosts
+        private readonly string renderedDistHost = "https://rendered.dist";
+        private readonly string backgroundDistHost = "https://background.dist";
         private CredentialLockerService credentialLockerService;
         private CookiesManager cookiesManager;
 
@@ -99,6 +106,114 @@ namespace passbolt.Services.HttpService
         /// <param name="webviewRequest"></param>
         /// <returns></returns>
         public bool isCallToPownedService(CoreWebView2WebResourceRequestedEventArgs webviewRequest) => webviewRequest.Request.Uri.StartsWith(pownedUrl);
+
+        /// <summary>
+        /// Strict allow list applied to every webview resource request.
+        /// Any (resource context / origin) pair that is not explicitly authorized is blocked.
+        /// The rules mirror the webviews CSP and add the Duo exceptions while a Duo MFA process is ongoing.
+        /// </summary>
+        /// <param name="uri">the requested url</param>
+        /// <param name="context">the resource context of the request</param>
+        /// <param name="isRendered">true when the request comes from the rendered webview, false for the background webview</param>
+        /// <returns>bool</returns>
+        public bool IsResourceAllowed(string uri, CoreWebView2WebResourceContext context, bool isRendered)
+        {
+            // The per session virtual host is owned by the navigation service of each webview
+            string virtualHost = isRendered
+                ? RenderedNavigationService.Instance.trustedUrl
+                : BackgroundNavigationService.Instance.trustedUrl;
+            string distHost = isRendered ? this.renderedDistHost : this.backgroundDistHost;
+            switch (context)
+            {
+                case CoreWebView2WebResourceContext.XmlHttpRequest:
+                    return this.isOnVirtualHost(uri, virtualHost, distHost)
+                        || this.isOnTrustedDomain(uri)
+                        || uri.StartsWith(this.pownedUrl)
+                        || this.isDuoAllowed(uri, context, isRendered);
+
+                case CoreWebView2WebResourceContext.Script:
+                    return this.isOnVirtualHost(uri, virtualHost, distHost)
+                        || (isRendered && this.isOnTrustedDomain(uri))
+                        || this.isDuoAllowed(uri, context, isRendered);
+
+                case CoreWebView2WebResourceContext.Stylesheet:
+                    return isRendered
+                        && (this.isOnVirtualHost(uri, virtualHost, distHost)
+                            || this.isOnTrustedDomain(uri)
+                            || this.isDuoAllowed(uri, context, isRendered));
+
+                case CoreWebView2WebResourceContext.Font:
+                    return isRendered && (this.isOnVirtualHost(uri, virtualHost, distHost) || this.isOnTrustedDomain(uri));
+
+                case CoreWebView2WebResourceContext.Image:
+                    return isRendered
+                        && (this.isOnVirtualHost(uri, virtualHost, distHost)
+                            || this.isOnTrustedDomain(uri)
+                            || this.isDuoAllowed(uri, context, isRendered));
+
+                case CoreWebView2WebResourceContext.Media:
+                case CoreWebView2WebResourceContext.Websocket:
+                    return false;
+
+                default:
+                    // Other contexts (eg. the top level Document) are governed by the navigation guard.
+                    return true;
+            }
+        }
+
+        /// <summary>
+        /// Block a disallowed resource request by returning an empty forbidden response
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="resource"></param>
+        public void BlockRequest(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
+        {
+            CoreWebView2WebResourceResponse response = sender.Environment.CreateWebResourceResponse(
+                null,
+                (int)HttpStatusCode.Forbidden,
+                HttpStatusCode.Forbidden.ToString(),
+                string.Empty);
+            resource.Response = response;
+        }
+
+        /// <summary>
+        /// check if the url is served by the webview own virtual host (per session host or installed dist host)
+        /// </summary>
+        private bool isOnVirtualHost(string uri, string virtualHost, string distHost)
+        {
+            return (!string.IsNullOrEmpty(virtualHost) && uri.StartsWith($"https://{virtualHost}")) || uri.StartsWith(distHost);
+        }
+
+        /// <summary>
+        /// check if the url targets the trusted domain
+        /// </summary>
+        private bool isOnTrustedDomain(string uri) => this.trustedDomain != null && uri.StartsWith(this.trustedDomain);
+
+        /// <summary>
+        /// Duo exceptions: allowed only on the rendered webview while a Duo MFA process is ongoing.
+        /// Covers the captured Duo provider origin and, for XHR only, its amplitude analytics endpoint.
+        /// </summary>
+        private bool isDuoAllowed(string uri, CoreWebView2WebResourceContext context, bool isRendered)
+        {
+            if (!isRendered || MfaService.Instance.GetDuoUrl() == null)
+            {
+                return false;
+            }
+
+            // Duo loads its analytics from amplitude through XHR only
+            bool isAmplitudeXhr = context == CoreWebView2WebResourceContext.XmlHttpRequest && uri.StartsWith(this.amplitudeUrl);
+
+            return this.isOnDuo(uri) || isAmplitudeXhr;
+        }
+
+        /// <summary>
+        /// check if the url targets the Duo provider origin captured by the navigation during the MFA process
+        /// </summary>
+        private bool isOnDuo(string uri)
+        {
+            string duoUrl = MfaService.Instance.GetDuoUrl();
+            return duoUrl != null && uri.StartsWith(duoUrl);
+        }
 
         /// <summary>
         /// Create http request from webview request

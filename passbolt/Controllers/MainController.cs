@@ -142,12 +142,18 @@ namespace passbolt.Controllers
                 WebviewOrchestratorService.Instance.SetRenderedStatus(false);
             }
 
-            //Check if the Mfa is completed 
+            //Capture the Duo provider url reached during the MFA flow so the middleware can strictly validate its domain
+            if (MfaService.Instance.IsDuoUrl(args.Uri))
+            {
+                MfaService.Instance.SetDuoUrl(args.Uri);
+            }
+
+            //Check if the Mfa is completed
             if (MfaService.Instance.IsMfaUrls(args.Uri) && MfaService.Instance.HasMfaCompleted(args.Uri))
             {
                 //Reinit context to remove mfa urls allowed
                 renderedNavigationService.DisallowMfaUrls();
-                // We cancel the redirection 
+                // We cancel the redirection
                 args.Cancel = true;
                 // Redirect to workspace
                 await backgroundTopic.RedirectToWorkspace();
@@ -178,11 +184,13 @@ namespace passbolt.Controllers
             webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, indexPage));
             webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, indexPage));
 
-            // Init filter to catch all http request from background 
+            // Init filter to catch all http request from background and rendered
             webviewBackground.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+            webviewRendered.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 
-            // Subscribes to the WebResourceRequested event of the background window
+            // Subscribes to the WebResourceRequested event of the background and rendered window
             webviewBackground.CoreWebView2.WebResourceRequested += WebResourceRequested;
+            webviewRendered.CoreWebView2.WebResourceRequested += WebResourceRequested;
             // Subscribes to the WebMessageReceived event of the rendered and background window
             webviewBackground.CoreWebView2.WebMessageReceived += WebMessageReceived;
             webviewRendered.CoreWebView2.WebMessageReceived += WebMessageReceived;
@@ -261,7 +269,15 @@ namespace passbolt.Controllers
         /// <param name="e"></param>
         protected virtual void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
         {
-            httpService.CheckAPICall(sender, resource);
+            bool isRendered = this.webviewRendered != null && sender.Source == this.webviewRendered.CoreWebView2.Source;
+
+            //Strict mode: block any resource request whose context and origin is not explicitly allowed for this webview
+            if (!httpService.IsResourceAllowed(resource.Request.Uri, resource.ResourceContext, isRendered))
+            {
+                httpService.BlockRequest(sender, resource);
+                return;
+            }
+
             if (resource.ResourceContext == CoreWebView2WebResourceContext.XmlHttpRequest)
             {
                 //Check if the request is allowed with the trusted domain
@@ -270,12 +286,9 @@ namespace passbolt.Controllers
                 {
                     httpService.ResolveOptionMethod(sender, resource);
                 }
-                else if (httpService.isCallToPownedService(resource))
+                else if (httpService.isCallToServer(resource))
                 {
-                    resource.GetDeferral().Complete();
-                }
-                else
-                {
+                    // Proxy the trusted domain calls to avoid the CORS restrictions
                     HttpRequestMessage request = httpService.BuildHttpRequest(resource);
                     try
                     {
@@ -293,8 +306,8 @@ namespace passbolt.Controllers
                             }
                         }
                     }
-
                 }
+                //The other allowed calls (virtual host locales, pwnedpasswords, Duo and amplitude during MFA) reach their origin directly
             }
         }
 
