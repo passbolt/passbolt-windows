@@ -142,12 +142,18 @@ namespace passbolt.Controllers
                 WebviewOrchestratorService.Instance.SetRenderedStatus(false);
             }
 
-            //Check if the Mfa is completed 
+            //Capture the Duo provider url reached during the MFA flow so the middleware can strictly validate its domain
+            if (MfaService.Instance.IsDuoUrl(args.Uri))
+            {
+                MfaService.Instance.SetDuoUrl(args.Uri);
+            }
+
+            //Check if the Mfa is completed
             if (MfaService.Instance.IsMfaUrls(args.Uri) && MfaService.Instance.HasMfaCompleted(args.Uri))
             {
                 //Reinit context to remove mfa urls allowed
                 renderedNavigationService.DisallowMfaUrls();
-                // We cancel the redirection 
+                // We cancel the redirection
                 args.Cancel = true;
                 // Redirect to workspace
                 await backgroundTopic.RedirectToWorkspace();
@@ -178,11 +184,13 @@ namespace passbolt.Controllers
             webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, indexPage));
             webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, indexPage));
 
-            // Init filter to catch all http request from background 
+            // Init filter to catch all http request from background and rendered
             webviewBackground.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+            webviewRendered.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 
-            // Subscribes to the WebResourceRequested event of the background window
+            // Subscribes to the WebResourceRequested event of the background and rendered window
             webviewBackground.CoreWebView2.WebResourceRequested += WebResourceRequested;
+            webviewRendered.CoreWebView2.WebResourceRequested += WebResourceRequested;
             // Subscribes to the WebMessageReceived event of the rendered and background window
             webviewBackground.CoreWebView2.WebMessageReceived += WebMessageReceived;
             webviewRendered.CoreWebView2.WebMessageReceived += WebMessageReceived;
@@ -232,7 +240,12 @@ namespace passbolt.Controllers
         /// <returns></returns>
         public virtual void AllowNavigation(WebView2 sender, CoreWebView2NavigationStartingEventArgs args, AbstractNavigationService navigationService)
         {
-            if (navigationService != null && !navigationService.canNavigate(args.Uri))
+            if (navigationService == null)
+            {
+                return;
+            }
+
+            if (!navigationService.canNavigate(args.Uri))
             {
                 //When session is expired we are redirected to the API
                 //To avoid this we catch the navigation and replicate the behaviour done during logout
@@ -240,6 +253,45 @@ namespace passbolt.Controllers
                 {
                     backgroundTopic.ProceedMessage(new IPC(AuthenticationTopics.LOG_OUT));
                 }
+                args.Cancel = true;
+                return;
+            }
+
+            //Disable the webview IPC (web message) when it navigates away from its virtual host (eg. an external MFA provider)
+            //and re-enable it when it navigates back to the virtual host.
+            sender.CoreWebView2.Settings.IsWebMessageEnabled = navigationService.IsVirtualHost(args.Uri);
+        }
+
+        /// <summary>
+        /// FrameNavigationStarting event handler for the rendered webview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void RenderedFrameNavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
+        {
+            this.AllowFrameNavigation(args, this.renderedNavigationService);
+        }
+
+        /// <summary>
+        /// FrameNavigationStarting event handler for the background webview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        protected virtual void BackgroundFrameNavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs args)
+        {
+            this.AllowFrameNavigation(args, this.backgroundNavigationService);
+        }
+
+        /// <summary>
+        /// Frame navigation guard: a frame (iframe) may only navigate to an url allowed by the webview navigation
+        /// service. Any other frame navigation is cancelled so arbitrary frames cannot be opened on the webviews.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="navigationService"></param>
+        public virtual void AllowFrameNavigation(CoreWebView2NavigationStartingEventArgs args, AbstractNavigationService navigationService)
+        {
+            if (navigationService == null || !navigationService.canNavigate(args.Uri))
+            {
                 args.Cancel = true;
             }
         }
@@ -251,7 +303,15 @@ namespace passbolt.Controllers
         /// <param name="e"></param>
         protected virtual void WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs resource)
         {
-            httpService.CheckAPICall(sender, resource);
+            bool isRendered = this.webviewRendered != null && sender.Source == this.webviewRendered.CoreWebView2.Source;
+
+            //Strict mode: block any resource request whose context and origin is not explicitly allowed for this webview
+            if (!httpService.IsResourceAllowed(resource.Request.Uri, resource.ResourceContext, isRendered))
+            {
+                httpService.BlockRequest(sender, resource);
+                return;
+            }
+
             if (resource.ResourceContext == CoreWebView2WebResourceContext.XmlHttpRequest)
             {
                 //Check if the request is allowed with the trusted domain
@@ -260,12 +320,9 @@ namespace passbolt.Controllers
                 {
                     httpService.ResolveOptionMethod(sender, resource);
                 }
-                else if (httpService.isCallToPownedService(resource))
+                else if (httpService.isCallToServer(resource))
                 {
-                    resource.GetDeferral().Complete();
-                }
-                else
-                {
+                    // Proxy the trusted domain calls to avoid the CORS restrictions
                     HttpRequestMessage request = httpService.BuildHttpRequest(resource);
                     try
                     {
@@ -283,8 +340,8 @@ namespace passbolt.Controllers
                             }
                         }
                     }
-
                 }
+                //The other allowed calls (virtual host locales, pwnedpasswords, Duo and amplitude during MFA) reach their origin directly
             }
         }
 
@@ -299,6 +356,15 @@ namespace passbolt.Controllers
             CoreWebView2 webviewSender = this.GetCoreWebView2Sender(sender);
 
             if (webviewSender == null || message == null) return;
+
+            //Only allow IPC from a webview loaded on its attached virtual host.
+            //This blocks any host that is not the expected virtual host (eg. an external MFA provider) from using the IPC channel.
+            if (!backgroundNavigationService.IsVirtualHost(webviewSender.Source)
+                && !renderedNavigationService.IsVirtualHost(webviewSender.Source))
+            {
+                return;
+            }
+
             IPC ipc = SerializationHelper.DeserializeFromJson<IPC>(message);
 
             //Validate requestId to be an uuid
