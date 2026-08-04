@@ -120,7 +120,7 @@ describe("Main workspace class", () => {
     await main.initWorkspace();
 
     expect(AccountRecoveryEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
-    expect(ActionLogEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
+    expect(ActionLogEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(AuthEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(CommentEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
@@ -140,7 +140,7 @@ describe("Main workspace class", () => {
     expect(PownedPasswordEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(RbacEvents.listen).toHaveBeenCalledWith(main.worker, new AccountEntity(accountDto).toDto());
     expect(ResourceEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
-    expect(ResourceTypeEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
+    expect(ResourceTypeEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(RoleEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(SecretHistoryEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
