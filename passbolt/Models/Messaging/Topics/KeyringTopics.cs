@@ -22,5 +22,7 @@ namespace passbolt.Models.Messaging.Topics
         public const string DOWNLOAD_MY_PRIVATE_KEY = "passbolt.keyring.download-my-private-key";
         public const string DOWNLOAD_MY_PUBLIC_KEY = "passbolt.keyring.download-my-public-key";
         public const string CHECK_PASSPHRASE = "passbolt.keyring.private.checkpassphrase";
+        public const string GET_PRIVATE_KEY = "passbolt.keyring.get-private-key";
+        public const string SYNC = "passbolt.keyring.sync";
     }
 }

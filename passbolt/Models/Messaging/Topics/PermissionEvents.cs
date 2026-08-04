@@ -17,5 +17,6 @@ namespace passbolt.Models.Messaging.Topics
     public class PermissionTopics
     {
         public const string FIND_ACO_PERMISSIONS_FOR_DISPLAY = "passbolt.permissions.find-aco-permissions-for-display";
+        public const string FIND_BY_IDS_FOR_SHARE = "passbolt.permissions.find-by-ids-for-share";
     }
 }

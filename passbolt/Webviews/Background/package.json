@@ -14,8 +14,8 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "openpgp": "^6.1.1",
-    "passbolt-browser-extension": "^5.13.0",
-    "passbolt-styleguide": "^5.13.0",
+    "passbolt-browser-extension": "^5.14.0",
+    "passbolt-styleguide": "5.14.6",
     "stream-browserify": "^3.0.0",
     "uuid": "^14.0.0",
     "validator": "^13.15.26"

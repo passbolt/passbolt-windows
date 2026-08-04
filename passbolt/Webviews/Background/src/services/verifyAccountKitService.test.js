@@ -65,7 +65,7 @@ describe('VerifyAccountKitService', () => {
       });
       const result = verifyAccountKitService.verify(wrongAccountKit);
 
-      await expect(result).rejects.toThrow("Could not validate entity Account.");
+      await expect(result).rejects.toThrow("Could not validate entity AccountEntity.");
     });
 
     it('Should return the validated account kit', async() => {

@@ -23,5 +23,6 @@ namespace passbolt.Models.Messaging.Topics
         public const string DELETE = "passbolt.groups.delete";
         public const string DELETE_DRY_RUN = "passbolt.groups.delete-dry-run";
         public const string FIND_MY_GROUPS = "passbolt.groups.find-my-groups";
+        public const string FIND_BY_IDS_FOR_SHARE = "passbolt.groups.find-by-ids-for-share";
     }
 }

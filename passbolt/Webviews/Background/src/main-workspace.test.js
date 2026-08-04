@@ -14,7 +14,7 @@
 
 import Main from "./main-workspace";
 
-import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
+import {SiteSettingsEvents} from "./events/siteSettingsEvents";
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
 import {RoleEvents} from "passbolt-browser-extension/src/all/background_page/event/roleEvents";
 import {ResourceTypeEvents} from "passbolt-browser-extension/src/all/background_page/event/resourceTypeEvents";
@@ -101,7 +101,7 @@ describe("Main workspace class", () => {
     jest.spyOn(LocaleEvents, "listen");
     jest.spyOn(MfaEvents, "listen");
     jest.spyOn(MultiFactorAuthenticationEvents, "listen");
-    jest.spyOn(OrganizationSettingsEvents, "listen");
+    jest.spyOn(SiteSettingsEvents, "listen");
     jest.spyOn(PasswordExpiryEvents, "listen");
     jest.spyOn(PasswordPoliciesEvents, "listen");
     jest.spyOn(PownedPasswordEvents, "listen");
@@ -134,7 +134,7 @@ describe("Main workspace class", () => {
     expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(MfaEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(MultiFactorAuthenticationEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
-    expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(SiteSettingsEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(PasswordExpiryEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(PasswordPoliciesEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(PownedPasswordEvents.listen).toHaveBeenCalledWith(main.worker);
