@@ -22,17 +22,6 @@
     "react-router-dom": "^5.2.0",
     "uuid": "^14.0.0"
   },
-  "scripts": {
-    "build": "webpack",
-    "build-watch": "webpack --watch",
-    "lint": "npm run lint:lockfile && npm run lint:eslint",
-    "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \"https:\" \"git+ssh:\" --empty-hostname false",
-    "lint:eslint": "eslint -c eslint.config.mjs --ext js src",
-    "lint:eslint-fix": "eslint -c eslint.config.mjs --ext js --fix src",
-    "test": "jest",
-    "test:unit": "jest --no-cache ./src/",
-    "test:coverage": "jest --no-cache ./src/ --coverage"
-  },
   "devDependencies": {
     "@babel/core": "^7.29.7",
     "@babel/eslint-parser": "^7.27.0",
@@ -64,5 +53,16 @@
   "overrides": {
     "uuid": "^14.0.0",
     "js-yaml": "^4.3.1"
+  },
+  "scripts": {
+    "build": "webpack",
+    "build-watch": "webpack --watch",
+    "lint": "npm run lint:lockfile && npm run lint:eslint",
+    "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \"https:\" \"git+ssh:\" --empty-hostname false",
+    "lint:eslint": "eslint -c eslint.config.mjs --ext js src",
+    "lint:eslint-fix": "eslint -c eslint.config.mjs --ext js --fix src",
+    "test": "jest",
+    "test:unit": "jest --no-cache ./src/",
+    "test:coverage": "jest --no-cache ./src/ --coverage"
   }
 }
