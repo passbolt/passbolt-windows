@@ -12,7 +12,6 @@
     "npm": ">=10.9.2"
   },
   "dependencies": {
-    "copy-webpack-plugin": "^12.0.0",
     "i18next": "^26.3.4",
     "passbolt-styleguide": "^5.13.0",
     "prop-types": "^15.8.1",
@@ -32,6 +31,7 @@
     "@babel/runtime-corejs3": "^7.27.0",
     "@svgr/webpack": "^8.1.0",
     "babel-loader": "^9.1.2",
+    "copy-webpack-plugin": "^14.0.0",
     "eslint": "^9.37.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jest": "^29.0.1",
