@@ -12,8 +12,6 @@
  * @since         1.0.0
  */
 
-global.TextEncoder = require('text-encoding-utf-8').TextEncoder;
-global.TextDecoder = require('text-encoding-utf-8').TextDecoder;
 global.fetch = require('node-fetch');
 
 if (!window.chrome) {
