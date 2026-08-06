@@ -26,5 +26,6 @@ namespace passbolt.Models.Messaging.Topics
         public const string RESEND_INVITE = "passbolt.users.resend-invite";
         public const string UPDATE_SECURITY_TOKEN = "passbolt.users.update-security-token";
         public const string UPDATE_PRIVATE_KEY = "passbolt.user.update-private-key";
+        public const string GET_BY_IDS = "passbolt.users.get-by-ids";
     }
 }

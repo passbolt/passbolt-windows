@@ -15,7 +15,7 @@
 import Main from "./main-auth";
 
 import {AuthEvents} from "./events/authEvents";
-import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
+import {SiteSettingsEvents} from "./events/siteSettingsEvents";
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
 import {LocaleEvents} from "./events/localeEvents";
 import {DesktopEvents} from "./events/desktopEvents";
@@ -42,7 +42,7 @@ describe("Main authentication class", () => {
     jest.spyOn(ConfigEvents, "listen");
     jest.spyOn(DesktopEvents, "listen");
     jest.spyOn(LocaleEvents, "listen");
-    jest.spyOn(OrganizationSettingsEvents, "listen");
+    jest.spyOn(SiteSettingsEvents, "listen");
 
     main = new Main();
     await main.listen();
@@ -51,6 +51,6 @@ describe("Main authentication class", () => {
     expect(ConfigEvents.listen).toHaveBeenCalledWith(main.worker);
     expect(DesktopEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), mockedAccount);
     expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(OrganizationSettingsEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(SiteSettingsEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
   });
 });

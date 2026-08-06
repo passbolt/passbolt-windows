@@ -10,8 +10,6 @@ import "../src/polyfill/runtimePolyfill"
 import "../src/polyfill/storagePolyfill"
 import "../src/polyfill/sessionStoragePolyfill"
 
-global.TextEncoder = require('text-encoding-utf-8').TextEncoder;
-global.TextDecoder = require('text-encoding-utf-8').TextDecoder;
 global.fetch = require('node-fetch');
 
 window.chrome.webview = {
