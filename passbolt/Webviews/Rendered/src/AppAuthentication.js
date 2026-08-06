@@ -18,7 +18,7 @@ import {BrowserRouter as Router} from "react-router-dom";
 import AppContext from "passbolt-styleguide/src/shared/context/AppContext/AppContext";
 import TranslationProvider from "passbolt-styleguide/src/react-extension/components/Common/Internationalisation/TranslationProvider";
 import AuthenticationLoginContextProvider from "passbolt-styleguide/src/react-extension/contexts/Authentication/AuthenticationLoginContext";
-import SiteSettings from "passbolt-styleguide/src/shared/lib/Settings/SiteSettings";
+import SiteSettingsEntity from "passbolt-styleguide/src/shared/models/entity/siteSettings/siteSettingsEntity";
 import UserSettings from "passbolt-styleguide/src/shared/lib/Settings/UserSettings";
 import Footer from "passbolt-styleguide/src/react-extension/components/Common/Footer/Footer";
 import OrchestrateLoginBoxMain from "./components/OrchestrateLoginBoxMain";
@@ -111,11 +111,11 @@ class AppAuthentication extends Component {
 
   /**
    * Get the list of site settings from background page and set it in the state
-   * Using SiteSettings
+   * Using SiteSettingsEntity
    */
   async getSiteSettings() {
-    const settings = await this.props.port.request("passbolt.organization-settings.get");
-    const siteSettings = new SiteSettings(settings);
+    const settings = await this.props.port.request("passbolt.site-settings.get-or-find");
+    const siteSettings = new SiteSettingsEntity(settings);
     this.setState({siteSettings});
   }
 

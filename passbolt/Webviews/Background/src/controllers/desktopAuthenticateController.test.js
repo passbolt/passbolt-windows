@@ -29,6 +29,7 @@ import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiCli
 import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
 import MfaAuthenticationRequiredError from "passbolt-browser-extension/src/all/background_page/error/mfaAuthenticationRequiredError";
 import AuthenticationStatusService from "passbolt-browser-extension/src/all/background_page/service/authenticationStatusService";
+import FindSiteSettingsService from "passbolt-browser-extension/src/all/background_page/service/siteSettings/findSiteSettingsService";
 
 
 describe('DesktopAuthenticateController', () => {
@@ -48,8 +49,9 @@ describe('DesktopAuthenticateController', () => {
     await initPassboltDataLocalStorageService.initPassboltData(defaultAccountDto());
 
     mockFindPrivate.mockImplementation(() => new ExternalGpgKeyEntity({armored_key: accountDto.user_private_armored_key}));
-    desktopAuthenticateController = new DesktopAuthenticateController(worker, requestId, defaultApiClientOptions());
-    jest.spyOn(AuthenticationStatusService, "isAuthenticated").mockImplementation(() => true);
+    desktopAuthenticateController = new DesktopAuthenticateController(worker, requestId, defaultApiClientOptions(), new AccountEntity(defaultAccountDto()));
+    jest.spyOn(FindSiteSettingsService.prototype, "findSiteSettings").mockResolvedValue();
+    jest.spyOn(AuthenticationStatusService.prototype, "isAuthenticated").mockImplementation(() => true);
   });
   describe('DesktopAuthenticateController', () => {
     describe('DesktopAuthenticateController:exec', () => {
@@ -97,7 +99,7 @@ describe('DesktopAuthenticateController', () => {
         const passphrase = "admin@passbolt.com";
         const provider = "totp";
 
-        jest.spyOn(AuthenticationStatusService, "isAuthenticated").mockImplementation(() => {
+        jest.spyOn(AuthenticationStatusService.prototype, "isAuthenticated").mockImplementation(() => {
           throw new MfaAuthenticationRequiredError(null,
             {
               mfa_providers: [provider]
