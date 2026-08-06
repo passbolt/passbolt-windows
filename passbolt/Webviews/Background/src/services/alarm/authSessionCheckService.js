@@ -30,12 +30,16 @@ class AuthSessionCheckService {
       return;
     }
 
-    const account = await GetLegacyAccountService.get();
-    const apiClientOptions = await BuildApiClientOptionsService.buildFromAccount(account);
-    const checkAuthService = new CheckAuthStatusService(account, apiClientOptions);
-    const authStatus = await checkAuthService.checkAuthStatus(true);
-    if (!authStatus.isAuthenticated) {
-      window.chrome.webview.postMessage(JSON.stringify({topic: "passbolt.auth.after-logout"}));
+    try {
+      const account = await GetLegacyAccountService.get();
+      const apiClientOptions = await BuildApiClientOptionsService.buildFromAccount(account);
+      const checkAuthService = new CheckAuthStatusService(account, apiClientOptions);
+      const authStatus = await checkAuthService.checkAuthStatus(true);
+      if (!authStatus.isAuthenticated) {
+        window.chrome.webview.postMessage(JSON.stringify({topic: "passbolt.auth.after-logout"}));
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
 

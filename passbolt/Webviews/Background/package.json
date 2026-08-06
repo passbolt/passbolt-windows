@@ -50,7 +50,8 @@
   "overrides": {
     "uuid": "^14.0.0",
     "@xmldom/xmldom": "0.8.13",
-    "js-yaml": "^5.2.3"
+    "js-yaml": "^5.2.3",
+    "core-js-pure": "3.49.0"
   },
   "scripts": {
     "build": "webpack",
