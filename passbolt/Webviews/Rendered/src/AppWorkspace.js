@@ -36,7 +36,7 @@ import UserSettingsContextProvider from "passbolt-styleguide/src/react-extension
 import DisplayActionFeedbacks from "passbolt-styleguide/src/react-extension/components/Common/ActionFeedback/DisplayActionFeedbacks";
 import HandleFolderMoveStrategyEvents from "passbolt-styleguide/src/react-extension/components/ResourceFolder/HandleFolderMoveStrategyEvents/HandleFolderMoveStrategyEvents";
 import HandleProgressEvents from "passbolt-styleguide/src/react-extension/components/Common/Progress/HandleProgressEvents/HandleProgressEvents";
-import HandleSessionExpired from "passbolt-styleguide/src/react-extension/components/Authentication/HandleSessionExpired/HandleSessionExpired";
+import HandleSessionExpired from "./components/HandleSessionExpired";
 import HandleRouteFallback from "passbolt-styleguide/src/react-extension/components/Common/Route/HandleRouteFallback";
 import AccountRecoveryUserContextProvider from "passbolt-styleguide/src/react-extension/contexts/AccountRecoveryUserContext";
 import WorkflowContextProvider from "passbolt-styleguide/src/react-extension/contexts/WorkflowContext";
