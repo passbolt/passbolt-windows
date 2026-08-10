@@ -21,8 +21,22 @@ import Footer from "passbolt-styleguide/src/react-extension/components/Common/Fo
 import OrchestrateAccountKitImportation from "passbolt-styleguide/src/react-extension/components/Desktop/OrchestrateAccountKitImportation/OrchestrateAccountKitImportation";
 import ImportAccountKitContextProvider from "passbolt-styleguide/src/react-extension/contexts/Desktop/ImportAccountKitContext";
 import LogoSVG from "passbolt-styleguide/src/img/svg/logo.svg";
+import SiteSettingsEntity from "passbolt-styleguide/src/shared/models/entity/siteSettings/siteSettingsEntity";
 import RenderedWebview from "./components/RenderedWebview";
 import {version} from '../package.json';
+
+/**
+ * The default site settings used by the import application.
+ * No account is set up yet at this stage, so no server can be queried for its site settings. A default
+ * set is used to satisfy the components relying on them (i.e. the footer, which builds a URL out of
+ * `app.url` and would otherwise throw `Failed to construct 'URL': Invalid URL`).
+ * @type {object}
+ */
+const DEFAULT_SITE_SETTINGS_DTO = {
+  app: {
+    url: "https://www.passbolt.com",
+  },
+};
 
 /**
  * The import application
@@ -50,9 +64,7 @@ class AppImport extends Component {
       port: props.port, // The background page communication port
       storage: props.storage, // The storage
       extensionVersion: version,
-      siteSettings: {
-        url: ""
-      },
+      siteSettings: new SiteSettingsEntity(DEFAULT_SITE_SETTINGS_DTO),
     };
   }
 
