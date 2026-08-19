@@ -13,7 +13,7 @@
  */
 
 import IPCHandler from './shared/IPCHandler';
-import {OrganizationSettingsEvents} from "passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents";
+import {SiteSettingsEvents} from './events/siteSettingsEvents';
 import {ConfigEvents} from "passbolt-browser-extension/src/all/background_page/event/configEvents";
 import {RoleEvents} from 'passbolt-browser-extension/src/all/background_page/event/roleEvents';
 import {ResourceTypeEvents} from 'passbolt-browser-extension/src/all/background_page/event/resourceTypeEvents';
@@ -107,7 +107,7 @@ export default class MainWorkspace {
     AccountEvents.listen(this.worker, apiClientOptions, account);
     AuthEvents.listen(this.worker);
     AccountRecoveryEvents.listen(this.worker, account);
-    ActionLogEvents.listen(this.worker, apiClientOptions);
+    ActionLogEvents.listen(this.worker, apiClientOptions, account);
     ClipboardEvents.listen(this.worker);
     CommentEvents.listen(this.worker, apiClientOptions);
     ConfigEvents.listen(this.worker);
@@ -122,12 +122,12 @@ export default class MainWorkspace {
     MfaEvents.listen(this.worker, apiClientOptions);
     MetadataEvents.listen(this.worker, apiClientOptions, account);
     MultiFactorAuthenticationEvents.listen(this.worker, apiClientOptions);
-    OrganizationSettingsEvents.listen(this.worker);
+    SiteSettingsEvents.listen(this.worker, apiClientOptions);
     PownedPasswordEvents.listen(this.worker);
     UserEvents.listen(this.worker, apiClientOptions, account);
     RbacEvents.listen(this.worker, account);
     ResourceEvents.listen(this.worker, apiClientOptions, account);
-    ResourceTypeEvents.listen(this.worker, apiClientOptions);
+    ResourceTypeEvents.listen(this.worker, apiClientOptions, account);
     RoleEvents.listen(this.worker, apiClientOptions, account);
     SecretEvents.listen(this.worker, apiClientOptions, account);
     SecretHistoryEvents.listen(this.worker, apiClientOptions, account);

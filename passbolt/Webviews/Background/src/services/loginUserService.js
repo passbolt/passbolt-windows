@@ -14,7 +14,6 @@
 
 import UserAlreadyLoggedInError from "passbolt-browser-extension/src/all/background_page/error/userAlreadyLoggedInError";
 import Keyring from "passbolt-browser-extension/src/all/background_page/model/keyring";
-import CheckAuthStatusService from "passbolt-browser-extension/src/all/background_page/service/auth/checkAuthStatusService";
 import CheckPassphraseService from "passbolt-browser-extension/src/all/background_page/service/crypto/checkPassphraseService";
 import AuthVerifyLoginChallengeService from "passbolt-browser-extension/src/all/background_page/service/auth/authVerifyLoginChallengeService";
 import PassphraseStorageService from "passbolt-browser-extension/src/all/background_page/service/session_storage/passphraseStorageService";
@@ -34,7 +33,7 @@ class LoginUserService {
     this.account = account;
     this.checkPassphraseService = new CheckPassphraseService(new Keyring());
     this.authVerifyLoginChallengeService = new AuthVerifyLoginChallengeService(apiClientOptions);
-    this.checkAuthStatusService = new CheckAuthStatusService();
+    this.authenticationStatusService = new AuthenticationStatusService(apiClientOptions);
   }
 
   /**
@@ -75,7 +74,7 @@ class LoginUserService {
    */
   async isMfaRequired() {
     try {
-      await AuthenticationStatusService.isAuthenticated();
+      await this.authenticationStatusService.isAuthenticated();
     } catch (error) {
       if (!(error instanceof MfaAuthenticationRequiredError)) {
         throw error;

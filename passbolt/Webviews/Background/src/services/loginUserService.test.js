@@ -30,7 +30,7 @@ describe("LoginUserService", () => {
     const apiClientOptions = defaultApiClientOptions();
     account = defaultAccountDto();
     service = new LoginUserService(apiClientOptions, account);
-    jest.spyOn(AuthenticationStatusService, "isAuthenticated").mockImplementation(() => false);
+    jest.spyOn(AuthenticationStatusService.prototype, "isAuthenticated").mockImplementation(() => false);
   });
 
   describe("checkPassphrase", () => {
@@ -82,7 +82,7 @@ describe("LoginUserService", () => {
 
       const result = await service.isMfaRequired();
 
-      expect(AuthenticationStatusService.isAuthenticated).toHaveBeenCalled();
+      expect(AuthenticationStatusService.prototype.isAuthenticated).toHaveBeenCalled();
       expect(result).toBeNull();
     });
 
@@ -90,13 +90,13 @@ describe("LoginUserService", () => {
       expect.assertions(2);
 
       const provider = "totp";
-      AuthenticationStatusService.isAuthenticated.mockImplementationOnce(() => {
+      AuthenticationStatusService.prototype.isAuthenticated.mockImplementationOnce(() => {
         throw new MfaAuthenticationRequiredError("mfa-required", {mfa_providers: [provider]});
       });
 
       const result = await service.isMfaRequired();
 
-      expect(AuthenticationStatusService.isAuthenticated).toHaveBeenCalled();
+      expect(AuthenticationStatusService.prototype.isAuthenticated).toHaveBeenCalled();
       expect(result).toEqual(provider);
     });
   });

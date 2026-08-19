@@ -68,26 +68,24 @@ namespace passbolt.Services.LocalFolder
         }
 
         /// <summary>
-        /// Get index file into folder
-        /// </summary>
-        /// <param name="Webview"></param>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        async Task<StorageFile> GetIndexFile(String Webview, String name)
-        {
-            StorageFolder webviewFolder = await webviewsFolder.GetFolderAsync(Webview);
-            return await webviewFolder.GetFileAsync(name);
-        }
-
-        /// <summary>
-        /// Remove file from local folder
+        /// Remove file from local folder.
+        /// The file may not be there, an index file is removed each time the webviews are swapped from
+        /// an application to another. Removing a missing one must not interrupt the swap, the caller
+        /// would otherwise leave the webviews on a page which does not exist anymore.
         /// </summary>
         /// <param name="Webview"></param>
         /// <param name="name"></param>
         /// <returns></returns>
         public async Task RemoveFile(String Webview, String name)
         {
-            StorageFile file = await this.GetIndexFile(Webview, name);
+            StorageFolder webviewFolder = await webviewsFolder.GetFolderAsync(Webview);
+            StorageFile file = await webviewFolder.TryGetItemAsync(name) as StorageFile;
+
+            if (file == null)
+            {
+                return;
+            }
+
             await file.DeleteAsync();
         }
 

@@ -134,6 +134,8 @@
     <Compile Include="UnitTests\Models\Messaging\IPCTests.cs" />
     <Compile Include="UnitTests\Models\Messaging\AllowedTopicsTest.cs" />
     <Compile Include="UnitTests\Services\DownloadService\DownloadService.cs" />
+    <Compile Include="UnitTests\Services\HttpService\HttpServiceTests.cs" />
+    <Compile Include="UnitTests\Services\MfaService\MfaServiceTests.cs" />
     <Compile Include="UnitTests\Services\NavigationService\ParseAppUrlServiceTests.cs" />
     <Compile Include="UnitTests\Services\NavigationService\AbstractNavigationServiceTest.cs" />
     <Compile Include="UnitTests\Services\NavigationService\BackgroundnavigationServiceTest.cs" />

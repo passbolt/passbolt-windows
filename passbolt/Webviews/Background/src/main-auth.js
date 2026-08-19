@@ -16,7 +16,7 @@ import GetLegacyAccountService from 'passbolt-browser-extension/src/all/backgrou
 import {AuthEvents} from './events/authEvents';
 import IPCHandler from './shared/IPCHandler';
 import BuildApiClientOptionsService from 'passbolt-browser-extension/src/all/background_page/service/account/buildApiClientOptionsService';
-import {OrganizationSettingsEvents} from 'passbolt-browser-extension/src/all/background_page/event/organizationSettingsEvents';
+import {SiteSettingsEvents} from './events/siteSettingsEvents';
 import {ConfigEvents} from 'passbolt-browser-extension/src/all/background_page/event/configEvents';
 import {LocaleEvents} from './events/localeEvents';
 import {DesktopEvents} from './events/desktopEvents';
@@ -75,7 +75,7 @@ export default class MainAuth {
     ConfigEvents.listen(this.worker);
     LocaleEvents.listen(this.worker);
     DesktopEvents.listen(this.worker, apiClientOptions, account);
-    OrganizationSettingsEvents.listen(this.worker);
+    SiteSettingsEvents.listen(this.worker, apiClientOptions);
   }
 }
 
