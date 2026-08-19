@@ -13,8 +13,8 @@
  */
 import User from "passbolt-browser-extension/src/all/background_page/model//user";
 import LocaleModel from "passbolt-browser-extension/src/all/background_page/model/locale/localeModel";
-import GetLocaleController from "passbolt-browser-extension/src/all/background_page/controller/locale/getLocaleController";
 import LocaleEntity from "passbolt-browser-extension/src/all/background_page/model/entity/locale/localeEntity";
+import GetLocaleDesktopController from "../controllers/getLocaleDesktopController";
 import {UPDATE_LOCALE} from "../enumerations/appEventEnumeration";
 
 
@@ -27,15 +27,8 @@ const listen = function(worker) {
    */
   worker.port.on('passbolt.locale.get', async requestId => {
     const apiClientOptions = await User.getInstance().getApiClientOptions();
-    const getLocaleController = new GetLocaleController(worker, apiClientOptions);
-
-    try {
-      const localeEntity = await getLocaleController.getLocale();
-      worker.port.emit(requestId, 'SUCCESS', localeEntity);
-    } catch (error) {
-      console.error(error);
-      worker.port.emit(requestId, 'ERROR', error);
-    }
+    const getLocaleDesktopController = new GetLocaleDesktopController(worker, requestId, apiClientOptions);
+    await getLocaleDesktopController._exec();
   });
 
   /*
