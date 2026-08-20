@@ -14,8 +14,8 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "openpgp": "^6.1.1",
-    "passbolt-browser-extension": "^5.14.3",
-    "passbolt-styleguide": "5.14.7",
+    "passbolt-browser-extension": "^5.15.0",
+    "passbolt-styleguide": "5.15.0",
     "stream-browserify": "^3.0.0",
     "uuid": "^14.0.0",
     "validator": "^13.15.26"
@@ -49,7 +49,7 @@
   },
   "overrides": {
     "uuid": "^14.0.0",
-    "@xmldom/xmldom": "0.8.13",
+    "@xmldom/xmldom": "0.8.14",
     "js-yaml": "^5.2.3",
     "core-js-pure": "3.49.0"
   },
@@ -57,7 +57,7 @@
     "build": "webpack",
     "build-watch": "webpack --watch",
     "lint": "npm run lint:lockfile && npm run lint:eslint",
-    "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \"https:\" \"git+ssh:\" --empty-hostname false --allowed-urls \"secrets-passbolt@2.0.1-ccce02543c135b0d92f69a70e960d634e7d64609@\"",
+    "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \"https:\" \"git+ssh:\" --empty-hostname false",
     "lint:eslint": "eslint -c eslint.config.mjs --ext js src",
     "lint:eslint-fix": "eslint -c eslint.config.mjs --ext js --fix src",
     "test": "jest",
