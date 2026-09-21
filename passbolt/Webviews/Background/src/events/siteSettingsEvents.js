@@ -11,7 +11,7 @@
  * @link          https://www.passbolt.com Passbolt(tm)
  * @since         2.11.0
  */
-import FindSiteSettingsService from "passbolt-browser-extension/src/all/background_page/service/siteSettings/findSiteSettingsService";
+import GetSiteSettingsDesktopController from "../controllers/getSiteSettingsDesktopController";
 
 /**
  * Listen to the site settings events.
@@ -20,8 +20,14 @@ import FindSiteSettingsService from "passbolt-browser-extension/src/all/backgrou
  * `GetOrFindSiteSettingsService.getOrFind`, which relies on `navigator.locks`, an authentication
  * status check and the offline-mode local storage. That machinery never resolves in the WebView2
  * pre-authentication context and leaves the login screen hanging on a black screen. The desktop only
- * needs the public site settings, so we perform a plain API fetch — mirroring the behaviour of the
- * pre-5.14 `passbolt.organization-settings.get` event.
+ * needs the public site settings, so `GetSiteSettingsDesktopController` performs a plain API fetch —
+ * mirroring the behaviour of the pre-5.14 `passbolt.organization-settings.get` event.
+ *
+ * Since 5.16 the browser-extension exposes two events routing through the same offline-aware machinery:
+ * `passbolt.site-settings.get-or-find` (still requested directly by the desktop login screen, see
+ * `AppAuthentication.js`) and `passbolt.site-settings.find-and-update` (requested by the authenticated
+ * workspace bootstrap `ExtAppContext`). Both are handled here with the same plain API fetch so the
+ * desktop never falls into the WebView2-incompatible `navigator.locks`/local-storage code path.
  */
 const listen = function(worker, apiClientOptions) {
   /**
@@ -31,14 +37,19 @@ const listen = function(worker, apiClientOptions) {
    * @param requestId {uuid} The request identifier
    */
   worker.port.on("passbolt.site-settings.get-or-find", async requestId => {
-    try {
-      const findSiteSettingsService = new FindSiteSettingsService(apiClientOptions);
-      const siteSettings = await findSiteSettingsService.findSiteSettings();
-      worker.port.emit(requestId, "SUCCESS", siteSettings);
-    } catch (error) {
-      console.error(error);
-      worker.port.emit(requestId, "ERROR", error);
-    }
+    const controller = new GetSiteSettingsDesktopController(worker, requestId, apiClientOptions);
+    await controller._exec();
+  });
+
+  /**
+   * Retrieve the site settings and update the caches.
+   *
+   * @listens passbolt.site-settings.find-and-update
+   * @param requestId {uuid} The request identifier
+   */
+  worker.port.on("passbolt.site-settings.find-and-update", async requestId => {
+    const controller = new GetSiteSettingsDesktopController(worker, requestId, apiClientOptions);
+    await controller._exec();
   });
 };
 
