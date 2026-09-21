@@ -168,10 +168,10 @@
       <Version>4.20.72</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>3.8.3</Version>
+      <Version>3.11.1</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>3.8.3</Version>
+      <Version>3.11.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -191,7 +191,7 @@
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <ItemGroup>
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.14.1" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

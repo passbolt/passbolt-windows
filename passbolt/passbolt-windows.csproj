@@ -415,7 +415,7 @@
       <Version>2.8.7</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>3.8.3</Version>
+      <Version>3.11.1</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.4</Version>
