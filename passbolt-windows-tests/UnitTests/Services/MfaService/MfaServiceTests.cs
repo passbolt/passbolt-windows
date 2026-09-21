@@ -39,5 +39,21 @@ namespace passbolt_windows_tests.UnitTests.Services
             //Trusted domain
             Assert.IsFalse(MfaService.Instance.IsDuoUrl("https://cloud.passbolt.com/mfa/verify/duo"));
         }
+
+        [TestMethod]
+        public void HasMfaCompleted_ExactTrustedDomain_ReturnsTrue()
+        {
+            MfaService.Instance.InitMfaUrls("https://cloud.passbolt.com");
+            Assert.IsTrue(MfaService.Instance.HasMfaCompleted("https://cloud.passbolt.com/"));
+        }
+
+        [TestMethod]
+        public void HasMfaCompleted_LookAlikeTrustedDomain_ReturnsFalse()
+        {
+            //The trusted domain is interpolated into the mfa regexes: its dots must stay literal,
+            //otherwise a look-alike domain matching the dots as wildcards would be treated as complete (PB-54780)
+            MfaService.Instance.InitMfaUrls("https://cloud.passbolt.com");
+            Assert.IsFalse(MfaService.Instance.HasMfaCompleted("https://cloudxpassboltxcom/"));
+        }
     }
 }
