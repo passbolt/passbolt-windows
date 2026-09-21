@@ -197,7 +197,12 @@ namespace passbolt.Models.Messaging
                 case AllowedTopics.BACKGROUND_CLIPBOARD_SET_TEXT:
                     DataPackage dataPackage = new DataPackage();
                     dataPackage.SetText((string)ipc.message);
-                    Clipboard.SetContent(dataPackage);
+                    ClipboardContentOptions clipboardOptions = new ClipboardContentOptions
+                    {
+                        IsAllowedInHistory = false,
+                        IsRoamable = false,
+                    };
+                    Clipboard.SetContentWithOptions(dataPackage, clipboardOptions);
                     break;
                 default:
                     if (!AllowedTopics.proceedRequestId(ipc.topic))
