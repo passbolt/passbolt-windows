@@ -23,11 +23,12 @@ class AuthVerifyServerKeyDesktopController {
    * @param {string} requestId
    * @param {ApiClientOptions} apiClientOptions
    * @param {string} userDomain
+   * @param {AccountEntity} [account] The user account, required since 5.16 for AuthModel.logout() active-session reset
    */
-  constructor(worker, requestId, apiClientOptions, userDomain) {
+  constructor(worker, requestId, apiClientOptions, userDomain, account) {
     this.worker = worker;
     this.requestId = requestId;
-    this.authModel = new AuthModel(apiClientOptions);
+    this.authModel = new AuthModel(apiClientOptions, account);
     this.authVerifyServerKeyController = new AuthVerifyServerKeyController(worker, requestId, apiClientOptions, userDomain);
   }
 

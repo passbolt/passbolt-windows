@@ -24,7 +24,8 @@ describe('AuthVerifyServerKeyDesktopController.test', () => {
         emit: jest.fn()
       }
     };
-    authVerifyServerKeyDesktopController = new AuthVerifyServerKeyDesktopController(worker, null, defaultApiClientOptions(), "https://passbolt.com");
+    const account = {id: "d57c10f5-639d-5160-9c81-8a0c6c4ec856", domain: "https://passbolt.com"};
+    authVerifyServerKeyDesktopController = new AuthVerifyServerKeyDesktopController(worker, null, defaultApiClientOptions(), "https://passbolt.com", account);
   });
 
   describe('ExportResourcesFileDesktopController:exec', () => {

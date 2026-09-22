@@ -12,7 +12,7 @@
  * @since         1.1.0
  */
 
-import CheckAuthStatusService from "passbolt-browser-extension/src/all/background_page/service/auth/checkAuthStatusService";
+import AuthenticationStatusService from "passbolt-browser-extension/src/all/background_page/service/authenticationStatusService";
 import GetLegacyAccountService from "passbolt-browser-extension/src/all/background_page/service/account/getLegacyAccountService";
 import BuildApiClientOptionsService from "passbolt-browser-extension/src/all/background_page/service/account/buildApiClientOptionsService";
 
@@ -33,9 +33,9 @@ class AuthSessionCheckService {
     try {
       const account = await GetLegacyAccountService.get();
       const apiClientOptions = await BuildApiClientOptionsService.buildFromAccount(account);
-      const checkAuthService = new CheckAuthStatusService(account, apiClientOptions);
-      const authStatus = await checkAuthService.checkAuthStatus(true);
-      if (!authStatus.isAuthenticated) {
+      const authenticationStatusService = new AuthenticationStatusService(apiClientOptions);
+      const isAuthenticated = await authenticationStatusService.isAuthenticated();
+      if (!isAuthenticated) {
         window.chrome.webview.postMessage(JSON.stringify({topic: "passbolt.auth.after-logout"}));
       }
     } catch (error) {
