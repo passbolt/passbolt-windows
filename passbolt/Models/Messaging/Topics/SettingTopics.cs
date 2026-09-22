@@ -16,6 +16,7 @@ namespace passbolt.Models.Messaging.Topics
     public class SettingTopics
     {
         public const string GET = "passbolt.site-settings.get-or-find";
+        public const string FIND_AND_UPDATE = "passbolt.site-settings.find-and-update";
         public const string GET_VERSION = "passbolt.addon.get-version";
         public const string PASSWORD_GENERATOR_SETTINGS = "passbolt.password-generator.settings";
     }

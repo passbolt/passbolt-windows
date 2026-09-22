@@ -17,7 +17,7 @@ import DeleteTagController from "passbolt-browser-extension/src/all/background_p
 import UpdateResourceTagsController from "passbolt-browser-extension/src/all/background_page/controller/tag/updateResourceTagsController";
 import AddTagsToResourcesController from "passbolt-browser-extension/src/all/background_page/controller/tag/addTagsToResourcesController";
 
-const listen = function(worker, apiClientOptions) {
+const listen = function(worker, apiClientOptions, account) {
   /**
    * Find all the tags
    *
@@ -37,7 +37,7 @@ const listen = function(worker, apiClientOptions) {
    * @param tagDto {object} The tag object
    */
   worker.port.on("passbolt.tags.update", async (requestId, tagDto) => {
-    const updateTagController = new UpdateTagController(worker, requestId, apiClientOptions);
+    const updateTagController = new UpdateTagController(worker, requestId, apiClientOptions, account);
     await updateTagController._exec(tagDto);
   });
 
@@ -49,7 +49,7 @@ const listen = function(worker, apiClientOptions) {
    * @param tagId {uuid} The tag identifier
    */
   worker.port.on("passbolt.tags.delete", async (requestId, tagId) => {
-    const deleteTagController = new DeleteTagController(worker, requestId, apiClientOptions);
+    const deleteTagController = new DeleteTagController(worker, requestId, apiClientOptions, account);
     await deleteTagController._exec(tagId);
   });
 
@@ -62,7 +62,7 @@ const listen = function(worker, apiClientOptions) {
    * @param tagsDto {Object} tags dto
    */
   worker.port.on("passbolt.tags.update-resource-tags", async (requestId, resourceId, tagsDto) => {
-    const updateResourceTagsController = new UpdateResourceTagsController(worker, requestId, apiClientOptions);
+    const updateResourceTagsController = new UpdateResourceTagsController(worker, requestId, apiClientOptions, account);
     await updateResourceTagsController._exec(resourceId, tagsDto);
   });
 
@@ -74,7 +74,7 @@ const listen = function(worker, apiClientOptions) {
    * @param {object} resourcesTagDto {resources: array of uuids, tag: {object}} the tag to add for the resources
    */
   worker.port.on("passbolt.tags.add-resources-tag", async (requestId, resourcesTagDto) => {
-    const addTagsToResourcesController = new AddTagsToResourcesController(worker, requestId, apiClientOptions);
+    const addTagsToResourcesController = new AddTagsToResourcesController(worker, requestId, apiClientOptions, account);
     await addTagsToResourcesController._exec(resourcesTagDto.resources, [resourcesTagDto.tag]);
   });
 };

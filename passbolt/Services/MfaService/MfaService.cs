@@ -52,16 +52,19 @@ namespace passbolt.Services.Mfa
         {
             //A new MFA process starts with no captured Duo domain
             this.duoUrl = null;
+            //Escape the trusted domain so its dots stay literal: an unescaped host
+            //would let its dots act as regex wildcards and match look-alike domains
+            string escapedTrustedDomain = Regex.Escape(trustedDomain);
             this.mfaUrls = new List<Regex>
             {
                 //Order is important
-                new Regex($"^{trustedDomain}/mfa/verify/(duo|totp|yubikey)\\?redirect=/$"),
+                new Regex($"^{escapedTrustedDomain}/mfa/verify/(duo|totp|yubikey)\\?redirect=/$"),
                 //Allow the Duo MFA provider verify endpoints (prompt/callback) for the API check
-                new Regex($"^{trustedDomain}/mfa/verify/duo(/(prompt|callback))?(\\?.*)?$"),
+                new Regex($"^{escapedTrustedDomain}/mfa/verify/duo(/(prompt|callback))?(\\?.*)?$"),
                 //Allow navigation to the external Duo MFA provider (single source shared with IsDuoUrl)
                 this.duoUrlRegex,
                 //The complete step
-                new Regex($"^{trustedDomain}/$"),
+                new Regex($"^{escapedTrustedDomain}/$"),
             };
             return this.mfaUrls;
         }

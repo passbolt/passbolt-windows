@@ -98,14 +98,14 @@ namespace passbolt.Services.HttpService
         /// </summary>
         /// <param name="webviewRequest"></param>
         /// <returns></returns>
-        public bool isCallToServer(CoreWebView2WebResourceRequestedEventArgs webviewRequest) => this.trustedDomain != null && webviewRequest.Request.Uri.StartsWith(this.trustedDomain);
+        public bool isCallToServer(CoreWebView2WebResourceRequestedEventArgs webviewRequest) => UriBuilderHelper.IsSameOrigin(webviewRequest.Request.Uri, this.trustedDomain);
 
         /// <summary>
         /// check if http call is made to the powned service
         /// </summary>
         /// <param name="webviewRequest"></param>
         /// <returns></returns>
-        public bool isCallToPownedService(CoreWebView2WebResourceRequestedEventArgs webviewRequest) => webviewRequest.Request.Uri.StartsWith(pownedUrl);
+        public bool isCallToPownedService(CoreWebView2WebResourceRequestedEventArgs webviewRequest) => UriBuilderHelper.IsSameOrigin(webviewRequest.Request.Uri, pownedUrl);
 
         /// <summary>
         /// Strict allow list applied to every webview resource request.
@@ -128,7 +128,7 @@ namespace passbolt.Services.HttpService
                 case CoreWebView2WebResourceContext.XmlHttpRequest:
                     return this.isOnVirtualHost(uri, virtualHost, distHost)
                         || this.isOnTrustedDomain(uri)
-                        || uri.StartsWith(this.pownedUrl)
+                        || UriBuilderHelper.IsSameOrigin(uri, this.pownedUrl)
                         || this.isDuoAllowed(uri, context, isRendered);
 
                 case CoreWebView2WebResourceContext.Script:
@@ -181,13 +181,14 @@ namespace passbolt.Services.HttpService
         /// </summary>
         private bool isOnVirtualHost(string uri, string virtualHost, string distHost)
         {
-            return (!string.IsNullOrEmpty(virtualHost) && uri.StartsWith($"https://{virtualHost}")) || uri.StartsWith(distHost);
+            return (!string.IsNullOrEmpty(virtualHost) && UriBuilderHelper.IsSameOrigin(uri, $"https://{virtualHost}"))
+                || UriBuilderHelper.IsSameOrigin(uri, distHost);
         }
 
         /// <summary>
         /// check if the url targets the trusted domain
         /// </summary>
-        private bool isOnTrustedDomain(string uri) => this.trustedDomain != null && uri.StartsWith(this.trustedDomain);
+        private bool isOnTrustedDomain(string uri) => UriBuilderHelper.IsSameOrigin(uri, this.trustedDomain);
 
         /// <summary>
         /// Duo exceptions: allowed only on the rendered webview while a Duo MFA process is ongoing.
@@ -200,10 +201,26 @@ namespace passbolt.Services.HttpService
                 return false;
             }
 
-            // Duo loads its analytics from amplitude through XHR only
-            bool isAmplitudeXhr = context == CoreWebView2WebResourceContext.XmlHttpRequest && uri.StartsWith(this.amplitudeUrl);
+            // Duo loads its analytics from amplitude through XHR only.
+            // amplitudeUrl carries a path, so we match the origin then keep the path constraint.
+            bool isAmplitudeXhr = context == CoreWebView2WebResourceContext.XmlHttpRequest
+                && UriBuilderHelper.IsSameOrigin(uri, this.amplitudeUrl)
+                && Uri.TryCreate(uri, UriKind.Absolute, out Uri amplitudeCandidate)
+                && Uri.TryCreate(this.amplitudeUrl, UriKind.Absolute, out Uri amplitudeExpected)
+                && IsSamePathOrSubPath(amplitudeCandidate.AbsolutePath, amplitudeExpected.AbsolutePath);
 
             return this.isOnDuo(uri) || isAmplitudeXhr;
+        }
+
+        /// <summary>
+        /// Check that a candidate path is the expected path itself or a sub path of it.
+        /// Anchored on a "/" boundary so that a sibling sharing the same prefix
+        /// is not accepted.
+        /// </summary>
+        private static bool IsSamePathOrSubPath(string candidatePath, string expectedPath)
+        {
+            return candidatePath == expectedPath
+                || candidatePath.StartsWith(expectedPath.TrimEnd('/') + "/", StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -212,7 +229,7 @@ namespace passbolt.Services.HttpService
         private bool isOnDuo(string uri)
         {
             string duoUrl = MfaService.Instance.GetDuoUrl();
-            return duoUrl != null && uri.StartsWith(duoUrl);
+            return UriBuilderHelper.IsSameOrigin(uri, duoUrl);
         }
 
         /// <summary>
