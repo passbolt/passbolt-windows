@@ -56,5 +56,28 @@ namespace passbolt.Utils
             string uriHost = uri.Host;
             return uriHost;
         }
+
+        /// <summary>
+        /// Check that two urls share the exact same origin (scheme + host + port).
+        /// Both operands are parsed with System.Uri so that look-alike hosts
+        /// cannot pass as a prefix match.
+        /// Fails closed: any null, empty or unparsable input returns false.
+        /// </summary>
+        /// <param name="candidate">the url to validate</param>
+        /// <param name="expected">the url whose origin is trusted</param>
+        /// <returns>true when both urls have the same scheme, host and port</returns>
+        public static bool IsSameOrigin(string candidate, string expected)
+        {
+            if (string.IsNullOrEmpty(candidate) || string.IsNullOrEmpty(expected))
+            {
+                return false;
+            }
+
+            return Uri.TryCreate(candidate, UriKind.Absolute, out Uri candidateUri)
+                && Uri.TryCreate(expected, UriKind.Absolute, out Uri expectedUri)
+                && candidateUri.Scheme == expectedUri.Scheme
+                && string.Equals(candidateUri.Host, expectedUri.Host, StringComparison.OrdinalIgnoreCase)
+                && candidateUri.Port == expectedUri.Port;
+        }
     }
 }
