@@ -42,7 +42,7 @@
     "jest-environment-jsdom": "^29.6.2",
     "jest-junit": "^15.0.0",
     "js-yaml": "^5.2.3",
-    "lockfile-lint": "^4.14.1",
+    "lockfile-lint": "^5.0.1",
     "node-fetch": "^2.7.0",
     "replace-in-file-webpack-plugin": "^1.0.6",
     "serialize-javascript": "^7.0.6",
