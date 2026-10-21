@@ -14,6 +14,8 @@
 
 import {defaultApiClientOptions} from 'passbolt-styleguide/src/shared/lib/apiClient/apiClientOptions.test.data';
 import AuthVerifyServerKeyDesktopController from "./authVerifyServerKeyDesktopController";
+import AccountEntity from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity";
+import {defaultAccountDto} from "passbolt-browser-extension/src/all/background_page/model/entity/account/accountEntity.test.data";
 
 describe('AuthVerifyServerKeyDesktopController.test', () => {
   let authVerifyServerKeyDesktopController;
@@ -24,7 +26,7 @@ describe('AuthVerifyServerKeyDesktopController.test', () => {
         emit: jest.fn()
       }
     };
-    const account = {id: "d57c10f5-639d-5160-9c81-8a0c6c4ec856", domain: "https://passbolt.com"};
+    const account = new AccountEntity(defaultAccountDto());
     authVerifyServerKeyDesktopController = new AuthVerifyServerKeyDesktopController(worker, null, defaultApiClientOptions(), "https://passbolt.com", account);
   });
 
