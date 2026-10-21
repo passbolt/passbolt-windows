@@ -28,5 +28,11 @@ namespace passbolt.Models.Messaging.Topics
         public const string VERIFY_YUBIKEY_CODE = "passbolt.mfa-setup.verify-yubikey-code";
         public const string GET_MFA_SETUP_TOTP_CODE = "passbolt.mfa-setup.get-totp-code";
         public const string DISABLE_MFA_FOR_USER = "passbolt.mfa.disable-for-user";
+        public const string GET_WEBAUTHN_CREDENTIALS = "passbolt.mfa-setup.get-webauthn-credentials";
+        public const string GET_WEBAUTHN_SETTINGS = "passbolt.mfa-setup.get-webauthn-settings";
+        public const string DELETE_WEBAUTHN_CREDENTIAL = "passbolt.mfa-setup.delete-webauthn-credential";
+        public const string BEGIN_WEBAUTHN_CEREMONY = "passbolt.mfa-setup.begin-webauthn-ceremony";
+        public const string FINISH_WEBAUTHN_CEREMONY = "passbolt.mfa-setup.finish-webauthn-ceremony";
+        public const string ABORT_WEBAUTHN_CEREMONY = "passbolt.mfa-setup.abort-webauthn-ceremony";
     }
 }
