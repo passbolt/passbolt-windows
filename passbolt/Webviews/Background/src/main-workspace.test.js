@@ -132,7 +132,7 @@ describe("Main workspace class", () => {
     expect(ImportResourcesEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(KeyringEvents.listen).toHaveBeenCalledWith(main.worker, null, new AccountEntity(accountDto).toDto());
     expect(LocaleEvents.listen).toHaveBeenCalledWith(main.worker);
-    expect(MfaEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
+    expect(MfaEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(MultiFactorAuthenticationEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(SiteSettingsEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(PasswordExpiryEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());

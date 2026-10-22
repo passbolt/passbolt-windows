@@ -119,7 +119,7 @@ export default class MainWorkspace {
     ImportResourcesEvents.listen(this.worker, apiClientOptions, account);
     KeyringEvents.listen(this.worker, null, account);
     LocaleEvents.listen(this.worker);
-    MfaEvents.listen(this.worker, apiClientOptions);
+    MfaEvents.listen(this.worker, apiClientOptions, account);
     MetadataEvents.listen(this.worker, apiClientOptions, account);
     MultiFactorAuthenticationEvents.listen(this.worker, apiClientOptions);
     SiteSettingsEvents.listen(this.worker, apiClientOptions);

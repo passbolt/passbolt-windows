@@ -222,7 +222,7 @@ const listen = function(worker, apiClientOptions, account) {
    * @param {uuid} requestId The request identifier
    * @param {Array<uuid>} userIds The ids of the users to retrieve
    */
-  worker.port.on("passbolt.users.get-by-ids", async (requestId, userIds) => {
+  worker.port.on("passbolt.users.get-by-ids", async(requestId, userIds) => {
     const controller = new GetOrFindUsersController(worker, requestId, apiClientOptions, account);
     controller._exec(userIds);
   });

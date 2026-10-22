@@ -17,7 +17,6 @@ namespace passbolt.Models.Messaging.Topics
     public class SecretHistoryTopics
     {
         public const string FIND_SETTINGS = "passbolt.secret-revisions.find-settings";
-        public const string SAVE_SETTINGS = "passbolt.secret-revisions.save-setting";
         public const string DELETE_SETTINGS = "passbolt.secret-revisions.delete-settings";
         public const string FIND_ALL_BY_RESOURCE_ID_FOR_DISPLAY = "passbolt.secret-revisions.find-all-by-resource-id-for-display";
     }
