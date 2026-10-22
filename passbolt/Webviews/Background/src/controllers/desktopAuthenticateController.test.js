@@ -115,6 +115,22 @@ describe('DesktopAuthenticateController', () => {
           provider
         });
       });
+
+      it('Should throw an error if passkeys is the only mfa provider', async() => {
+        expect.assertions(2);
+
+        jest.spyOn(AuthenticationStatusService.prototype, "isAuthenticated").mockImplementation(() => {
+          throw new MfaAuthenticationRequiredError(null,
+            {
+              mfa_providers: ["webauthn"]
+            }
+          );
+        });
+        jest.spyOn(worker.port, 'emit');
+
+        await expect(() => desktopAuthenticateController.exec("admin@passbolt.com")).rejects.toThrow("Passkeys are not supported by the desktop application.");
+        expect(worker.port.emit).not.toHaveBeenCalledWith(REQUIRE_MFA, expect.anything());
+      });
     });
   });
 });

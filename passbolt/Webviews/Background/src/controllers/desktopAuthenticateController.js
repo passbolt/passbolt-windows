@@ -17,6 +17,9 @@ import {BACKGROUND_AUTHENTICATION_ERROR, REQUIRE_MFA, USER_LOGGED_IN} from "../e
 import LoginUserService from "../services/loginUserService";
 import FindSiteSettingsService from "passbolt-browser-extension/src/all/background_page/service/siteSettings/findSiteSettingsService";
 
+// The passkeys MFA provider cannot be used within the desktop application (WebAuthn is not available in the UWP AppContainer)
+const WEBAUTHN_PROVIDER = "webauthn";
+
 /**
  * Controller related to the desktop authentication
  */
@@ -69,7 +72,10 @@ class DesktopAuthenticateController {
     await findSiteSettingsService.findSiteSettings();
     await loginUserService.login(passphrase);
     const provider = await loginUserService.isMfaRequired();
-    if (provider) {
+    if (provider === WEBAUTHN_PROVIDER) {
+      //The API lists webauthn last, it is only returned first when it is the only provider enabled for the user
+      throw new Error("Passkeys are not supported by the desktop application. Please enable another multi-factor authentication provider from the browser extension.");
+    } else if (provider) {
       //Send message to the UWP's main process to handle specific 'require mfa' process
       this.worker.port.emit(REQUIRE_MFA, {provider, passphrase});
     } else {
