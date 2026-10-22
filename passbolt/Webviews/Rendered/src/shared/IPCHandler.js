@@ -125,10 +125,7 @@ class IPCHandler {
       return;
     }
 
-    const index = this._listeners[name].findIndex(listener => listener.callback === callback);
-    if (index > -1) {
-      this._listeners[name].splice(index, 1);
-    }
+    this._listeners[name] = this._listeners[name].filter(listener => listener.callback !== callback);
     if (this._listeners[name].length === 0) {
       delete this._listeners[name];
     }
