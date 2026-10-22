@@ -17,7 +17,6 @@ namespace passbolt.Models.Messaging.Topics
     public class GroupTopics
     {
         public const string UPDATE_LOCALESTORAGE= "passbolt.groups.update-local-storage";
-        public const string FINDALL = "passbolt.groups.find-all";
         public const string CREATE = "passbolt.groups.create";
         public const string UPDATE = "passbolt.groups.update";
         public const string DELETE = "passbolt.groups.delete";

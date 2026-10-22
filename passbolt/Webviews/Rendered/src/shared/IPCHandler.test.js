@@ -55,6 +55,35 @@ describe('IPCHandler', () => {
     });
   });
 
+  describe("IPCHandler:removeListener", () => {
+    it('should remove the listener matching the callback and keep the others', () => {
+      expect.assertions(2);
+      const otherCallback = jest.fn();
+
+      ipcHandler.on(topic, mockCallback);
+      ipcHandler.on(topic, otherCallback);
+      ipcHandler.removeListener(topic, mockCallback);
+
+      expect(ipcHandler._listeners[topic]).toHaveLength(1);
+      expect(ipcHandler._listeners[topic][0].callback).toBe(otherCallback);
+    });
+
+    it('should delete the listeners entry when its last listener is removed', () => {
+      expect.assertions(1);
+
+      ipcHandler.on(topic, mockCallback);
+      ipcHandler.removeListener(topic, mockCallback);
+
+      expect(ipcHandler._listeners[topic]).toBeUndefined();
+    });
+
+    it('should not fail when no listener is registered for the name', () => {
+      expect.assertions(1);
+
+      expect(() => ipcHandler.removeListener(topic, mockCallback)).not.toThrow();
+    });
+  });
+
   describe("IPCHandler:emit", () => {
     it('should emit function sends message via postMessage', async() => {
       expect.assertions(1);

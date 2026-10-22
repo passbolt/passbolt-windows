@@ -31,6 +31,7 @@ namespace passbolt.Services.RbacService
         {
             this.AddOrUpdateDesktopRbac(controls, "Administration.viewWorkspace", "Deny");
             this.AddOrUpdateDesktopRbac(controls, "Duo.configuration", "Deny");
+            this.AddOrUpdateDesktopRbac(controls, "Passkeys.configuration", "Deny");
             this.AddOrUpdateDesktopRbac(controls, "Avatar.upload", "Deny");
             this.AddOrUpdateDesktopRbac(controls, "Mobile.transfer", "Deny");
             this.AddOrUpdateDesktopRbac(controls, "Desktop.transfer", "Deny");
