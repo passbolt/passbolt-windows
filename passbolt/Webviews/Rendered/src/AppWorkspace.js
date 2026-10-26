@@ -34,7 +34,6 @@ import UserWorkspaceContextProvider from "passbolt-styleguide/src/react-extensio
 import DisplayUserWorkspace from "passbolt-styleguide/src/react-extension/components/User/DisplayUserWorkspace/DisplayUserWorkspace";
 import UserSettingsContextProvider from "passbolt-styleguide/src/react-extension/contexts/UserSettingsContext";
 import DisplayActionFeedbacks from "passbolt-styleguide/src/react-extension/components/Common/ActionFeedback/DisplayActionFeedbacks";
-import HandleFolderMoveStrategyEvents from "passbolt-styleguide/src/react-extension/components/ResourceFolder/HandleFolderMoveStrategyEvents/HandleFolderMoveStrategyEvents";
 import HandleProgressEvents from "passbolt-styleguide/src/react-extension/components/Common/Progress/HandleProgressEvents/HandleProgressEvents";
 import HandleSessionExpired from "./components/HandleSessionExpired";
 import HandleRouteFallback from "passbolt-styleguide/src/react-extension/components/Common/Route/HandleRouteFallback";
@@ -103,7 +102,6 @@ class AppWorkspace extends Component {
                                           <DisplayActionFeedbacks />
 
                                           { /* Dialogs Management */}
-                                          <HandleFolderMoveStrategyEvents />
                                           <HandleProgressEvents />
                                           <HandleSessionExpired />
                                           <HandlePassphraseEntryEvents/>
@@ -119,9 +117,9 @@ class AppWorkspace extends Component {
                                                 ]}>
                                                   <PasswordExpirySettingsContextProvider>
                                                     <ExportPoliciesSettingsContextProvider>
-                                                      <ResourceWorkspaceContextProvider>
-                                                        <MetadataTypesSettingsLocalStorageContextProvider>
-                                                          <ResourceTypesLocalStorageContextProvider>
+                                                      <MetadataTypesSettingsLocalStorageContextProvider>
+                                                        <ResourceTypesLocalStorageContextProvider>
+                                                          <ResourceWorkspaceContextProvider>
                                                             <SecretRevisionsSettingsContextProvider>
                                                               <ResourcePasswordGeneratorContextProvider>
                                                                 <ManageDialogs />
@@ -139,9 +137,9 @@ class AppWorkspace extends Component {
                                                                 </DragContextProvider>
                                                               </ResourcePasswordGeneratorContextProvider>
                                                             </SecretRevisionsSettingsContextProvider>
-                                                          </ResourceTypesLocalStorageContextProvider>
-                                                        </MetadataTypesSettingsLocalStorageContextProvider>
-                                                      </ResourceWorkspaceContextProvider>
+                                                          </ResourceWorkspaceContextProvider>
+                                                        </ResourceTypesLocalStorageContextProvider>
+                                                      </MetadataTypesSettingsLocalStorageContextProvider>
                                                     </ExportPoliciesSettingsContextProvider>
                                                   </PasswordExpirySettingsContextProvider>
                                                 </Route>

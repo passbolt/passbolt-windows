@@ -1,6 +1,6 @@
 {
   "name": "rendered-webview",
-  "version": "2.14.0",
+  "version": "2.15.0",
   "description": "Rendered webview2 for passbolt desktop windows",
   "license": "AGPL-3.0",
   "copyright": "Copyright 2022 Passbolt SA",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "i18next": "^26.3.4",
-    "passbolt-styleguide": "5.15.0",
+    "passbolt-styleguide": "5.17.3",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -42,7 +42,7 @@
     "jest-environment-jsdom": "^29.6.2",
     "jest-junit": "^15.0.0",
     "js-yaml": "^5.2.3",
-    "lockfile-lint": "^4.14.1",
+    "lockfile-lint": "^5.0.1",
     "node-fetch": "^2.7.0",
     "replace-in-file-webpack-plugin": "^1.0.6",
     "serialize-javascript": "^7.0.6",
@@ -52,7 +52,10 @@
   },
   "overrides": {
     "uuid": "^14.0.0",
-    "js-yaml": "^5.2.3"
+    "js-yaml": "^5.2.3",
+    "qrcode": {
+      "yargs": "^18.1.0"
+    }
   },
   "scripts": {
     "build": "webpack",

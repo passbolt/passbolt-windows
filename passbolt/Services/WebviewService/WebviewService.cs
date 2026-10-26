@@ -50,6 +50,15 @@ namespace passbolt.Services.WebviewService
 		}
 
 		/// <summary>
+		/// Clear all the browsing data (cookies, cache, local storage, indexedDB, service workers...) of the webview profile.
+		/// The profile is shared by both webviews as they use the same user data folder.
+		/// </summary>
+		public async Task ClearBrowsingData()
+		{
+			await webview.Profile.ClearBrowsingDataAsync();
+		}
+
+		/// <summary>
 		/// Return the application configuration for webviews
 		/// </summary>
 		/// <returns></returns>

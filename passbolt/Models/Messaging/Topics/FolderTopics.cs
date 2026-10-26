@@ -22,7 +22,6 @@ namespace passbolt.Models.Messaging.Topics
         public const string OPEN_DIALOG= "passbolt.folders.move-by-id";
         public const string UPDATE_LOCALSTORAGE= "passbolt.folders.update-local-storage";
         public const string SELECT_AND_SCROLL_TO = "passbolt.folders.select-and-scroll-to";
-        public const string MOVE_STRATEGY_REQUEST = "passbolt.folders.move-strategy.request";
         public const string FIND_DETAILS = "passbolt.folders.find-details";
     }
 }

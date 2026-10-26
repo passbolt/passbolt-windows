@@ -181,6 +181,12 @@ namespace passbolt.Controllers
                 ? "index-auth.html"
                 : "index-import.html";
 
+            //The import must start from a clean webview profile, WebView2 can restore cookies and storage from a previous session
+            if (currentAccountMetaData == null)
+            {
+                await this.backgroundWebviewService.ClearBrowsingData();
+            }
+
             webviewBackground.Source = new Uri(UriBuilderHelper.BuildHostUri(backgroundUrl, indexPage));
             webviewRendered.Source = new Uri(UriBuilderHelper.BuildHostUri(renderedUrl, indexPage));
 

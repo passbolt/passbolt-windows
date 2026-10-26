@@ -115,6 +115,23 @@ class IPCHandler {
   }
 
   /**
+   * Removes a listener given its name and its callback
+   *
+   * @param name
+   * @param callback
+   */
+  removeListener(name, callback) {
+    if (!this._listeners?.[name]) {
+      return;
+    }
+
+    this._listeners[name] = this._listeners[name].filter(listener => listener.callback !== callback);
+    if (this._listeners[name].length === 0) {
+      delete this._listeners[name];
+    }
+  }
+
+  /**
    * Emit a message to the addon code
    * @param requestArgs the arguments
    */

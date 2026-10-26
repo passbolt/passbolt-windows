@@ -45,13 +45,11 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         [TestMethod]
         public void IsTopicNameAllowed_ValidTopic_ShouldValidadedFolderTopics()
         {
-            bool findAllFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.FIND_ALL);
             bool openDialogFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.OPEN_DIALOG);
             bool updateLocalStorageFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.UPDATE_LOCALSTORAGE);
             bool createFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.CREATE);
             bool deleteFolders = AllowedTopics.IsTopicNameAllowed(FolderTopics.DELETE);
 
-            Assert.IsTrue(findAllFolders);
             Assert.IsTrue(openDialogFolders);
             Assert.IsTrue(updateLocalStorageFolders);
             Assert.IsTrue(createFolders);
@@ -76,14 +74,12 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
             bool updateLocalStorageGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.UPDATE_LOCALESTORAGE);
             bool createGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.CREATE);
             bool deleteGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.DELETE);
-            bool findAllGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.FINDALL);
             bool deleteDryRunGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.DELETE_DRY_RUN);
             bool updateGroups = AllowedTopics.IsTopicNameAllowed(GroupTopics.UPDATE);
 
             Assert.IsTrue(updateLocalStorageGroups);
             Assert.IsTrue(createGroups);
             Assert.IsTrue(deleteGroups);
-            Assert.IsTrue(findAllGroups);
             Assert.IsTrue(deleteDryRunGroups);
             Assert.IsTrue(updateGroups);
         }
@@ -235,13 +231,9 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
         {
             bool saveResources = AllowedTopics.IsTopicNameAllowed(ShareTopics.SAVE_RESOURCES);
             bool saveFolders = AllowedTopics.IsTopicNameAllowed(ShareTopics.SAVE_FOLDERS);
-            bool getResources = AllowedTopics.IsTopicNameAllowed(ShareTopics.GET_RESOURCES);
             bool searchAros = AllowedTopics.IsTopicNameAllowed(ShareTopics.SEARCH_AROS);
-            bool getFolders = AllowedTopics.IsTopicNameAllowed(ShareTopics.GET_FOLDERS);
 
-            Assert.IsTrue(getResources);
             Assert.IsTrue(searchAros);
-            Assert.IsTrue(getFolders);
             Assert.IsTrue(saveFolders);
             Assert.IsTrue(saveResources);
         }
@@ -323,6 +315,35 @@ namespace passbolt_windows_tests.UnitTests.Models.Messaging
             Assert.IsTrue(getOrganizationPolicy);
             Assert.IsTrue(getUserRequests);
             Assert.IsTrue(reviewRequest);
+        }
+
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedMfaWebauthnTopics()
+        {
+            Assert.IsTrue(AllowedTopics.IsTopicNameAllowed(MfaTopics.GET_WEBAUTHN_CREDENTIALS));
+            Assert.IsTrue(AllowedTopics.IsTopicNameAllowed(MfaTopics.GET_WEBAUTHN_SETTINGS));
+            Assert.IsTrue(AllowedTopics.IsTopicNameAllowed(MfaTopics.DELETE_WEBAUTHN_CREDENTIAL));
+            Assert.IsTrue(AllowedTopics.IsTopicNameAllowed(MfaTopics.BEGIN_WEBAUTHN_CEREMONY));
+            Assert.IsTrue(AllowedTopics.IsTopicNameAllowed(MfaTopics.FINISH_WEBAUTHN_CEREMONY));
+            Assert.IsTrue(AllowedTopics.IsTopicNameAllowed(MfaTopics.ABORT_WEBAUTHN_CEREMONY));
+        }
+
+        [TestMethod]
+        public void IsTopicNameAllowed_ValidTopic_ShouldValidadedResourceTypeAndGridSettingTopics()
+        {
+            Assert.IsTrue(AllowedTopics.IsTopicNameAllowed(ResourceTypeTopics.FIND_ALL_BY_DELETED_AND_NON_DELETED));
+            Assert.IsTrue(AllowedTopics.IsTopicNameAllowed(ResourceTypeTopics.UPDATE_ALL_DELETED_STATUS));
+            Assert.IsTrue(AllowedTopics.IsTopicNameAllowed(ResourceTopics.RESET_GRID_SETTING));
+        }
+
+        [TestMethod]
+        public void IsTopicNameAllowed_RemovedTopic_ShouldReturnFalse()
+        {
+            Assert.IsFalse(AllowedTopics.IsTopicNameAllowed("passbolt.folders.move-strategy.request"));
+            Assert.IsFalse(AllowedTopics.IsTopicNameAllowed("passbolt.resources.find-all-by-ids-for-display-permissions"));
+            Assert.IsFalse(AllowedTopics.IsTopicNameAllowed("passbolt.share.get-folders"));
+            Assert.IsFalse(AllowedTopics.IsTopicNameAllowed("passbolt.groups.find-all"));
+            Assert.IsFalse(AllowedTopics.IsTopicNameAllowed("passbolt.secret-revisions.save-setting"));
         }
 
     }

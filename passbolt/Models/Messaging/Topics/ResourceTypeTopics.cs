@@ -17,5 +17,7 @@ namespace passbolt.Models.Messaging.Topics
     public class ResourceTypeTopics
     {
         public const string GET_OR_FIND_RESOURCE_TYPES = "passbolt.resource-type.get-or-find-all";
+        public const string FIND_ALL_BY_DELETED_AND_NON_DELETED = "passbolt.resource-type.find-all-by-deleted-and-non-deleted";
+        public const string UPDATE_ALL_DELETED_STATUS = "passbolt.resource-types.update-all-deleted-status";
     }
 }
