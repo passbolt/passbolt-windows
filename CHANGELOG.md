@@ -1,124 +1,95 @@
 ### Added
-- PB-28188 EPIC - Offline mode
-- PB-51230 OFM WP1.3 Add offline item in ResourceEntity
-- PB-51233 OFM WP2.1 Create OfflineResourcesOPFSStorage
-- PB-51234 OFM WP2.2 Create OfflineSecretsOPFSStorage
-- PB-51239 OFM WP2.6 Create OfflineSettingsLocalStorage
-- PB-51240 OFM WP3.1 Create OfflineSettingsApiService
-- PB-51241 OFM WP3.2 Create MarkOfflineResourceApiService
-- PB-51242 OFM WP3.3 Create UnmarkOfflineItemApiService
-- PB-51452 OFM WP4.1 Create findOfflineSettingsService
-- PB-51453 OFM-WP2.7 Create MetadatakeyOPFSStorage
-- PB-51455 OFM WP4.2 Create getOrFindOfflineSettingsService
-- PB-51456 OFM WP4.3 Create saveOfflineSettingsService
-- PB-51458 OFM WP4.4 Create deleteOfflineSettingsService
-- PB-51462 OFM WP4.5 Update findAndUpdateResourcesLocalStorageService
-- PB-51467 OFM WP4.6 Update ResourceUpdateService to update offline resource and secret local storage
-- PB-51482 OFM WP4.7 Update FavoriteResourceService and deleteResourceService to update offline resource
-- PB-51485 OFM WP7.1 Create OfflineModeServiceWorkerService
-- PB-51486 OFM WP6.1 Create quickAccessEvents to handle offline login and data read
-- PB-51487 OFM WP6.2 Create offlineEvents to handle offline events
-- PB-51489 OFM WP5.8 Create AuthLoginOfflineController
-- PB-51491 OFM WP4.9 Update PostLogoutService to not flush all storage
-- PB-51494 OFM WP4.12 Create FindAndUpdateOfflineSettingsLocalStorageService
-- PB-51497 OFM WP4.14 Create MarkOfflineResourceService
-- PB-51498 OFM WP4.15 Create UnmarkOfflineItemService
-- PB-51500 OFM WP5.6 Create MarkItemOfflineUnavailableController
-- PB-51501 OFM WP5.5. Create MarkResourceOfflineAvailableController
-- PB-51503 OFM WP4.13 Update OnStartUpService to sign-out and flush data
-- PB-51506 OFM WP5.3 Create DeleteOfflineSettingsController
-- PB-51507 OFM WP5.2 Create SaveOfflineSettingsController
-- PB-51508 OFM WP5.1 Create FindOfflineSettingsController
-- PB-52043 OFM WP5.10 Create AuthLocalLogoutController
-- PB-51870 OFM WP5.9 Create getOrFindOfflineSettingsController
-- PB-52137 OFM WP9.19 Update LoginPage to route to appropriate pages
-- PB-52532 OFM WP4.21 Update FindAndUpdateMetadataKeysSessionStorageService to store offline metadata keys
-- PB-52567 OFM WP-10.5 Update markOfflineResourceService and unmarkOfflineItemService to update Offline storage of resources and secrets
-- PB-52949 OFM WP1.5 Create UserActiveSessionEntity
-- PB-52953 OFM WP3.5 Create ServerStatusApiService
-- PB-52958 OFM WP4.22 Create findServerStatusService
-- PB-52964 OFM WP4.23 Create FindAndUpdateActiveSessionService
-- PB-53025 OFM WP10.6 Offline settings API BExt integration fixes
-- PB-53029 OFM WP10.7 Mark/Unmark offline resource API BExt integration fixes
-- PB-53062 OFM WP4.24 Create GetOrFindActiveSessionService
-- PB-53089 OFM WP10.8 RBAC integration with API
-- PB-53101 OFM WP10.9 Refactor OfflineSettingsLocalStorage to extend AbstractLocalStorage
-- PB-53164 OFM WP4.10 Remove CheckAuthStatusService to use FindAndUpdateActiveSessionService
-- PB-53181 OFM WP4.26 Create OfflineSessionExpiryAlarmService
-- PB-53203 OFM WP10.11 Offline feature disabled but RBAC enabled behavior inconsistency
-- PB-53300 OFM WP4.27 Create postLoginOfflineService
-- PB-53337 OFM WP4.28 Update PostLoginService to update user active session last_login date
-- PB-53338 OFM WP4.29 Update GetOrFindRbacService to update storage based on last_logged_in date
-- PB-53352 OFM WP4.30 Update GetOrFindMeService to update storage based on last_login date
-- PB-53354 OFM WP4.31 Update GetOrFindResourceTypesService to update storage based on last_login date
-- PB-53355 OFM WP4.32 Update GetOrFindOfflineSettingsService to update storage based on last_login date
-- PB-53476 OFM WP4.33 Create OfflineRetentionDataFlushService
-- PB-53477 OFM WP4.34 Update StartLoopAuthSessionCheckService to update the last seen online property into the ActiveSessionLocalStorage
-- PB-53569 OFM WP9.22 Create Footer to display server status
-- PB-53624 OFM WP4.35 Create findAndUpdateMetadataKeysSessionStorageFromOfflineService
-- PB-53625 OFM WP4.36 Create findAndUpdateResourcesLocalStorageFromOPFSService
-- PB-53626 OFM WP4.37 Create findSecretOPFSService
-- PB-53627 OFM WP5.12 Create findAndUpdateResourcesLocalStorageFromOPFSController
-- PB-53628 OFM WP5.13 Create FindSecretByResourceIdOPFSController
-- PB-53787 OFM WP-4.38 Update FindAndUpdateSiteSettingsLocalStorageService for Offline mode
-- PB-53903 OFM WP10.21 Rename event passbolt.auth.find-and-update-active-session
-- PB-53910 Update OfflineResourcesOPFSStorage with methods for tags
-- PB-53911 Update UpdateTagService to update the OPFS storage
-- PB-53912 Update UpdateResourceTagsService to call the OPFS service
-- PB-53913 OFM WP4.42 Update DeleteTagsServie for OPFS
-- PB-53967 OFM WP-10.28 Toolbar service should not update resources with offline session
-- PB-54137 OFM WP12.2 Update AskInformMenuDisplay to get suggested from GetOrFindOfflineResourcesService
-- PB-54139 OFM WP12.3 Update DisplayInformMenu to get suggested from GetOrFindOfflineResourcesService
-- PB-54140 OFM WP12.4 Update DisplayInformMenu to hide functionalities not part of offline mode
-- PB-54155 OFM WP10.30 - Offline Footer re-design
-- PB-54249 OFM WP12.5 Update Autofill controller to get secret from FindSecretOPFSService for offline session
-- PB-54261 OFM WP10.35 Update processing of Data retention period from seconds to days
-- PB-54423 OFM WP13.1 Handle offline settings response validation error
-- PB-54464 OFM WP13.3 Flush local storage if user is authenticate offline and sign-in online
-- PB-54469 OFM Resource Workspace bugs: column values, unfavorite, filter
-- PB-54479 OFM WP13.5 Site settings should be stored only for online authenticated session
-- PB-54485 OFM WP13.7 Fix suggested resources counter for inform call to action
-- PB-54518 OFM WP13.9 findAndUpdateAllByParentFolderId method should update the offline storage
-- PB-54523 OFM WP13.10 findAndUpdateByIsSharedWithGroup shoudl update the offline storage
-- PB-54654 OFM 'Unable to reach the server' message when logged in AND MFA is required
-- PB-54579 OFM Able to see remove offline availability option even when the action is denied
-- PB-54697 - Windows application align with 5.16.0
+PB-55438 align windows application with 5170
+PB-53327 Include group membership changes in the permission drift calculation before saving
+PB-53450 AUTOFILL - WP 2.0 - Create the orphanDictionary for the DOM extraction
+PB-53451 Add OrphanFieldPredicates class to check whether an element is a button
+PB-53452 AUTOFILL - WP 2.2 - Create the FieldVisibilityService to avoid detection of hidden inputs
+PB-53460 Add FormExtractionService to gather forms with viewable text fields
+PB-53461 AUTOFILL - WP 2.4 - Create the OrphanFieldsExtractionService to extract build the orphan forms
+PB-53462 Create NestedFormExtractionService
+PB-53464 Rework InFormCredentialsFormField
+PB-53465 AUTOFILL - WP 2.8 - Update the InFormManager to use the new extraction logic
+PB-53466 AUTOFILL - WP 3.0 - Create the TextNormalizer as an helper to infer on extracted text
+PB-53480 AUTOFILL - WP 3.1 - Create the ScrapingDictionary to handle scraping constants
+PB-53482 AUTOFILL - WP 3.2 - Create the ScrapingIdentity to support identifier after scraping
+PB-53483 AUTOFILL - WP 3.3 - Create the ScrapingCache object
+PB-53484 AUTOFILL - WP 3.4 - Create the PageScraperHelpers to group helpers used for scraping
+PB-53485 AUTOFILL - WP 3.5 - Create the LabelScraper to handle the label logic extraction
+PB-53486 AUTOFILL - WP 3.6 - Create the FieldScraper to handle the field extraction
+PB-53487 AUTOFILL - WP 3.7 - Create the FormScraper to extract information from form
+PB-53488 AUTOFILL - WP 3.8 - Create the FieldQualifier to detect the type of field scraped
+PB-53489 AUTOFILL - WP 3.9 - Create the PageScraper
+PB-53980 PCD - improve PCD on move operations
+PB-54162 AUTOFILL - WP 4.0 Create keywordsDictionary for classification
+PB-54163 AUTOFILL - WP 4.1 Create taxonomy for classification
+PB-54165 AUTOFILL - WP 4.2 Create KeywordMatchingService
+PB-54167 AUTOFILL - WP 4.3 Create FieldFeatureService
+PB-54168 AUTOFILL - WP 4.4 Create FormClassificationService
+PB-54171 AUTOFILL - WP 4.5 Create SawfClassificationService
+PB-54172 AUTOFILL - WP 4.6 Create PasswordRoleResolutionService
+PB-54173 AUTOFILL - WP 4.7 Create FieldsRationalizationService
+PB-54184 AUTOFILL - WP 4.8 Create SegmentedOtpResolutionService
+PB-54185 AUTOFILL - WP 4.9 Create ClassificationService
+PB-54336 AUTOFILL - WP 4.10 Create PageClassificationService
+PB-54337 AUTOFILL - WP 4.11 Connect the new service to the fill plan
+PB-54346 AUTOFILL - Fill not working on modal when z index is high
+PB-54374 AUTOFILL - Call-to-action missing on first focus for shadow-DOM fields
+PB-54344 AUTOFILL - Autocomplete should not block when it not valid
+PB-54500 Quick access: list PIN code resources
+PB-54502 Quick access: display PIN code in the resource view page
+PB-54530 AUTOFILL is not working for input length attribute
+PB-54571 Add the Passkeys provider toggle to the MFA administration page
+PB-54596 Implement the restartable WebAuthn setup ceremony
+PB-54608 OFM - PIN Code as offline available resource
+PB-54706 Show the Passkeys card in the user MFA provider overview
+PB-54707 Add the passkey authenticator icon set and AAGUID mapping to the styleguide
+PB-54709 Add the passkey registration flow to the Passkeys settings page
+PB-54710 Implement the WebAuthn MFA verification page as a styleguide React application
+PB-54759 BEST - WP 1.1 - Implement ScimEntity for Healthcheck
+PB-54760 BEST - WP 1.2 - Update HealthcheckEntity to handle the new ScimEntity
+PB-54761 BEST - WP 1.3 - Update DisplayScimSettingsAdministration to handle the new expiry behaviour
+PB-55047 Prune fields nested in forms deeper than the one evaluated
+PB-55050 False positive on first name and inform menu blinking
+PB-55099 Fix add user to group progress dialog for offscreen
+PB-55115 Implement the delegated WebAuthn MFA verification page for the mobile applications
 
 ### Fixed
-- PB-52720 Folder tree subfolders hoisted to top of tree on collapse of a deep branch
-- PB-53724 Reduce footer padding to 8px
+PB-55672 WinApp passkeys setup should not be visible
+PB-55652 WinApp - MFA Token should be cleared when credential locker is cleared
+PB-53265 Autocomplete fails in share dialog when custom email validator is on
+PB-54103 Fix null reference on storage change event
+PB-54531 Editing resources in a group-view doesn't update the grid
+PB-54764 OFM button not presented to eligible authenticated user with mfa required and API unavailable
+PB-54790 Prevent potential issue with TOTP autofill
+PB-54818 Offline mode plane icon stroke width should be 1.5px instead of 2px
+PB-54841 Fix quickaccess tab not opening when an account is not configured
+PB-54976 AUTOFILL - Plex CTA is blinking
+PB-55046 AUTOFILL - agoda email is not fillable
+PB-55048 AUTOFILL - Focus on a input should keep the CTA
+PB-55136 AUTOFILL - confirm password should be filled on a form
+PB-55155 AUTOFILL - Fix ant design search input is not working
 
 ### Security
-- PB-54532 Small upgrade for js-yaml (High)
-- PB-54587 - Fix @xmldom/xmldom GHSA-93r5-fhx6-vmg9 - CVSS4.0 HIGH
-- PB-54644 Fix browserslist GHSA-c83g-rgw3-j3cx - CVSS3.1 HIGH
-- PB-54645 Fix fast-uri GHSA-5jgf-p345-68v8 - CVSS3.1 HIGH
-- PB-54646 Fix svgo GHSA-w27v-7q3p-w38r - CVSS3.1 HIGH
-- PB-54647 Fix @humanfs/node  GHSA-p498-v437-472g - CVSS4.0 MEDIUM
-- PB-54650 Fix qs GHSA-x5fp-wj9c-mxmx - CVSS4.0 MEDIUM
-- PB-54651 Fix joi GHSA-6w3j-5fw6-r9vr - CVSS3.1 LOW
-- PB-54653 Fix postcss-selector-parser GHSA-w9m9-85wc-3x92 - CVSS4.0 LOW
-- PB-54781 - Copied secrets retained in Windows clipboard history (Low)
-- PB-54780 - Origin validation error in Passbolt Windows trusted-domain checks (Info)
+PB-52830 restrict retrieved cookie on Safari to what a browser would normally get back
+PB-52831 Ensures Safari does not accept unexpected redirection to avoid cookie leakage
+PB-52832 Fix parameter name in sanitizeUrl function
+PB-53545 Major upgrade for yargs (Low)
+PB-53942 Fix image-size GHSA-5p2g-fcmc-qvqq - HIGH CVSS4.0
+PB-54648 Fix adm-zip GHSA-vwc7-r8mq-g2x9 - CVSS4.0 MEDIUM
+PB-54751 Major upgrade for @noble/hashes (Low) - passbolt-styleguide
+PB-55262 Fix undici multiple CVEs - CVSS3.1 HIGH
+PB-55264 Fix axios multiple CVEs - CVSS3.1 HGH
+PB-55267 Fix braces-expansion multiple CVEs - CVSS3.1 HIGH
+PB-55268 Fix braces GHSA-vfj7-8cjw-p6xm - CVSS3.1 HIGH
+PB-55274 Fix shell-quote GHSA-pqg4-j6r4-53mv - CVSS4.0 CRITICAL
+PB-55276 Fix fast-uri multiple CVEs - CVSS3.1 HIGH
+PB-55277 Fix source-map-js GHSA-68fv-2mgg-jv7q - CVSS4.0 HIGH
+PB-55279 Fix i18next-http-backend GHSA-xvq9-wjp8-hwqf - CVSS3.1 LOW
+PB-55293 Fix joi multiple CVEs - CVSS4.0 HIGH
+PB-55295 Fix probe-image-size GHSA-gjj5-9665-rwrc - CVSS3.1 HIGH
+PB-54842 clipboard auto-clear bypass via untrusted copy/cut DOM event
 
 ### Maintenance
-- PB-53396 fix progress bar on resource update
-- PB-53720 Apply Title Case to titles across the administration workspace navigation menu, breadcrumb, page title, and section headers
-- PB-53763 Replace the react-list fork with upstream 0.8.19
-- PB-53765 Migrate the group delete capability from direct port request to GroupServiceWorkerService
-- PB-53766 Add unit test coverage for the delete method of GroupApiService
-- PB-53767 Migrate the group delete logic from GroupModel to a dedicated DeleteGroupService
-- PB-53768 Extract the group delete logic from groupEvents into a dedicated DeleteGroupController
-- PB-53769 Migrate the group delete dry run to DeleteGroupService and a dedicated DeleteDryRunGroupController
-- PB-53770 Migrate the folder update capability from direct port.request to FolderServiceWorkerService
-- PB-53771 Rename FolderService to FolderApiService and add unit test coverage for its update method
-- PB-53772 Migrate the folder update logic from FolderModel to a dedicated UpdateFolderService
-- PB-53773 Extract the folder update logic from folderEvents into a dedicated UpdateFolderController
-- PB-53782 Migrate MfaPolicyEntity to EntityV2 and add unit test coverage
-- PB-53783 Migrate PermissionChangeEntity to EntityV2 and add unit test coverage
-- PB-54130 Consolidate UUID assertions on the styleguide assertUuid helper
-- PB-54175 remove the submit confirmation message on the permission confirmation dialog
-- PB-54353 Migrate folder delete capability  to service worker using FolderServiceWorkerService
-- PB-54354 Cover the delete method from FolderApiService with unit tests
-- PB-54360 Migrate the folder delete logic from FolderModel to DeleteFolderService
-- PB-54366 Introduce DeleteFolderController and wire it
+PB-49117 optimise tab retrieval by id
+PB-52127 SAF - Reactivate avatar handling from client
+PB-54525 Product naming convention for Group Manager instead of Group Admin
