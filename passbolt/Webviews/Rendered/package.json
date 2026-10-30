@@ -50,13 +50,6 @@
     "webpack": "^5.107.2",
     "webpack-cli": "^7.0.2"
   },
-  "overrides": {
-    "uuid": "^14.0.0",
-    "js-yaml": "^5.2.3",
-    "qrcode": {
-      "yargs": "^18.1.0"
-    }
-  },
   "scripts": {
     "build": "webpack",
     "build-watch": "webpack --watch",
