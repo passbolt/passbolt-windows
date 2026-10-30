@@ -6,8 +6,7 @@
     ],
     "transform": {
       "^.+\\.js$": ["babel-jest", {
-        "presets": ["@babel/env"],
-        "plugins": ["@babel/plugin-transform-runtime"]
+        "presets": [["@babel/env", {"targets": {"node": "current"}}]]
       }]
     },
     "transformIgnorePatterns": ["/node_modules/(.!passbolt-browser-extension)"],
