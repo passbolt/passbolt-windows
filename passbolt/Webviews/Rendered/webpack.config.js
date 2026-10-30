@@ -31,7 +31,7 @@ module.exports = {
         exclude: /(node_modules[\\/]((?!(passbolt\-styleguide))))/,
         loader: "babel-loader",
         options: {
-          presets: ["@babel/react"],
+          presets: [["@babel/react", { runtime: "classic" }]],
         },
       },
       {
