@@ -1,6 +1,12 @@
-[Windows]
-* @passbolt/groups/front-end-group
+# Managed by Pulumi (gitlab-permissions-as-code). Do not edit by hand.
+# Ownership is declared in IaC; hand edits are reverted on the next apply.
 
-[SRE]
+[Owners]
+* @passbolt/groups/front-end-group
 .gitlab-ci/ @passbolt/groups/sre-group
 .gitlab-ci.yaml @passbolt/groups/sre-group
+
+[Governance]
+/CODEOWNERS         @passbolt/groups/front-end-group
+/.gitlab/CODEOWNERS @passbolt/groups/front-end-group
+/docs/CODEOWNERS    @passbolt/groups/front-end-group
