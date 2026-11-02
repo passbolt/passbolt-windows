@@ -36,7 +36,7 @@
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
     "jest-fetch-mock": "^3.0.3",
-    "jest-junit": "^15.0.0",
+    "jest-junit": "^17.0.0",
     "jest-localstorage-mock": "^2.4.26",
     "jest-webextension-mock": "^4.2.0",
     "js-yaml": "^5.2.3",
