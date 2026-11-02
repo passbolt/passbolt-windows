@@ -44,7 +44,7 @@
     "node-fetch": "^2.7.0",
     "replace-in-file-webpack-plugin": "^1.0.6",
     "serialize-javascript": "^7.1.4",
-    "validator": "^13.15.26",
+    "validator": "^13.15.35",
     "webpack": "^5.107.2",
     "webpack-cli": "^7.0.2"
   },
