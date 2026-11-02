@@ -42,7 +42,7 @@
     "js-yaml": "^5.5.0",
     "lockfile-lint": "^5.1.0",
     "replace-in-file-webpack-plugin": "^1.0.6",
-    "webpack": "^5.107.2",
+    "webpack": "^5.112.2",
     "webpack-cli": "^7.0.2"
   },
   "scripts": {
