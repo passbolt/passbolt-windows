@@ -57,6 +57,7 @@
     "test:coverage": "jest --no-cache ./src/ --coverage"
   },
   "overrides": {
+    "@xmldom/xmldom": "0.8.15",
     "eslint-plugin-react": {
       "eslint": "$eslint"
     }
