@@ -5,13 +5,13 @@ import js from "@eslint/js";
 import noUnsanitizedPlugin from "eslint-plugin-no-unsanitized";
 import jestPlugin from "eslint-plugin-jest";
 import reactPlugin from "eslint-plugin-react";
-import importPlugin from "eslint-plugin-import";
+import {flatConfigs as importFlatConfigs} from "eslint-plugin-import-x";
 
 export default [
   js.configs.recommended, // core JavaScript rules
   reactPlugin.configs.flat.recommended, // React best practices
   reactPlugin.configs.flat["jsx-runtime"], // JSX transform rules
-  importPlugin.flatConfigs.recommended, // import/export validations
+  importFlatConfigs.recommended, // import/export validations
   {
     files: ["**/*.{js,jsx,mjs,cjs}"],
 
@@ -111,7 +111,7 @@ export default [
 
     settings: {
       react: {
-        version: "detect",
+        version: "18.3",
       },
     },
 
@@ -155,6 +155,7 @@ export default [
       "no-implied-eval": "error", // disallow the use of eval()-like methods
       "no-lone-blocks": "error", // disallow unnecessary nested blocks
       "no-useless-escape": "off", // disallow unnecessary escape characters
+      "no-useless-assignment": "off", // Keep defensive variable initialisation
 
       /*
        * ============================================
@@ -261,7 +262,7 @@ export default [
        * IMPORT
        * ============================================
        */
-      "import/no-extraneous-dependencies": [
+      "import-x/no-extraneous-dependencies": [
         "error",
         {
           devDependencies: [
@@ -277,14 +278,11 @@ export default [
           peerDependencies: true,
         },
       ],
-      // uuid v14 declares its entrypoint via the package.json `exports` field,
-      // which the default eslint-plugin-import resolver does not understand.
-      "import/no-unresolved": ["error", {ignore: ["^uuid$"]}],
       // Muted during migration
-      "import/no-named-as-default-member": "off",
-      "import/no-duplicates": "off",
-      "import/named": "off",
-      "import/no-named-as-default": "off",
+      "import-x/no-named-as-default-member": "off",
+      "import-x/no-duplicates": "off",
+      "import-x/named": "off",
+      "import-x/no-named-as-default": "off",
     },
   },
   /*
@@ -324,7 +322,7 @@ export default [
 
       // Test-specific overrides
       "no-console": "off", // Allow console in tests
-      "import/no-extraneous-dependencies": "off", // Dev deps OK in tests
+      "import-x/no-extraneous-dependencies": "off", // Dev deps OK in tests
       "jest/prefer-expect-assertions": "off", // Not always needed
 
       // Rules muted during migration
@@ -352,7 +350,7 @@ export default [
 
     rules: {
       "no-console": "off", // Allow console in scripts
-      "import/no-extraneous-dependencies": "off", // Dev deps OK in configs
+      "import-x/no-extraneous-dependencies": "off", // Dev deps OK in configs
     },
   },
 ];

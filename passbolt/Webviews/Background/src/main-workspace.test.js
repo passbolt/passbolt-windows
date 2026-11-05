@@ -81,6 +81,7 @@ describe("Main workspace class", () => {
   afterEach(() => {
     // Cleanup mocks
     jest.resetAllMocks();
+    jest.restoreAllMocks();
   });
 
   it('should listen to the browser extension events', async() => {
