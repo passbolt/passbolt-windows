@@ -49,7 +49,7 @@
     "build": "webpack",
     "build-watch": "webpack --watch",
     "lint": "npm run lint:lockfile && npm run lint:eslint",
-    "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \"https:\" \"git+ssh:\" --empty-hostname false",
+    "lint:lockfile": "lockfile-lint --path package-lock.json --allowed-hosts npm github.com --allowed-schemes \"https:\" \"git+ssh:\" --empty-hostname false --validate-integrity-strict",
     "lint:eslint": "eslint -c eslint.config.mjs --ext js src",
     "lint:eslint-fix": "eslint -c eslint.config.mjs --ext js --fix src",
     "test": "jest",
