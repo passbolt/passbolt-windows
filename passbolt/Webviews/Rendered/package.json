@@ -66,6 +66,9 @@
     },
     "eslint-plugin-react": {
       "eslint": "$eslint"
+    },
+    "qrcode": {
+      "yargs": "^18.1.0"
     }
   }
 }
