@@ -64,6 +64,9 @@
     "@xmldom/xmldom": "0.8.15",
     "eslint-plugin-react": {
       "eslint": "$eslint"
+    },
+    "qrcode": {
+      "yargs": "^18.1.0"
     }
   }
 }
