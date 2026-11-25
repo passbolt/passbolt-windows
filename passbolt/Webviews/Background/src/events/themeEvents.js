@@ -12,12 +12,15 @@
  * @since         0.5.0
  */
 
-import User from "passbolt-browser-extension/src/all/background_page/model/user";
-import ThemeModel from "passbolt-browser-extension/src/all/background_page/model/theme/themeModel";
-import ChangeThemeEntity from "passbolt-browser-extension/src/all/background_page/model/entity/theme/change/ChangeThemeEntity";
-import {UPDATE_THEME} from "../enumerations/appEventEnumeration";
+import FindThemesController from "passbolt-browser-extension/src/all/background_page/controller/theme/findThemesController";
+import UpdateThemeDesktopController from "../controllers/updateThemeDesktopController";
 
-const listen = function(worker) {
+/**
+ * Listens the theme events
+ * @param {Worker} worker
+ * @param {ApiClientOptions} apiClientOptions the api client options
+ */
+const listen = function(worker, apiClientOptions) {
   /*
    * Find all themes
    *
@@ -25,15 +28,8 @@ const listen = function(worker) {
    * @param requestId {uuid} The request identifier
    */
   worker.port.on('passbolt.themes.find-all', async requestId => {
-    try {
-      const clientOptions = await User.getInstance().getApiClientOptions();
-      const themeModel = new ThemeModel(clientOptions);
-      const themes = await themeModel.findAll();
-      worker.port.emit(requestId, 'SUCCESS', themes);
-    } catch (error) {
-      console.error(error);
-      worker.port.emit(requestId, 'ERROR', error);
-    }
+    const controller = new FindThemesController(worker, requestId, apiClientOptions);
+    await controller._exec();
   });
 
   /*
@@ -41,19 +37,11 @@ const listen = function(worker) {
    *
    * @listens passbolt.themes.change
    * @param requestId {uuid} The request identifier
+   * @param name {string} The theme name
    */
   worker.port.on('passbolt.themes.change', async(requestId, name) => {
-    try {
-      const clientOptions = await User.getInstance().getApiClientOptions();
-      const themeModel = new ThemeModel(clientOptions);
-      const changeThemeEntity = new ChangeThemeEntity({name: name});
-      await themeModel.change(changeThemeEntity);
-      worker.port.emit(UPDATE_THEME, name);
-      worker.port.emit(requestId, 'SUCCESS');
-    } catch (error) {
-      console.error(error);
-      worker.port.emit(requestId, 'ERROR', error);
-    }
+    const controller = new UpdateThemeDesktopController(worker, requestId, apiClientOptions);
+    await controller._exec(name);
   });
 };
 
