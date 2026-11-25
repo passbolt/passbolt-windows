@@ -81,6 +81,7 @@ describe("Main workspace class", () => {
   afterEach(() => {
     // Cleanup mocks
     jest.resetAllMocks();
+    jest.restoreAllMocks();
   });
 
   it('should listen to the browser extension events', async() => {
@@ -146,7 +147,7 @@ describe("Main workspace class", () => {
     expect(SecretEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(ShareEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
     expect(TagEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
-    expect(ThemeEvents.listen).toHaveBeenCalledWith(main.worker);
+    expect(ThemeEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions());
     expect(UserPassphrasePolicies.listen).toHaveBeenCalledWith(main.worker);
     expect(UserEvents.listen).toHaveBeenCalledWith(main.worker, defaultApiClientOptions(), new AccountEntity(accountDto).toDto());
   });

@@ -133,7 +133,7 @@ export default class MainWorkspace {
     SecretHistoryEvents.listen(this.worker, apiClientOptions, account);
     ShareEvents.listen(this.worker, apiClientOptions, account);
     TagEvents.listen(this.worker, apiClientOptions, account);
-    ThemeEvents.listen(this.worker);
+    ThemeEvents.listen(this.worker, apiClientOptions);
     PasswordExpiryEvents.listen(this.worker, apiClientOptions, account);
     PasswordPoliciesEvents.listen(this.worker, apiClientOptions, account);
     PermissionEvents.listen(this.worker, apiClientOptions, account);
