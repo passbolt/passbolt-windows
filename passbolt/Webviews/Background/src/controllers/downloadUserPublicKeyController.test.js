@@ -60,7 +60,7 @@ describe("DownloadUserPublicKeyController", () => {
     MockExtension.withMissingPrivateKeyAccount();
     jest.spyOn(worker.port, "emit").mockImplementation(() => jest.fn());
 
-    await expect(controller.exec()).rejects.toThrowError(new GpgKeyError("Public key can't be found."));
+    await expect(controller.exec()).rejects.toThrow(new GpgKeyError("Public key can't be found."));
     expect(worker.port.emit).not.toHaveBeenCalled();
   });
 });

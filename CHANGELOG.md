@@ -1,95 +1,91 @@
 ### Added
-PB-55438 align windows application with 5170
-PB-53327 Include group membership changes in the permission drift calculation before saving
-PB-53450 AUTOFILL - WP 2.0 - Create the orphanDictionary for the DOM extraction
-PB-53451 Add OrphanFieldPredicates class to check whether an element is a button
-PB-53452 AUTOFILL - WP 2.2 - Create the FieldVisibilityService to avoid detection of hidden inputs
-PB-53460 Add FormExtractionService to gather forms with viewable text fields
-PB-53461 AUTOFILL - WP 2.4 - Create the OrphanFieldsExtractionService to extract build the orphan forms
-PB-53462 Create NestedFormExtractionService
-PB-53464 Rework InFormCredentialsFormField
-PB-53465 AUTOFILL - WP 2.8 - Update the InFormManager to use the new extraction logic
-PB-53466 AUTOFILL - WP 3.0 - Create the TextNormalizer as an helper to infer on extracted text
-PB-53480 AUTOFILL - WP 3.1 - Create the ScrapingDictionary to handle scraping constants
-PB-53482 AUTOFILL - WP 3.2 - Create the ScrapingIdentity to support identifier after scraping
-PB-53483 AUTOFILL - WP 3.3 - Create the ScrapingCache object
-PB-53484 AUTOFILL - WP 3.4 - Create the PageScraperHelpers to group helpers used for scraping
-PB-53485 AUTOFILL - WP 3.5 - Create the LabelScraper to handle the label logic extraction
-PB-53486 AUTOFILL - WP 3.6 - Create the FieldScraper to handle the field extraction
-PB-53487 AUTOFILL - WP 3.7 - Create the FormScraper to extract information from form
-PB-53488 AUTOFILL - WP 3.8 - Create the FieldQualifier to detect the type of field scraped
-PB-53489 AUTOFILL - WP 3.9 - Create the PageScraper
-PB-53980 PCD - improve PCD on move operations
-PB-54162 AUTOFILL - WP 4.0 Create keywordsDictionary for classification
-PB-54163 AUTOFILL - WP 4.1 Create taxonomy for classification
-PB-54165 AUTOFILL - WP 4.2 Create KeywordMatchingService
-PB-54167 AUTOFILL - WP 4.3 Create FieldFeatureService
-PB-54168 AUTOFILL - WP 4.4 Create FormClassificationService
-PB-54171 AUTOFILL - WP 4.5 Create SawfClassificationService
-PB-54172 AUTOFILL - WP 4.6 Create PasswordRoleResolutionService
-PB-54173 AUTOFILL - WP 4.7 Create FieldsRationalizationService
-PB-54184 AUTOFILL - WP 4.8 Create SegmentedOtpResolutionService
-PB-54185 AUTOFILL - WP 4.9 Create ClassificationService
-PB-54336 AUTOFILL - WP 4.10 Create PageClassificationService
-PB-54337 AUTOFILL - WP 4.11 Connect the new service to the fill plan
-PB-54346 AUTOFILL - Fill not working on modal when z index is high
-PB-54374 AUTOFILL - Call-to-action missing on first focus for shadow-DOM fields
-PB-54344 AUTOFILL - Autocomplete should not block when it not valid
-PB-54500 Quick access: list PIN code resources
-PB-54502 Quick access: display PIN code in the resource view page
-PB-54530 AUTOFILL is not working for input length attribute
-PB-54571 Add the Passkeys provider toggle to the MFA administration page
-PB-54596 Implement the restartable WebAuthn setup ceremony
-PB-54608 OFM - PIN Code as offline available resource
-PB-54706 Show the Passkeys card in the user MFA provider overview
-PB-54707 Add the passkey authenticator icon set and AAGUID mapping to the styleguide
-PB-54709 Add the passkey registration flow to the Passkeys settings page
-PB-54710 Implement the WebAuthn MFA verification page as a styleguide React application
-PB-54759 BEST - WP 1.1 - Implement ScimEntity for Healthcheck
-PB-54760 BEST - WP 1.2 - Update HealthcheckEntity to handle the new ScimEntity
-PB-54761 BEST - WP 1.3 - Update DisplayScimSettingsAdministration to handle the new expiry behaviour
-PB-55047 Prune fields nested in forms deeper than the one evaluated
-PB-55050 False positive on first name and inform menu blinking
-PB-55099 Fix add user to group progress dialog for offscreen
-PB-55115 Implement the delegated WebAuthn MFA verification page for the mobile applications
+PB-56680 Align windows application with 5.18
+PB-54816 OFM - CE admins need to be informed why their offline-settings forms are disabled
+PB-54834 OFM - Quickaccess - Notes and custom fields are searchable
+PB-54835 Quickaccess - Notes and custom fields are viewable quick access resource view page
+PB-54836 OFM - Notes and custom fields are now available offline
+PB-54910 GenHC - WP 5.2 - Implement healthcheckCheckEntity and healthcheckChecksCollection, including the grouping by domain_key
+PB-54911 GenHC - WP 5.3 - Move AdministrationHealthcheckContext onto the checks collection
+PB-54912 GenHC - WP 5.4 - Delete the legacy healthcheck entity tree, its fixtures and the unused HealthcheckModel
+PB-54916 GenHC - WP 6.2 - Implements code review
+PB-54917 GenHC - WP 6.3 - Rebuild the Storybook stories on captured v5 payloads
+PB-54947 GenHC - WP 7.1 - Restate the sidebar legend to match the status badge markup
+PB-54948 GenHC - WP 7.2 - Collapsible domains and collapsible help, with aria-expanded controls and state reset on reload
+PB-54949 GenHC - WP 7.3 - Rework healthcheck.less: generic section class, badge tints, disclosure rules, help-list and long-string wrapping
+PB-55174 Styleguide: Note row on the v5-default, v5-default-with-totp and PIN code page
+PB-55444 Styleguide: Custom fields on the v5-default and v5-default-with-totp pages
+PB-55521 Create ThemesApiService
+PB-55522 Create FindThemesService
+PB-55523 Create UpdateThemeService
+PB-55524 Create FindThemesController
+PB-55525 Create UpdateThemeController
+PB-55527 Update allowed-theme list in config and other files
+PB-55528 Styleguide: Add the two new palettes and less files
+PB-55529 Styleguide: Update DisplayUserTheme
+PB-55583 DVS - WP1.1 - Add the duoVerifySubscriber property to MfaModel
+PB-55584 DVS - WP1.2 - Add the verifySubscriber property to the Duo DTO
+PB-55585 DVS - WP1.3 - Add setDuoToggle and hasDuoVerifySubscriberLockoutRisk to AdministrationMfaContext
+PB-55586 DVS - WP1.4 - Add the Verify the Duo subscriber toggle and the lockout warning banner to DisplayMfaAdministration
+PB-55587 Add Duo setup constants in MFAContext
+PB-55591 Add DuoSetupError page
+PB-55593 Fix MFA provider config visible when not enabled + handle DUO errors
+PB-55594 DVS - WP3.1 - Add the flash error message style
+PB-55651 GenHC - WP 7.4 - Per-theme status badge glyph colours
+PB-55736 Add Netwrix CSV import format
+PB-55870 Create sessionTimestampsEntity
+PB-55871 Create sessionTimestampsLocalStorage
+PB-55872 Create getSessionTimestampsService
+PB-55873 Create updateSessionTimestampsService
+PB-55874 Create getSessionTimestampsController and event
+PB-55875 Create sessionTimestampsServiceWorkerService
 
 ### Fixed
-PB-55672 WinApp passkeys setup should not be visible
-PB-55652 WinApp - MFA Token should be cleared when credential locker is cleared
-PB-53265 Autocomplete fails in share dialog when custom email validator is on
-PB-54103 Fix null reference on storage change event
-PB-54531 Editing resources in a group-view doesn't update the grid
-PB-54764 OFM button not presented to eligible authenticated user with mfa required and API unavailable
-PB-54790 Prevent potential issue with TOTP autofill
-PB-54818 Offline mode plane icon stroke width should be 1.5px instead of 2px
-PB-54841 Fix quickaccess tab not opening when an account is not configured
-PB-54976 AUTOFILL - Plex CTA is blinking
-PB-55046 AUTOFILL - agoda email is not fillable
-PB-55048 AUTOFILL - Focus on a input should keep the CTA
-PB-55136 AUTOFILL - confirm password should be filled on a form
-PB-55155 AUTOFILL - Fix ant design search input is not working
+PB-52360 Downgrading from PRO to CE do not remove SSO login
+PB-54070 User with can update right can't delete a resource when right clicking it
+PB-53271 refresh user account recovery status for all recovery policy change
+PB-55472 Offline mode is lost at every sign-out for users with non-standard email addresses allowed by PASSBOLT_EMAIL_VALIDATE_REGEX
+PB-55733 Autofill - account name should not be considered as username
+PB-55777 Fix Groups and Tag Rows padding
+PB-55893 Fix lower tier fields selected before higher one if they come earlier in DOM tree
+PB-55894 Fix ambiguous labels classification
 
 ### Security
-PB-52830 restrict retrieved cookie on Safari to what a browser would normally get back
-PB-52831 Ensures Safari does not accept unexpected redirection to avoid cookie leakage
-PB-52832 Fix parameter name in sanitizeUrl function
-PB-53545 Major upgrade for yargs (Low)
-PB-53942 Fix image-size GHSA-5p2g-fcmc-qvqq - HIGH CVSS4.0
-PB-54648 Fix adm-zip GHSA-vwc7-r8mq-g2x9 - CVSS4.0 MEDIUM
-PB-54751 Major upgrade for @noble/hashes (Low) - passbolt-styleguide
-PB-55262 Fix undici multiple CVEs - CVSS3.1 HIGH
-PB-55264 Fix axios multiple CVEs - CVSS3.1 HGH
-PB-55267 Fix braces-expansion multiple CVEs - CVSS3.1 HIGH
-PB-55268 Fix braces GHSA-vfj7-8cjw-p6xm - CVSS3.1 HIGH
-PB-55274 Fix shell-quote GHSA-pqg4-j6r4-53mv - CVSS4.0 CRITICAL
-PB-55276 Fix fast-uri multiple CVEs - CVSS3.1 HIGH
-PB-55277 Fix source-map-js GHSA-68fv-2mgg-jv7q - CVSS4.0 HIGH
-PB-55279 Fix i18next-http-backend GHSA-xvq9-wjp8-hwqf - CVSS3.1 LOW
-PB-55293 Fix joi multiple CVEs - CVSS4.0 HIGH
-PB-55295 Fix probe-image-size GHSA-gjj5-9665-rwrc - CVSS3.1 HIGH
-PB-54842 clipboard auto-clear bypass via untrusted copy/cut DOM event
+PB-52330 parseSetupUrl regular expression is reinforced
+PB-52331 Ensures custom fields cannot be previewed on the right sidebar if the user does not have the permission to
+PB-54930 enable strict integrity validation in package.json
+PB-54931 enable package name validation in package-lock.json
+PB-55900 Fix i18next-http-backend multiple CVEs - CVSS3.1 LOW
+PB-55968 Align package.json order on the bext
+PB-56211 Small upgrade for System.Text.RegularExpressions (Low)
+PB-56498 Reapply yargs override
+PB-56500 Fix minimatch GHSA-g3hv-75wg-m249 - CVSS4.0 MEDIUM
 
 ### Maintenance
-PB-49117 optimise tab retrieval by id
-PB-52127 SAF - Reactivate avatar handling from client
-PB-54525 Product naming convention for Group Manager instead of Group Admin
+PB-50131 Rename "Account Recovery" Column in Users Table for clarity
+PB-52539 The left sidebar has been adjusted
+PB-54921 removed unused filter method
+PB-55095 Index permissions and changes by recipient
+PB-55131 Speed up opening the move dialog
+PB-55132 Cache group members in the share dialog
+PB-55133 Cache the "resource without owner" check
+PB-55134 Aggregate the permission rows from the indexes
+PB-55135 Remove the fake change for new recipients
+PB-55202 Remove chromium-mv2 (Edge) related build scripts
+PB-55204 Remove files that were used for Edge MV2 extension
+PB-55259 Optimize toDto conversion in ShareDialog.buildResourceDto
+PB-55514 Improve autofill performances and skip disabled inputs
+PB-55543 Clarify WebAuthn error on the MFA organisation settings page
+PB-55590 Forward error code from main page URL to iframe URL
+PB-55672 WinApp passkeys setup should not be visible
+PB-55682 Fix random points positioning
+PB-55795 Polish preview and copy button
+PB-55876 Move the timestamp writes and reads in services to the new timestamp services
+PB-55877 Remove timestamps from activeSession entity and move activeSession to session storage
+PB-55878 Handle extension update for active session in session storage
+PB-55965 OFM - WP0.1 App events should use api client option from parameter
+PB-55966 OFM - WP0.2 AccountRecoverySaveUserSettingsController should use the user id from account
+PB-56068 OFM - WP0.3 Use account domain in ParseAuthUrlService
+PB-56070 OFM - WP0.4 Use account domain in ParseAppUrlService
+PB-56071 OFM - WP0.5 Use account domain in ParseWebIntegrationUrlService
+PB-56086 OFM - WP0.6 Use account in toolbar service instead of user get instance
+PB-56147 OFM - WP0.7 Use account in config events instead of user get instance

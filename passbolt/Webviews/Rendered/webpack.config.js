@@ -31,7 +31,7 @@ module.exports = {
         exclude: /(node_modules[\\/]((?!(passbolt\-styleguide))))/,
         loader: "babel-loader",
         options: {
-          presets: ["@babel/react"],
+          presets: [["@babel/react", { runtime: "classic" }]],
         },
       },
       {
@@ -100,7 +100,7 @@ module.exports = {
       ]
     },{
       dir: 'dist/themes',
-      files: ['default/ext_app.min.css', 'midgar/ext_app.min.css', 'solarized_dark/ext_app.min.css', 'solarized_light/ext_app.min.css'],
+      files: ['default/ext_app.min.css', 'midgar/ext_app.min.css', 'solarized_dark/ext_app.min.css', 'solarized_light/ext_app.min.css', 'sakura/ext_app.min.css', 'layette/ext_app.min.css'],
       rules: [
         {
           search: /cursor:\s*col-resize/g,
